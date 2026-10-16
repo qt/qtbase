@@ -690,11 +690,12 @@ void tst_QIcon::task184901_badCache()
     QIcon icon(pm);
 
     //the disabled icon must have an effect (grayed)
-    QVERIFY(icon.pixmap(32, QIcon::Normal).toImage() != icon.pixmap(32, QIcon::Disabled).toImage());
+    QCOMPARE_NE(icon.pixmap(32, QIcon::Normal).toImage(),
+                icon.pixmap(32, QIcon::Disabled).toImage());
 
     icon.addPixmap(pm, QIcon::Disabled);
     //the disabled icon must now be the same as the normal one.
-    QVERIFY( icon.pixmap(32, QIcon::Normal).toImage() == icon.pixmap(32, QIcon::Disabled).toImage() );
+    QCOMPARE(icon.pixmap(32, QIcon::Normal), icon.pixmap(32, QIcon::Disabled));
 }
 #endif
 

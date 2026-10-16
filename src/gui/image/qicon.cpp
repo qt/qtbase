@@ -336,55 +336,46 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
 
 QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
-    QPixmap pm;
     QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state);
-    if (pe)
-        pm = pe->pixmap;
-    else
-        return pm;
+    if (!pe)
+        return {};
 
-    if (pm.isNull()) {
+    if (pe->pixmap.isNull()) {
         removePixmapEntry(pe);
         if (pixmaps.empty())
-            return pm;
+            return {};
         return scaledPixmap(size, mode, state, scale);
     }
 
-    const auto actualSize = adjustSize(size * scale, pm.size());
+    const auto actualSize = adjustSize(size * scale, pe->pixmap.size());
     const auto calculatedDpr = QIconPrivate::pixmapDevicePixelRatio(scale, size, actualSize);
-    QString key = "qt_"_L1
-                  % HexString<quint64>(pm.cacheKey())
-                  % HexString<quint8>(pe->mode)
+    const QString key = u"qt_"
+                  % HexString<quint64>(pe->pixmap.cacheKey())
+                  % HexString<quint8>(pe->mode)     // might differ from actual mode when generated below
                   % HexString<quint64>(QGuiApplication::palette().cacheKey())
                   % HexString<uint>(actualSize.width())
                   % HexString<uint>(actualSize.height())
-                  % HexString<quint16>(qRound(calculatedDpr * 1000));
+                  % HexString<quint16>(qRound(calculatedDpr * 1000))
+                  % HexString<quint8>(mode);
+    QPixmap pm;
+    if (QPixmapCache::find(key, &pm))
+        return pm; // horray
 
-    if (mode == QIcon::Active) {
-        if (QPixmapCache::find(key % HexString<quint8>(mode), &pm))
-            return pm; // horray
-        if (QPixmapCache::find(key % HexString<quint8>(QIcon::Normal), &pm)) {
-            QPixmap active = pm;
-            if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
-                active = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(QIcon::Active, pm);
-            if (pm.cacheKey() == active.cacheKey())
-                return pm;
-        }
-    }
-
-    if (!QPixmapCache::find(key % HexString<quint8>(mode), &pm)) {
-        if (pm.size() != actualSize)
-            pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        if (pe->mode != mode && mode != QIcon::Normal) {
-            QPixmap generated = pm;
-            if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
-                generated = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(mode, pm);
+    pm = pe->pixmap;
+    if (pm.size() != actualSize)
+        pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    // let the style generate an appropriate pixmap for the given mode
+    if (pe->mode != mode && mode != QIcon::Normal) {
+        if (const QGuiApplication *guiApp = qobject_cast<const QGuiApplication *>(qApp)) {
+            const auto guiAppPrivate =
+                    static_cast<const QGuiApplicationPrivate *>(QObjectPrivate::get(guiApp));
+            const QPixmap generated = guiAppPrivate->applyQIconStyleHelper(mode, pm);
             if (!generated.isNull())
                 pm = generated;
         }
-        pm.setDevicePixelRatio(calculatedDpr);
-        QPixmapCache::insert(key % HexString<quint8>(mode), pm);
     }
+    pm.setDevicePixelRatio(calculatedDpr);
+    QPixmapCache::insert(key, pm);
     return pm;
 }
 
