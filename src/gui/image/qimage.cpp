@@ -1201,9 +1201,12 @@ static void copyMetadata(QImage *dst, const QImage &src)
     \overload
 
     The returned image is copied from the position (\a x, \a y) in
-    this image, and will always have the given \a width and \a height.
-    In areas beyond this image, pixels are set to 0.
+    this image, and has the given \a width and \a height. In areas
+    beyond this image, pixels are set to 0.
 
+    Returns a null image if this image is null, if the rectangle
+    described by \a x, \a y, \a width, and \a height is empty but
+    not null, or if the image can't be allocated.
 */
 
 /*!
@@ -1212,8 +1215,8 @@ static void copyMetadata(QImage *dst, const QImage &src)
     Returns a sub-area of the image as a new image.
 
     The returned image is copied from the position (\a
-    {rectangle}.x(), \a{rectangle}.y()) in this image, and will always
-    have the size of the given \a rectangle.
+    {rectangle}.x(), \a{rectangle}.y()) in this image, and has the
+    size of the given \a rectangle.
 
     In areas beyond this image, pixels are set to 0. For 32-bit RGB
     images, this means black; for 32-bit ARGB images, this means
@@ -1224,7 +1227,10 @@ static void copyMetadata(QImage *dst, const QImage &src)
     If the given \a rectangle is a null rectangle the entire image is
     copied.
 
-    \sa QImage()
+    Returns a null image if this image is null, if \a rectangle is
+    empty but not null, or if the image can't be allocated.
+
+    \sa QImage(), QRect::isNull(), QRect::isEmpty()
 */
 QImage Q_TRACE_INSTRUMENT(qtgui) QImage::copy(const QRect& r) const
 {
