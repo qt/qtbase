@@ -852,6 +852,10 @@ private Q_SLOTS:
     void checkBoxTest();
     void tableViewTest();
     void tableViewSelectionAfterModelChange();
+    void tableViewCellCreationKeepsTable();
+    void tableViewMultipleSelectedCells();
+    void tableViewStaleCellParent();
+    void tableViewRepeatedModelChanges();
     void treeViewTest();
     void tabBarTest();
     void windowTest();
@@ -1294,6 +1298,266 @@ void tst_QAccessibilityMac::tableViewSelectionAfterModelChange()
     [window release];
     [windowList release];
     [appObject release];
+}
+
+// Returns the AX element of the first table in the application's only window,
+// or nullptr. The caller owns the returned reference.
+static AXUIElementRef copyTableElement()
+{
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    NSArray *windowList = [appObject windowList];
+    AXUIElementRef tableRef = nullptr;
+    if (windowList.count == 1) {
+        TestAXObject *window =
+                [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)windowList[0]];
+        tableRef = [window findDirectChildByRole:kAXTableRole];
+        if (tableRef)
+            CFRetain(tableRef);
+        [window release];
+    }
+    [windowList release];
+    [appObject release];
+    return tableRef;
+}
+
+// Returns the titles of the table's selected children as reported to an AX
+// client, or the AX error as a string if the query fails.
+static QStringList selectedChildrenTitles(AXUIElementRef tableRef)
+{
+    CFTypeRef value = nullptr;
+    const AXError err =
+            AXUIElementCopyAttributeValue(tableRef, kAXSelectedChildrenAttribute, &value);
+    if (err != kAXErrorSuccess)
+        return { QString("AXError %1").arg(err) };
+
+    QStringList titles;
+    for (id child in (NSArray *)value) {
+        TestAXObject *cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)child];
+        titles << QString::fromNSString(cell.title);
+        [cell release];
+    }
+    CFRelease(value);
+    titles.sort();
+    return titles;
+}
+
+static QTableWidget *createTableWidget(QWidget *parent, int rows, int columns)
+{
+    QTableWidget *tableWidget = new QTableWidget(rows, columns, parent);
+    for (int row = 0; row < rows; ++row) {
+        for (int column = 0; column < columns; ++column)
+            tableWidget->setItem(row, column,
+                                 new QTableWidgetItem(QString("%1/%2").arg(row).arg(column)));
+    }
+    return tableWidget;
+}
+
+void tst_QAccessibilityMac::tableViewCellCreationKeepsTable()
+{
+    QTableWidget *tableWidget = createTableWidget(m_window, 4, 2);
+    m_window->addWidget(tableWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    AXUIElementRef tableRef = copyTableElement();
+    QVERIFY(tableRef);
+    TestAXObject *table = [[TestAXObject alloc] initWithAXUIElementRef:tableRef];
+
+    // Populate the table model, and the cell placeholders of the first row.
+    NSArray *rows = table.tableRows;
+    QCOMPARE(rows.count, 4u);
+    TestAXObject *firstRow = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rows[0]];
+    NSArray *firstRowCells = firstRow.childList;
+    QCOMPARE(firstRowCells.count, 2u);
+
+    QAccessibleInterface *tableInterface = QAccessible::queryAccessibleInterface(tableWidget);
+    QVERIFY(tableInterface);
+    const QAccessible::Id tableId = QAccessible::uniqueId(tableInterface);
+
+    // Selecting a cell in a row that no client has visited yet creates the
+    // native element for that cell, which replaces a placeholder in the row.
+    // Destroying that placeholder must not affect the table's interface.
+    tableWidget->setCurrentCell(3, 1);
+    QCOMPARE(selectedChildrenTitles(tableRef), QStringList{ "3/1" });
+
+    QCOMPARE(QAccessible::queryAccessibleInterface(tableWidget), tableInterface);
+    QCOMPARE(QAccessible::uniqueId(tableInterface), tableId);
+    QVERIFY([table.role isEqualToString:NSAccessibilityTableRole]);
+    QCOMPARE(table.tableRows.count, 4u);
+
+    // and again, after draining all autoreleased elements
+    @autoreleasepool {
+        tableWidget->setCurrentCell(2, 0);
+        QCOMPARE(selectedChildrenTitles(tableRef), QStringList{ "2/0" });
+    }
+    QCOMPARE(QAccessible::queryAccessibleInterface(tableWidget), tableInterface);
+    QCOMPARE(QAccessible::uniqueId(tableInterface), tableId);
+
+    [firstRowCells release];
+    [firstRow release];
+    [rows release];
+    [table release];
+    CFRelease(tableRef);
+}
+
+void tst_QAccessibilityMac::tableViewMultipleSelectedCells()
+{
+    QTableWidget *tableWidget = createTableWidget(m_window, 5, 3);
+    tableWidget->setSelectionMode(QAbstractItemView::MultiSelection);
+    tableWidget->setSelectionBehavior(QAbstractItemView::SelectItems);
+    m_window->addWidget(tableWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    AXUIElementRef tableRef = copyTableElement();
+    QVERIFY(tableRef);
+
+    // None of these cells has been visited by a client yet, so the native
+    // elements for all of them get created while the selection is reported.
+    const QStringList expected = { "1/0", "2/2", "4/1" };
+    for (const QString &title : expected) {
+        const auto rowColumn = title.split(u'/');
+        tableWidget->item(rowColumn.at(0).toInt(), rowColumn.at(1).toInt())->setSelected(true);
+    }
+    QCOMPARE(selectedChildrenTitles(tableRef), expected);
+
+    // reported consistently when asked again, and after a model change
+    QCOMPARE(selectedChildrenTitles(tableRef), expected);
+    @autoreleasepool {
+        tableWidget->removeRow(2);
+    }
+    QCoreApplication::processEvents();
+    QCOMPARE(selectedChildrenTitles(tableRef), (QStringList{ "1/0", "4/1" }));
+
+    CFRelease(tableRef);
+}
+
+void tst_QAccessibilityMac::tableViewStaleCellParent()
+{
+    QTableWidget *tableWidget = createTableWidget(m_window, 3, 1);
+    m_window->addWidget(tableWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    AXUIElementRef tableRef = copyTableElement();
+    QVERIFY(tableRef);
+
+    // Get the element for the cell in the last row
+    tableWidget->setCurrentCell(2, 0);
+    CFTypeRef selectedValue = nullptr;
+    QCOMPARE(AXUIElementCopyAttributeValue(tableRef, kAXSelectedChildrenAttribute, &selectedValue),
+             kAXErrorSuccess);
+    NSArray *selected = (NSArray *)selectedValue;
+    QCOMPARE(selected.count, 1u);
+    TestAXObject *cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)selected[0]];
+    QCOMPARE(QString::fromNSString(cell.title), u"2/0");
+
+    // Removing a row above moves the cell up, so the row it was created for
+    // no longer exists.
+    @autoreleasepool {
+        tableWidget->removeRow(0);
+    }
+    QCoreApplication::processEvents();
+    QCOMPARE(QString::fromNSString(cell.title), u"2/0");
+
+    CFTypeRef parentValue = nullptr;
+    const AXError err = AXUIElementCopyAttributeValue(cell.ref, kAXParentAttribute, &parentValue);
+    QEXPECT_FAIL("", "The cell element reports the row it was created in", Continue);
+    QCOMPARE(err, kAXErrorSuccess);
+    if (parentValue) {
+        TestAXObject *parentRow =
+                [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)parentValue];
+        QVERIFY([parentRow.role isEqualToString:NSAccessibilityRowRole]);
+        NSArray *rowCells = parentRow.childList;
+        QCOMPARE(rowCells.count, 1u);
+        TestAXObject *rowCell =
+                [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowCells[0]];
+        QCOMPARE(QString::fromNSString(rowCell.title), u"2/0");
+        [rowCell release];
+        [rowCells release];
+        [parentRow release];
+        CFRelease(parentValue);
+    }
+
+    [cell release];
+    [selected release];
+    CFRelease(tableRef);
+}
+
+void tst_QAccessibilityMac::tableViewRepeatedModelChanges()
+{
+    QSKIP("Cell elements keep a stale row index after rows above are removed");
+
+    QTableWidget *tableWidget = createTableWidget(m_window, 4, 2);
+    m_window->addWidget(tableWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    AXUIElementRef tableRef = copyTableElement();
+    QVERIFY(tableRef);
+    TestAXObject *table = [[TestAXObject alloc] initWithAXUIElementRef:tableRef];
+
+    // Keep client references to rows and cells from all generations of the
+    // table model alive, the way an AX client that caches elements would.
+    NSMutableArray *heldElements = [NSMutableArray array];
+    const auto visitAll = [&] {
+        NSArray *rows = table.tableRows;
+        for (id row in rows) {
+            [heldElements addObject:row];
+            TestAXObject *rowObject =
+                    [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)row];
+            NSArray *cells = rowObject.childList;
+            for (id cell in cells) {
+                [heldElements addObject:cell];
+                TestAXObject *cellObject =
+                        [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)cell];
+                (void)cellObject.title;
+                (void)cellObject.parent;
+                [cellObject release];
+            }
+            [cells release];
+            [rowObject release];
+        }
+        const NSUInteger count = rows.count;
+        [rows release];
+        return count;
+    };
+
+    QCOMPARE(visitAll(), 4u);
+    for (int i = 0; i < 3; ++i) {
+        tableWidget->setCurrentCell(tableWidget->rowCount() - 1, 1);
+        QCOMPARE(selectedChildrenTitles(tableRef).size(), 1);
+
+        @autoreleasepool {
+            tableWidget->insertRow(1);
+            tableWidget->setItem(1, 0, new QTableWidgetItem("new"));
+        }
+        QCoreApplication::processEvents();
+        QCOMPARE(visitAll(), NSUInteger(tableWidget->rowCount()));
+
+        @autoreleasepool {
+            tableWidget->removeRow(0);
+            tableWidget->removeRow(0);
+        }
+        QCoreApplication::processEvents();
+        QCOMPARE(visitAll(), NSUInteger(tableWidget->rowCount()));
+    }
+
+    @autoreleasepool {
+        tableWidget->clear();
+        tableWidget->setRowCount(2);
+    }
+    QCoreApplication::processEvents();
+    QCOMPARE(visitAll(), 2u);
+    QVERIFY([table.role isEqualToString:NSAccessibilityTableRole]);
+
+    // Release the client references only after the table is gone
+    delete tableWidget;
+    QCoreApplication::processEvents();
+    [heldElements removeAllObjects];
+
+    [table release];
+    CFRelease(tableRef);
 }
 
 void tst_QAccessibilityMac::treeViewTest()
