@@ -1269,6 +1269,9 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
             }
             auto qUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
             if (!qUiAbilityPeer) {
+                qOhosPrintfWarning(
+                    "%s: ability has no window stage, supported window modes not applied",
+                    Q_FUNC_INFO);
                 taskPromise();
                 return;
             }
