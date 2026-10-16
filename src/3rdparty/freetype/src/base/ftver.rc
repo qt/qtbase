@@ -18,8 +18,8 @@
 
 #include<windows.h>
 
-#define FT_VERSION      2,14,3,0
-#define FT_VERSION_STR  "2.14.3"
+#define FT_VERSION      2,15,0,0
+#define FT_VERSION_STR  "2.15.0"
 
 VS_VERSION_INFO      VERSIONINFO
 FILEVERSION          FT_VERSION
