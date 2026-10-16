@@ -2491,7 +2491,7 @@ bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*
     const bool testing = callMode == QInternal::Testing;
     int cnt;
     stream >> cnt;
-    static const int dockCount = docks.size();
+    static const int dockCount = int(docks.size());
     if (cnt < 0 || cnt > dockCount) {
         qWarning() << "Invalid data stream. Dock count" << cnt << "is out of bound. Maximum:" << dockCount;
         stream.setStatus(QDataStream::Status::ReadCorruptData);
