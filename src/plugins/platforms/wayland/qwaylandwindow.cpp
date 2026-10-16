@@ -1625,6 +1625,22 @@ void QWaylandWindow::applyCursor(QWaylandInputDevice *device, const QCursor &cur
 
 void QWaylandWindow::requestActivateWindow()
 {
+    QWaylandWindow *toplevel = this;
+    while (auto parent = static_cast<QWaylandWindow *>(toplevel->QPlatformWindow::parent()))
+        toplevel = parent;
+
+    if (toplevel != this) {
+        if (window()->isVisible() && mDisplay->isWindowActivated(toplevel))
+            mDisplay->setActiveSubSurface(this);
+        return;
+    }
+
+    if (QWaylandWindow *sub = mDisplay->activeSubSurface();
+        sub && window()->isAncestorOf(sub->window(), QWindow::ExcludeTransients)) {
+        mDisplay->setActiveSubSurface(nullptr);
+        return;
+    }
+
     if (mShellSurface)
         mShellSurface->requestActivate();
 }

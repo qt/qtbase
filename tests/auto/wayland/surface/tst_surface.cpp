@@ -28,6 +28,7 @@ private slots:
     void createSubsurfaceForHiddenParent();
     void changeToSubsurface();
     void subsurfaceFocus();
+    void subsurfaceRequestActivate();
 };
 
 tst_surface::tst_surface()
@@ -329,6 +330,54 @@ void tst_surface::subsurfaceFocus()
     });
     QTRY_COMPARE(window.keyPressEventCount, 1);
     QCOMPARE(subWindow.keyPressEventCount, 1); // unchanged
+}
+
+void tst_surface::subsurfaceRequestActivate()
+{
+    QRasterWindow window;
+    QRasterWindow subWindow;
+    subWindow.setParent(&window);
+    QRasterWindow subSubWindow;
+    subSubWindow.setParent(&subWindow);
+
+    subWindow.create();
+    subSubWindow.create();
+
+    window.show();
+
+    QCOMPOSITOR_TRY_VERIFY(xdgToplevel());
+    exec([&] { xdgToplevel()->sendCompleteConfigure(); });
+    QCOMPOSITOR_TRY_VERIFY(xdgSurface()->m_committedConfigureSerial);
+    Surface *mainSurface = exec([&] { return xdgToplevel()->surface();});
+    exec([&] { keyboard()->sendEnter(mainSurface);});
+
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
+
+    // Unshown child must not take focus
+    subWindow.requestActivate();
+    QVERIFY(!subWindow.isVisible());
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
+
+    // Shown child takes focus
+    subWindow.show();
+    QVERIFY(subWindow.isVisible());
+    subWindow.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &subWindow);
+
+    // Grandchild takes focus
+    subSubWindow.show();
+    subSubWindow.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &subSubWindow);
+
+    // Activating the toplevel takes focus back
+    window.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
+
+    // Hidden child must not take focus
+    subWindow.hide();
+    QVERIFY(!subWindow.isVisible());
+    subWindow.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
 }
 
 QCOMPOSITOR_TEST_MAIN(tst_surface)
