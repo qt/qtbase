@@ -824,6 +824,20 @@ QFont makeTipLabelFont()
     return font;
 }
 
+QHash<QPlatformTheme::Font, QFont> makeFontsMap()
+{
+    return {
+        {QPlatformTheme::DockWidgetTitleFont, makeTitleFont()},
+        {QPlatformTheme::GroupBoxTitleFont, makeGroupBoxTitleFont()},
+        {QPlatformTheme::ListViewFont, makeListViewFont()},
+        {QPlatformTheme::MenuBarFont, makeMenuFont()},
+        {QPlatformTheme::MenuFont, makeMenuFont()},
+        {QPlatformTheme::MenuItemFont, makeMenuFont()},
+        {QPlatformTheme::PushButtonFont, makePushButtonFont()},
+        {QPlatformTheme::TipLabelFont, makeTipLabelFont()},
+    };
+}
+
 QHash<QPlatformTheme::Palette, QPalette> makePalettesMap(Qt::ColorScheme scheme, const QColor &accentColor)
 {
     const AllPalletesColors palettesColors = makeAllPalettesColors(scheme, accentColor);
@@ -1058,17 +1072,10 @@ QPixmap QOhosFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::S
 }
 
 QOhosPlatformTheme::QOhosPlatformTheme()
-    : m_fonts(
-        {
-            {DockWidgetTitleFont, makeTitleFont()},
-            {GroupBoxTitleFont, makeGroupBoxTitleFont()},
-            {ListViewFont, makeListViewFont()},
-            {MenuBarFont, makeMenuFont()},
-            {MenuFont, makeMenuFont()},
-            {MenuItemFont, makeMenuFont()},
-            {PushButtonFont, makePushButtonFont()},
-            {TipLabelFont, makeTipLabelFont()},
-        })
+    : m_fontsSupplier(QtOhos::makeMemoizingSupplier<std::shared_ptr<const QHash<Font, QFont>>>(
+        []() {
+            return QtOhos::moveToSharedPtr(makeFontsMap());
+        }))
     , m_wheelScrollLines(defaultWheelScrollLines)
 {
     auto colorModeDataSource = makeOhosConfigColorModeDataSource(
@@ -1164,8 +1171,9 @@ const QPalette *QOhosPlatformTheme::palette(Palette type) const
 
 const QFont *QOhosPlatformTheme::font(Font type) const
 {
-    const auto fontIter = m_fonts.find(type);
-    return fontIter != m_fonts.end()
+    const auto fonts = m_fontsSupplier();
+    const auto fontIter = fonts->find(type);
+    return fontIter != fonts->end()
         ? &fontIter.value()
         : QPlatformTheme::font(type);
 }
