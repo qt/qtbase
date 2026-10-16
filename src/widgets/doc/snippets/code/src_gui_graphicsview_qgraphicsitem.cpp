@@ -228,6 +228,12 @@ void snippets( QGraphicsScene *scene, QGraphicsItem *item,
     QRect deviceRect = xform.mapRect(rect).toAlignedRect();
     view->viewport()->scroll(dx, dy, deviceRect);
     //! [19]
+
+    //! [20]
+    // A 50x30 rectangle whose top-left corner is at (100, 100) in the scene
+    QGraphicsRectItem *rectItem = scene->addRect(QRectF(0, 0, 50, 30));
+    rectItem->setPos(100, 100);
+    //! [20]
 }
 
 /* For convenient quoting in the documentation
