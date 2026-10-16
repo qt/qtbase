@@ -21,6 +21,10 @@ file(GLOB_RECURSE test_data_glob
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     *.rcc)
 list(APPEND test_data ${test_data_glob})
+file(GLOB_RECURSE test_data_glob
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    basetest/*)
+list(APPEND test_data ${test_data_glob})
 
 qt_internal_add_test(tst_qresourceengine
     SOURCES
@@ -40,6 +44,32 @@ qt_internal_add_resource(tst_qresourceengine "qt_resource_empty"
         "/empty"
     FILES
         "world.txt"
+)
+
+# Add the same file to two resources with different BASE directories. The
+# alias derived from the first BASE must not leak into the second resource.
+# (With built-in test data, qt_internal_add_test already does this too.)
+qt_internal_add_resource(tst_qresourceengine "basefirst"
+    PREFIX
+        "/basefirst"
+    BASE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+    FILES
+        "basetest/sub/file.txt"
+)
+
+set_source_files_properties("basetest/sub/explicit.txt"
+    PROPERTIES QT_RESOURCE_ALIAS "explicit.alias"
+)
+
+qt_internal_add_resource(tst_qresourceengine "withbase"
+    PREFIX
+        "/withbase"
+    BASE
+        "basetest"
+    FILES
+        "basetest/sub/file.txt"
+        "basetest/sub/explicit.txt"
 )
 
 qt_add_resources(additional_sources testqrc/test.qrc)

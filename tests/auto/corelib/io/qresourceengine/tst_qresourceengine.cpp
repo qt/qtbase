@@ -43,6 +43,8 @@ private slots:
     void lastModified();
     void resourcesInStaticPlugins();
     void qtResourceEmpty();
+    void baseRelativeAlias();
+    void explicitAliasWinsOverBase();
     void registerNestedRccFile();
 
 private:
@@ -198,6 +200,10 @@ void tst_QResourceEngine::checkStructure_data()
 #ifdef Q_OS_ANDROID
                  << QLatin1String("android_testdata")
 #endif
+                << QLatin1String("basefirst")
+#if defined(BUILTIN_TESTDATA)
+                << QLatin1String("basetest")
+#endif
                  << QLatin1String("empty")
                  << QLatin1String("nestedrcc")
                  << QLatin1String("otherdir")
@@ -215,6 +221,7 @@ void tst_QResourceEngine::checkStructure_data()
                  << QLatin1String("testqrc")
 #endif
                  << QLatin1String("uncompresseddir")
+                 << QLatin1String("withbase")
                  << QLatin1String("withoutslashes");
 
     QTest::newRow("root dir")          << QString(":/")
@@ -686,6 +693,21 @@ void tst_QResourceEngine::qtResourceEmpty()
     QVERIFY(f.exists());
     QVERIFY(f.open(QIODevice::ReadOnly));
     QVERIFY(f.readAll().isEmpty());
+}
+
+void tst_QResourceEngine::baseRelativeAlias()
+{
+    // The alias is relative to the BASE of this resource, even if the same
+    // file was added to another resource with a different BASE.
+    QVERIFY(QFile::exists(":/basefirst/basetest/sub/file.txt"));
+    QVERIFY(QFile::exists(":/withbase/sub/file.txt"));
+    QVERIFY(!QFile::exists(":/withbase/basetest/sub/file.txt"));
+}
+
+void tst_QResourceEngine::explicitAliasWinsOverBase()
+{
+    QVERIFY(QFile::exists(":/withbase/explicit.alias"));
+    QVERIFY(!QFile::exists(":/withbase/sub/explicit.txt"));
 }
 
 void tst_QResourceEngine::registerNestedRccFile()
