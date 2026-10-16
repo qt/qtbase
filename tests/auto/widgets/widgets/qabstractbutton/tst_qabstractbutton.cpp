@@ -30,6 +30,7 @@ private slots:
     void cleanupTestCase();
     void init();
 
+    void autoRepeatSetGet();
     void setAutoRepeat_data();
     void setAutoRepeat();
 
@@ -183,6 +184,23 @@ void tst_QAbstractButton::onPressed()
 void tst_QAbstractButton::onReleased()
 {
     release_count++;
+}
+
+void tst_QAbstractButton::autoRepeatSetGet()
+{
+    testWidget->setAutoRepeatDelay(123);
+    QCOMPARE(testWidget->autoRepeatDelay(), 123);
+    QCOMPARE(testWidget->autoRepeatDelayAsDuration(), std::chrono::milliseconds(123));
+    testWidget->setAutoRepeatDelay(std::chrono::milliseconds(234));
+    QCOMPARE(testWidget->autoRepeatDelay(), 234);
+    QCOMPARE(testWidget->autoRepeatDelayAsDuration(), std::chrono::milliseconds(234));
+
+    testWidget->setAutoRepeatInterval(123);
+    QCOMPARE(testWidget->autoRepeatInterval(), 123);
+    QCOMPARE(testWidget->autoRepeatIntervalAsDuration(), std::chrono::milliseconds(123));
+    testWidget->setAutoRepeatInterval(std::chrono::milliseconds(234));
+    QCOMPARE(testWidget->autoRepeatInterval(), 234);
+    QCOMPARE(testWidget->autoRepeatIntervalAsDuration(), std::chrono::milliseconds(234));
 }
 
 void tst_QAbstractButton::setAutoRepeat_data()

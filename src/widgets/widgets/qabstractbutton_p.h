@@ -23,6 +23,8 @@
 #include "private/qwidget_p.h"
 #include "QtWidgets/qstyle.h"
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractButtonPrivate : public QWidgetPrivate
@@ -52,7 +54,7 @@ public:
     QBasicTimer repeatTimer;
     QBasicTimer animateTimer;
 
-    int autoRepeatDelay, autoRepeatInterval;
+    std::chrono::milliseconds autoRepeatDelay, autoRepeatInterval;
 
     QSizePolicy::ControlType controlType;
     mutable QSize sizeHint;

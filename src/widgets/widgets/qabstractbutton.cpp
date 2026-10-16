@@ -26,10 +26,12 @@
 
 #include <algorithm>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
-#define AUTO_REPEAT_DELAY  300
-#define AUTO_REPEAT_INTERVAL 100
+static constexpr auto AUTO_REPEAT_DELAY = 300ms;
+static constexpr auto AUTO_REPEAT_INTERVAL = 100ms;
 
 Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
@@ -707,14 +709,38 @@ bool QAbstractButton::autoRepeat() const
 
     \sa autoRepeat, autoRepeatInterval
 */
-
 void QAbstractButton::setAutoRepeatDelay(int autoRepeatDelay)
+{
+    setAutoRepeatDelay(std::chrono::milliseconds(autoRepeatDelay));
+}
+
+int QAbstractButton::autoRepeatDelay() const
+{
+    Q_D(const QAbstractButton);
+    return d->autoRepeatDelay.count();
+}
+/*!
+    \since 6.13
+    \overload
+
+    Sets the auto-repeat delay to \a autoRepeatDelay.
+
+    \sa autoRepeatDelayAsDuration()
+*/
+void QAbstractButton::setAutoRepeatDelay(std::chrono::milliseconds autoRepeatDelay)
 {
     Q_D(QAbstractButton);
     d->autoRepeatDelay = autoRepeatDelay;
 }
 
-int QAbstractButton::autoRepeatDelay() const
+
+/*!
+    Returns the auto-repetition delay as std::chrono::milliseconds
+
+    \since 6.13
+    \sa autoRepeatDelay
+*/
+std::chrono::milliseconds QAbstractButton::autoRepeatDelayAsDuration() const
 {
     Q_D(const QAbstractButton);
     return d->autoRepeatDelay;
@@ -733,17 +759,41 @@ int QAbstractButton::autoRepeatDelay() const
 
 void QAbstractButton::setAutoRepeatInterval(int autoRepeatInterval)
 {
-    Q_D(QAbstractButton);
-    d->autoRepeatInterval = autoRepeatInterval;
+    setAutoRepeatInterval(std::chrono::milliseconds(autoRepeatInterval));
 }
 
 int QAbstractButton::autoRepeatInterval() const
 {
     Q_D(const QAbstractButton);
-    return d->autoRepeatInterval;
+    return d->autoRepeatInterval.count();
+}
+
+/*!
+    \since 6.13
+    \overload
+
+    Sets the auto-repetition interval to \a autoRepeatInterval.
+
+    \sa autoRepeatDelayAsDuration()
+*/
+void QAbstractButton::setAutoRepeatInterval(std::chrono::milliseconds autoRepeatInterval)
+{
+    Q_D(QAbstractButton);
+    d->autoRepeatInterval = autoRepeatInterval;
 }
 
 
+/*!
+    Returns the auto-repetition interval as std::chrono::milliseconds
+
+    \since 6.13
+    \sa autoRepeatInterval
+*/
+std::chrono::milliseconds QAbstractButton::autoRepeatIntervalAsDuration() const
+{
+    Q_D(const QAbstractButton);
+    return d->autoRepeatInterval;
+}
 
 /*!
 \property QAbstractButton::autoExclusive

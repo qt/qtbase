@@ -66,11 +66,15 @@ public:
     void setAutoRepeat(bool);
     bool autoRepeat() const;
 
-    void setAutoRepeatDelay(int);
+    void setAutoRepeatDelay(int autoRepeatDelay);
+    void setAutoRepeatDelay(std::chrono::milliseconds autoRepeatDelay);
     int autoRepeatDelay() const;
+    std::chrono::milliseconds autoRepeatDelayAsDuration() const;
 
-    void setAutoRepeatInterval(int);
+    void setAutoRepeatInterval(int autoRepeatInterval);
+    void setAutoRepeatInterval(std::chrono::milliseconds autoRepeatInterval);
     int autoRepeatInterval() const;
+    std::chrono::milliseconds autoRepeatIntervalAsDuration() const;
 
     void setAutoExclusive(bool);
     bool autoExclusive() const;
