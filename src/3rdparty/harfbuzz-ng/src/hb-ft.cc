@@ -138,7 +138,19 @@ _hb_ft_font_destroy (void *data)
   if (ft_font->unref)
   {
     if (ft_font->static_library)
+    {
+      /* ft_font->ft_face->generic.data is the blob that hb_ft_font_set_funcs()
+       * hooked up as this internal FT_Face's finalizer target (_release_blob).
+       * FT_Done_Face() below runs that finalizer while static_ft_library_mutex
+       * is held; if dropping its reference were to free the blob right there,
+       * the blob's attached destroy_ft_library() user-data callback would try
+       * to re-lock the same non-recursive mutex and self-deadlock. Hold an
+       * extra reference across the locked call so the blob (and thus that
+       * callback) can only be freed after the lock is released. */
+      hb_blob_t *blob = hb_blob_reference ((hb_blob_t *) ft_font->ft_face->generic.data);
       _hb_ft_face_destroy_static (ft_font->ft_face);
+      hb_blob_destroy (blob);
+    }
     else
       _hb_ft_face_destroy (ft_font->ft_face);
   }
@@ -1669,7 +1681,10 @@ hb_ft_face_create_from_file_or_fail (const char   *file_name,
 			     file_name,
 			     index,
 			     &ft_face)))
+  {
+    destroy_ft_library (ft_library);
     return nullptr;
+  }
 
   FT_Reference_Face (ft_face);
   hb_face_t *face = hb_ft_face_create (ft_face, _hb_ft_face_destroy_static);
@@ -1730,7 +1745,10 @@ hb_ft_face_create_from_blob_or_fail (hb_blob_t    *blob,
 				    blob_size,
 				    index,
 				    &ft_face)))
+  {
+    destroy_ft_library (ft_library);
     return nullptr;
+  }
 
   FT_Reference_Face (ft_face);
   hb_face_t *face = hb_ft_face_create (ft_face, _hb_ft_face_destroy_static);
@@ -1824,6 +1842,7 @@ hb_ft_font_set_funcs (hb_font_t *font)
 				    &ft_face)))
   {
     hb_blob_destroy (blob);
+    destroy_ft_library (ft_library);
     DEBUG_MSG (FT, font, "FT_New_Memory_Face() failed");
     return;
   }
@@ -1840,6 +1859,7 @@ hb_ft_font_set_funcs (hb_font_t *font)
   {
     DEBUG_MSG (FT, font, "hb_blob_set_user_data() failed");
     _hb_ft_face_destroy_static (ft_face);
+    destroy_ft_library (ft_library);
     return;
   }
 

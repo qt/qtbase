@@ -197,7 +197,7 @@ struct HBUINT32VAR
     else if (b0 < 0xF0)
       return ((b0 & 0x0F) << 24) | (v[1] << 16) | (v[2] << 8) | v[3];
     else
-      return (v[1] << 24) | (v[2] << 16) | (v[3] << 8) | v[4];
+      return (uint32_t (v[1]) << 24) | (v[2] << 16) | (v[3] << 8) | v[4];
   }
 
   static unsigned serialize_unsafe (unsigned char *buf, uint32_t v)
@@ -2008,11 +2008,11 @@ struct TupleValues
     }
 
     private:
-    template <bool scaled>
-    void _add_to (hb_array_t<float> out, float scale = 1.0f)
+    template <bool scaled, typename T>
+    void _add_to (hb_array_t<T> out, T scale = T (1))
     {
       unsigned n = out.length;
-      float *arrayZ = out.arrayZ;
+      T *arrayZ = out.arrayZ;
 
       for (unsigned i = 0; i < n;)
       {
@@ -2080,7 +2080,8 @@ struct TupleValues
     }
 
     public:
-    void add_to (hb_array_t<float> out, float scale = 1.0f)
+    template <typename T>
+    void add_to (hb_array_t<T> out, float scale = 1.0f)
     {
 #ifndef HB_OPTIMIZE_SIZE
       // The following branch is supposed to speed things up by avoiding
@@ -2090,7 +2091,7 @@ struct TupleValues
         _add_to<false> (out);
       else
 #endif
-        _add_to<true> (out, scale);
+        _add_to<true> (out, (T) scale);
     }
   };
 };
