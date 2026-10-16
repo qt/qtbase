@@ -182,12 +182,11 @@ QAbstractButton *QAbstractButtonPrivate::queryCheckedButton() const
 #endif
 
     Q_Q(const QAbstractButton);
-    QList<QAbstractButton *> buttonList = queryButtonList();
+    const QList<QAbstractButton *> buttonList = queryButtonList();
     if (!autoExclusive || buttonList.size() == 1) // no group
         return nullptr;
 
-    for (int i = 0; i < buttonList.size(); ++i) {
-        QAbstractButton *b = buttonList.at(i);
+    for (QAbstractButton *b : buttonList) {
         if (b->d_func()->checked && b != q)
             return b;
     }
@@ -213,7 +212,7 @@ void QAbstractButtonPrivate::notifyChecked()
 
 void QAbstractButtonPrivate::moveFocus(int key)
 {
-    QList<QAbstractButton *> buttonList = queryButtonList();
+    const QList<QAbstractButton *> buttonList = queryButtonList();
 #if QT_CONFIG(buttongroup)
     bool exclusive = group ? group->d_func()->exclusive : autoExclusive;
 #else
@@ -230,8 +229,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
     QPoint goal = target.center();
     uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
 
-    for (int i = 0; i < buttonList.size(); ++i) {
-        QAbstractButton *button = buttonList.at(i);
+    for (QAbstractButton *button : buttonList) {
         if (button != f && button->window() == f->window() && button->isEnabled() && !button->isHidden() &&
             (exclusive || (button->focusPolicy() & focus_flag) == focus_flag)) {
             QRect buttonRect = button->rect().translated(button->mapToGlobal(QPoint(0,0)));
@@ -309,9 +307,8 @@ void QAbstractButtonPrivate::fixFocusPolicy()
 #endif
         return;
 
-    QList<QAbstractButton *> buttonList = queryButtonList();
-    for (int i = 0; i < buttonList.size(); ++i) {
-        QAbstractButton *b = buttonList.at(i);
+    const QList<QAbstractButton *> buttonList = queryButtonList();
+    for (QAbstractButton  *b : buttonList) {
         if (!b->isCheckable())
             continue;
         b->setFocusPolicy((Qt::FocusPolicy) ((b == q || !q->isCheckable())
