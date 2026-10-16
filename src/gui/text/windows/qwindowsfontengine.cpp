@@ -70,8 +70,15 @@ QFixed QWindowsFontEngine::lineThickness() const
 static OUTLINETEXTMETRIC *getOutlineTextMetric(HDC hdc)
 {
     const auto size = GetOutlineTextMetrics(hdc, 0, nullptr);
+    if (size == 0)
+        return nullptr;
     auto otm = reinterpret_cast<OUTLINETEXTMETRIC *>(malloc(size));
-    GetOutlineTextMetrics(hdc, size, otm);
+    if (otm == nullptr)
+        return nullptr;
+    if (GetOutlineTextMetrics(hdc, size, otm) == 0) {
+        free(otm);
+        return nullptr;
+    }
     return otm;
 }
 
@@ -116,8 +123,8 @@ void QWindowsFontEngine::getCMap()
     symbol = symb;
     designToDevice = 1;
     _faceId.index = 0;
-    if (cmap) {
-        OUTLINETEXTMETRIC *otm = getOutlineTextMetric(hdc);
+    OUTLINETEXTMETRIC *otm = cmap != nullptr ? getOutlineTextMetric(hdc) : nullptr;
+    if (otm != nullptr) {
         unitsPerEm = int(otm->otmEMSquare);
         const QFixed unitsPerEmF(unitsPerEm);
         designToDevice = unitsPerEmF / QFixed::fromReal(fontDef.pixelSize);
@@ -844,6 +851,10 @@ QFontEngine::Properties QWindowsFontEngine::properties() const
     HDC hdc = m_fontEngineData->hdc;
     HGDIOBJ oldfont = SelectObject(hdc, hf);
     OUTLINETEXTMETRIC *otm = getOutlineTextMetric(hdc);
+    if (otm == nullptr) {
+        DeleteObject(SelectObject(hdc, oldfont));
+        return QFontEngine::properties();
+    }
     Properties p;
     p.emSquare = unitsPerEm;
     p.italicAngle = otm->otmItalicAngle;
