@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
     Since the only storage used is a QStringList, no item roles other
     than Qt::DisplayRole and Qt::EditRole are supported, and these two
     are synonyms. If you need support for different roles, such as
-    Qt::DecorationRole, you can use QStandardItemModel.
+    Qt::DecorationRole, you can use QStandardItemModel or QRangeModel.
 
     Model indexes corresponding to items are obtained with the
     \l{QAbstractListModel::index()}{index()} function, and item flags
@@ -124,7 +124,10 @@ QMap<int, QVariant> QStringListModel::itemData(const QModelIndex &index) const
 /*!
   \reimp
   \since 5.13
-  If \a roles contains both Qt::DisplayRole and Qt::EditRole, the latter will take precedence
+  If \a roles contains both Qt::DisplayRole and Qt::EditRole, the latter will take precedence.
+
+  Returns \c false without changing the item if \a roles is empty or
+  contains any role other than Qt::DisplayRole and Qt::EditRole.
 */
 bool QStringListModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
 {
@@ -184,11 +187,12 @@ Qt::ItemFlags QStringListModel::flags(const QModelIndex &index) const
     Sets the data for the specified \a role in the item with the given
     \a index in the model, to the provided \a value.
 
-    The dataChanged() signal is emitted if the item is changed.
-    Returns \c true after emitting the dataChanged() signal.
-
     Only Qt::DisplayRole and Qt::EditRole are supported for \a role, and
     \a value needs to be convertible to QString.
+
+    Returns \c true if \a index is valid and \a role is supported;
+    otherwise returns \c false. The dataChanged() signal is emitted
+    only if the new value differs from the current one.
 
     \sa Qt::ItemDataRole, data()
 */
