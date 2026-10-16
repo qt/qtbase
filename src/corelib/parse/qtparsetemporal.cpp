@@ -854,8 +854,18 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
                 matches = spacePadExtend(std::move(matches), text);
         }
         break;
-    case Cat::TimeZone:
-        if (const auto zones = QtParseTimeZone::prefix(text, locale, textPos, field.options);
+    case Cat::TimeZone: {
+        std::optional<qint64> atEpochMillis = std::nullopt;
+        QDate date = base.results.date(calendar);
+
+        if (date.isValid()) {
+            QDateTime when(date, base.results.time(QTime(12, 0)), QTimeZone::UTC);
+            if (when.isValid())
+                atEpochMillis = when.toMSecsSinceEpoch();
+        }
+
+        if (const auto zones = QtParseTimeZone::prefix(text, locale, textPos, field.options,
+                                                       atEpochMillis);
             !zones.isEmpty()) {
             for (const auto &match : zones) {
                 matches.emplace_back(base, match);
@@ -864,6 +874,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
             }
         }
         break;
+    }
 
         // case Cat::MillisecondInDay: break;
     case Cat::SecondFraction:

@@ -428,7 +428,8 @@ namespace QtParseTimeZone {
     The acceptable forms of a timezone text are controlled by \a flags.
 */
 QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from,
-                         QtTemporalPattern::TemporalFieldFlags flags)
+                         QtTemporalPattern::TemporalFieldFlags flags,
+                         std::optional<qint64> atEpochMillis)
 {
     using QDTP = QDateTimePrivate;
     QList<ParsedZone> matches;
@@ -495,8 +496,10 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
 
         if (matchesFlagWithin(flags, Flag::Verbal, FormMask)
             && matchesFlagsWithin(flags, Flag::Wide | Flag::Short, WidthMask)) {
-            // TODO: findLongNamePrefix() would prefer to be first tried with a date-time.
-            addPrefixIfMatch(QTimeZonePrivate::findLongNamePrefix(tail, locale));
+            auto prefix = QTimeZonePrivate::findLongNamePrefix(tail, locale, atEpochMillis);
+            if (!prefix && atEpochMillis)
+                prefix = QTimeZonePrivate::findLongNamePrefix(tail, locale);
+            addPrefixIfMatch(std::move(prefix));
             // (We don't want offset format to match 'tttt', so do need to limit this.)
             // The final fall-back for QTZL's localeName() is a
             // zoneOffsetFormat(,, Numeric | Abbreviated | NeedNoUtcPrefix | ZeroPad ,,):

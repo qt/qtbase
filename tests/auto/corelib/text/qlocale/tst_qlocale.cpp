@@ -2754,8 +2754,48 @@ void tst_QLocale::roundtripDateTimeFormat_data()
         ++count;
     }
 
+    const QTimeZone warsaw("Europe/Warsaw");
+    if (warsaw.isValid()) {
+        // Trigger Polish locale - summer and winter
+        QTest::newRow("pl_PL/LongFormat/2026-09-17T15:30/Warsaw-summer") // QTBUG-150552
+            << QLocale(QLocale::Polish, QLocale::Poland)
+            << QDateTime(QDate(2026, 9, 17, greg), QTime(15, 30), warsaw)
+            << greg << QLocale::LongFormat << 2000;
+
+        QTest::newRow("pl_PL/LongFormat/2026-01-17T15:30/Warsaw-winter")
+            << QLocale(QLocale::Polish, QLocale::Poland)
+            << QDateTime(QDate(2026, 1, 17, greg), QTime(15, 30), warsaw)
+            << greg << QLocale::LongFormat << 2000;
+        ++count;
+    }
+
+    const QTimeZone berlin("Europe/Berlin");
+    if (berlin.isValid()) {
+        // Trigger different locale - Berlin
+        QTest::newRow("en_US/LongFormat/2026-09-17T15:30/Berlin-CEST")
+            << QLocale(QLocale::English, QLocale::UnitedStates)
+            << QDateTime(QDate(2026, 9, 17, greg), QTime(15, 30), berlin)
+            << greg << QLocale::LongFormat << 2000;
+
+        QTest::newRow("de_DE/LongFormat/2026-09-17T15:30/Berlin-MESZ")
+            << QLocale(QLocale::German, QLocale::Germany)
+            << QDateTime(QDate(2026, 9, 17, greg), QTime(15, 30), berlin)
+            << greg << QLocale::LongFormat << 2000;
+        ++count;
+    }
+
+    const QTimeZone athens("Europe/Athens");
+    if (athens.isValid()) {
+        // Trigger En Locale - EEST
+        QTest::newRow("en_US/LongFormat/2026-09-17T15:30/Athens-EEST")
+            << QLocale(QLocale::English, QLocale::UnitedStates)
+            << QDateTime(QDate(2026, 9, 17, greg), QTime(15, 30), athens)
+            << greg << QLocale::LongFormat << 2000;
+        ++count;
+    }
+
     if (!count)
-        QSKIP("Missing zones for both test-cases");
+        QSKIP("Missing zones for all test-cases");
 #else
     QSKIP("The only test-case depends on feature timezone");
 #endif

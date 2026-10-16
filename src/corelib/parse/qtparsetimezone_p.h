@@ -22,6 +22,8 @@
 #include <QtCore/qtimezone.h>
 #include <QtCore/private/qttemporalpattern_p.h>
 
+#include <optional>
+
 QT_REQUIRE_CONFIG(datetimeparser);
 
 QT_BEGIN_NAMESPACE
@@ -78,7 +80,8 @@ constexpr QtTemporalPattern::TemporalFieldFlags AnyZoneForm{
 
 Q_AUTOTEST_EXPORT // so that we can test it
 QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from = 0,
-                         QtTemporalPattern::TemporalFieldFlags flags = AnyZoneForm);
+                         QtTemporalPattern::TemporalFieldFlags flags = AnyZoneForm,
+                         std::optional<qint64> atEpochMillis = std::nullopt);
 // QList<ParsedZone> find(QStringView text, const QLocale &locale, qsizetype from = 0,
 //                        QtTemporalPattern::TemporalFieldFlags flags = AnyZoneForm);
 } // QtParseTimeZone
