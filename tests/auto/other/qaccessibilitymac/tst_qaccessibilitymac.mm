@@ -1005,7 +1005,6 @@ void tst_QAccessibilityMac::tableViewStaleCellParent()
 
     CFTypeRef parentValue = nullptr;
     const AXError err = AXUIElementCopyAttributeValue(cell.ref, kAXParentAttribute, &parentValue);
-    QEXPECT_FAIL("", "The cell element reports the row it was created in", Continue);
     QCOMPARE(err, kAXErrorSuccess);
     if (parentValue) {
         TestAXObject *parentRow =
@@ -1029,8 +1028,6 @@ void tst_QAccessibilityMac::tableViewStaleCellParent()
 
 void tst_QAccessibilityMac::tableViewRepeatedModelChanges()
 {
-    QSKIP("Cell elements keep a stale row index after rows above are removed");
-
     QTableWidget *tableWidget = createTableWidget(m_window, 4, 2);
     m_window->addWidget(tableWidget);
     QVERIFY(QTest::qWaitForWindowExposed(m_window));
