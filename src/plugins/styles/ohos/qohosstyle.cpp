@@ -418,6 +418,7 @@ enum class ArrowSymbol {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
+    TriangleDown,
 };
 
 std::optional<char32_t> tryGetArrowSymbolCodepoint(QOhosJsState &jsState, const char *ohosSymbolName)
@@ -441,6 +442,7 @@ QOhosMemoizingJsThreadFetcher<QHash<ArrowSymbol, char32_t>> arrowSymbolCodepoint
             {ArrowSymbol::ChevronDown, "chevron_down"},
             {ArrowSymbol::ChevronLeft, "chevron_left"},
             {ArrowSymbol::ChevronRight, "chevron_right"},
+            {ArrowSymbol::TriangleDown, "arrowtriangle_down_fill"},
         };
 
         QHash<ArrowSymbol, char32_t> codepoints;
@@ -496,6 +498,27 @@ bool tryDrawArrowSymbol(
         painter.fillPath(glyphPath, color);
     });
     return true;
+}
+
+bool isDropDownArrow(const QStyleOption *option, const QWidget *widget)
+{
+    if (qstyleoption_cast<const QStyleOptionComboBox *>(option))
+        return true;
+    if (const auto *buttonOption = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+        if (buttonOption->features.testFlag(QStyleOptionButton::HasMenu))
+            return true;
+    }
+    if (const auto *toolButtonOption = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
+        if (toolButtonOption->features.testFlag(QStyleOptionToolButton::HasMenu))
+            return true;
+    }
+    if (qobject_cast<const QComboBox *>(widget))
+        return true;
+    if (const auto *pushButton = qobject_cast<const QPushButton *>(widget))
+        return pushButton->menu() != nullptr;
+    if (const auto *toolButton = qobject_cast<const QToolButton *>(widget))
+        return toolButton->arrowType() != Qt::DownArrow;
+    return false;
 }
 
 ArrowSymbol chevronSymbol(ArrowDirection direction)
@@ -1517,11 +1540,15 @@ void QOhosStyle::drawPrimitive(
         }
 
         const auto isEnabled = option->state.testFlag(QStyle::State_Enabled);
+        const auto symbol =
+            direction == ArrowDirection::Down && isDropDownArrow(option, widget)
+                ? ArrowSymbol::TriangleDown
+                : chevronSymbol(direction);
 
         paintOnStackTop(*painter, [&](auto &p) {
             p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
             const auto arrowColor = option->palette.color(QPalette::Active, QPalette::WindowText);
-            if (!tryDrawArrowSymbol(p, chevronSymbol(direction), availableRect, arrowColor))
+            if (!tryDrawArrowSymbol(p, symbol, availableRect, arrowColor))
                 drawArrow(p, availableRect, maxArrowSize, direction, arrowColor);
         });
         break;
@@ -1777,7 +1804,7 @@ void QOhosStyle::drawComplexControl(
             }
 
             if (option->subControls.testFlag(SC_ComboBoxArrow)) {
-                auto optionCopy = *option;
+                auto optionCopy = *comboBoxStyleOption;
                 auto comboBoxOptions = static_cast<QStyleOption *>(&optionCopy);
                 comboBoxOptions->rect = subControlRect(control, option, SC_ComboBoxArrow, widget);
                 drawPrimitive(PE_IndicatorArrowDown, comboBoxOptions, painter, widget);
