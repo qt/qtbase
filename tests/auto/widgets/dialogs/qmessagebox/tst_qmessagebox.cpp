@@ -100,7 +100,7 @@ protected:
 class ExecCloseHelper : public QObject
 {
 public:
-    enum { CloseWindow = -1 };
+    enum { CloseWindow = -1, DeleteParent = -2 };
 
     explicit ExecCloseHelper(QObject *parent = nullptr)
         : QObject(parent), m_key(0), m_timerId(0), m_testCandidate(nullptr) { }
@@ -149,6 +149,8 @@ void ExecCloseHelper::timerEvent(QTimerEvent *te)
     if (shouldHelp) {
         if (m_key == CloseWindow) {
             m_testCandidate->close();
+        } else if (m_key == DeleteParent) {
+            m_testCandidate->parent()->deleteLater();
         } else {
             QKeyEvent *ke = new QKeyEvent(QEvent::KeyPress, m_key, Qt::NoModifier);
             QCoreApplication::postEvent(m_testCandidate, ke);
@@ -487,6 +489,7 @@ void tst_QMessageBox::about_data()
     ROW(Qt::Key_Enter);
     ROW(ExecCloseHelper::CloseWindow);
 #undef ROW
+    row("ExecCloseHelper::DeleteParent", ExecCloseHelper::DeleteParent, true); // needs a parent
 }
 
 void tst_QMessageBox::about()
