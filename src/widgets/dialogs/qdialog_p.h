@@ -108,8 +108,17 @@ template <typename T>
 class QAutoPointer {
     QPointer<T> o;
 public:
+    Q_NODISCARD_CTOR QAutoPointer() = default;
+    Q_NODISCARD_CTOR QAutoPointer(std::nullptr_t) noexcept : QAutoPointer() {}
     Q_NODISCARD_CTOR explicit QAutoPointer(T *t) noexcept : o(t) {}
+    Q_NODISCARD_CTOR QAutoPointer(QAutoPointer &&other) noexcept
+        : o{std::exchange(other.o, nullptr)}
+    {}
     ~QAutoPointer() { delete o; }
+
+    void swap(QAutoPointer &other) noexcept { o.swap(other.o); }
+    friend void swap(QAutoPointer &lhs, QAutoPointer &rhs) noexcept { lhs.swap(rhs); }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QAutoPointer)
 
     T *operator->() const noexcept { return get(); }
     T *get() const noexcept { return o; }
