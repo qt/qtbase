@@ -1300,6 +1300,7 @@ qt_feature("lttng" PRIVATE
     ENABLE INPUT_trace STREQUAL 'lttng' OR ( INPUT_trace STREQUAL 'yes' AND LINUX )
     DISABLE INPUT_trace STREQUAL 'etw'
             OR INPUT_trace STREQUAL 'no'
+            OR INPUT_trace STREQUAL 'hitrace'
             OR INPUT_trace STREQUAL 'ctf'
 )
 qt_feature("etw" PRIVATE
@@ -1309,6 +1310,17 @@ qt_feature("etw" PRIVATE
     ENABLE INPUT_trace STREQUAL 'etw' OR ( INPUT_trace STREQUAL 'yes' AND WIN32 )
     DISABLE INPUT_trace STREQUAL 'lttng'
             OR INPUT_trace STREQUAL 'no'
+            OR INPUT_trace STREQUAL 'hitrace'
+            OR INPUT_trace STREQUAL 'ctf'
+)
+qt_feature("hitrace" PRIVATE
+    LABEL "HiTrace"
+    AUTODETECT OFF
+    CONDITION OHOS
+    ENABLE INPUT_trace STREQUAL 'hitrace' OR ( INPUT_trace STREQUAL 'yes' AND OHOS )
+    DISABLE INPUT_trace STREQUAL 'etw'
+            OR INPUT_trace STREQUAL 'no'
+            OR INPUT_trace STREQUAL 'lttng'
             OR INPUT_trace STREQUAL 'ctf'
 )
 qt_feature("ctf" PRIVATE
@@ -1318,6 +1330,7 @@ qt_feature("ctf" PRIVATE
     DISABLE INPUT_trace STREQUAL 'etw'
             OR INPUT_trace STREQUAL 'no'
             OR INPUT_trace STREQUAL 'lttng'
+            OR INPUT_trace STREQUAL 'hitrace'
 )
 qt_feature("forkfd_pidfd" PRIVATE
     LABEL "CLONE_PIDFD support in forkfd"
@@ -1381,7 +1394,7 @@ qt_configure_add_summary_entry(ARGS "permissions")
 qt_configure_add_summary_entry(ARGS "ipc_posix" CONDITION UNIX)
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
-    ARGS "etw lttng ctf"
+    ARGS "etw lttng hitrace ctf"
     MESSAGE "Tracing backend"
 )
 qt_configure_add_summary_entry(ARGS "openssl-hash")

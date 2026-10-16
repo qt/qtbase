@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "provider.h"
+#include "hitrace.h"
 #include "ctf.h"
 #include "lttng.h"
 #include "etw.h"
@@ -14,12 +15,13 @@ enum class Target
 {
     LTTNG,
     ETW,
+    HITRACE,
     CTF,
 };
 
 static inline void usage(int status)
 {
-    printf("Usage: tracegen <lttng|etw|ctf> <input file> <output file>\n");
+    printf("Usage: tracegen <lttng|etw|hitrace|ctf> <input file> <output file>\n");
     exit(status);
 }
 
@@ -36,6 +38,8 @@ static void parseArgs(int argc, char *argv[], Target *target, QString *inFile, Q
         *target = Target::LTTNG;
     } else if (qstrcmp(targetString, "etw") == 0) {
         *target = Target::ETW;
+    } else if (qstrcmp(targetString, "hitrace") == 0) {
+        *target = Target::HITRACE;
     } else if (qstrcmp(targetString, "ctf") == 0) {
         *target = Target::CTF;
     } else {
@@ -65,6 +69,9 @@ int main(int argc, char *argv[])
     }
 
     switch (target) {
+    case Target::HITRACE:
+        writeHiTrace(out, p);
+        break;
     case Target::CTF:
         writeCtf(out, p);
         break;

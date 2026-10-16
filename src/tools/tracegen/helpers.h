@@ -13,6 +13,7 @@
 enum ParamType {
     LTTNG,
     ETW,
+    HITRACE,
     CTF
 };
 
