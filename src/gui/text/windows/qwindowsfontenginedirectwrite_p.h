@@ -122,7 +122,8 @@ private:
     bool traverseColr1(IDWritePaintReader *paintReader,
                        IDWriteFontFace7 *face7,
                        const DWRITE_PAINT_ELEMENT *paintElement,
-                       QColrPaintGraphRenderer *graphRenderer) const;
+                       QColrPaintGraphRenderer *graphRenderer,
+                       int depth) const;
     bool renderColr1GlyphRun(QImage *image,
                              const DWRITE_GLYPH_RUN *glyphRun,
                              const DWRITE_MATRIX &transform,

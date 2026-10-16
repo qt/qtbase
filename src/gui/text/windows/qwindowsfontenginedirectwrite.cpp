@@ -1058,7 +1058,7 @@ QRect QWindowsFontEngineDirectWrite::paintGraphBounds(glyph_t glyph,
         if (boundingRect.isNull()) {
             QColrPaintGraphRenderer boundingRectCalculator;
             boundingRectCalculator.beginCalculateBoundingBox();
-            if (traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &boundingRectCalculator))
+            if (traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &boundingRectCalculator, 0))
                 boundingRect = boundingRectCalculator.boundingRect();
         }
 
@@ -1085,8 +1085,15 @@ QRect QWindowsFontEngineDirectWrite::paintGraphBounds(glyph_t glyph,
 bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReader,
                                                   IDWriteFontFace7 *face7,
                                                   const DWRITE_PAINT_ELEMENT *paintElement,
-                                                  QColrPaintGraphRenderer *paintGraphRenderer) const
+                                                  QColrPaintGraphRenderer *paintGraphRenderer,
+                                                  int depth) const
 {
+    if (maxColrv1NestingDepth() > 0 && depth > maxColrv1NestingDepth()) {
+        qCWarning(lcColrv1) << "COLRv1 graph nested deeper than" << maxColrv1NestingDepth()
+                            << "levels; aborting traversal";
+        return false;
+    }
+
     paintGraphRenderer->save();
     auto cleanup = qScopeGuard([&paintGraphRenderer]() {
         paintGraphRenderer->restore();
@@ -1098,7 +1105,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
             return false;
 
         while (childCount-- > 0) {
-            traverseColr1(paintReader, face7, &childPaintElement, paintGraphRenderer);
+            traverseColr1(paintReader, face7, &childPaintElement, paintGraphRenderer, depth + 1);
             if (childCount > 0) {
                 if (FAILED(paintReader->MoveToNextSibling(&childPaintElement, sizeof(DWRITE_PAINT_ELEMENT)))) {
                     return false;
@@ -1184,7 +1191,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
                 compositeRenderer.setBoundingRect(paintGraphRenderer->boundingRect());
                 compositeRenderer.beginRender(fontDef.pixelSize / m_unitsPerEm,
                                               paintGraphRenderer->currentTransform());
-                if (!traverseColr1(paintReader, face7, &childElement, &compositeRenderer))
+                if (!traverseColr1(paintReader, face7, &childElement, &compositeRenderer, depth + 1))
                     return false;
 
                 // Then draw source which is the first child
@@ -1203,7 +1210,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
                 }
 
                 compositeRenderer.setCompositionMode(compositeToCompositionMode(compositeMode));
-                if (!traverseColr1(paintReader, face7, &childElement, &compositeRenderer))
+                if (!traverseColr1(paintReader, face7, &childElement, &compositeRenderer, depth + 1))
                     return false;
 
                 hr = paintReader->MoveToParent();
@@ -1305,7 +1312,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
         if (FAILED(paintReader->MoveToFirstChild(&childElement, sizeof(DWRITE_PAINT_ELEMENT))))
             return false;
 
-        if (!traverseColr1(paintReader, face7, &childElement, paintGraphRenderer))
+        if (!traverseColr1(paintReader, face7, &childElement, paintGraphRenderer, depth + 1))
             return false;
 
         if (FAILED(paintReader->MoveToParent()))
@@ -1390,7 +1397,7 @@ bool QWindowsFontEngineDirectWrite::renderColr1GlyphRun(QImage *image,
         if (boundingRect.isNull()) {
             QColrPaintGraphRenderer boundingRectCalculator;
             boundingRectCalculator.beginCalculateBoundingBox();
-            if (traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &boundingRectCalculator))
+            if (traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &boundingRectCalculator, 0))
                 boundingRect = boundingRectCalculator.boundingRect();
         }
 
@@ -1409,7 +1416,7 @@ bool QWindowsFontEngineDirectWrite::renderColr1GlyphRun(QImage *image,
         QColrPaintGraphRenderer graphRenderer;
         graphRenderer.setBoundingRect(boundingRect);
         graphRenderer.beginRender(fontDef.pixelSize / m_unitsPerEm, matrixToTransform(matrix));
-        if (!traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &graphRenderer))
+        if (!traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &graphRenderer, 0))
             return false;
 
         *image = graphRenderer.endRender();
