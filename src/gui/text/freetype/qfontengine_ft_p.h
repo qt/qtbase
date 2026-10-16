@@ -339,7 +339,8 @@ private:
                        QColor foregroundColor,
                        FT_Color *palette,
                        ushort paletteCount,
-                       QColrPaintGraphRenderer *paintGraphRenderer) const;
+                       QColrPaintGraphRenderer *paintGraphRenderer,
+                       int depth = 0) const;
     mutable glyph_t colrv1_bounds_cache_id = 0;
     mutable QRect colrv1_bounds_cache;
 #endif // QFONTENGINE_FT_SUPPORT_COLRV1

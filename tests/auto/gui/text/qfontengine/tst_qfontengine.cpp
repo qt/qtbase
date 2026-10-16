@@ -79,6 +79,7 @@ private slots:
     void colrv1GlyphSizeLimit();
     void zeroLengthTable();
     void truncatedFontCollection();
+    void colrv1DeepGraph();
 #endif
 
 private:
@@ -468,6 +469,55 @@ void tst_QFontEngine::truncatedFontCollection()
             QFontDatabase::removeApplicationFont(fontId);
     });
     QCOMPARE(fontId, -1);
+}
+
+void tst_QFontEngine::colrv1DeepGraph()
+{
+    QFETCH_GLOBAL(const QFontEngine::Type, engineType);
+    if (engineType == QFontEngine::Win)
+        QSKIP("GDI engine cannot load COLRv1 font.");
+
+    if (engineType == QFontEngine::DirectWrite)
+        QSKIP("Test currently does not work on DirectWrite.");
+
+    const int fontId = QFontDatabase::addApplicationFont(QFINDTESTDATA("testfont_colrv1_deep.ttf"));
+    QVERIFY(fontId >= 0);
+    const auto cleanup = qScopeGuard([&] { QFontDatabase::removeApplicationFont(fontId); });
+    const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    QVERIFY(!families.isEmpty());
+
+    QFont font(families.constFirst());
+    font.setStyleStrategy(QFont::NoFontMerging);
+    font.setPixelSize(16);
+
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
+    QVERIFY(fontEngine != nullptr);
+    QCOMPARE(fontEngine->type(), engineType);
+
+    const glyph_t glyph = fontEngine->glyphIndex('A');
+    QVERIFY(glyph != 0);
+
+    // Both the metrics pass and the rendering pass traverse the paint graph.
+    // Neither may overflow the stack; a too-deeply nested glyph is simply
+    // reported as empty / produces no bitmap.
+    (void)fontEngine->boundingBox(glyph);
+    const QImage bitmap = fontEngine->bitmapForGlyph(glyph, QFixedPoint(), QTransform(),
+                                                     QColor(Qt::black));
+
+    // CoreText renders the glyph itself, so we only require that the result is empty
+    if (engineType == QFontEngine::Mac && !bitmap.isNull()) {
+        for (int y = 0; y < bitmap.height(); ++y) {
+            for (int x = 0; x < bitmap.width(); ++x) {
+                const QRgb pixel = bitmap.pixel(x, y);
+                const bool isEmpty = bitmap.hasAlphaChannel()
+                        ? qAlpha(pixel) == 0
+                        : (pixel & RGB_MASK) == 0;
+                QVERIFY2(isEmpty, qPrintable(u"Non-empty pixel at (%1, %2)"_s.arg(x).arg(y)));
+            }
+        }
+    } else {
+        QVERIFY(bitmap.isNull());
+    }
 }
 
 #endif // !define(QFONTENGINE_BENCHMARK)

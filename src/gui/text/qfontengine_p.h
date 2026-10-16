@@ -44,6 +44,11 @@ typedef bool (*qt_get_font_table_func_t) (void *user_data, uint tag, uchar *buff
 
 Q_DECLARE_LOGGING_CATEGORY(lcColrv1)
 
+// Upper bound on the nesting depth of a COLRv1 paint graph.
+#if !defined(QT_MAX_COLRV1_NESTING_DEPTH)
+#  define QT_MAX_COLRV1_NESTING_DEPTH 100
+#endif
+
 class Q_GUI_EXPORT QFontEngine
 {
 public:
@@ -164,6 +169,7 @@ public:
     }
 
     static int maxCachedGlyphSize();
+    static constexpr int maxColrv1NestingDepth() { return QT_MAX_COLRV1_NESTING_DEPTH; }
 
     virtual QFixed emSquareSize() const;
 
