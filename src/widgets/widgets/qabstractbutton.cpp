@@ -301,10 +301,11 @@ void QAbstractButtonPrivate::fixFocusPolicy()
 {
     Q_Q(QAbstractButton);
 #if QT_CONFIG(buttongroup)
-    if (!group && !autoExclusive)
+    const bool exclusive = group ? group->d_func()->exclusive : autoExclusive;
 #else
-    if (!autoExclusive)
+    const bool exclusive = autoExclusive;
 #endif
+    if (!exclusive)
         return;
 
     const QList<QAbstractButton *> buttonList = queryButtonList();

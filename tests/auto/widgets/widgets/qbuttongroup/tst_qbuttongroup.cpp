@@ -8,6 +8,7 @@
 #include "qbuttongroup.h"
 #include <qaction.h>
 #include <qapplication.h>
+#include <qcheckbox.h>
 #include <qdialog.h>
 #include <qlayout.h>
 #include <qgroupbox.h>
@@ -60,6 +61,7 @@ Q_OBJECT
 
 private slots:
     void arrowKeyNavigation();
+    void tabKeyNavigation();
     void keyNavigationPushButtons();
     void exclusive();
     void exclusiveWithActions();
@@ -157,6 +159,52 @@ void tst_QButtonGroup::arrowKeyNavigation()
     QVERIFY(bt3.hasFocus());
     QTest::keyClick(&bt3, Qt::Key_Up);
     QVERIFY(bt3.hasFocus());
+}
+
+void tst_QButtonGroup::tabKeyNavigation()
+{
+    QWidget w;
+    auto createGroupBox = [&](const QString &title, bool exclusive) {
+        QGroupBox *groupBox = new QGroupBox(title);
+        QVBoxLayout *vbox = new QVBoxLayout(groupBox);
+        QButtonGroup *buttonGroup = new QButtonGroup(&w);
+        buttonGroup->setExclusive(exclusive);
+
+        QCheckBox *cb1 = new QCheckBox(title + "-cb1");
+        QCheckBox *cb2 = new QCheckBox(title + "-cb2");
+        QCheckBox *cb3 = new QCheckBox(title + "-cb3");
+        for (auto cb : { cb1, cb2, cb3 }) {
+            buttonGroup->addButton(cb);
+            vbox->addWidget(cb);
+            cb->setObjectName(cb->text());
+        }
+        return groupBox;
+    };
+    auto lay = new QVBoxLayout(&w);
+    lay->addWidget(createGroupBox("ex", true));
+    lay->addWidget(createGroupBox("nex", false));
+    w.show();
+    w.findChild<QCheckBox*>("ex-cb1")->setFocus();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    QTRY_VERIFY(qApp->focusWidget());
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "ex-cb1");
+
+    QTest::keyClick(&w, Qt::Key_Tab);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "nex-cb1");
+    QTest::keyClick(&w, Qt::Key_Tab);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "nex-cb2");
+    QTest::keyClick(&w, Qt::Key_Tab);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "nex-cb3");
+    QTest::keyClick(&w, Qt::Key_Tab);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "ex-cb1");
+    QTest::keyClick(&w, Qt::Key_Tab);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "nex-cb1");
+    QTest::keyClick(&w, Qt::Key_Tab, Qt::ShiftModifier);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "ex-cb1");
+    QTest::keyClick(&w, Qt::Key_Tab, Qt::ShiftModifier);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "nex-cb3");
+    QTest::keyClick(&w, Qt::Key_Tab, Qt::ShiftModifier);
+    QTRY_COMPARE(qApp->focusWidget()->objectName(), "nex-cb2");
 }
 
 /*
