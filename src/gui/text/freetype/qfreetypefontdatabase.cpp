@@ -155,7 +155,7 @@ void QFreeTypeFontDatabase::addNamedInstancesForFace(void *face_,
 
                // Sfnt names stored as UTF-16BE
                QString instanceName;
-               for (FT_UInt k = 0; k < name.string_len; k += 2)
+               for (FT_UInt k = 0; k + 1 < name.string_len; k += 2)
                    instanceName += QChar((name.string[k] << 8) + name.string[k + 1]);
                if (instanceName != styleName) {
                    FontFile *variantFontFile = new FontFile{
