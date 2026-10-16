@@ -8,6 +8,8 @@
 #include <QtGui/qfont.h>
 #include <QtGui/qfontdatabase.h>
 #include <QtGui/qfontinfo.h>
+#include <QtGui/qimage.h>
+#include <QtGui/qpainter.h>
 #include <QtGui/qrawfont.h>
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qfontengine_p.h>
@@ -80,6 +82,9 @@ private slots:
     void zeroLengthTable();
     void truncatedFontCollection();
     void colrv1DeepGraph();
+    void grayEmbeddedBitmapNoAntialias_data();
+    void grayEmbeddedBitmapNoAntialias();
+    void grayEmbeddedBitmapSubpixel();
 #endif
 
 private:
@@ -518,6 +523,157 @@ void tst_QFontEngine::colrv1DeepGraph()
     } else {
         QVERIFY(bitmap.isNull());
     }
+}
+
+void tst_QFontEngine::grayEmbeddedBitmapNoAntialias_data()
+{
+    QTest::addColumn<QImage::Format>("imageFormat");
+
+    QTest::addRow("Mono") << QImage::Format_Mono;
+    QTest::addRow("RGB32") << QImage::Format_RGB32;
+}
+
+// Verifies that the image, converted to RGB32, contains a single solid black
+// box on a white background. Each line must contain at most one run of black
+// pixels, surrounded by at most two runs of white pixels, and the black runs
+// must have the same length on every line.
+static void verifySolidBox(const QImage &image)
+{
+    const QRgb white = qRgb(255, 255, 255);
+    const QRgb black = qRgb(0, 0, 0);
+
+    const auto dumpImage = [&] {
+        QString dump;
+        for (int y = 0; y < image.height(); ++y) {
+            dump += u'\n';
+            for (int x = 0; x < image.width(); ++x) {
+                const QRgb pixel = image.pixel(x, y);
+                dump += pixel == white ? u'.' : (pixel == black ? u'#' : u'?');
+            }
+        }
+        return dump;
+    };
+
+    int boxWidth = -1;
+    int boxHeight = 0;
+    for (int y = 0; y < image.height(); ++y) {
+        int whiteRuns = 0;
+        int blackRuns = 0;
+        int blackRunLength = 0;
+        bool previousIsWhite = false;
+        for (int x = 0; x < image.width(); ++x) {
+            const QRgb pixel = image.pixel(x, y);
+            QVERIFY2(pixel == white || pixel == black,
+                     qPrintable(u"Unexpected pixel color %1 at %2,%3:%4"_s
+                                        .arg(pixel, 8, 16, u'0').arg(x).arg(y)
+                                        .arg(dumpImage())));
+
+            const bool isWhite = pixel == white;
+            if (x == 0 || isWhite != previousIsWhite) {
+                if (isWhite)
+                    ++whiteRuns;
+                else
+                    ++blackRuns;
+            }
+            if (!isWhite)
+                ++blackRunLength;
+            previousIsWhite = isWhite;
+        }
+
+        QVERIFY2(whiteRuns <= 2 && blackRuns <= 1,
+                 qPrintable(u"Unexpected pixel runs on line %1:%2"_s
+                                    .arg(y).arg(dumpImage())));
+        if (blackRuns == 0)
+            continue;
+
+        ++boxHeight;
+        if (boxWidth < 0)
+            boxWidth = blackRunLength;
+        QVERIFY2(blackRunLength == boxWidth,
+                 qPrintable(u"Unexpected box width %1 on line %2, expected %3:%4"_s
+                                    .arg(blackRunLength).arg(y).arg(boxWidth)
+                                    .arg(dumpImage())));
+    }
+
+    QVERIFY2(boxHeight > 0 && boxHeight < image.height()
+                     && boxWidth > 0 && boxWidth < image.width(),
+             qPrintable(u"Unexpected glyph size %1x%2:%3"_s
+                                .arg(boxWidth).arg(boxHeight).arg(dumpImage())));
+}
+
+static QImage drawGlyph(const QFont &font, QImage::Format imageFormat)
+{
+    QImage image(32, 32, imageFormat);
+    if (imageFormat == QImage::Format_Mono)
+        image.setColorTable({ qRgb(255, 255, 255), qRgb(0, 0, 0) });
+    image.fill(Qt::white);
+    {
+        QPainter painter(&image);
+        painter.setFont(font);
+        painter.setPen(Qt::black);
+        painter.drawText(QPoint(4, 20), u"A"_s);
+    }
+    return image.convertToFormat(QImage::Format_RGB32);
+}
+
+void tst_QFontEngine::grayEmbeddedBitmapNoAntialias()
+{
+    QFETCH_GLOBAL(const QFontEngine::Type, engineType);
+    QFETCH(const QImage::Format, imageFormat);
+
+    if (engineType == QFontEngine::DirectWrite)
+        QSKIP("DirectWrite does not render grayscale bitmaps");
+
+    // testfont_ebdt8bit.ttf has a single 8-bit grayscale EBDT strike at 16 ppem,
+    // in which the glyph for 'A' is a solid 10x12 box. The glyph also has an
+    // outline with the same shape.
+    const int fontId = QFontDatabase::addApplicationFont(QFINDTESTDATA("testfont_ebdt8bit.ttf"));
+    QVERIFY(fontId >= 0);
+    const auto cleanup = qScopeGuard([&] { QFontDatabase::removeApplicationFont(fontId); });
+    const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    QVERIFY(!families.isEmpty());
+
+    QFont font(families.constFirst());
+    font.setStyleStrategy(QFont::StyleStrategy(QFont::NoFontMerging | QFont::NoAntialias));
+    font.setPixelSize(16);
+
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
+    QVERIFY(fontEngine != nullptr);
+    QCOMPARE(fontEngine->type(), engineType);
+
+    verifySolidBox(drawGlyph(font, imageFormat));
+}
+
+void tst_QFontEngine::grayEmbeddedBitmapSubpixel()
+{
+    QFETCH_GLOBAL(const QFontEngine::Type, engineType);
+    if (engineType == QFontEngine::DirectWrite)
+        QSKIP("DirectWrite does not render grayscale bitmaps");
+
+    // testfont_ebdt8bit_bitmaponly.ttf is the same as testfont_ebdt8bit.ttf, but
+    // without outlines, so the glyphs can only be loaded from the 8-bit
+    // grayscale strike, also when subpixel antialiased glyphs are requested.
+    const int fontId = QFontDatabase::addApplicationFont(
+            QFINDTESTDATA("testfont_ebdt8bit_bitmaponly.ttf"));
+
+    // Some macOS versions are picky about fonts with only bitmap glyphs and refuse to
+    // load this one
+    if (fontId < 0)
+        QSKIP("Platform will not load bitmap-only font");
+
+    const auto cleanup = qScopeGuard([&] { QFontDatabase::removeApplicationFont(fontId); });
+    const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    QVERIFY(!families.isEmpty());
+
+    QFont font(families.constFirst());
+    font.setStyleStrategy(QFont::NoFontMerging);
+    font.setPixelSize(16);
+
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
+    QVERIFY(fontEngine != nullptr);
+    QCOMPARE(fontEngine->type(), engineType);
+
+    verifySolidBox(drawGlyph(font, QImage::Format_RGB32));
 }
 
 #endif // !define(QFONTENGINE_BENCHMARK)
