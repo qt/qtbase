@@ -216,7 +216,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return [self elementWithId:anId];
 }
 
-// called by QAccessibleCache::removeAccessibleElement, which also releases
+// called by QAccessibleCache after removing the element, which also releases
 - (void)invalidate {
     axid = 0;
     if (rows) {
