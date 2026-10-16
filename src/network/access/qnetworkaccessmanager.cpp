@@ -1842,9 +1842,9 @@ void QNetworkAccessManagerPrivate::ensureBackendPluginsLoaded()
 #if QT_CONFIG(library)
     qnabfLoader->update();
 #endif
-    int index = 0;
-    while (qnabfLoader->instance(index))
-        ++index;
+    const int pluginCount = qnabfLoader->metaData().size();
+    for (int i = 0; i < pluginCount; ++i)
+        qnabfLoader->instance(i);
 }
 
 QT_END_NAMESPACE
