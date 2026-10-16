@@ -191,7 +191,10 @@ public:
     TestScene()
     {
         setObjectName("scene");
-
+        QPalette scenePalette = palette();
+        scenePalette.setColor(QPalette::Inactive, QPalette::Window,
+                              scenePalette.color(QPalette::Active, QPalette::Window));
+        setPalette(scenePalette);
         // opaque because it has an opaque background color and autoFillBackground is set
         area = new QWidget(this);
         area->setObjectName("area");
