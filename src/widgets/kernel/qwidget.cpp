@@ -424,8 +424,8 @@ void QWidget::setAutoFillBackground(bool enabled)
             steals the mouse events.
         \li  mouseDoubleClickEvent() is called when the user double-clicks in
             the widget. If the user double-clicks, the widget receives a mouse
-            press event, a mouse release event, (a mouse click event,) a second
-            mouse press, this event and finally a second mouse release event.
+            press event, a mouse release event, this event instead of a second
+            mouse press event, and finally a second mouse release event.
             (Some mouse move events may also be
             received if the mouse is not held steady during this operation.) It
             is \e{not possible} to distinguish a click from a double-click
@@ -9557,14 +9557,21 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive mouse double click events for the widget.
 
-    The default implementation calls mousePressEvent().
+    The double click event replaces the second mouse press event of a
+    double click. The widget receives a mouse press event, a mouse
+    release event, the double click event, and a second mouse release
+    event.
 
-    \note The widget will also receive mouse press and mouse release
-    events in addition to the double click event. And if another widget
-    that overlaps this widget disappears in response to press or
-    release events, then this widget will only receive the double click
-    event. It is up to the developer to ensure that the application
-    interprets these events correctly.
+    The default implementation calls mousePressEvent(), so a widget that
+    doesn't reimplement this function handles the second click as an
+    ordinary press. If you reimplement this function and also need to
+    react to every press, either call the base implementation or handle
+    the event as a press yourself.
+
+    \note If another widget that overlaps this widget disappears in
+    response to press or release events, then this widget will only
+    receive the double click event. It is up to the developer to ensure
+    that the application interprets these events correctly.
 
     \sa mousePressEvent(), mouseReleaseEvent(), mouseMoveEvent(),
     event(), QMouseEvent
