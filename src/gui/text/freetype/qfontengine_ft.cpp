@@ -1228,9 +1228,16 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
                                   QColor foregroundColor,
                                   FT_Color *palette,
                                   ushort paletteCount,
-                                  QColrPaintGraphRenderer *paintGraphRenderer) const
+                                  QColrPaintGraphRenderer *paintGraphRenderer,
+                                  int depth) const
 {
     FT_Face face = freetype->face;
+
+    if (maxColrv1NestingDepth() > 0 && depth > maxColrv1NestingDepth()) {
+        qCWarning(lcColrv1) << "COLRv1 graph nested deeper than" << maxColrv1NestingDepth()
+                            << "levels; aborting traversal";
+        return false;
+    }
 
     auto key = std::pair{opaquePaint.p, opaquePaint.insert_root_transform};
     if (loops->contains(key)) {
@@ -1253,7 +1260,7 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
         FT_OpaquePaint layerPaint;
         layerPaint.p = nullptr;
         while (FT_Get_Paint_Layers(face, &paint.u.colr_layers.layer_iterator, &layerPaint)) {
-            if (!traverseColr1(layerPaint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer))
+            if (!traverseColr1(layerPaint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer, depth + 1))
                 return false;
         }
     } else if (paint.format == FT_COLR_PAINTFORMAT_TRANSFORM
@@ -1325,7 +1332,7 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
         };
 
         paintGraphRenderer->prependTransform(xform);
-        if (!traverseColr1(nextPaint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer))
+        if (!traverseColr1(nextPaint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer, depth + 1))
             return false;
     } else if (paint.format == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT
                || paint.format == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT
@@ -1450,7 +1457,8 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
                                foregroundColor,
                                palette,
                                paletteCount,
-                               paintGraphRenderer)) {
+                               paintGraphRenderer,
+                               depth + 1)) {
                 return false;
             }
             if (!traverseColr1(paint.u.composite.source_paint,
@@ -1458,7 +1466,8 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
                                foregroundColor,
                                palette,
                                paletteCount,
-                               paintGraphRenderer)) {
+                               paintGraphRenderer,
+                               depth + 1)) {
                 return false;
             }
         } else {
@@ -1550,7 +1559,8 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
                                foregroundColor,
                                palette,
                                paletteCount,
-                               &compositeRenderer)) {
+                               &compositeRenderer,
+                               depth + 1)) {
                 return false;
             }
 
@@ -1560,7 +1570,8 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
                                foregroundColor,
                                palette,
                                paletteCount,
-                               &compositeRenderer)) {
+                               &compositeRenderer,
+                               depth + 1)) {
                 return false;
             }
             paintGraphRenderer->drawImage(compositeRenderer.endRender());
@@ -1586,7 +1597,7 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
 
         paintGraphRenderer->appendPath(path);
 
-        if (!traverseColr1(paint.u.glyph.paint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer))
+        if (!traverseColr1(paint.u.glyph.paint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer, depth + 1))
             return false;
     } else if (paint.format == FT_COLR_PAINTFORMAT_COLR_GLYPH) {
         FT_OpaquePaint otherOpaquePaint;
@@ -1601,7 +1612,7 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
             return false;
         }
 
-        if (!traverseColr1(otherOpaquePaint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer))
+        if (!traverseColr1(otherOpaquePaint, loops, foregroundColor, palette, paletteCount, paintGraphRenderer, depth + 1))
             return false;
     }
 
