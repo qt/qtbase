@@ -447,6 +447,14 @@ SPDX-License-Identifier = "FTL OR GPL-2.0-only"
 
 
 [[annotations]]
+path = "include/freetype/internal/services/svvarc.h"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2026 by David Turner, Robert Wilhelm, Werner Lemberg, and Behdad Esfahbod."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+
+[[annotations]]
 path = ["patches/*"]
 precedence = "override"
 SPDX-FileCopyrightText = "None"
@@ -840,6 +848,14 @@ comment = "Copyright read twice, or not seen"
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (C) 1995-2022 Mark Adler"
 SPDX-License-Identifier = "Zlib"
+
+
+[[annotations]]
+path = "src/hvf/*"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2025-2026 by Apple Inc."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
 
 
 [[annotations]]
@@ -1252,6 +1268,14 @@ path = ["src/truetype/ttgxvar.c", "src/truetype/ttgxvar.h"]
 comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (C) 2004-2023 by David Turner, Robert Wilhelm, Werner Lemberg, and George Williams."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+
+[[annotations]]
+path = ["src/truetype/ttvarc.c", "src/truetype/ttvarc.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2025-2026 by Behdad Esfahbod, David Turner, Robert Wilhelm, and Werner Lemberg."
 SPDX-License-Identifier = "FTL OR GPL-2.0-only"
 
 
