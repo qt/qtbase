@@ -564,7 +564,7 @@ QT_WARNING_DISABLE_DEPRECATED
     // the button text versions
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
-    COMPARE(ret, 1);
+    QCOMPARE(ret, 1);
     QVERIFY(closeHelper.done());
 #endif // QT_DEPRECATED_SINCE(6, 2)
 #undef COMPARE
