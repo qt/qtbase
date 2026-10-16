@@ -1085,7 +1085,7 @@ void QWaylandDisplay::handleWaylandSync()
     if (mActiveSubSurface)
         activeWindow = mActiveSubSurface->window();
     if (activeWindow != QGuiApplication::focusWindow())
-        QWindowSystemInterface::handleFocusWindowChanged(activeWindow);
+        QWindowSystemInterface::handleFocusWindowChanged(activeWindow, Qt::ActiveWindowFocusReason);
 }
 
 const wl_callback_listener QWaylandDisplay::syncCallbackListener = {
