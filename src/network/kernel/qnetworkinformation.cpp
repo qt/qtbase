@@ -103,10 +103,9 @@ bool QNetworkInformationPrivate::initializeList()
 #if QT_CONFIG(library)
     qniLoader->update();
 #endif
-    // Instantiates the plugins (and registers the factories)
-    int index = 0;
-    while (qniLoader->instance(index))
-        ++index;
+    const int pluginCount = qniLoader->metaData().size();
+    for (int i = 0; i < pluginCount; ++i)
+        qniLoader->instance(i);
     initLocker.unlock();
 
     // Now sort the list on number of features available (then name)
