@@ -11,6 +11,7 @@
 #include <QtGui/qicon.h>
 #include <QtGui/qpalette.h>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformdialoghelper.h>
@@ -48,7 +49,7 @@ private:
     void refreshPalettes();
 
     QHash<Palette, QPalette> m_themePalette;
-    QHash<Font, QFont> m_fonts;
+    QOhosSupplier<std::shared_ptr<const QHash<Font, QFont>>> m_fontsSupplier;
     int m_wheelScrollLines;
     QOhosSupplier<std::optional<bool>> m_ohosConfigDarkModeFlagSupplier;
     QOhosSupplier<QColor> m_ohosAccentColorSupplier;
