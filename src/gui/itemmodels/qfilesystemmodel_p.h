@@ -290,6 +290,8 @@ public:
 
     QBasicTimer fetchingTimer;
 
+    mutable QVariant emptySection0Icon;
+
     QDir::Filters filters = QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs;
     int sortColumn = 0;
     Qt::SortOrder sortOrder = Qt::AscendingOrder;

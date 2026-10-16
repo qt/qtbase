@@ -948,14 +948,20 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
 */
 QVariant QFileSystemModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_D(const QFileSystemModel);
     switch (role) {
     case Qt::DecorationRole:
         if (section == 0) {
-            // ### TODO oh man this is ugly and doesn't even work all the way!
-            // it is still 2 pixels off
-            QImage pixmap(16, 1, QImage::Format_ARGB32_Premultiplied);
-            pixmap.fill(Qt::transparent);
-            return pixmap;
+            if (d->emptySection0Icon.isNull()) {
+                // ### TODO oh man this is ugly and doesn't even work all the way!
+                // it is still 2 pixels off
+                QPixmap pixmap(16, 1);
+                pixmap.fill(Qt::transparent);
+                QIcon ico;
+                ico.addPixmap(pixmap);
+                d->emptySection0Icon = QVariant::fromValue(ico);
+            }
+            return d->emptySection0Icon;
         }
         break;
     case Qt::TextAlignmentRole:
