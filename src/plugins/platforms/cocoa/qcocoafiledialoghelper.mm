@@ -675,13 +675,18 @@ void QCocoaFileDialogHelper::panelDirectoryDidChange(NSString *path)
 
 void QCocoaFileDialogHelper::selectFile(const QUrl &filename)
 {
+    // Non-local URLs result in an empty path below, which would then
+    // resolve to the parent of the current directory.
+    if (!isSupportedUrl(filename))
+        return;
+
     QString filePath = filename.toLocalFile();
     if (QDir::isRelativePath(filePath))
         filePath = QFileInfo(directory().toLocalFile(), filePath).filePath();
 
     // There seems to no way to select a file once the dialog is running.
     // So do the next best thing, set the file's directory:
-    setDirectory(QFileInfo(filePath).absolutePath());
+    setDirectory(QUrl::fromLocalFile(QFileInfo(filePath).absolutePath()));
 }
 
 QList<QUrl> QCocoaFileDialogHelper::selectedFiles() const
