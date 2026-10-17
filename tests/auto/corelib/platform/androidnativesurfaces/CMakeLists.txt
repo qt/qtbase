@@ -17,3 +17,8 @@ qt_internal_add_test(tst_androidnativesurfaces
 set_property(TARGET tst_androidnativesurfaces APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/testdata
 )
+
+if(QT_FEATURE_egl)
+    qt_find_package(EGL PROVIDED_TARGETS EGL::EGL)
+    qt_internal_extend_target(tst_androidnativesurfaces LIBRARIES EGL::EGL)
+endif()
