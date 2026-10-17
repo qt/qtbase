@@ -296,6 +296,7 @@ public:
         qt_ptr_swap(m_mutex, other.m_mutex);
         std::swap(m_isLocked, other.m_isLocked);
     }
+    friend void swap(QMutexLocker &lhs, QMutexLocker &rhs) noexcept { lhs.swap(rhs); }
 
     Mutex *mutex() const
     {
