@@ -1874,6 +1874,7 @@ void tst_QAccessibilityMac::focusAcrossNativeBoundary()
     QCOMPARE(outer->nativeParentWidget()->windowHandle(), m_window->windowHandle());
 
     QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    m_window->raise();
     m_window->activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(m_window));
     QCoreApplication::processEvents();
