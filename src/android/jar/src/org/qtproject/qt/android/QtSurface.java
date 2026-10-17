@@ -16,6 +16,7 @@ import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.os.Build;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
@@ -207,7 +208,19 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
             return;
         }
 
-        if (EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context)) {
+        // Embedded hosts may already have an EGL context current on this thread.
+        final EGLDisplay previousDisplay = EGL14.eglGetCurrentDisplay();
+        final EGLContext previousContext = EGL14.eglGetCurrentContext();
+        final EGLSurface previousDraw = EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW);
+        final EGLSurface previousRead = EGL14.eglGetCurrentSurface(EGL14.EGL_READ);
+        boolean madeCurrent = false;
+        try {
+            madeCurrent = EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context);
+            if (!madeCurrent) {
+                Log.w(QtNative.QtTAG, "Cannot bind the background EGL context: 0x"
+                        + Integer.toHexString(EGL14.eglGetError()));
+                return;
+            }
             final int color = resolveBackgroundColor();
             GLES20.glClearColor(
                     ((color >> 16) & 0xff) / 255f,
@@ -215,13 +228,34 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
                     (color & 0xff) / 255f,
                     ((color >>> 24) & 0xff) / 255f);
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-            EGL14.eglSwapBuffers(display, eglSurface);
-            EGL14.eglMakeCurrent(display,
-                EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+            if (!EGL14.eglSwapBuffers(display, eglSurface)) {
+                Log.w(QtNative.QtTAG, "Cannot post the background EGL buffer: 0x"
+                        + Integer.toHexString(EGL14.eglGetError()));
+            }
+        } finally {
+            if (madeCurrent) {
+                final EGLDisplay restoreDisplay = previousDisplay.equals(EGL14.EGL_NO_DISPLAY)
+                        ? display : previousDisplay;
+                if (!EGL14.eglMakeCurrent(restoreDisplay, previousDraw,
+                        previousRead, previousContext)) {
+                    Log.w(QtNative.QtTAG, "Cannot restore the UI thread EGL binding: 0x"
+                            + Integer.toHexString(EGL14.eglGetError()));
+                    if (!EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE,
+                            EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)) {
+                        Log.w(QtNative.QtTAG, "Cannot release the background EGL binding: 0x"
+                                + Integer.toHexString(EGL14.eglGetError()));
+                    }
+                }
+            }
+            if (!EGL14.eglDestroySurface(display, eglSurface)) {
+                Log.w(QtNative.QtTAG, "Cannot destroy the background EGL surface: 0x"
+                        + Integer.toHexString(EGL14.eglGetError()));
+            }
+            if (!EGL14.eglDestroyContext(display, context)) {
+                Log.w(QtNative.QtTAG, "Cannot destroy the background EGL context: 0x"
+                        + Integer.toHexString(EGL14.eglGetError()));
+            }
         }
-
-        EGL14.eglDestroySurface(display, eglSurface);
-        EGL14.eglDestroyContext(display, context);
     }
 
     private int resolveBackgroundColor()

@@ -12,6 +12,9 @@
 #include <QtGui/qwindow.h>
 #include <QtGui/qopenglcontext.h>
 #include <android/api-level.h>
+#if QT_CONFIG(egl)
+#include <EGL/egl.h>
+#endif
 #if QT_CONFIG(vulkan)
 #include <QtGui/qvulkaninstance.h>
 #endif
@@ -27,6 +30,8 @@ Q_DECLARE_JNI_CLASS(Surface, "android/view/Surface")
 Q_DECLARE_JNI_CLASS(QtWindow, "org/qtproject/qt/android/QtWindow")
 Q_DECLARE_JNI_CLASS(Runnable, "java/lang/Runnable")
 Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
+Q_DECLARE_JNI_CLASS(SurfaceHolder, "android/view/SurfaceHolder")
+Q_DECLARE_JNI_CLASS(Class, "java/lang/Class")
 Q_DECLARE_JNI_CLASS(QtSurfaceTest, "org/qtproject/qt/android/QtSurfaceTest")
 
 class tst_AndroidNativeSurfaces : public QObject
@@ -48,6 +53,10 @@ private slots:
     void surfaceRetainedUntilNativeTeardown();
     void surfaceFailureHandling_data();
     void surfaceFailureHandling();
+#if QT_CONFIG(egl)
+    void surfaceRedrawPreservesEglBinding_data();
+    void surfaceRedrawPreservesEglBinding();
+#endif
 #if QT_CONFIG(vulkan)
     void surfaceLifecycleRapidCycleNoCrash_vulkan();
 #endif
@@ -353,6 +362,102 @@ void tst_AndroidNativeSurfaces::surfaceFailureHandling()
     QVERIFY2(result->m_failure.isEmpty(), qPrintable(result->m_failure));
 }
 
+#if QT_CONFIG(egl)
+// Covers both an empty binding and distinct current read and draw surfaces.
+void tst_AndroidNativeSurfaces::surfaceRedrawPreservesEglBinding_data()
+{
+    QTest::addColumn<bool>("currentContext");
+    QTest::newRow("no-context") << false;
+    QTest::newRow("existing-context") << true;
+}
+
+// Checks that the redraw primer restores the Android UI thread EGL binding.
+void tst_AndroidNativeSurfaces::surfaceRedrawPreservesEglBinding()
+{
+    QFETCH(bool, currentContext);
+    if (QNativeInterface::QAndroidApplication::sdkVersion() < __ANDROID_API_Q__)
+        QSKIP("Independent SurfaceControl producers require Android 10");
+
+    QWindow window;
+    window.setSurfaceType(QSurface::OpenGLSurface);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    const QtJniTypes::QtWindow javaWindow(reinterpret_cast<jobject>(window.winId()));
+    auto type = QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
+            [javaWindow]() -> QVariant {
+        const auto child = javaWindow.callMethod<QtJniTypes::View>("getChildAt", jint(0));
+        return child.callMethod<QtJniTypes::Class>("getClass")
+                .callMethod<QtJniTypes::String>("getName").toString();
+    });
+    QVERIFY(QTest::qWaitFor([&] { return type.isFinished(); }, 5000));
+    if (!type.result().toString().endsWith("QtSurface"_L1))
+        QSKIP("TextureView does not use the SurfaceView EGL primer");
+    struct Result {
+        bool m_setup = false;
+        bool m_preserved = false;
+        bool m_cleanup = true;
+    };
+    auto result = std::make_shared<Result>();
+    auto future = QNativeInterface::QAndroidApplication::runOnAndroidMainThread([=] {
+        const auto child = javaWindow.callMethod<QtJniTypes::View>("getChildAt", jint(0));
+        const EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (display == EGL_NO_DISPLAY || !eglInitialize(display, nullptr, nullptr))
+            return;
+        const EGLDisplay previousDisplay = eglGetCurrentDisplay();
+        const EGLContext previousContext = eglGetCurrentContext();
+        const EGLSurface previousDraw = eglGetCurrentSurface(EGL_DRAW);
+        const EGLSurface previousRead = eglGetCurrentSurface(EGL_READ);
+        EGLContext context = EGL_NO_CONTEXT;
+        EGLSurface draw = EGL_NO_SURFACE;
+        EGLSurface read = EGL_NO_SURFACE;
+        const auto cleanup = qScopeGuard([&] {
+            const auto restoreDisplay = previousDisplay == EGL_NO_DISPLAY
+                    ? display : previousDisplay;
+            result->m_cleanup = eglMakeCurrent(restoreDisplay, previousDraw,
+                                               previousRead, previousContext);
+            if (read != EGL_NO_SURFACE)
+                result->m_cleanup = eglDestroySurface(display, read) && result->m_cleanup;
+            if (draw != EGL_NO_SURFACE)
+                result->m_cleanup = eglDestroySurface(display, draw) && result->m_cleanup;
+            if (context != EGL_NO_CONTEXT)
+                result->m_cleanup = eglDestroyContext(display, context) && result->m_cleanup;
+        });
+        if (currentContext) {
+            EGLConfig config;
+            EGLint count = 0;
+            const EGLint attributes[] = { EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+                                         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE };
+            if (!eglChooseConfig(display, attributes, &config, 1, &count) || count == 0)
+                return;
+            const EGLint contextAttributes[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+            const EGLint surfaceAttributes[] = { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE };
+            context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributes);
+            draw = eglCreatePbufferSurface(display, config, surfaceAttributes);
+            read = eglCreatePbufferSurface(display, config, surfaceAttributes);
+            if (context == EGL_NO_CONTEXT || draw == EGL_NO_SURFACE || read == EGL_NO_SURFACE
+                    || !eglMakeCurrent(display, draw, read, context)) {
+                return;
+            }
+        }
+        result->m_setup = true;
+        const EGLDisplay expectedDisplay = eglGetCurrentDisplay();
+        const EGLContext expectedContext = eglGetCurrentContext();
+        const EGLSurface expectedDraw = eglGetCurrentSurface(EGL_DRAW);
+        const EGLSurface expectedRead = eglGetCurrentSurface(EGL_READ);
+        const auto holder = child.callMethod<QtJniTypes::SurfaceHolder>("getHolder");
+        const QtJniTypes::Runnable finished(QJniObject("java/lang/Thread"));
+        child.callMethod<void>("surfaceRedrawNeededAsync", holder, finished);
+        result->m_preserved = eglGetCurrentDisplay() == expectedDisplay
+                && eglGetCurrentContext() == expectedContext
+                && eglGetCurrentSurface(EGL_DRAW) == expectedDraw
+                && eglGetCurrentSurface(EGL_READ) == expectedRead;
+    });
+    QVERIFY(QTest::qWaitFor([&] { return future.isFinished(); }, 5000));
+    QVERIFY2(result->m_setup, "Could not establish the UI thread EGL binding");
+    QVERIFY2(result->m_cleanup, "Could not release the test EGL resources");
+    QVERIFY2(result->m_preserved, "Surface redraw replaced the UI thread EGL binding");
+}
+#endif
 
 // Checks surface recreation with a worker that releases its EGL binding first.
 void tst_AndroidNativeSurfaces::surfaceLifecycleRapidCycleNoCrash()
