@@ -26,16 +26,24 @@ Q_DECLARE_JNI_CLASS(SurfaceTexture, "android/graphics/SurfaceTexture")
 Q_DECLARE_JNI_CLASS(Surface, "android/view/Surface")
 Q_DECLARE_JNI_CLASS(QtWindow, "org/qtproject/qt/android/QtWindow")
 Q_DECLARE_JNI_CLASS(Runnable, "java/lang/Runnable")
+Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 Q_DECLARE_JNI_CLASS(QtSurfaceTest, "org/qtproject/qt/android/QtSurfaceTest")
 
 class tst_AndroidNativeSurfaces : public QObject
 {
     Q_OBJECT
+public:
+    // The dispatcher caches this policy during application construction.
+    static void initMain()
+    {
+        qputenv("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED", "1");
+    }
 private:
-    void checkSurfaceRetirement(bool cancel);
+    void checkSurfaceRetirement(bool suspend, bool cancel);
 private slots:
     void renderThreadTickerStopProcessesEvents();
     void surfaceLifecycleRapidCycleNoCrash();
+    void surfaceRetainedUntilNativeTeardown_data();
     void surfaceRetainedUntilNativeTeardown();
     void surfaceFailureHandling_data();
     void surfaceFailureHandling();
@@ -200,13 +208,22 @@ void tst_AndroidNativeSurfaces::renderThreadTickerStopProcessesEvents()
     QVERIFY2(!timedOut.load(), "Stopping the ticker starved the GUI event needed by its worker");
 }
 
+// Exercises retirement with the event dispatcher running and stopping.
+void tst_AndroidNativeSurfaces::surfaceRetainedUntilNativeTeardown_data()
+{
+    QTest::addColumn<bool>("suspend");
+    QTest::newRow("running") << false;
+    QTest::newRow("stop-requested") << true;
+}
+
 // Checks that Android retains its producer until GUI teardown finishes.
 void tst_AndroidNativeSurfaces::surfaceRetainedUntilNativeTeardown()
 {
-    checkSurfaceRetirement(false);
+    QFETCH(bool, suspend);
+    checkSurfaceRetirement(suspend, false);
 }
 
-void tst_AndroidNativeSurfaces::checkSurfaceRetirement(bool cancel)
+void tst_AndroidNativeSurfaces::checkSurfaceRetirement(bool suspend, bool cancel)
 {
     if (QNativeInterface::QAndroidApplication::sdkVersion() < __ANDROID_API_Q__)
         QSKIP("Independent SurfaceControl producers require Android 10");
@@ -240,6 +257,15 @@ void tst_AndroidNativeSurfaces::checkSurfaceRetirement(bool cancel)
     auto result = std::make_shared<Result>();
     QCoreApplication::sendPostedEvents(qApp, QEvent::MetaCall);
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([=] {
+        const auto updateState = [](Qt::ApplicationState state) {
+            QtJniTypes::QtNative::callStaticMethod<void>("updateApplicationState", jint(state));
+        };
+        auto resume = qScopeGuard([&] {
+            if (suspend)
+                updateState(Qt::ApplicationActive);
+        });
+        if (suspend)
+            updateState(Qt::ApplicationSuspended);
         result->m_child = qtWindow.callMethod<QtJniTypes::View>("getChildAt", jint(0));
         qtWindow.callMethod<void>("removeView", result->m_child);
         result->m_valid = surface.callMethod<jboolean>("isValid");
@@ -392,7 +418,7 @@ void tst_AndroidNativeSurfaces::destroyWindowWhileBlockedOnAndroidThread()
 // Runs last because cancelling queued calls can discard unrelated GUI work.
 void tst_AndroidNativeSurfaces::surfaceRetirementCancellation()
 {
-    checkSurfaceRetirement(true);
+    checkSurfaceRetirement(false, true);
 }
 
 QTEST_MAIN(tst_AndroidNativeSurfaces)

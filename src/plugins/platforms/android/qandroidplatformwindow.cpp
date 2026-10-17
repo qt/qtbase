@@ -603,14 +603,7 @@ void QAndroidPlatformWindow::surfaceDestroyed(JNIEnv *env, jobject object, jint 
         finish();
         return;
     }
-    // A parked Qt thread cannot process queued teardown until resume.
-    if (QtAndroid::blockEventLoopsWhenSuspended()
-            && QAndroidEventDispatcherStopper::stopped()) {
-        if (auto *pw = findWindowById(windowId))
-            pw->releaseSurface();
-        finish();
-        return;
-    }
+    // Keep the producer alive until GUI-thread teardown, including after resume.
     QMetaObject::invokeMethod(qApp, [windowId, finish]() {
         if (auto *pw = findWindowById(windowId))
             pw->onSurfaceDestroyed();
