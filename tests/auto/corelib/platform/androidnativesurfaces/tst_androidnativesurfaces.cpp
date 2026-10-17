@@ -330,6 +330,7 @@ void tst_AndroidNativeSurfaces::checkSurfaceRetirement(bool suspend, bool cancel
 void tst_AndroidNativeSurfaces::surfaceFailureHandling_data()
 {
     QTest::addColumn<QByteArray>("method");
+    QTest::newRow("failed-primer") << QByteArray("failedPrimer");
     QTest::newRow("failed-detach") << QByteArray("failedDetach");
     QTest::newRow("failed-detach-and-callback") << QByteArray("failedDetachAndCallback");
     QTest::newRow("failed-removal") << QByteArray("failedRemoval");

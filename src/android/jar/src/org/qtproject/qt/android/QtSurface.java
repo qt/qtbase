@@ -48,11 +48,9 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
     public void surfaceCreated(SurfaceHolder holder)
     {
         // Prime before Qt gets the Surface so the two producers never collide.
-        // Without a frame size yet, priming waits for surfaceChanged().
         final Rect frame = holder.getSurfaceFrame();
-        m_backgroundPrimed = frame != null && frame.width() > 0 && frame.height() > 0;
-        if (m_backgroundPrimed)
-            paintBackgroundColor(holder.getSurface());
+        m_backgroundPrimed = frame != null && frame.width() > 0 && frame.height() > 0
+                && paintBackgroundColor(holder.getSurface());
         if (Build.VERSION.SDK_INT >= 29) {
             // The holder forcibly disconnects its queue when this view disappears.
             final SurfaceControl control = new SurfaceControl.Builder()
@@ -101,10 +99,9 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
                 transaction.setBufferSize(m_renderControl, width, height).apply();
             }
         }
-        if (!m_backgroundPrimed && width > 0 && height > 0) {
-            paintBackgroundColor(holder.getSurface());
-            m_backgroundPrimed = true;
-        }
+        // Only an independent holder can be primed after Qt has its producer.
+        if (!m_backgroundPrimed && m_renderSurface != null && width > 0 && height > 0)
+            m_backgroundPrimed = paintBackgroundColor(holder.getSurface());
     }
 
     @Override
@@ -164,18 +161,20 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
 
     // Fill one buffer with colorBackground to avoid a black flash. lockCanvas()
     // would leave a producer connected and break Qt's eglCreateWindowSurface().
-    private void paintBackgroundColor(Surface surface)
+    private boolean paintBackgroundColor(Surface surface)
     {
-        if (surface == null || !surface.isValid())
-            return;
+        if (surface == null || !surface.isValid()) {
+            Log.w(QtNative.QtTAG, "Cannot prime an invalid background Surface");
+            return false;
+        }
 
         final EGLDisplay display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
         if (display == EGL14.EGL_NO_DISPLAY)
-            return;
+            return backgroundEglFailure("get display");
 
         final int[] version = new int[2];
         if (!EGL14.eglInitialize(display, version, 0, version, 1))
-            return;
+            return backgroundEglFailure("initialize display");
 
         final EGLConfig[] configs = new EGLConfig[1];
         final int[] matching = new int[1];
@@ -190,22 +189,26 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
         };
 
         if (!EGL14.eglChooseConfig(display, configAttribs, 0, configs, 0, 1, matching, 0))
-            return;
+            return backgroundEglFailure("choose config");
 
-        if (matching[0] == 0)
-            return;
+        if (matching[0] == 0) {
+            Log.w(QtNative.QtTAG, "No EGL config for the background Surface");
+            return false;
+        }
 
         final int[] contextAttribs = { EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE };
         final EGLContext context = EGL14.eglCreateContext(display, configs[0],
                 EGL14.EGL_NO_CONTEXT, contextAttribs, 0);
         if (context == EGL14.EGL_NO_CONTEXT)
-            return;
+            return backgroundEglFailure("create context");
 
         final EGLSurface eglSurface = EGL14.eglCreateWindowSurface(display, configs[0],
                 surface, new int[] { EGL14.EGL_NONE }, 0);
         if (eglSurface == EGL14.EGL_NO_SURFACE) {
-            EGL14.eglDestroyContext(display, context);
-            return;
+            backgroundEglFailure("create window surface");
+            if (!EGL14.eglDestroyContext(display, context))
+                backgroundEglFailure("destroy context");
+            return false;
         }
 
         // Embedded hosts may already have an EGL context current on this thread.
@@ -219,7 +222,7 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
             if (!madeCurrent) {
                 Log.w(QtNative.QtTAG, "Cannot bind the background EGL context: 0x"
                         + Integer.toHexString(EGL14.eglGetError()));
-                return;
+                return false;
             }
             final int color = resolveBackgroundColor();
             GLES20.glClearColor(
@@ -231,7 +234,9 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
             if (!EGL14.eglSwapBuffers(display, eglSurface)) {
                 Log.w(QtNative.QtTAG, "Cannot post the background EGL buffer: 0x"
                         + Integer.toHexString(EGL14.eglGetError()));
+                return false;
             }
+            return true;
         } finally {
             if (madeCurrent) {
                 final EGLDisplay restoreDisplay = previousDisplay.equals(EGL14.EGL_NO_DISPLAY)
@@ -256,6 +261,13 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
                         + Integer.toHexString(EGL14.eglGetError()));
             }
         }
+    }
+
+    private static boolean backgroundEglFailure(String operation)
+    {
+        Log.w(QtNative.QtTAG, "Cannot " + operation + " for the background EGL buffer: 0x"
+                + Integer.toHexString(EGL14.eglGetError()));
+        return false;
     }
 
     private int resolveBackgroundColor()
