@@ -166,6 +166,20 @@ public final class QtSurfaceTest
         }
     }
 
+    public static String failedPrimer(Context context) throws ReflectiveOperationException
+    {
+        QtSurface view = new QtSurface(context, null, false, 32);
+        SurfaceHolder holder = view.getHolder();
+        Surface invalid = holder.getSurface();
+        invalid.release();
+        if (invalid.isValid())
+            return "The released primer fixture Surface is still valid";
+        field(QtSurface.class, "m_renderSurface").set(view, invalid);
+        view.surfaceChanged(holder, PixelFormat.RGBA_8888, 64, 64);
+        return field(QtSurface.class, "m_backgroundPrimed").getBoolean(view)
+                ? "A failed buffer submission was marked primed" : "";
+    }
+
     public static String failedDetach(Context context) throws ReflectiveOperationException
     {
         return failedDetach(context, false);
