@@ -2961,14 +2961,14 @@ void tst_QDateTimeEdit::calendarPopup()
     {
         QDateEdit edit;
         QVERIFY(!edit.calendarWidget());
-        QCalendarWidget *cw = new QCalendarWidget;
+        std::unique_ptr<QCalendarWidget> cw = std::make_unique<QCalendarWidget>();
         QTest::ignoreMessage(QtWarningMsg,
                              "QDateTimeEdit::setCalendarWidget: calendarPopup is set to false");
-        edit.setCalendarWidget(cw);
+        edit.setCalendarWidget(cw.get());
         QVERIFY(!edit.calendarWidget());
         edit.setCalendarPopup(true);
-        edit.setCalendarWidget(cw);
-        QCOMPARE(edit.calendarWidget(), cw);
+        edit.setCalendarWidget(cw.get());
+        QCOMPARE(edit.calendarWidget(), cw.get());
         edit.setDateRange(QDate(1980, 1, 5), QDate(1980, 2, 11));
         QCOMPARE(cw->minimumDate(), edit.minimumDate());
         QCOMPARE(cw->maximumDate(), edit.maximumDate());
@@ -2978,50 +2978,42 @@ void tst_QDateTimeEdit::calendarPopup()
         QCOMPARE(edit.date(), cw->selectedDate());
     }
 
-    testWidget->setDisplayFormat("dd/MM/yyyy");
-    testWidget->setDateTime(QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
-    testWidget->show();
-    testWidget->setCalendarPopup(true);
-    QCOMPARE(testWidget->calendarPopup(), true);
-    QStyle *style = testWidget->style();
-    QStyleOptionComboBox opt;
-    opt.initFrom(testWidget);
-    opt.editable = true;
-    opt.subControls = QStyle::SC_ComboBoxArrow;
-    QRect rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, testWidget);
-    QTest::mouseClick(testWidget, Qt::LeftButton, {},
-                      QPoint(rect.left() + rect.width() / 2, rect.top() + rect.height() / 2));
-    QWidget *wid = testWidget->findChild<QWidget *>("qt_datetimedit_calendar");
-    QVERIFY(wid != 0);
-    testWidget->hide();
+    {
+        QTimeEdit timeEdit;
+        timeEdit.setCalendarPopup(true);
+        timeEdit.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&timeEdit));
+        QStyleOptionComboBox opt;
+        opt.initFrom(&timeEdit);
+        opt.subControls = QStyle::SC_ComboBoxArrow;
+        const auto rect = timeEdit.style()->subControlRect(QStyle::CC_ComboBox, &opt,
+                                                           QStyle::SC_ComboBoxArrow, &timeEdit);
+        QTest::mouseClick(&timeEdit, Qt::LeftButton, { },
+                          QPoint(rect.left() + rect.width() / 2, rect.top() + rect.height() / 2));
+        QWidget *wid2 = timeEdit.findChild<QWidget *>("qt_datetimedit_calendar");
+        QVERIFY(!wid2);
+    }
+    for (bool bReadOnly : { false, true }) {
+        QDateEdit dateEdit;
+        dateEdit.setCalendarPopup(true);
+        dateEdit.setReadOnly(bReadOnly);
+        dateEdit.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dateEdit));
 
-    QTimeEdit timeEdit;
-    timeEdit.setCalendarPopup(true);
-    timeEdit.show();
-
-    opt.initFrom(&timeEdit);
-    opt.subControls = QStyle::SC_ComboBoxArrow;
-    rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &timeEdit);
-    QTest::mouseClick(&timeEdit, Qt::LeftButton, {},
-                      QPoint(rect.left() + rect.width() / 2, rect.top() + rect.height() / 2));
-    QWidget *wid2 = timeEdit.findChild<QWidget *>("qt_datetimedit_calendar");
-    QVERIFY(!wid2);
-    timeEdit.hide();
-
-
-    QDateEdit dateEdit;
-    dateEdit.setCalendarPopup(true);
-    dateEdit.setReadOnly(true);
-    dateEdit.show();
-
-    opt.initFrom(&dateEdit);
-    opt.subControls = QStyle::SC_ComboBoxArrow;
-    rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &dateEdit);
-    QTest::mouseClick(&dateEdit, Qt::LeftButton, {},
-                      QPoint(rect.left() + rect.width() / 2, rect.top() + rect.height() / 2));
-    QWidget *wid3 = dateEdit.findChild<QWidget *>("qt_datetimedit_calendar");
-    QVERIFY(!wid3);
-    dateEdit.hide();
+        QStyleOptionComboBox opt;
+        opt.editable = !bReadOnly;
+        opt.initFrom(&dateEdit);
+        opt.subControls = QStyle::SC_ComboBoxArrow;
+        const auto rect = dateEdit.style()->subControlRect(QStyle::CC_ComboBox, &opt,
+                                                           QStyle::SC_ComboBoxArrow, &dateEdit);
+        QTest::mouseClick(&dateEdit, Qt::LeftButton, { }, rect.center());
+        QWidget *wid3 = dateEdit.findChild<QWidget *>("qt_datetimedit_calendar");
+        if (bReadOnly)
+            QVERIFY(wid3 == nullptr);
+        else
+            QVERIFY(wid3 != nullptr);
+        const QDateTime dt = dateEdit.dateTime();
+    }
 }
 
 class RestoreLayoutDirectioner
