@@ -28,7 +28,7 @@ class Q_WIDGETS_EXPORT QTipLabel final : public QLabel
 {
     Q_OBJECT
 public:
-    explicit QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int msecDisplayTime);
+    explicit QTipLabel(const QString &text, QPoint pos, QWidget *w, std::chrono::milliseconds displayTime);
     ~QTipLabel() override;
 
     void adjustTooltipScreen(const QPoint &pos);
@@ -36,11 +36,11 @@ public:
 
     bool eventFilter(QObject *, QEvent *) override;
 
-    void reuseTip(const QString &text, int msecDisplayTime, const QPoint &pos);
+    void reuseTip(const QString &text, std::chrono::milliseconds displayTime, QPoint pos);
     void hideTip();
     void hideTipImmediately();
     void setTipRect(QWidget *w, const QRect &r);
-    void restartExpireTimer(int msecDisplayTime);
+    void restartExpireTimer(std::chrono::milliseconds displayTime);
     bool tipChanged(const QPoint &pos, const QString &text, QObject *o);
     void placeTip(const QPoint &pos, QWidget *w);
 

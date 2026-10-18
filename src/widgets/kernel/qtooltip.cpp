@@ -25,6 +25,8 @@
 #include <qtooltip.h>
 #include <QtWidgets/private/qtooltip_p.h>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -90,7 +92,8 @@ using namespace Qt::StringLiterals;
 
 QTipLabel *QTipLabel::instance = nullptr;
 
-QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int msecDisplayTime)
+QTipLabel::QTipLabel(const QString &text, QPoint pos, QWidget *w,
+                     std::chrono::milliseconds displayTime)
     : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget)
 #if QT_CONFIG(style_stylesheet)
     , styleSheetParent(nullptr)
@@ -111,21 +114,25 @@ QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int mse
     qApp->installEventFilter(this);
     setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, nullptr, this) / 255.0);
     setMouseTracking(true);
-    reuseTip(text, msecDisplayTime, pos);
+    reuseTip(text, displayTime, pos);
 }
 
-void QTipLabel::restartExpireTimer(int msecDisplayTime)
+void QTipLabel::restartExpireTimer(std::chrono::milliseconds displayTime)
 {
     Q_D(const QLabel);
-    const qsizetype textLength = d->needTextControl() ? d->control->toPlainText().size() : text().size();
-    qsizetype time = 10000 + 40 * qMax(0, textLength - 100);
-    if (msecDisplayTime > 0)
-        time = msecDisplayTime;
+    std::chrono::milliseconds time;
+    if (displayTime > 0ms) {
+        time = displayTime;
+    } else {
+        const qsizetype textLength =
+                d->needTextControl() ? d->control->toPlainText().size() : text().size();
+        time = std::chrono::milliseconds(10000 + 40 * qMax(0, textLength - 100));
+    }
     expireTimer.start(time, this);
     hideTimer.stop();
 }
 
-void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint &pos)
+void QTipLabel::reuseTip(const QString &text, std::chrono::milliseconds displayTime, QPoint pos)
 {
 #if QT_CONFIG(style_stylesheet)
     if (styleSheetParent){
@@ -138,7 +145,7 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint 
     setWordWrap(Qt::mightBeRichText(text));
     setText(text);
     updateSize(pos);
-    restartExpireTimer(msecDisplayTime);
+    restartExpireTimer(displayTime);
 }
 
 void  QTipLabel::updateSize(const QPoint &pos)
@@ -417,6 +424,37 @@ void QTipLabel::styleSheetParentDestroyed()
 
 void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect, int msecDisplayTime)
 {
+    showText(pos, text, w, rect, std::chrono::milliseconds(msecDisplayTime));
+}
+
+/*!
+    \overload
+    Shows \a text as a tool tip, with the global position \a pos as
+    the point of interest. The tool tip will be shown with a platform
+    specific offset from this point of interest.
+
+    If you specify a non-empty rect the tip will be hidden as soon
+    as you move your cursor out of this area.
+
+    The \a rect is in the coordinates of the widget you specify with
+    \a w. If the \a rect is not empty you must specify a widget.
+    Otherwise this argument can be \nullptr but it is used to
+    determine the appropriate screen on multi-head systems.
+
+    The \a displayTime parameter specifies for how long the tool tip
+    will be displayed in milliseconds. With the default value of -1, the
+    time is based on the length of the text.
+
+    If \a text is empty the tool tip is hidden. If the text is the
+    same as the currently shown tooltip, the tip will \e not move.
+    You can force moving by first hiding the tip with an empty text,
+    and then showing the new tip at the new position.
+
+    \since 6.13
+ */
+void QToolTip::showText(QPoint pos, const QString &text, QWidget *w, const QRect &rect,
+                        std::chrono::milliseconds displayTime)
+{
     if (QTipLabel::instance && QTipLabel::instance->isVisible()) { // a tip does already exist
         if (text.isEmpty()){ // empty text means hide current tip
             QTipLabel::instance->hideTip();
@@ -428,7 +466,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
             if (w)
                 localPos = w->mapFromGlobal(pos);
             if (QTipLabel::instance->tipChanged(localPos, text, w)){
-                QTipLabel::instance->reuseTip(text, msecDisplayTime, pos);
+                QTipLabel::instance->reuseTip(text, displayTime, pos);
                 QTipLabel::instance->setTipRect(w, rect);
                 QTipLabel::instance->placeTip(pos, w);
             }
@@ -447,7 +485,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
             return w;
 #endif
         }();
-        new QTipLabel(text, pos, tipLabelParent, msecDisplayTime); // sets QTipLabel::instance to itself
+        new QTipLabel(text, pos, tipLabelParent, displayTime); // sets QTipLabel::instance to itself
         QWidgetPrivate::get(QTipLabel::instance)->setScreen(QTipLabel::getTipScreen(pos, w));
         QTipLabel::instance->setTipRect(w, rect);
         QTipLabel::instance->placeTip(pos, w);

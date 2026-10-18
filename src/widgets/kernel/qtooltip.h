@@ -8,6 +8,8 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+#include <chrono>
+
 QT_REQUIRE_CONFIG(tooltip);
 QT_BEGIN_NAMESPACE
 
@@ -15,8 +17,11 @@ class Q_WIDGETS_EXPORT QToolTip
 {
     QToolTip() = delete;
 public:
-    static void showText(const QPoint &pos, const QString &text,
-                         QWidget *w = nullptr, const QRect &rect = {}, int msecShowTime = -1);
+    static void showText(const QPoint &pos, const QString &text, QWidget *w,
+                         const QRect &rect, int msecDisplayTime);
+    static void showText(QPoint pos, const QString &text, QWidget *w = nullptr,
+                         const QRect &rect = {},
+                         std::chrono::milliseconds displayTime = std::chrono::milliseconds(-1));
     static inline void hideText() { showText(QPoint(), QString()); }
 
     static bool isVisible();
