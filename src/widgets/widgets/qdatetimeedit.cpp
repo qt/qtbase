@@ -820,9 +820,10 @@ QCalendarWidget *QDateTimeEdit::calendarWidget() const
   \since 4.4
 
   Sets the given \a calendarWidget as the widget to be used for the calendar
-  pop-up. The editor does not automatically take ownership of the calendar widget.
+  pop-up. On success, takes ownership of the calendar widget.
 
-  \note calendarPopup must be set to true before setting the calendar widget.
+  \note calendarPopup must be set to true and a date must be shown
+        before setting the calendar widget.
   \sa calendarPopup
 */
 void QDateTimeEdit::setCalendarWidget(QCalendarWidget *calendarWidget)
