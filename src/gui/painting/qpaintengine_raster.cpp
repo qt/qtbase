@@ -1715,7 +1715,10 @@ void QRasterPaintEngine::fillRect(const QRectF &r, QSpanData *data)
             fillRect_normalized(rr, data, d);
             return;
         } else if (txop == QTransform::TxScale) {
-            const QRect rr = toNormalizedFillRect(s->matrix.mapRect(r));
+            // Map the corners rather than position and size separately, so
+            // that rects sharing an edge round that edge to the same pixel.
+            const QRect rr = toNormalizedFillRect(QRectF(s->matrix.map(r.topLeft()),
+                                                         s->matrix.map(r.bottomRight())));
             fillRect_normalized(rr, data, d);
             return;
         }

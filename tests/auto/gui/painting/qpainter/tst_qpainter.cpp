@@ -86,6 +86,8 @@ private slots:
     void fillRect3();
     void fillRect4_data() { fillRect2_data(); }
     void fillRect4();
+    void fillRect5_data() { fillRect2_data(); }
+    void fillRect5();
     void fillRectNonPremul_data();
     void fillRectNonPremul();
 
@@ -1159,6 +1161,29 @@ void tst_QPainter::fillRect4()
 
     for (int i = 0; i < 33; ++i)
         p.fillRect(QRectF(3 * i, 0, 3, 1), Qt::white);
+
+    p.end();
+
+    QCOMPARE(image, expected);
+}
+
+void tst_QPainter::fillRect5()
+{
+    QFETCH(QImage::Format, format);
+
+    QImage image(30, 1, format);
+    image.fill(0x0);
+
+    QImage expected = image;
+    expected.fill(0xffffffff);
+
+    QPainter p(&image);
+    p.scale(1.5, 1);
+    p.setPen(Qt::NoPen);
+
+    // The shared edge maps to 25.5, but 0.1 * 1.5 + 16.9 * 1.5 is slightly less
+    p.fillRect(QRectF(0.1, 0, 16.9, 1), Qt::white);
+    p.fillRect(QRectF(17, 0, 3, 1), Qt::white);
 
     p.end();
 
