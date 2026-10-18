@@ -150,6 +150,7 @@ void tst_QNetworkInterface::consistencyCheck()
             QVERIFY(entry.ip().protocol() != QAbstractSocket::UnknownNetworkLayerProtocol);
             if (!entry.preferredLifetime().isForever() || !entry.validityLifetime().isForever())
                 QVERIFY(entry.isLifetimeKnown());
+            QCOMPARE_LE(entry.preferredLifetime(), entry.validityLifetime());
             if (!entry.validityLifetime().isForever())
                 QVERIFY(entry.isTemporary());
         }
