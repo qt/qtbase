@@ -12,14 +12,13 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qdeadlinetimer.h>
+#include <QtCore/qthread.h>
 #include <private/qwidget_p.h>
 
-#ifdef Q_OS_WIN
-#  include <QtCore/qt_windows.h>
-#else
-#  include <time.h>
-#endif
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
 
@@ -202,27 +201,19 @@ void QSplashScreen::clearMessage()
     repaint();
 }
 
-static bool waitForWidgetMapped(QWidget *widget, int timeout = 1000)
+static bool waitForWidgetMapped(QWidget *widget)
 {
-    enum { TimeOutMs = 10 };
     auto isMapped = [widget](){
         return widget->windowHandle() && widget->windowHandle()->isVisible();
     };
 
-    QElapsedTimer timer;
-    timer.start();
+    QDeadlineTimer timer(1s);
     while (!isMapped()) {
-        const int remaining = timeout - int(timer.elapsed());
-        if (remaining <= 0)
+        if (timer.hasExpired())
             break;
-        QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+        QCoreApplication::processEvents(QEventLoop::AllEvents, timer);
         QCoreApplication::sendPostedEvents();
-#if defined(Q_OS_WIN)
-        Sleep(uint(TimeOutMs));
-#else
-        struct timespec ts = { TimeOutMs / 1000, (TimeOutMs % 1000) * 1000 * 1000 };
-        nanosleep(&ts, nullptr);
-#endif
+        QThread::sleep(10ms);
     }
     return isMapped();
 }
