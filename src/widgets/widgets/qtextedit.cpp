@@ -1141,7 +1141,7 @@ void QTextEdit::timerEvent(QTimerEvent *e)
         if (delta >= 0) {
             if (delta < 7)
                 delta = 7;
-            int timeout = 4900 / (delta * delta);
+            const auto timeout = std::chrono::milliseconds(4900 / (delta * delta));
             d->autoScrollTimer.start(timeout, this);
 
             if (deltaY > 0)
