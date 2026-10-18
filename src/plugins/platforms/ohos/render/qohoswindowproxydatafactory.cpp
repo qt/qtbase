@@ -364,6 +364,13 @@ void makeWindowProxyDataForSubWindowInJsThread(
 
     const auto windowName = makeOhosUniqueSystemWindowName(createInfo.windowId);
 
+    auto context = QtOhos::moveToSharedPtr(Context {
+        .disableWindowFocusableBeforeLoadContentHack = createInfo.disableWindowFocusableBeforeLoadContentHack,
+        .xComponentId = xComponentId,
+        .qAbilityPeer = qAbilityPeer,
+        .owningQWindowRef = createInfo.window,
+    });
+
     // Prefer createSubWindowWithOptions() when the capability is present, but fall back to the
     // @crossplatform createSubWindow() when it is absent or fails (its dropped options are
     // applied separately after creation anyway) rather than aborting the application.
@@ -389,32 +396,25 @@ void makeWindowProxyDataForSubWindowInJsThread(
             });
     }();
 
-    auto context = Context {
-        .disableWindowFocusableBeforeLoadContentHack = createInfo.disableWindowFocusableBeforeLoadContentHack,
-        .xComponentId = xComponentId,
-        .qAbilityPeer = qAbilityPeer,
-        .owningQWindowRef = createInfo.window,
-    };
-
     subWindowCreationPromise
-        .onThen([resultConsumer = std::move(resultConsumer), context = std::move(context)](const QtOhos::CallbackInfo &cbInfo) mutable {
+        .onThen([resultConsumer = std::move(resultConsumer), context](const QtOhos::CallbackInfo &cbInfo) mutable {
             auto windowObject = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
             auto localStorage = makeLocalStorageForWindow(
                 cbInfo.jsState(),
                 LocalStorageForWindowCreateInfo {
-                    .xComponentId = context.xComponentId,
+                    .xComponentId = context->xComponentId,
                     .windowObject = windowObject,
                     .resultConsumer = std::move(resultConsumer),
-                    .qAbilityPeer = context.qAbilityPeer,
+                    .qAbilityPeer = context->qAbilityPeer,
                     .windowProxyType = WindowProxyType::SubWindow,
-                    .owningQWindowRef = context.owningQWindowRef,
+                    .owningQWindowRef = context->owningQWindowRef,
                 });
 
             return onWindowCreatedLoadWindowContents(
                 cbInfo.jsState(), windowObject,
                 OnWindowCreatedLoadWindowContentsContext {
-                    .disableWindowFocusableBeforeLoadContentHack = context.disableWindowFocusableBeforeLoadContentHack,
+                    .disableWindowFocusableBeforeLoadContentHack = context->disableWindowFocusableBeforeLoadContentHack,
                     .contentPagePath = "pages/SubWindowNativeNode",
                     .localStorage = localStorage,
                 });
