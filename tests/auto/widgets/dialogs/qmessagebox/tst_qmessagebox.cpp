@@ -56,6 +56,7 @@ private slots:
     void shortcut();
 #endif
 
+    void staticSourceCompat_data();
     void staticSourceCompat();
     void instanceSourceCompat();
 
@@ -520,8 +521,18 @@ void tst_QMessageBox::about()
 #endif
 }
 
+void tst_QMessageBox::staticSourceCompat_data()
+{
+    QTest::addColumn<bool>("withParent");
+
+    QTest::addRow("with parent") << true;
+    QTest::addRow("without parent") << false;
+}
+
 void tst_QMessageBox::staticSourceCompat()
 {
+    QFETCH(const bool, withParent);
+
     int ret;
 
     // source compat tests for < 4.2
@@ -533,6 +544,13 @@ QT_WARNING_DISABLE_DEPRECATED
     if (!QTest::qCompare(pressed, expected, #real, #exp, __FILE__, __LINE__)) \
         return; } while (false)
 
+    QAutoPointer<QDialog> parent;
+    auto maybeParent = [&] {
+        if (withParent && !parent)
+            parent = QAutoPointer(new QDialog);
+        return parent.get();
+    };
+
     ExecCloseHelper closeHelper;
 
     constexpr int escapeLike[] = {
@@ -541,25 +559,25 @@ QT_WARNING_DISABLE_DEPRECATED
     };
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No);
+    ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes, QMessageBox::No);
     COMPARE(ret, QMessageBox::No);
     QVERIFY(closeHelper.done());
 
     for (int keyToSend : escapeLike) {
         closeHelper.start(keyToSend);
-        ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No);
+        ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes, QMessageBox::No);
         COMPARE(ret, QMessageBox::No);
         QVERIFY(closeHelper.done());
     }
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No);
+    ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No);
     COMPARE(ret, int(QMessageBox::Yes));
     QVERIFY(closeHelper.done());
 
     for (int keyToSend : escapeLike) {
         closeHelper.start(keyToSend);
-        ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No);
+        ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No);
         COMPARE(ret, int(QMessageBox::No));
         QVERIFY(closeHelper.done());
     }
@@ -568,39 +586,39 @@ QT_WARNING_DISABLE_DEPRECATED
     // The overloads below are valid only before 6.2
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
+    ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
     COMPARE(ret, int(QMessageBox::No));
     QVERIFY(closeHelper.done());
 
     for (int keyToSend : escapeLike) {
         closeHelper.start(keyToSend);
-        ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
+        ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
         COMPARE(ret, int(QMessageBox::No));
         QVERIFY(closeHelper.done());
     }
 
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape);
+    ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape);
     COMPARE(ret, int(QMessageBox::Yes));
     QVERIFY(closeHelper.done());
 
     for (int keyToSend : escapeLike) {
         closeHelper.start(keyToSend);
-        ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape);
+        ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape);
         COMPARE(ret, int(QMessageBox::No));
         QVERIFY(closeHelper.done());
     }
 
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Escape, QMessageBox::No | QMessageBox::Default);
+    ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes | QMessageBox::Escape, QMessageBox::No | QMessageBox::Default);
     COMPARE(ret, int(QMessageBox::No));
     QVERIFY(closeHelper.done());
 
     for (int keyToSend : escapeLike) {
         closeHelper.start(keyToSend);
-        ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Escape, QMessageBox::No | QMessageBox::Default);
+        ret = QMessageBox::information(maybeParent(), "title", "text", QMessageBox::Yes | QMessageBox::Escape, QMessageBox::No | QMessageBox::Default);
         COMPARE(ret, int(QMessageBox::Yes));
         QVERIFY(closeHelper.done());
     }
@@ -608,13 +626,13 @@ QT_WARNING_DISABLE_DEPRECATED
 
     // the button text versions
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
+    ret = QMessageBox::information(maybeParent(), "title", "text", "Yes", "No", QString(), 1);
     QCOMPARE(ret, 1);
     QVERIFY(closeHelper.done());
 
     for (int keyToSend : escapeLike) {
         closeHelper.start(keyToSend);
-        ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 0, 1);
+        ret = QMessageBox::information(maybeParent(), "title", "text", "Yes", "No", QString(), 0, 1);
         QCOMPARE(ret, 1);
         QVERIFY(closeHelper.done());
     }
