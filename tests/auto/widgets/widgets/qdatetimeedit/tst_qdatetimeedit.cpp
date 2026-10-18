@@ -3008,6 +3008,12 @@ void tst_QDateTimeEdit::calendarPopup()
         else
             QVERIFY(wid3 != nullptr);
         const QDateTime dt = dateEdit.dateTime();
+        // don't trigger any spinbox events in popup mode.
+        // happens only in some styles when there is a small
+        // gap between the QLineEdit and the combobox dropdown
+        QTest::mouseClick(&dateEdit, Qt::LeftButton, { },
+                          rect.topLeft() + QPoint(-1, rect.height() / 2));
+        QCOMPARE(dateEdit.dateTime(), dt);
     }
 }
 
