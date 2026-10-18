@@ -1454,9 +1454,8 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
         d->positionCalendarPopup();
         //Show the calendar
         d->monthCalendar->show();
-    } else {
-        QAbstractSpinBox::mousePressEvent(event);
     }
+    // we mimic a QComboBox, so don't call spinbox base class impl here
 }
 
 /*!
