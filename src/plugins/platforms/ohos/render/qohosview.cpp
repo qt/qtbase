@@ -1221,6 +1221,16 @@ QOhosSurface *QOhosView::surfaceOrNull() const
     return m_nativeNode->surfaceOrNull();
 }
 
+QHarmonyJsObjectRef QOhosView::abilityObjectRef() const
+{
+    return m_ohosWindowProxy ? m_ohosWindowProxy->abilityObjectRef() : QHarmonyJsObjectRef();
+}
+
+QHarmonyJsObjectRef QOhosView::jsWindowObjectRef() const
+{
+    return m_ohosWindowProxy ? m_ohosWindowProxy->jsWindowObjectRef() : QHarmonyJsObjectRef();
+}
+
 WId QOhosView::viewWindowId() const
 {
     return m_nativeNode->windowId();

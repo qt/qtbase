@@ -8,6 +8,7 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qharmonyjsobjectref.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qpointer.h>
@@ -213,6 +214,8 @@ public:
     AvoidArea getWindowAvoidArea(AvoidAreaType type) const;
     std::shared_ptr<QXComponentNode> nodeXComponent() const;
     std::string qAbilityInstanceId() const;
+    QHarmonyJsObjectRef abilityObjectRef() const;
+    QHarmonyJsObjectRef jsWindowObjectRef() const;
 
     static std::vector<QArkUi::JsWindowId> queryWindowIdsByCoordinate(
         QOhosDisplayInfo::JsDisplayId displayId, const QPoint &queryLocation,
@@ -296,6 +299,8 @@ private:
         WindowProxyType windowProxyType;
         std::shared_ptr<QXComponentNode> nodeXComponent;
         std::string qAbilityInstanceId;
+        QHarmonyJsObjectRef abilityObjectRef;
+        QHarmonyJsObjectRef jsWindowObjectRef;
         std::shared_ptr<void> jsWindowRegistrationHandle;
     };
 
@@ -313,6 +318,8 @@ private:
     WindowProxyType m_windowProxyType;
     std::shared_ptr<QXComponentNode> m_nodeXComponent;
     std::string m_qAbilityInstanceId;
+    QHarmonyJsObjectRef m_abilityObjectRef;
+    QHarmonyJsObjectRef m_jsWindowObjectRef;
     std::shared_ptr<void> m_jsWindowRegistrationHandle;
     std::shared_ptr<void> m_subWindowCloseRegistrationHandle;
     std::shared_ptr<void> m_qtWindowCallbacksReceiverHandle;
