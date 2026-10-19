@@ -245,6 +245,7 @@ private slots:
     void resizeEvent();
     void resizeBeforeShow_data();
     void resizeBeforeShow();
+    void exposeWithOutdatedBackingStore();
     void task110173();
 
     void testDeletionInEventHandlers();
@@ -11401,6 +11402,28 @@ QWidgetRepaintManager* repaintManager([[maybe_unused]] QWidget &widget)
         repaintManager = topExtra->repaintManager.get();
 #endif
     return repaintManager;
+}
+
+void tst_QWidget::exposeWithOutdatedBackingStore()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Requires access to the repaint manager");
+#else
+    QWidget widget;
+    widget.resize(240, 160);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    auto *manager = repaintManager(widget);
+    QVERIFY(manager);
+    QTRY_VERIFY(!manager->isDirty());
+    QCOMPARE(widget.backingStore()->size(), QSize(240, 160));
+
+    // An unexposed resize can leave valid buffers for the previous size.
+    widget.backingStore()->resize(QSize(160, 240));
+    QVERIFY(!manager->isDirty());
+    manager->sync(&widget, widget.rect());
+    QCOMPARE(widget.backingStore()->size(), QSize(240, 160));
+#endif
 }
 
 // Tables of 5000 elements do not make sense on Windows Mobile.
