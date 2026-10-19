@@ -76,7 +76,6 @@ private:
         mutable QMutex mutex;
         mutable QList<QtPluginInstanceFunction> usedStaticInstances;
 #if QT_CONFIG(library)
-        std::optional<QDuplicateTracker<QString>> loadedPaths{std::in_place};
         std::vector<QLibraryPrivate::UniquePtr> libraries;
         mutable QList<bool> loadedLibraries;
         std::map<QString, QLibraryPrivate*> keyMap;
