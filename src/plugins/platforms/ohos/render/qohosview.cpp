@@ -1009,6 +1009,15 @@ void QOhosView::showImmediate()
         showWindow();
     }
 
+    // A sub window ignores maximize requests until it is shown.
+    if (viewType() == ViewType::SubWindow && m_ohosWindowProxy != nullptr) {
+        const auto windowStates = m_ownerWindow->windowStates();
+        if (windowStates.testFlag(Qt::WindowState::WindowFullScreen))
+            setFullScreen();
+        else if (windowStates.testFlag(Qt::WindowState::WindowMaximized))
+            maximize();
+    }
+
     auto *surface = surfaceOrNull();
     if (surface != nullptr)
         surface->clearNativeWindowSurface();
@@ -1042,10 +1051,15 @@ void QOhosView::setFullScreen()
     if (windowProxy == nullptr)
         return;
 
-    if (!QOhosDeviceInfo::isPhone())
-        windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE);
-    else
+    if (QOhosDeviceInfo::isPhone()) {
         applyPhoneWindowChrome();
+        return;
+    }
+
+    if (!isMaximizeRequestSupportedOrLogWarning())
+        return;
+
+    windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE);
 }
 
 void QOhosView::recover()
@@ -1091,8 +1105,13 @@ void QOhosView::requestActivate()
 void QOhosView::maximize()
 {
     auto *windowProxy = flushedWindowProxyOrNull();
-    if (windowProxy != nullptr)
-        windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE);
+    if (windowProxy == nullptr)
+        return;
+
+    if (!isMaximizeRequestSupportedOrLogWarning())
+        return;
+
+    windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE);
 }
 
 std::unique_ptr<QOhosView> QOhosView::createForWindow(QOhosPlatformWindow *window, QOhosPropertiesProvider windowPropertiesProvider)
@@ -1765,6 +1784,16 @@ bool QOhosView::consumePendingSelfMinimizeEcho()
 
     --m_pendingSelfMinimizeEchoes;
     return true;
+}
+
+bool QOhosView::isMaximizeRequestSupportedOrLogWarning() const
+{
+    if (viewType() != ViewType::SubWindow)
+        return true;
+
+    qCWarning(QtForOhos) << Q_FUNC_INFO << m_ownerWindow
+        << "maximize request ignored: sub windows cannot be maximized";
+    return false;
 }
 
 QT_END_NAMESPACE

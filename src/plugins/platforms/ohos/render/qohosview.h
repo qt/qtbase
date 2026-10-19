@@ -280,6 +280,8 @@ private:
 
     bool isWindowTransparencyRequested() const;
 
+    bool isMaximizeRequestSupportedOrLogWarning() const;
+
     QOhosPropertiesProvider m_windowPropertiesProvider;
     QPointer<QWindow> m_ownerWindow;
     std::shared_ptr<QOhosWindowProxy> m_ohosWindowProxy;
