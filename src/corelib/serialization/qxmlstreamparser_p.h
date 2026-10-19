@@ -111,9 +111,8 @@ bool QXmlStreamReaderPrivate::parse()
             return false;
         }
         Q_FALLTHROUGH();
-    default:
+    case QXmlStreamReader::EndDocument:
         clearTextBuffer();
-        ;
     }
 
     setType(QXmlStreamReader::NoToken);
