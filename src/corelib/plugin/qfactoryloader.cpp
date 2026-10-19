@@ -257,10 +257,6 @@ Q_GLOBAL_STATIC(QFactoryLoaderGlobals, qt_factoryloader_global)
 
 inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
 {
-    // If we've already loaded, skip it...
-    if (loadedPaths->hasSeen(path))
-        return;
-
     qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
 
     QDirListing plugins(path,
@@ -363,8 +359,11 @@ void QFactoryLoader::setLoadHints(QLibrary::LoadHints loadHints)
 void QFactoryLoader::update()
 {
 #ifdef QT_SHARED
-    if (!d->extraSearchPath.isEmpty())
+    QDuplicateTracker<QString, 4> loadedPaths;
+    if (!d->extraSearchPath.isEmpty()) {
+        std::ignore = loadedPaths.hasSeen(d->extraSearchPath);
         d->updateSinglePath(d->extraSearchPath);
+    }
 
     const QStringList paths = QCoreApplication::libraryPaths();
     for (const QString &pluginDir : paths) {
@@ -373,7 +372,8 @@ void QFactoryLoader::update()
 #else
         QString path = pluginDir + d->suffix;
 #endif
-        d->updateSinglePath(path);
+        if (!loadedPaths.hasSeen(path))
+            d->updateSinglePath(path);
     }
 #else
     qCDebug(lcFactoryLoader) << "ignoring" << d->iid
@@ -470,7 +470,6 @@ void QFactoryLoader::setExtraSearchPath(const QString &path)
             }
         }
         d->loadedLibraries.fill(false);
-        d->loadedPaths.emplace(); // hard-reset QDuplicateTracker
         d->libraries.clear();
         d->keyMap.clear();
         update();
