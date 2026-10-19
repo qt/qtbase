@@ -177,6 +177,7 @@
   \page pdf-licensing.html
   \title Notes about PDF Licensing
   \ingroup licensing
+  \meta {toc} {nonessential}
   \brief Details of restrictions on the use of PDF-related trademarks.
 
   Please note that Adobe\reg places restrictions on the use of its trademarks
@@ -189,4 +190,5 @@
   \title Printer and Printing APIs
   \brief Classes for producing printed output.
   \ingroup groups
+  \meta {toc} {nonessential}
 */
