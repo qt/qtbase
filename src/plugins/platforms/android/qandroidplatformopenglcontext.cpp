@@ -29,8 +29,7 @@ EGLSurface QAndroidPlatformOpenGLContext::ensureFallbackPbuffer()
 {
     if (m_fallbackPbuffer != EGL_NO_SURFACE)
         return m_fallbackPbuffer;
-    static const EGLint pbufferAttribs[] = { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE };
-    m_fallbackPbuffer = eglCreatePbufferSurface(eglDisplay(), eglConfig(), pbufferAttribs);
+    m_fallbackPbuffer = createTemporaryOffscreenSurface();
     if (Q_UNLIKELY(m_fallbackPbuffer == EGL_NO_SURFACE))
         qWarning("EGL Error: could not create pbuffer fallback surface: 0x%x", eglGetError());
     return m_fallbackPbuffer;
