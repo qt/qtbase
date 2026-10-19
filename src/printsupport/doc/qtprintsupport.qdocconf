@@ -18,11 +18,15 @@ qhp.QtPrintSupport.virtualFolder       = qtprintsupport
 qhp.QtPrintSupport.indexTitle          = Qt Print Support
 qhp.QtPrintSupport.indexRoot           =
 
-qhp.QtPrintSupport.subprojects         = classes
+qhp.QtPrintSupport.subprojects         = changes classes
 qhp.QtPrintSupport.subprojects.classes.title = C++ Classes
 qhp.QtPrintSupport.subprojects.classes.indexTitle = Qt Print Support C++ Classes
-qhp.QtPrintSupport.subprojects.classes.selectors = class fake:headerfile
+qhp.QtPrintSupport.subprojects.classes.selectors = class headerfile
 qhp.QtPrintSupport.subprojects.classes.sortPages = true
+
+qhp.QtPrintSupport.subprojects.changes.title = Upgrade from Qt 5
+qhp.QtPrintSupport.subprojects.changes.indexTitle = Changes to Qt Print Support
+qhp.QtPrintSupport.subprojects.changes.selectors = none
 
 tagfile                 = ../../../doc/qtprintsupport/qtprintsupport.tags
 
