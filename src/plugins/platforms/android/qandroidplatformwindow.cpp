@@ -382,9 +382,10 @@ bool QAndroidPlatformWindow::isExposed() const
     // Not exposed until Android provides a Surface, so QRhi never starts
     // without a GPU surface. A child is on screen only while its parent is.
     const QWindow *parent = window()->parent();
+    const auto state = qApp->applicationState();
     return m_surfaceValid
             && (!parent || !parent->handle() || parent->handle()->isExposed())
-            && qApp->applicationState() > Qt::ApplicationHidden
+            && (state == Qt::ApplicationInactive || state == Qt::ApplicationActive)
             && window()->isVisible()
             && !window()->geometry().isEmpty();
 }

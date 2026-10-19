@@ -638,7 +638,7 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
     if (!m_androidPlatformIntegration)
         return;
 
-    if (state <= Qt::ApplicationInactive) {
+    if (state != Qt::ApplicationActive) {
         // NOTE: sometimes we will receive two consecutive suspended notifications,
         // In the second suspended notification, QWindowSystemInterface::flushWindowSystemEvents()
         // will deadlock since the dispatcher has been stopped in the first suspended notification.
