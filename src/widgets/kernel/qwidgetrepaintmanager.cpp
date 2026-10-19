@@ -622,7 +622,7 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
     }
 
     // Nothing to repaint.
-    if (!isDirty() && store->size().isValid()) {
+    if (!isDirty() && store->size() == tlw->size()) {
         QPlatformTextureList *widgetTextures = widgetTexturesFor(tlw, exposedWidget);
         flush(exposedWidget, widgetTextures ? QRegion() : exposedRegion, widgetTextures);
         return;
