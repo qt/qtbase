@@ -58,7 +58,7 @@ qhp.QtOpenGL.indexTitle = Qt OpenGL
 
 # Only update the name of the project for the next variables.
 qhp.QtOpenGL.virtualFolder  = qtopengl
-qhp.QtOpenGL.subprojects = classes examples
+qhp.QtOpenGL.subprojects = changes examples classes
 qhp.QtOpenGL.subprojects.classes.title = C++ Classes
 qhp.QtOpenGL.subprojects.classes.indexTitle = Qt OpenGL C++ Classes
 qhp.QtOpenGL.subprojects.classes.selectors = class fake:headerfile
@@ -68,6 +68,10 @@ qhp.QtOpenGL.subprojects.examples.title = Examples
 qhp.QtOpenGL.subprojects.examples.indexTitle = Qt OpenGL Examples
 qhp.QtOpenGL.subprojects.examples.selectors = example
 qhp.QtOpenGL.subprojects.examples.sortPages = true
+
+qhp.QtOpenGL.subprojects.changes.title = Upgrade from Qt 5
+qhp.QtOpenGL.subprojects.changes.indexTitle = Changes to Qt OpenGL
+qhp.QtOpenGL.subprojects.changes.selectors = none
 
 navigation.landingpage = "Qt OpenGL"
 navigation.cppclassespage = "Qt OpenGL C++ Classes"

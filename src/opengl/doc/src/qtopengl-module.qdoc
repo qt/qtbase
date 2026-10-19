@@ -28,4 +28,5 @@
     \title Qt OpenGL Widgets C++ Classes
     \qtcmakepackage OpenGLWidgets
     \qtvariable openglwidgets
+    \meta {toc} {nonessential}
 */
