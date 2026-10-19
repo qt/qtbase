@@ -210,6 +210,7 @@ public:
     std::shared_ptr<QOhosWindowProxy> createSubWindow(const SubWindowCreateInfo &createInfo);
 
     bool qtIsMainWindow() const;
+    bool isSubWindowMaximizeSupported() const;
     WindowLimits getWindowLimits() const;
     AvoidArea getWindowAvoidArea(AvoidAreaType type) const;
     std::shared_ptr<QXComponentNode> nodeXComponent() const;
@@ -297,6 +298,7 @@ private:
     struct JsThreadInitResult
     {
         WindowProxyType windowProxyType;
+        bool subWindowMaximizeSupported;
         std::shared_ptr<QXComponentNode> nodeXComponent;
         std::string qAbilityInstanceId;
         QHarmonyJsObjectRef abilityObjectRef;
@@ -316,6 +318,7 @@ private:
 
     QtOhos::JsScopeDataOwner<JsScopeData> m_jsScopeData;
     WindowProxyType m_windowProxyType;
+    bool m_subWindowMaximizeSupported;
     std::shared_ptr<QXComponentNode> m_nodeXComponent;
     std::string m_qAbilityInstanceId;
     QHarmonyJsObjectRef m_abilityObjectRef;

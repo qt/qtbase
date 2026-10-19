@@ -36,6 +36,7 @@ struct SubWindowOptions
     std::string windowTitle;
     bool decorEnabled;
     bool isModal;
+    bool maximizeSupported;
     QRect windowRect;
 };
 
@@ -47,6 +48,7 @@ struct SubWindowOnAppearContext
     QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> resultConsumer;
     std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
     WindowProxyType windowProxyType;
+    bool subWindowMaximizeSupported = false;
     QtOhos::QObjectThreadSafeRef owningQWindowRef;
 };
 
@@ -57,6 +59,7 @@ struct LocalStorageForWindowCreateInfo
     QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> resultConsumer;
     std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
     WindowProxyType windowProxyType;
+    bool subWindowMaximizeSupported = false;
     QtOhos::QObjectThreadSafeRef owningQWindowRef;
 };
 
@@ -115,6 +118,8 @@ QNapi::Promise createSubWindowWithOptions(
                     "windowRect", makeRectObject(windowStageOrWindowObject.Env(), subWindowOptions.windowRect)
                 }
             });
+    if (subWindowOptions.maximizeSupported)
+        subWindowOptionsObject.set("maximizeSupported", true);
 
     return windowStageOrWindowObject.evalToPromiseOrRejectOnThrow(
         "createSubWindowWithOptions(*)",
@@ -176,6 +181,7 @@ makeSubWindowOnAppearCallbackHandler(SubWindowOnAppearContext subWindowOnAppearC
                 .qAbilityPeer = sharedContext->qAbilityPeer,
                 .jsWindow = std::move(sharedContext->windowObject),
                 .windowProxyType = sharedContext->windowProxyType,
+                .subWindowMaximizeSupported = sharedContext->subWindowMaximizeSupported,
                 .nodeXComponent = std::make_shared<QXComponentNode>(xComponent),
                 .jsKeepAliveData = QtOhos::moveToSharedPtr(std::move(sharedContext->localStorageObj)),
                 .owningQWindowRef = sharedContext->owningQWindowRef,
@@ -217,6 +223,7 @@ QNapi::Object makeLocalStorageForWindow(
                     .resultConsumer = std::move(createInfo.resultConsumer),
                     .qAbilityPeer = std::move(createInfo.qAbilityPeer),
                     .windowProxyType = createInfo.windowProxyType,
+                    .subWindowMaximizeSupported = createInfo.subWindowMaximizeSupported,
                     .owningQWindowRef = createInfo.owningQWindowRef,
                 }),
             }
@@ -358,6 +365,7 @@ void makeWindowProxyDataForSubWindowInJsThread(
         QXComponentId xComponentId;
         std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
         QtOhos::QObjectThreadSafeRef owningQWindowRef;
+        bool createdWithMaximizeSupport;
     };
 
     auto qAbilityPeer = getQAbilityPeerByInstanceIdOrFail(jsState, createInfo.qAbilityInstanceId);
@@ -369,14 +377,18 @@ void makeWindowProxyDataForSubWindowInJsThread(
         .xComponentId = xComponentId,
         .qAbilityPeer = qAbilityPeer,
         .owningQWindowRef = createInfo.window,
+        .createdWithMaximizeSupport = createInfo.maximizeSupported,
     });
 
     // Prefer createSubWindowWithOptions() when the capability is present, but fall back to the
     // @crossplatform createSubWindow() when it is absent or fails (its dropped options are
-    // applied separately after creation anyway) rather than aborting the application.
+    // applied separately after creation anyway, except maximizeSupported) rather than aborting
+    // the application.
     auto subWindowCreationPromise = [&]() -> QNapi::Promise {
-        if (!isWindowSessionManagerAvailable(jsState))
+        if (!isWindowSessionManagerAvailable(jsState)) {
+            context->createdWithMaximizeSupport = false;
             return createSubWindowViaWindowStage(qAbilityPeer, windowName);
+        }
 
         return createSubWindowWithOptions(
                    windowStageOrWindowObject,
@@ -385,13 +397,15 @@ void makeWindowProxyDataForSubWindowInJsThread(
                        .windowTitle = createInfo.windowTitle,
                        .decorEnabled = createInfo.decorEnabled,
                        .isModal = createInfo.modal,
+                       .maximizeSupported = createInfo.maximizeSupported,
                        .windowRect = createInfo.windowRect,
                    })
-            .onCatch([qAbilityPeer, windowName](const QtOhos::CallbackInfo &) -> QNapi::Promise {
+            .onCatch([context, qAbilityPeer, windowName](const QtOhos::CallbackInfo &) -> QNapi::Promise {
                 // Unsupported in some window contexts even when the capability is advertised.
                 qOhosPrintfWarning(
                     "createSubWindowWithOptions() is unavailable in this context; "
                     "falling back to createSubWindow()");
+                context->createdWithMaximizeSupport = false;
                 return createSubWindowViaWindowStage(qAbilityPeer, windowName);
             });
     }();
@@ -408,6 +422,7 @@ void makeWindowProxyDataForSubWindowInJsThread(
                     .resultConsumer = std::move(resultConsumer),
                     .qAbilityPeer = context->qAbilityPeer,
                     .windowProxyType = WindowProxyType::SubWindow,
+                    .subWindowMaximizeSupported = context->createdWithMaximizeSupport,
                     .owningQWindowRef = context->owningQWindowRef,
                 });
 

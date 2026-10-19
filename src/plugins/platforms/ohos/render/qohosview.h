@@ -283,6 +283,7 @@ private:
 
     bool isWindowTransparencyRequested() const;
 
+    bool isFixedSizeStateEnabled() const;
     bool isMaximizeRequestSupportedOrLogWarning() const;
 
     QOhosPropertiesProvider m_windowPropertiesProvider;

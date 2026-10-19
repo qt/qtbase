@@ -268,6 +268,15 @@ ViewTypeInfo determineViewTypeAndLogicalParent(const QOhosPlatformWindow *platfo
     };
 }
 
+// Reads the QWindow flags, since the platform flags drop the hint on frameless windows.
+// QWidget gives popups and tool tips the hint by default, so they are excluded.
+bool hasMaximizeButtonHintForSubWindow(const QWindow *qWindow)
+{
+    const auto windowType = qWindow->type();
+    return qWindow->flags().testFlag(Qt::WindowMaximizeButtonHint)
+        && windowType != Qt::Popup && windowType != Qt::ToolTip;
+}
+
 QBitmap getCursorBitmap(const QCursor &cursor)
 {
     return cursor.bitmap();
@@ -467,6 +476,12 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
         createInfo.decorEnabled = window->decorationPreset() != QOhosPlatformWindow::DecorationPreset::Frameless;
         createInfo.disableWindowFocusableBeforeLoadContentHack = window->windowFlags().testFlag(Qt::WindowDoesNotAcceptFocus);
         createInfo.modal = qWindow->modality() != Qt::NonModal;
+        // Sub window maximize is supported since API 19, but its maximize button can be
+        // hidden only since API 26, which the fixed-size state needs.
+        constexpr int minApiVersionWithSupportedWindowModesPerWindow = 26;
+        createInfo.maximizeSupported =
+            QOhosDeviceInfo::sdkApiVersion() >= minApiVersionWithSupportedWindowModesPerWindow
+            && hasMaximizeButtonHintForSubWindow(qWindow);
         createInfo.windowRect = window->lastRequestedWindowFrameGeometry();
         result = parentWindowProxy->createSubWindow(createInfo);
 
@@ -708,7 +723,12 @@ void QOhosView::setWindowKeepScreenOn(bool keepScreenOn)
 
 void QOhosView::setFixedSizeStateEnabled(bool enabled)
 {
-    if (m_ohosWindowProxy == nullptr || viewType() != ViewType::MainWindow)
+    if (m_ohosWindowProxy == nullptr)
+        return;
+
+    const bool systemMaximizable = viewType() == ViewType::MainWindow
+        || (viewType() == ViewType::SubWindow && m_ohosWindowProxy->isSubWindowMaximizeSupported());
+    if (!systemMaximizable)
         return;
 
     if (queryQOhosRuntimeDeviceAndMode() == QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen) {
@@ -721,7 +741,9 @@ void QOhosView::setFixedSizeStateEnabled(bool enabled)
     using SupportWindowMode = QOhosWindowProxy::SupportWindowMode;
     const auto supportedWindowModes = enabled
         ? std::set<SupportWindowMode>({SupportWindowMode::FLOATING})
-        : std::set<SupportWindowMode>({SupportWindowMode::FULL_SCREEN, SupportWindowMode::FLOATING, SupportWindowMode::SPLIT});
+        : viewType() == ViewType::MainWindow
+            ? std::set<SupportWindowMode>({SupportWindowMode::FULL_SCREEN, SupportWindowMode::FLOATING, SupportWindowMode::SPLIT})
+            : std::set<SupportWindowMode>({SupportWindowMode::FULL_SCREEN, SupportWindowMode::FLOATING});
 
     m_ohosWindowProxy->setSupportedWindowModes(supportedWindowModes);
 }
@@ -1804,14 +1826,32 @@ bool QOhosView::consumePendingSelfMinimizeEcho()
     return true;
 }
 
+bool QOhosView::isFixedSizeStateEnabled() const
+{
+    return m_windowPropertiesProvider
+        .tryGetProperty<bool, &QOhosPlatformWindow::windowFixedSizeStateProperty>()
+        .value_or(false);
+}
+
 bool QOhosView::isMaximizeRequestSupportedOrLogWarning() const
 {
     if (viewType() != ViewType::SubWindow)
         return true;
 
-    qCWarning(QtForOhos) << Q_FUNC_INFO << m_ownerWindow
-        << "maximize request ignored: sub windows cannot be maximized";
-    return false;
+    if (!m_ohosWindowProxy->isSubWindowMaximizeSupported()) {
+        qCWarning(QtForOhos) << Q_FUNC_INFO << m_ownerWindow
+            << "maximize request ignored: the sub window was created without maximize support"
+               " (requires API 26 and Qt::WindowMaximizeButtonHint)";
+        return false;
+    }
+
+    if (isFixedSizeStateEnabled()) {
+        qCWarning(QtForOhos) << Q_FUNC_INFO << m_ownerWindow
+            << "maximize request ignored: the sub window has a fixed size";
+        return false;
+    }
+
+    return true;
 }
 
 QT_END_NAMESPACE
