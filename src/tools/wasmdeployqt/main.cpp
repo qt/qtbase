@@ -232,7 +232,7 @@ bool copyDirectDependencies(QList<QString> dependencies, const Parameters &param
         if (!copyFile(*libPath, QDir::current().filePath(depFilename)))
             return false;
     }
-    std::cout << "INFO: Succesfully copied direct dependencies." << std::endl;
+    std::cout << "INFO: Successfully copied direct dependencies." << std::endl;
     return true;
 }
 
@@ -272,7 +272,7 @@ bool copyQtLibs(Parameters &params)
             return false;
         params.loadedQtLibraries.insert(QFileInfo(srcPath).fileName());
     }
-    std::cout << "INFO: Succesfully deployed qt lib shared objects." << std::endl;
+    std::cout << "INFO: Successfully deployed qt lib shared objects." << std::endl;
     return true;
 }
 
@@ -325,7 +325,7 @@ bool copyPreloadPlugins(Parameters &params)
         std::cout << "ERROR: Failed to write to qt.conf." << std::endl;
         return false;
     }
-    std::cout << "INFO: Succesfully deployed qt plugins." << std::endl;
+    std::cout << "INFO: Successfully deployed qt plugins." << std::endl;
     return true;
 }
 
@@ -378,7 +378,7 @@ bool copyPreloadQmlImports(Parameters &params)
         if (!copyFile(srcPath, destPath))
             return false;
     }
-    std::cout << "INFO: Succesfully deployed qml imports." << std::endl;
+    std::cout << "INFO: Successfully deployed qml imports." << std::endl;
     return true;
 }
 
