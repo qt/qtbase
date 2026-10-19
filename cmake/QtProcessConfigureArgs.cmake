@@ -1365,6 +1365,11 @@ elseif(INPUT_debug_and_release)
     set(build_configs Release Debug)
 endif()
 if(INPUT_force_debug_info)
+    # -release is the default, except for developer and coverage builds, which default to Debug.
+    if(NOT build_configs AND NOT multi_config AND NOT developer_build
+            AND NOT INPUT_gcov AND "${INPUT_coverage}" STREQUAL "")
+        set(build_configs Release)
+    endif()
     list(TRANSFORM build_configs REPLACE "^Release$" "RelWithDebInfo")
 endif()
 
