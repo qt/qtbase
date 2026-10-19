@@ -47,7 +47,8 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
     if (window->eglSurface(eglConfig()) == EGL_NO_SURFACE)
         return;
 
-    QEGLPlatformContext::makeCurrent(surface);
+    if (!QEGLPlatformContext::makeCurrent(surface))
+        return;
     QEGLPlatformContext::swapBuffers(surface);
 }
 
