@@ -12,6 +12,10 @@ import android.net.NetworkCapabilities;
 import android.net.Network;
 import android.os.Build;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+
 class QtAndroidNetworkInformation {
     private static final String LOG_TAG = "QtAndroidNetworkInformation";
 
@@ -46,17 +50,40 @@ class QtAndroidNetworkInformation {
         QtNetworkInformationCallback() {
         }
 
+        private final Map<Network, NetworkCapabilities> m_networks = new HashMap<>();
+
         @Override
         public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
-            AndroidConnectivity s;
-            if (!capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
-                s = AndroidConnectivity.Disconnected;
-            else if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
-                s = AndroidConnectivity.Connected;
-            else
-                s = AndroidConnectivity.Unknown; // = we _may_ have Internet access
+            m_networks.put(network, capabilities);
+            update();
+        }
 
-            final Transport transport = getTransport(capabilities);
+        @Override
+        public void onLost(Network network) {
+            m_networks.remove(network);
+            update();
+        }
+
+        private static AndroidConnectivity connectivityOf(NetworkCapabilities capabilities) {
+            if (!capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
+                return AndroidConnectivity.Disconnected;
+            if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
+                return AndroidConnectivity.Connected;
+            return AndroidConnectivity.Unknown; // = we _may_ have Internet access
+        }
+
+        private void update() {
+            final NetworkCapabilities best = m_networks.values().stream()
+                    .min(Comparator.comparing(QtNetworkInformationCallback::connectivityOf))
+                    .orElse(null);
+            if (best == null) {
+                setState(AndroidConnectivity.Disconnected);
+                return;
+            }
+
+            AndroidConnectivity s = connectivityOf(best);
+
+            final Transport transport = getTransport(best);
             if (transport == Transport.Unknown) // If we don't have any transport media: override
                 s = AndroidConnectivity.Unknown;
 
@@ -64,9 +91,9 @@ class QtAndroidNetworkInformation {
             setTransportMedium(transport);
 
             final boolean captive
-                    = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
+                    = best.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
             final boolean metered
-                    = !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+                    = !best.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
             genericInfoChanged(captive, metered);
         }
 
@@ -105,11 +132,6 @@ class QtAndroidNetworkInformation {
                 previousTransport = t;
                 transportMediumChanged(t.ordinal());
             }
-        }
-
-        @Override
-        public void onLost(Network network) {
-            setState(AndroidConnectivity.Disconnected);
         }
     }
 
