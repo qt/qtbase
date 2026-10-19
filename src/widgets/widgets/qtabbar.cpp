@@ -2481,7 +2481,14 @@ void QTabBar::wheelEvent(QWheelEvent *event)
             }
             const int oldCurrentIndex = d->currentIndex;
             d->setCurrentNextEnabledIndex(offset);
-            if (oldCurrentIndex != d->currentIndex) {
+            // Applying scroll events perpendicular to the tab bar's orientation:
+            // - is a hack, but required to make (very common) horizontal tab bars work with
+            //   (very common) vertical scroll wheels
+            // - causes surprising behavior when the tab bar scrolls away after the tab
+            //   index reaches an end stop - so always eat "perpendicular events"
+            // Forwarding "parallel events" is less surprising and may help to scroll the
+            // desired part of the tab bar into view when it's inside a scroll view.
+            if (wheelVertical != tabsVertical || oldCurrentIndex != d->currentIndex) {
                 event->accept();
                 return;
             }
