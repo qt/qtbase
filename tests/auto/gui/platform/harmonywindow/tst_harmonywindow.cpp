@@ -4,8 +4,12 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsobjectref.h>
+#include <QtCore/qsemaphore.h>
 #include <QtGui/qwindow.h>
 #include <QtTest/qtest.h>
+#include <atomic>
+#include <chrono>
+#include <memory>
 #include <napi/native_api.h>
 #include <optional>
 
@@ -17,6 +21,11 @@ using QHarmonyApplication = QNativeInterface::QHarmonyApplication;
 using QHarmonyWindow = QNativeInterface::QHarmonyWindow;
 
 namespace {
+
+using namespace std::chrono_literals;
+
+// Stays below the HarmonyOS app-freeze limit for a blocked JS thread.
+constexpr auto jsThreadBlockTimeout = 3s;
 
 napi_value callJsMethod(napi_env env, napi_value objectValue, const char *name)
 {
@@ -89,6 +98,13 @@ private slots:
     void window_abilityAndJsWindow_childWindow();
     void window_abilityAndJsWindow_secondTopLevelWindow();
     void window_abilityAndJsWindow_transientWindow();
+    void window_abilityAndJsWindow_nullBeforeShow();
+    void window_abilityAndJsWindow_setWhenShowReturns();
+    void window_abilityAndJsWindow_transientWindowSetWhenShowReturns();
+    void window_abilityAndJsWindow_doNotWaitForJsThread();
+    void window_abilityAndJsWindow_transientWindowHiddenAndShown();
+    void window_abilityAndJsWindow_transientWindowReparented();
+    void window_abilityAndJsWindow_replacedAfterDestroyAndShow();
 
     void appJsContext_defaultAbility_unchangedByNewWindow();
 
@@ -215,6 +231,149 @@ void tst_HarmonyWindow::window_abilityAndJsWindow_transientWindow()
     QVERIFY(optTransientJsWindowId);
     QVERIFY(optParentJsWindowId);
     QCOMPARE_NE(*optTransientJsWindowId, *optParentJsWindowId);
+}
+
+void tst_HarmonyWindow::window_abilityAndJsWindow_nullBeforeShow()
+{
+    QWindow window;
+    window.create();
+    auto *harmonyWindow = window.nativeInterface<QHarmonyWindow>();
+
+    QVERIFY(harmonyWindow);
+    QVERIFY(harmonyWindow->ability().isNull());
+    QVERIFY(harmonyWindow->jsWindow().isNull());
+}
+
+void tst_HarmonyWindow::window_abilityAndJsWindow_setWhenShowReturns()
+{
+    QWindow window;
+    window.show();
+    auto *harmonyWindow = window.nativeInterface<QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto abilityRef = harmonyWindow->ability();
+    const auto jsWindowRef = harmonyWindow->jsWindow();
+
+    QVERIFY(!abilityRef.isNull());
+    QVERIFY(!jsWindowRef.isNull());
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCOMPARE(harmonyWindow->ability(), abilityRef);
+    QCOMPARE(harmonyWindow->jsWindow(), jsWindowRef);
+}
+
+void tst_HarmonyWindow::window_abilityAndJsWindow_transientWindowSetWhenShowReturns()
+{
+    QWindow transientWindow;
+    transientWindow.setTransientParent(&m_secondWindow);
+    transientWindow.show();
+    auto *transientHarmonyWindow = transientWindow.nativeInterface<QHarmonyWindow>();
+    QVERIFY(transientHarmonyWindow);
+    const auto abilityRef = transientHarmonyWindow->ability();
+    const auto jsWindowRef = transientHarmonyWindow->jsWindow();
+
+    QVERIFY(!abilityRef.isNull());
+    QCOMPARE(abilityRef, m_secondHarmonyWindow->ability());
+    QVERIFY(!jsWindowRef.isNull());
+    QVERIFY(QTest::qWaitForWindowExposed(&transientWindow));
+    QCOMPARE(transientHarmonyWindow->ability(), abilityRef);
+    QCOMPARE(transientHarmonyWindow->jsWindow(), jsWindowRef);
+}
+
+void tst_HarmonyWindow::window_abilityAndJsWindow_doNotWaitForJsThread()
+{
+    const auto expectedAbilityRef = m_firstHarmonyWindow->ability();
+    const auto expectedJsWindowRef = m_firstHarmonyWindow->jsWindow();
+    auto jsTaskStarted = std::make_shared<QSemaphore>();
+    auto jsTaskReleased = std::make_shared<QSemaphore>();
+    auto jsTaskTimedOut = std::make_shared<std::atomic<bool>>(false);
+    QHarmonyApplication::runOnJsThread(
+        [jsTaskStarted, jsTaskReleased, jsTaskTimedOut](QHarmonyJsContext &) {
+            jsTaskStarted->release();
+            *jsTaskTimedOut = !jsTaskReleased->tryAcquire(1, jsThreadBlockTimeout);
+        });
+    jsTaskStarted->acquire();
+
+    const auto abilityRef = m_firstHarmonyWindow->ability();
+    const auto jsWindowRef = m_firstHarmonyWindow->jsWindow();
+    jsTaskReleased->release();
+    QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &) {});
+
+    QVERIFY(!*jsTaskTimedOut);
+    QCOMPARE(abilityRef, expectedAbilityRef);
+    QCOMPARE(jsWindowRef, expectedJsWindowRef);
+}
+
+void tst_HarmonyWindow::window_abilityAndJsWindow_transientWindowHiddenAndShown()
+{
+    QWindow transientWindow;
+    transientWindow.setTransientParent(&m_secondWindow);
+    transientWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&transientWindow));
+    auto *transientHarmonyWindow = transientWindow.nativeInterface<QHarmonyWindow>();
+    QVERIFY(transientHarmonyWindow);
+    const auto shownAbilityRef = transientHarmonyWindow->ability();
+    const auto shownJsWindowRef = transientHarmonyWindow->jsWindow();
+    QVERIFY(!shownAbilityRef.isNull());
+    QVERIFY(!shownJsWindowRef.isNull());
+
+    transientWindow.hide();
+    QVERIFY(transientHarmonyWindow->ability().isNull());
+    QVERIFY(transientHarmonyWindow->jsWindow().isNull());
+
+    transientWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&transientWindow));
+    QCOMPARE(transientHarmonyWindow->ability(), shownAbilityRef);
+    QVERIFY(!transientHarmonyWindow->jsWindow().isNull());
+    QCOMPARE_NE(transientHarmonyWindow->jsWindow(), shownJsWindowRef);
+}
+
+void tst_HarmonyWindow::window_abilityAndJsWindow_transientWindowReparented()
+{
+    QWindow transientWindow;
+    transientWindow.setTransientParent(&m_secondWindow);
+    transientWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&transientWindow));
+    auto *transientHarmonyWindow = transientWindow.nativeInterface<QHarmonyWindow>();
+    QVERIFY(transientHarmonyWindow);
+    const auto shownAbilityRef = transientHarmonyWindow->ability();
+    const auto shownJsWindowRef = transientHarmonyWindow->jsWindow();
+    QVERIFY(!shownAbilityRef.isNull());
+    QVERIFY(!shownJsWindowRef.isNull());
+
+    transientWindow.setParent(&m_firstWindow);
+    QVERIFY(transientHarmonyWindow->ability().isNull());
+    QVERIFY(transientHarmonyWindow->jsWindow().isNull());
+
+    transientWindow.setParent(nullptr);
+    QCOMPARE(transientHarmonyWindow->ability(), shownAbilityRef);
+    QVERIFY(!transientHarmonyWindow->jsWindow().isNull());
+    QCOMPARE_NE(transientHarmonyWindow->jsWindow(), shownJsWindowRef);
+    QVERIFY(QTest::qWaitForWindowExposed(&transientWindow));
+}
+
+void tst_HarmonyWindow::window_abilityAndJsWindow_replacedAfterDestroyAndShow()
+{
+    QWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    auto *firstHarmonyWindow = window.nativeInterface<QHarmonyWindow>();
+    QVERIFY(firstHarmonyWindow);
+    const auto firstAbilityRef = firstHarmonyWindow->ability();
+    const auto firstJsWindowRef = firstHarmonyWindow->jsWindow();
+    QVERIFY(!firstAbilityRef.isNull());
+    QVERIFY(!firstJsWindowRef.isNull());
+
+    window.destroy();
+    QVERIFY(!window.nativeInterface<QHarmonyWindow>());
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    auto *secondHarmonyWindow = window.nativeInterface<QHarmonyWindow>();
+    QVERIFY(secondHarmonyWindow);
+    QVERIFY(!secondHarmonyWindow->ability().isNull());
+    QVERIFY(!secondHarmonyWindow->jsWindow().isNull());
+    QCOMPARE_NE(secondHarmonyWindow->ability(), firstAbilityRef);
+    QCOMPARE_NE(secondHarmonyWindow->jsWindow(), firstJsWindowRef);
 }
 
 void tst_HarmonyWindow::appJsContext_defaultAbility_unchangedByNewWindow()
