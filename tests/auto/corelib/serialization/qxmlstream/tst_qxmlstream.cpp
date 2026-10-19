@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
+#include <QtCore/qdebug.h>
 #include <QDirIterator>
 #include <QElapsedTimer>
 #include <QEventLoop>
@@ -14,6 +15,7 @@
 #include <QVarLengthArray>
 #include <QXmlStreamReader>
 #include <QBuffer>
+#include <QtCore/qscopeguard.h>
 #include <QStack>
 
 #if QT_CONFIG(process)
@@ -643,6 +645,8 @@ private slots:
     void clear() const;
     void clearReallyResets_data() const;
     void clearReallyResets() const;
+    void clearReallyResetsDtdInformation_data() const;
+    void clearReallyResetsDtdInformation() const;
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
     void crashInXmlStreamReader() const;
@@ -2618,6 +2622,102 @@ void tst_QXmlStream::clearReallyResets() const
     QCOMPARE(readAllText(r), readAllText(fresh));
     QCOMPARE(r.error(), fresh.error());
     QCOMPARE(r.errorString(), fresh.errorString());
+}
+
+void tst_QXmlStream::clearReallyResetsDtdInformation_data() const
+{
+    QTest::addColumn<bool>("queryDeclarationsFirst");
+    QTest::addColumn<QByteArray>("xml1");
+    QTest::addColumn<QByteArray>("xml2");
+
+    // The first document has various DTD declarations:
+    const QByteArray xml1 =
+            "<?xml version='1.0'?>"
+            "<!DOCTYPE DOC PUBLIC '-//Dummy//DTD Dummy 1.0//EN' 'http://example.invalid/dummy.dtd'"
+            " ["
+            "  <!NOTATION png SYSTEM 'viewer'>"
+            "  <!ENTITY pic SYSTEM 'pic.png' NDATA png>"
+            "  <!ENTITY e 'dummy'>"
+            " ]>"
+            "<DOC><a/></DOC>";
+
+    // The second document either has no DOCTYPE at all (so no DTD token is
+    // reported, and nothing overwrites stale state), or one without any
+    // declarations (so resolveDtd() runs, but has nothing new to add).
+    const QByteArray noDtd =
+            "<?xml version='1.0'?>"
+            "<DOC><a/></DOC>";
+    const QByteArray emptyDtd =
+            "<?xml version='1.0'?>"
+            "<!DOCTYPE DOC>"
+            "<DOC><a/></DOC>";
+
+    // The accessors for the raw declaration stacks resolve lazily, so test
+    // both with and without having called them for the first document:
+    QTest::addRow("no-dtd,lazy")        << false << xml1 << noDtd;
+    QTest::addRow("no-dtd,resolved")    << true  << xml1 << noDtd;
+    QTest::addRow("empty-dtd,lazy")     << false << xml1 << emptyDtd;
+    QTest::addRow("empty-dtd,resolved") << true  << xml1 << emptyDtd;
+}
+
+void tst_QXmlStream::clearReallyResetsDtdInformation() const
+{
+    QFETCH(const bool, queryDeclarationsFirst);
+    QFETCH(const QByteArray, xml1);
+    QFETCH(const QByteArray, xml2);
+
+    //
+    // GIVEN: Two XML documents and a reader that has parsed the first one
+    //
+
+    QXmlStreamReader r;
+    r.addData(xml1);
+    while (!r.atEnd()) {
+        if (r.readNext() == QXmlStreamReader::DTD && queryDeclarationsFirst) {
+            QVERIFY(!r.entityDeclarations().isEmpty());
+            QVERIFY(!r.notationDeclarations().isEmpty());
+        }
+    }
+    QVERIFY(!r.hasError());
+
+    //
+    // WHEN: clear()ing the reader and parsing the second document
+    //
+
+    r.clear();
+    r.addData(xml2);
+
+    //
+    // THEN: no information from the first document's DTD is visible, at any token
+    //
+
+    QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
+    QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
+    QVERIFY(r.entityDeclarations().isEmpty());
+    QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
+    QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
+    QVERIFY(r.notationDeclarations().isEmpty());
+    QCOMPARE(r.dtdName(), ""_L1);
+    QCOMPARE(r.dtdPublicId(), ""_L1);
+    QCOMPARE(r.dtdSystemId(), ""_L1);
+
+    while (!r.atEnd()) {
+        [[maybe_unused]]
+        const auto tok = r.readNext();
+        auto printOnFail = qScopeGuard([&] { qDebug() << "failed at" << r.tokenString(); });
+        QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
+        if (tok == QXmlStreamReader::TokenType::StartDocument) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
+        if (tok == QXmlStreamReader::TokenType::DTD) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
+        QVERIFY(r.entityDeclarations().isEmpty());
+        QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
+        if (tok == QXmlStreamReader::TokenType::StartDocument) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
+        if (tok == QXmlStreamReader::TokenType::DTD) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
+        QVERIFY(r.notationDeclarations().isEmpty());
+        QCOMPARE(r.dtdPublicId(), ""_L1);
+        QCOMPARE(r.dtdSystemId(), ""_L1);
+        printOnFail.dismiss();
+    }
+    QVERIFY(!r.hasError());
 }
 
 void tst_QXmlStream::checkCommentIndentation_data() const
