@@ -3826,7 +3826,7 @@ QXmlStreamWriter::Error QXmlStreamWriter::error() const
     If an error has occurred, returns its associated error message.
 
     The error message is either set internally by QXmlStreamWriter or provided
-    by the user via raiseError(). If no error has occured, this function returns
+    by the user via raiseError(). If no error has occurred, this function returns
     a null string.
 
     \since 6.10
