@@ -14,7 +14,7 @@ import android.widget.PopupWindow;
 
 // Helper class that manages a cursor or selection handle
 class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayoutChangeListener,
-        EditContextView.OnClickListener
+        View.OnAttachStateChangeListener, EditContextView.OnClickListener
 {
     private final EditContextView m_view;
     private final QtEditText m_editText;
@@ -24,6 +24,7 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
     private int m_posX;
     private int m_posY;
     private int m_buttons;
+    private ViewTreeObserver m_observer;
 
     EditPopupMenu(QtEditText editText)
     {
@@ -32,7 +33,24 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
         m_view.addOnLayoutChangeListener(this);
 
         m_editText = editText;
-        m_editText.getViewTreeObserver().addOnPreDrawListener(this);
+        m_editText.addOnAttachStateChangeListener(this);
+    }
+
+    @Override
+    public void onViewAttachedToWindow(View view)
+    {
+        m_observer = view.getViewTreeObserver();
+        m_observer.addOnPreDrawListener(this);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(View view)
+    {
+        // The activity observer outlives the edit control and its QtWindow.
+        if (m_observer != null && m_observer.isAlive())
+            m_observer.removeOnPreDrawListener(this);
+        m_observer = null;
+        hide();
     }
 
     private void initOverlay()

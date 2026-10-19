@@ -4,11 +4,14 @@
 package org.qtproject.qt.android;
 
 import android.content.Context;
+import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +19,51 @@ import java.lang.reflect.Method;
 
 public final class QtSurfaceTest
 {
+    private static class CountingPopup extends EditPopupMenu
+    {
+        int m_calls;
+
+        CountingPopup(QtEditText editText) { super(editText); }
+
+        @Override
+        public boolean onPreDraw()
+        {
+            ++m_calls;
+            return super.onPreDraw();
+        }
+    }
+
+    public static String editPopupDetaches(Context context)
+    {
+        final QtEditText editText = new QtEditText(context, null);
+        editText.setFocusable(false);
+        final CountingPopup popup = new CountingPopup(editText);
+        final ViewGroup root = (ViewGroup)((Activity)context).getWindow().getDecorView();
+        try {
+            root.addView(editText, new ViewGroup.LayoutParams(1, 1));
+            final ViewTreeObserver observer = editText.getViewTreeObserver();
+            observer.dispatchOnPreDraw();
+            if (popup.m_calls == 0)
+                return "An attached popup did not observe pre-draw";
+            root.removeView(editText);
+            final int detachedCalls = popup.m_calls;
+            observer.dispatchOnPreDraw();
+            if (popup.m_calls != detachedCalls)
+                return "A detached popup still observes the activity tree";
+            root.addView(editText, new ViewGroup.LayoutParams(1, 1));
+            observer.dispatchOnPreDraw();
+            if (popup.m_calls != detachedCalls + 1)
+                return "Reattaching did not restore exactly one popup listener";
+            root.removeView(editText);
+            observer.dispatchOnPreDraw();
+            if (popup.m_calls != detachedCalls + 1)
+                return "A reattached popup retained its listener after detach";
+            return "";
+        } finally {
+            root.removeView(editText);
+        }
+    }
+
     private static class Window extends QtWindow
     {
         RuntimeException m_failure;
