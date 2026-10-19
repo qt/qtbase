@@ -46,6 +46,7 @@ public:
 private:
     void checkSurfaceRetirement(bool suspend, bool cancel);
 private slots:
+    void editPopupMenuDetaches();
     void renderThreadTickerStopProcessesEvents();
     void surfaceLifecycleRapidCycleNoCrash();
     void surfaceRetainedUntilNativeTeardown_data();
@@ -196,6 +197,21 @@ void cycleSurface(QWindow &window, RenderThreadTicker &ticker, int cycles)
     }
 }
 } // anonymous namespace
+
+void tst_AndroidNativeSurfaces::editPopupMenuDetaches()
+{
+    QWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    auto failure = std::make_shared<QString>();
+    auto task = QNativeInterface::QAndroidApplication::runOnAndroidMainThread([failure] {
+        const auto response = QtJniTypes::QtSurfaceTest::callStaticMethod<QtJniTypes::String>(
+                "editPopupDetaches", QNativeInterface::QAndroidApplication::context());
+        *failure = response.isValid() ? response.toString() : u"Java popup fixture failed"_s;
+    });
+    QVERIFY(QTest::qWaitFor([&] { return task.isFinished(); }, 5000));
+    QVERIFY2(failure->isEmpty(), qPrintable(*failure));
+}
 
 // Checks that stopping the worker keeps GUI events flowing.
 void tst_AndroidNativeSurfaces::renderThreadTickerStopProcessesEvents()
