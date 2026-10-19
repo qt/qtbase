@@ -9,6 +9,7 @@
 #include "qcocoaeventdispatcher.h"
 
 #include <QtCore/qmetaobject.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qscopedvaluerollback.h>
 #include <QtCore/qtimer.h>
 
@@ -285,8 +286,7 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         QTimer::singleShot(0, this, [this]{
             if (m_alert && !m_alert.window.visible) {
                 qCDebug(lcQpaDialogs) << "Running deferred modal" << m_alert;
-                QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
-                processResponse(runModal());
+                runModalAndProcessResponse();
             }
         });
     }
@@ -299,13 +299,19 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
 // too late to do anything about it.
 // However, as QTBUG-114546 shows, there are scenarios where we might get that
 // response anyway. We interpret it to keep the modal loop running, and we only
-// return if we got something else to pass to processResponse.
-NSModalResponse QCocoaMessageDialog::runModal() const
+// return if we got something else and passed it to processResponse.
+void QCocoaMessageDialog::runModalAndProcessResponse()
 {
-    NSModalResponse response = NSModalResponseContinue;
-    while (response == NSModalResponseContinue)
-        response = [m_alert runModal];
-    return response;
+    QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
+    QPointer that(this);
+    NSAlert *alert = [[m_alert retain] autorelease]; // keeps it alive even if *this is deleted
+    NSModalResponse response;
+    do {
+        response = [alert runModal];
+        if (!that) // deleted while the modal loop was running
+            return;
+    } while (response == NSModalResponseContinue);
+    processResponse(response);
 }
 
 void QCocoaMessageDialog::exec()
@@ -319,8 +325,7 @@ void QCocoaMessageDialog::exec()
         m_eventLoop->exec(QEventLoop::DialogExec);
     } else {
         qCDebug(lcQpaDialogs) << "Running modal" << m_alert;
-        QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
-        processResponse(runModal());
+        runModalAndProcessResponse();
     }
 }
 
