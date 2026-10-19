@@ -1327,6 +1327,8 @@ endforeach()
 drop_input(commercial)
 drop_input(confirm-license)
 translate_boolean_input(shared BUILD_SHARED_LIBS)
+# The other values of -dbus, linked and runtime, are passed through as INPUT_dbus.
+translate_boolean_input(dbus FEATURE_dbus)
 
 if(NOT "${INPUT_device}" STREQUAL "")
     push("-DQT_QMAKE_TARGET_MKSPEC=devices/${INPUT_device}")
