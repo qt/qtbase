@@ -48,8 +48,18 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QOhosIntegration);
     functions return null references. Use the interface of its top-level
     window instead.
 
-    Both objects are resolved on the JS thread, so the functions block the
-    calling thread until the JS thread answers.
+    Both functions return at once, without waiting for the JS thread. The
+    objects are available when QWindow::show() returns and stay the same
+    while the window stays visible and top-level. After the window is
+    hidden or reparented, the functions may return null references.
+    Showing the window again, or recreating it with QWindow::destroy()
+    and show(), may give different objects.
+
+    This interface does not track what the platform does with the
+    objects. If the platform destroys the ability or the
+    \c window.Window, the functions may still return references to the
+    destroyed objects, and code that uses the references on the JS
+    thread must handle that.
 
     \inmodule QtGui
     \inheaderfile QWindow

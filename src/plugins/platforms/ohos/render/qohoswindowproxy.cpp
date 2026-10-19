@@ -4,6 +4,7 @@
 #include <render/qohoswindowproxy.h>
 
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qset.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/qscopeguard.h>
@@ -331,6 +332,8 @@ QOhosWindowProxy::QOhosWindowProxy(
     m_windowProxyType = jsThreadInitResult.windowProxyType;
     m_nodeXComponent = std::move(jsThreadInitResult.nodeXComponent);
     m_qAbilityInstanceId = std::move(jsThreadInitResult.qAbilityInstanceId);
+    m_abilityObjectRef = std::move(jsThreadInitResult.abilityObjectRef);
+    m_jsWindowObjectRef = std::move(jsThreadInitResult.jsWindowObjectRef);
     m_jsWindowRegistrationHandle = std::move(jsThreadInitResult.jsWindowRegistrationHandle);
 }
 
@@ -353,10 +356,13 @@ QOhosWindowProxy::JsThreadInitResult QOhosWindowProxy::initInJsThread(
     }
     m_jsScopeData->m_eventListenersHandle = QtOhos::moveToSharedPtr(std::move(eventListenersHandles));
 
+    auto &jsContext = QHarmonyJsContext::fromEnv(jsState.env());
     return JsThreadInitResult {
         .windowProxyType = windowProxyData.windowProxyType,
         .nodeXComponent = std::move(windowProxyData.nodeXComponent),
         .qAbilityInstanceId = m_jsScopeData->jsWindowRef->owningQAbilityInstanceId(),
+        .abilityObjectRef = QHarmonyJsObjectRef::fromValue(jsContext, m_jsScopeData->qAbilityPeer->qAbility()),
+        .jsWindowObjectRef = QHarmonyJsObjectRef::fromValue(jsContext, m_jsScopeData->jsWindowRef->jsObject()),
         .jsWindowRegistrationHandle = QOhosJsWindowRegistry::instance(jsState).registerJsWindow(m_jsScopeData->jsWindowRef),
     };
 }
@@ -1388,6 +1394,16 @@ std::shared_ptr<QXComponentNode> QOhosWindowProxy::nodeXComponent() const
 std::string QOhosWindowProxy::qAbilityInstanceId() const
 {
     return m_qAbilityInstanceId;
+}
+
+QHarmonyJsObjectRef QOhosWindowProxy::abilityObjectRef() const
+{
+    return m_abilityObjectRef;
+}
+
+QHarmonyJsObjectRef QOhosWindowProxy::jsWindowObjectRef() const
+{
+    return m_jsWindowObjectRef;
 }
 
 std::shared_ptr<QOhosWindowProxy>

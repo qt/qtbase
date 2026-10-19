@@ -7,6 +7,7 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qharmonyjsobjectref.h>
 #include <QtCore/qmimedata.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
@@ -149,6 +150,8 @@ public:
 
     QWindow *ownerWindow() const;
     QOhosSurface *surfaceOrNull() const;
+    QHarmonyJsObjectRef abilityObjectRef() const;
+    QHarmonyJsObjectRef jsWindowObjectRef() const;
 
     ViewGeometry viewGeometry() const;
     QMargins avoidAreaMargins(QOhosWindowProxy::AvoidAreaType type) const;
