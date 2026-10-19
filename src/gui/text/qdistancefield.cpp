@@ -835,6 +835,9 @@ QDistanceFieldData::~QDistanceFieldData()
 
 bool QDistanceFieldData::canAllocateSize(quint64 nbytes)
 {
+    if (nbytes == 0)
+        return false;
+
     if (nbytes > INT_MAX) { // int used for bytes internally
         qCWarning(lcDistanceField, "QDistanceFieldData: Rejecting path as size exceeds the upper "
                                    "limit of %i bytes", INT_MAX);
