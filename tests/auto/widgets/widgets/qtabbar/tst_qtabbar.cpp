@@ -1021,8 +1021,45 @@ void tst_QTabBar::mouseWheel()
 
     // enable scrolling, send scroll event, confirm that tab changed
     proxyStyle.scrolling = true;
+    event.ignore();
     QVERIFY(QApplication::sendEvent(&tabbar, &event));
     QVERIFY(tabbar.currentIndex() != startIndex);
+    QVERIFY(event.isAccepted());
+
+    const int endIndex = tabbar.currentIndex();
+
+    // same as event, but with x scroll angle instead of y
+    QWheelEvent hEvent(wheelPoint, tabbar.mapToGlobal(wheelPoint),
+                       QPoint(), QPoint(QWheelEvent::DefaultDeltasPerStep, 0),
+                       Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false,
+                       Qt::MouseEventSynthesizedByApplication, &clickyWheel);
+
+    // When a wheel event perpendicular to the tab bar can't change the tab index, it is accepted
+    event.ignore();
+    QVERIFY(QApplication::sendEvent(&tabbar, &event));
+    QCOMPARE(tabbar.currentIndex(), endIndex);
+    QVERIFY(event.isAccepted());
+
+    // When a wheel event parallel to the tab bar can't change the tab index, it is ignored
+    hEvent.accept();
+    QVERIFY(QApplication::sendEvent(&tabbar, &hEvent));
+    QCOMPARE(tabbar.currentIndex(), endIndex);
+    QVERIFY(!hEvent.isAccepted());
+
+    // Now repeat the previous two checks with the other orientation
+    tabbar.setShape(QTabBar::RoundedWest);
+
+    // perpendicular
+    hEvent.ignore();
+    QVERIFY(QApplication::sendEvent(&tabbar, &hEvent));
+    QCOMPARE(tabbar.currentIndex(), endIndex);
+    QVERIFY(hEvent.isAccepted());
+
+    // parallel
+    event.accept();
+    QVERIFY(QApplication::sendEvent(&tabbar, &event));
+    QCOMPARE(tabbar.currentIndex(), endIndex);
+    QVERIFY(!event.isAccepted());
 }
 
 void tst_QTabBar::kineticWheel_data()
