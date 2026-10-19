@@ -50,6 +50,7 @@ struct QOhosWindowProxySubWindowCreateInfo
     bool decorEnabled = false;
     bool disableWindowFocusableBeforeLoadContentHack;
     bool modal = false;
+    bool maximizeSupported = false;
 };
 
 struct QOhosWindowProxyFloatWindowCreateInfo
@@ -63,6 +64,7 @@ struct QOhosWindowProxyData
     std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
     QNapi::Reference<QNapi::Object> jsWindow;
     WindowProxyType windowProxyType;
+    bool subWindowMaximizeSupported = false;
     std::shared_ptr<QXComponentNode> nodeXComponent;
     std::shared_ptr<void> jsKeepAliveData;
     QtOhos::QObjectThreadSafeRef owningQWindowRef;

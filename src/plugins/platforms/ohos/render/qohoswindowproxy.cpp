@@ -264,6 +264,16 @@ bool isAbilityTerminating(QNapi::Object ability)
     return ability.eval<QNapi::Boolean>("context.isTerminating()");
 }
 
+bool isJsWindowInFreeWindowMode(const QArkUi::JsWindowRef &jsWindowRef)
+{
+    try {
+        return jsWindowRef.eval<QNapi::Boolean>("isInFreeWindowMode()");
+    } catch (const Napi::Error &error) {
+        qOhosPrintfWarning("isInFreeWindowMode() failed (%s), assuming it is not", error.what());
+        return false;
+    }
+}
+
 bool isWindowClosingFromSystem(
     QNapi::Object jsWindow, WindowProxyType windowType, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer)
 {
@@ -330,6 +340,7 @@ QOhosWindowProxy::QOhosWindowProxy(
         },
         Q_FUNC_INFO);
     m_windowProxyType = jsThreadInitResult.windowProxyType;
+    m_subWindowMaximizeSupported = jsThreadInitResult.subWindowMaximizeSupported;
     m_nodeXComponent = std::move(jsThreadInitResult.nodeXComponent);
     m_qAbilityInstanceId = std::move(jsThreadInitResult.qAbilityInstanceId);
     m_abilityObjectRef = std::move(jsThreadInitResult.abilityObjectRef);
@@ -359,6 +370,7 @@ QOhosWindowProxy::JsThreadInitResult QOhosWindowProxy::initInJsThread(
     auto &jsContext = QHarmonyJsContext::fromEnv(jsState.env());
     return JsThreadInitResult {
         .windowProxyType = windowProxyData.windowProxyType,
+        .subWindowMaximizeSupported = windowProxyData.subWindowMaximizeSupported,
         .nodeXComponent = std::move(windowProxyData.nodeXComponent),
         .qAbilityInstanceId = m_jsScopeData->jsWindowRef->owningQAbilityInstanceId(),
         .abilityObjectRef = QHarmonyJsObjectRef::fromValue(jsContext, m_jsScopeData->qAbilityPeer->qAbility()),
@@ -652,6 +664,11 @@ bool QOhosWindowProxy::qtIsMainWindow() const
     return m_windowProxyType == WindowProxyType::MainWindow;
 }
 
+bool QOhosWindowProxy::isSubWindowMaximizeSupported() const
+{
+    return m_subWindowMaximizeSupported;
+}
+
 void QOhosWindowProxy::raiseToAppTop()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
@@ -745,14 +762,23 @@ bool QOhosWindowProxy::tryMaximize(MaximizePresentation maximizePresentation)
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
 
-    if (!qtIsMainWindow()) {
-        qCWarning(QtForOhos(), "%s: Maximize is currently supported only on main windows", Q_FUNC_INFO);
+    if (m_windowProxyType != WindowProxyType::MainWindow && m_windowProxyType != WindowProxyType::SubWindow) {
+        qCWarning(QtForOhos(), "%s: Maximize is currently supported only on main and sub windows", Q_FUNC_INFO);
         return false;
     }
 
     return QOhosJsThreadGateway::evalWithPromise<bool>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             if (m_jsScopeData->isWindowClosing()) {
+                evalPromise(false);
+                return;
+            }
+
+            if (m_windowProxyType == WindowProxyType::SubWindow
+                && !isJsWindowInFreeWindowMode(*m_jsScopeData->jsWindowRef)) {
+                qOhosPrintfWarning(
+                    "%s: maximize request ignored: the sub window is not in free window mode",
+                    Q_FUNC_INFO);
                 evalPromise(false);
                 return;
             }
@@ -1281,14 +1307,6 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
                 taskPromise();
                 return;
             }
-            auto qUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
-            if (!qUiAbilityPeer) {
-                qOhosPrintfWarning(
-                    "%s: ability has no window stage, supported window modes not applied",
-                    Q_FUNC_INFO);
-                taskPromise();
-                return;
-            }
 
             auto jsSupportedWindowModes = QNapi::makeArray(
                 jsState.env(), supportedWindowModes,
@@ -1296,7 +1314,22 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
                     return jsState.mapOhosEnumToJs(mode);
                 });
 
-            qUiAbilityPeer->windowStage().evalToPromiseOrRejectOnThrow("setSupportedWindowModes(*)", {jsSupportedWindowModes})
+            QNapi::Promise evalPromise;
+            if (m_windowProxyType != WindowProxyType::MainWindow) {
+                evalPromise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
+                    "setSupportedWindowModes(*)", {jsSupportedWindowModes});
+            } else if (auto qUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
+                           m_jsScopeData->qAbilityPeer)) {
+                evalPromise = qUiAbilityPeer->windowStage().evalToPromiseOrRejectOnThrow(
+                    "setSupportedWindowModes(*)", {jsSupportedWindowModes});
+            } else {
+                qOhosPrintfWarning(
+                    "%s: ability has no window stage, supported window modes not applied",
+                    Q_FUNC_INFO);
+                evalPromise = QtOhos::makeResolvedPromise(Napi::Env(jsState.env()).Undefined());
+            }
+
+            evalPromise
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("setSupportedWindowModes()"))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
