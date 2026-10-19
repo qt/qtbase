@@ -124,11 +124,10 @@ void QXdgDesktopPortalFileDialog::initializeDialog()
     if (d->nativeFileDialog)
         d->nativeFileDialog->setOptions(options());
 
-    if (options()->fileMode() == QFileDialogOptions::ExistingFiles)
-        d->multipleFiles = true;
+    d->multipleFiles = options()->fileMode() == QFileDialogOptions::ExistingFiles;
 
-    if (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly)
-        d->directoryMode = true;
+    d->directoryMode = options()->fileMode() == QFileDialogOptions::Directory
+            || options()->fileMode() == QFileDialogOptions::DirectoryOnly;
 
     if (options()->isLabelExplicitlySet(QFileDialogOptions::Accept))
         d->acceptLabel = options()->labelText(QFileDialogOptions::Accept);
@@ -136,8 +135,7 @@ void QXdgDesktopPortalFileDialog::initializeDialog()
     if (!options()->windowTitle().isEmpty())
         d->title = options()->windowTitle();
 
-    if (options()->acceptMode() == QFileDialogOptions::AcceptSave)
-        d->saveFile = true;
+    d->saveFile = options()->acceptMode() == QFileDialogOptions::AcceptSave;
 
     if (!options()->nameFilters().isEmpty())
         d->nameFilters = options()->nameFilters();
