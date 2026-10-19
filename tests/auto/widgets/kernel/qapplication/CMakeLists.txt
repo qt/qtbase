@@ -38,6 +38,7 @@ if(QT_FEATURE_process)
             LIBRARIES
                 Qt::Widgets
         )
+        set_target_properties(apphelper_widgets_plugin PROPERTIES DEBUG_POSTFIX "")
         qt_autogen_tools_initial_setup(apphelper_widgets_plugin)
         add_dependencies(apphelper_widgets apphelper_widgets_plugin)
     endif()

@@ -85,6 +85,7 @@ if(QT_FEATURE_process)
             LIBRARIES
                 Qt::Gui
         )
+        set_target_properties(apphelper_gui_plugin PROPERTIES DEBUG_POSTFIX "")
         qt_autogen_tools_initial_setup(apphelper_gui_plugin)
         add_dependencies(apphelper_gui apphelper_gui_plugin)
     endif()

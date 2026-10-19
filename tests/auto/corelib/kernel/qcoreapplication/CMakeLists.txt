@@ -75,6 +75,7 @@ if(QT_FEATURE_process)
             LIBRARIES
                 Qt::Core
         )
+        set_target_properties(apphelper_core_plugin PROPERTIES DEBUG_POSTFIX "")
         qt_autogen_tools_initial_setup(apphelper_core_plugin)
         add_dependencies(apphelper_core apphelper_core_plugin)
     endif()
