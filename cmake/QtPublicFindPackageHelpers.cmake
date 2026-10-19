@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 function(qt_internal_disable_find_package_global_promotion target)
+    # Properties can't be set on ALIAS targets, e.g. a Threads::Threads provided by a subproject.
+    _qt_internal_dealias_target(target)
     set_target_properties("${target}" PROPERTIES _qt_no_promote_global TRUE)
 endfunction()
 
