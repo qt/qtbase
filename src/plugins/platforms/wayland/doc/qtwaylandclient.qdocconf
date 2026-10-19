@@ -13,7 +13,12 @@ qhp.QtWaylandClient.virtualFolder                           = QtWaylandClient
 qhp.QtWaylandClient.indexTitle                              = Qt Wayland Client
 qhp.QtWaylandClient.indexRoot                               =
 
-qhp.QtWaylandClient.subprojects = cmakecommand
+qhp.QtWaylandClient.subprojects = cmakecommand classes
+
+qhp.QtWaylandClient.subprojects.classes.title = C++ Classes
+qhp.QtWaylandClient.subprojects.classes.indexTitle = Qt Wayland Client C++ Classes
+qhp.QtWaylandClient.subprojects.classes.selectors = class headerfile
+qhp.QtWaylandClient.subprojects.classes.sortPages = true
 
 qhp.QtWaylandClient.subprojects.cmakecommand.title = qt_generate_wayland_protocol_client_sources
 qhp.QtWaylandClient.subprojects.cmakecommand.indexTitle = qt_generate_wayland_protocol_client_sources
