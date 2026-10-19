@@ -257,11 +257,6 @@ Q_GLOBAL_STATIC(QFactoryLoaderGlobals, qt_factoryloader_global)
 
 inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
 {
-    struct LibraryReleaser {
-        void operator()(QLibraryPrivate *library)
-        { if (library) library->release(); }
-    };
-
     // If we've already loaded, skip it...
     if (loadedPaths->hasSeen(path))
         return;
