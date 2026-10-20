@@ -40,6 +40,7 @@ macos-26 # QTBUG-142157
 android
 [enterLeaveOnWindowShowHide]
 macos-26 # QTBUG-142157
+macos-27 # QTBUG-142157
 wayland
 [persistentWinId]
 wayland
