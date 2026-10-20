@@ -68,5 +68,6 @@ generated \c module.json5.
 
 \snippet cmake-macros/examples.cmake qt_add_harmonyos_permission
 
+\sa {Qt for HarmonyOS}
 \sa {Qt for HarmonyOS CMake API}
 */
