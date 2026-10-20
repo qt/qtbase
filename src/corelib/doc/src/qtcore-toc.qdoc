@@ -56,6 +56,7 @@
     \li \l{Plugin Classes}{Reference - Plugin Classes}
     \li \l{CMake Commands in Qt6 Core}{Reference - CMake Commands}
     \li \l{CMake Variables in Qt6 Core}{Reference - CMake Variables}
+    \li \l{CMake Deployment Variables in Qt6 Core}{Reference - CMake Deployment Variables}
     \li \l{CMake Target Properties in Qt6 Core}{Reference - CMake Target Properties}
     \endlist
 
