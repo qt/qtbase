@@ -80,6 +80,9 @@ disable setting \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM, and the
 \l QT_NO_SET_XCODE_BUNDLE_IDENTIFIER variable can be used to disable setting
 \c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER and \c MACOSX_BUNDLE_GUI_IDENTIFIER.
 
+Finalization sets more defaults than these. They can all be turned off, see
+\l{Apple Platform CMake Opt-outs}.
+
 \section3 Embedding Shared Library Dependencies
 \target apple-embed-shared-library-dependencies
 
