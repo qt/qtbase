@@ -77,6 +77,7 @@ private slots:
 #if !defined(QFONTENGINE_BENCHMARK)
     void glyphSizeLimit();
     void zeroLengthTable();
+    void truncatedFontCollection();
 #endif
 
 private:
@@ -376,6 +377,31 @@ void tst_QFontEngine::zeroLengthTable()
 
     // Retrieving the zero-length table returns no data (and does not assert)
     QVERIFY(rawFont.fontTable(QFont::Tag("foo ")).isEmpty());
+}
+
+void tst_QFontEngine::truncatedFontCollection()
+{
+    // A TrueType collection header which claims to contain one font, but where
+    // the data ends after the first byte of the font's 32-bit offset. Reading
+    // the offset must not go out of bounds (QTBUG-151682). The data is placed
+    // in a buffer of the exact size, without a null terminator, so that the
+    // out-of-bounds read is caught by address sanitizer.
+    static constexpr char ttcData[] = {
+        't', 't', 'c', 'f', // TTCTag
+        0, 1, 0, 0,         // Version 1.0
+        0, 0, 0, 1,         // numFonts
+        0,                  // First byte of tableDirectoryOffsets[0]
+    };
+    const auto buffer = std::make_unique<char[]>(sizeof(ttcData));
+    memcpy(buffer.get(), ttcData, sizeof(ttcData));
+    const QByteArray fontData = QByteArray::fromRawData(buffer.get(), sizeof(ttcData));
+
+    const int fontId = QFontDatabase::addApplicationFontFromData(fontData);
+    const auto cleanup = qScopeGuard([&] {
+        if (fontId >= 0)
+            QFontDatabase::removeApplicationFont(fontId);
+    });
+    QCOMPARE(fontId, -1);
 }
 
 #endif // !define(QFONTENGINE_BENCHMARK)
