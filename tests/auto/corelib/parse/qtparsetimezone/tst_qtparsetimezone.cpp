@@ -1075,6 +1075,14 @@ void tst_QtParseTimeZone::prefix_data()
                             return offsetBy(zone.standardTimeOffset(QDateTime(QDate(2026, 12, 1),
                                                                               QTime(12, 0), zone)));
                     }
+#ifdef Q_OS_DARWIN
+                    // Foundation falls back to the offset currently in effect
+                    // for generic long names. Qt's ICU code asks for the
+                    // standard name instead, as ICU's C API has no generic
+                    // name type, so its fallback uses the standard offset.
+                    if (timeType == QTZ::GenericTime && nameType != QTZ::OffsetName)
+                        return QTZ(noon.offsetFromUtc());
+#endif
                     if (timeType != QTZ::DaylightTime)
                         return offsetBy(zone.standardTimeOffset(noon));
                     const QDateTime june(QDate(noon.date().year(), 6, 21), QTime(12, 0), zone);
