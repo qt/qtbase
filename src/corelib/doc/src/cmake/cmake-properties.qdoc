@@ -42,6 +42,8 @@ provides a way to override the automatic detection entirely, so if a library
 is listed before its dependencies, it will fail to load on some devices.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Qt for Android}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -114,6 +116,8 @@ set_target_properties(MyApp PROPERTIES
 \endcode
 
 \sa qt_android_generate_deployment_settings()
+\sa {Qt for Android}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -437,6 +441,8 @@ set_target_properties(${target} PROPERTIES
 \note Using the Address Sanitizer require this to be set to \c TRUE.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Qt for Android}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -609,6 +615,8 @@ Projects should not set this property manually.
 
 \sa {QT_ANDROID_DEPLOYMENT_SETTINGS_FILE}
 \sa {cmake-variable-QT_USE_TARGET_ANDROID_BUILD_DIR}{QT_USE_TARGET_ANDROID_BUILD_DIR}
+\sa {Qt for Android}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -654,6 +662,9 @@ to provide a path to where those libraries will be located on the target device
 instead.
 
 \note Only supported when deploying as an APK.
+
+\sa {Qt for Android}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -755,6 +766,8 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_NAME}{QT_HARMONYOS_APP_NAME}
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -785,6 +798,8 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_BUNDLE_NAME}{QT_HARMONYOS_APP_BUNDLE_NAME}
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -812,6 +827,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_APP_VENDOR "Example Inc."
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -842,6 +860,8 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_VERSION_NAME}{QT_HARMONYOS_APP_VERSION_NAME}
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -872,6 +892,8 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_VERSION_CODE}{QT_HARMONYOS_APP_VERSION_CODE}
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -901,6 +923,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_APP_LABEL "My Application"
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -932,6 +957,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icon.png"
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -964,6 +992,9 @@ set_target_properties(myapp PROPERTIES
 
 \sa{cmake-target-property-QT_HARMONYOS_TARGET_SDK_VERSION}{QT_HARMONYOS_TARGET_SDK_VERSION},
     {cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1001,6 +1032,9 @@ set_target_properties(myapp PROPERTIES
 
 \sa{cmake-target-property-QT_HARMONYOS_COMPATIBLE_SDK_VERSION}{QT_HARMONYOS_COMPATIBLE_SDK_VERSION},
     {cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1033,6 +1067,9 @@ set_target_properties(myapp PROPERTIES
 
 \sa{cmake-target-property-QT_HARMONYOS_COMPATIBLE_SDK_VERSION}{QT_HARMONYOS_COMPATIBLE_SDK_VERSION},
     {cmake-target-property-QT_HARMONYOS_TARGET_SDK_VERSION}{QT_HARMONYOS_TARGET_SDK_VERSION}
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1067,6 +1104,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_TARGET_ARCHS "arm64-v8a"
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1116,6 +1156,8 @@ plugin system, use \l{cmake-target-property-QT_HARMONYOS_EXTRA_PLUGINS}
 {QT_HARMONYOS_EXTRA_PLUGINS} instead.
 
 \sa{cmake-target-property-QT_HARMONYOS_EXTRA_PLUGINS}{QT_HARMONYOS_EXTRA_PLUGINS}
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1163,6 +1205,8 @@ add_dependencies(myapp qcustomimg)
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_EXTRA_LIBS}{QT_HARMONYOS_EXTRA_LIBS}
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1194,6 +1238,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/harmonyos"
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1224,6 +1271,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_MODULE_DESCRIPTION "My Application module"
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1252,6 +1302,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_MODULE_DEVICE_TYPES "tablet;2in1"
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1285,6 +1338,9 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_ABILITY_ORIENTATION "landscape"
 )
 \endcode
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
