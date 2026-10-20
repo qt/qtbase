@@ -113,6 +113,23 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         set(QT_HEADERS_CLEAN_CXX_STANDARD c++20)
     endif()
 
+    if(WIN32)
+        set(minmax_header "${CMAKE_BINARY_DIR}/.qt/headersclean_minmax.h")
+        get_property(minmax_generated GLOBAL PROPERTY _qt_headersclean_minmax_generated)
+        if(NOT minmax_generated)
+            # Emulates windows.h without NOMINMAX. cl.exe cannot define function-like macros via -D.
+            file(CONFIGURE OUTPUT "${minmax_header}" @ONLY CONTENT [[
+#ifndef min
+#  define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#  define max(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+]])
+            set_property(GLOBAL PROPERTY _qt_headersclean_minmax_generated TRUE)
+        endif()
+    endif()
+
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
             OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM")
 
@@ -133,6 +150,10 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         if (NOT ((TEST_architecture_arch STREQUAL arm)
                 OR (TEST_architecture_arch STREQUAL mips)))
             list(APPEND hcleanFLAGS -Wcast-align)
+        endif()
+
+        if(WIN32)
+            list(APPEND hcleanFLAGS -include "${minmax_header}")
         endif()
 
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -218,6 +239,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
             "${target_includes_joined_genex}"
             "${hcleanDEFS}"
             "${hcleanUDEFS}"
+            "-FI${minmax_header}"
         )
         string(JOIN " " compiler_command_line_variables
             "-FI"
