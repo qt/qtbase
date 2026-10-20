@@ -81,8 +81,6 @@ public:
     bool allowRootCertOnDemandLoading;
     bool peerSessionShared;
 
-    Q_AUTOTEST_EXPORT static bool peerSessionWasShared(const QSslConfiguration &configuration);
-
     QSsl::SslOptions sslOptions;
 
     static const QSsl::SslOptions defaultSslOptions;

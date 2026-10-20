@@ -7239,7 +7239,7 @@ void tst_QNetworkReply::sslSessionSharingHelperSlot()
     // check that SSL session sharing was used in at least one of the replies
     static bool sslSessionSharingWasUsed = false;
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    bool sslSessionSharingWasUsedInReply = QSslConfigurationPrivate::peerSessionWasShared(reply->sslConfiguration());
+    bool sslSessionSharingWasUsedInReply = reply->sslConfiguration().isSessionResumed();
     if (sslSessionSharingWasUsedInReply)
         sslSessionSharingWasUsed = true;
 
@@ -7314,8 +7314,7 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
-    bool sslSessionSharingWasUsedInReply = QSslConfigurationPrivate::peerSessionWasShared(
-                reply->sslConfiguration());
+    bool sslSessionSharingWasUsedInReply = reply->sslConfiguration().isSessionResumed();
     QCOMPARE(sessionPersistenceEnabled, sslSessionSharingWasUsedInReply);
 }
 

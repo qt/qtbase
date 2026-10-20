@@ -817,6 +817,19 @@ int QSslConfiguration::sessionTicketLifeTimeHint() const
 }
 
 /*!
+    \since 6.13
+
+    Returns \c true if a reused session was negotiated during the handshake
+    of the current connection; otherwise returns \c false.
+
+    \note Only the OpenSSL backend reports session reuse.
+*/
+bool QSslConfiguration::isSessionResumed() const
+{
+    return d->peerSessionShared;
+}
+
+/*!
    \since 5.7
 
    Returns the ephemeral server key used for cipher algorithms
@@ -1416,11 +1429,5 @@ void QSslConfiguration::setMissingCertificateIsFatal(bool cannotRecover)
     qCWarning(lcSsl, "Handling a missing certificate as a fatal error requires an OpenSSL backend");
 #endif // openssl
 }
-
-/*! \internal
-*/
-bool QSslConfigurationPrivate::peerSessionWasShared(const QSslConfiguration &configuration) {
-        return configuration.d->peerSessionShared;
-    }
 
 QT_END_NAMESPACE

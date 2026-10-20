@@ -1254,7 +1254,6 @@ void tst_QSslSocket::sessionCipher()
 
 void tst_QSslSocket::peerSessionSharedIsReset()
 {
-#ifdef QT_BUILD_INTERNAL
     if (!isTestingOpenSsl)
         QSKIP("Session reuse is only reported by the OpenSSL backend");
 
@@ -1278,7 +1277,7 @@ void tst_QSslSocket::peerSessionSharedIsReset()
     // socket's configuration.
     socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
     QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
-    QVERIFY(!QSslConfigurationPrivate::peerSessionWasShared(socket->sslConfiguration()));
+    QVERIFY(!socket->sslConfiguration().isSessionResumed());
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
 
@@ -1286,7 +1285,7 @@ void tst_QSslSocket::peerSessionSharedIsReset()
     // sets the flag. Needed so that the next connection starts with it set.
     socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
     QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
-    QVERIFY(QSslConfigurationPrivate::peerSessionWasShared(socket->sslConfiguration()));
+    QVERIFY(socket->sslConfiguration().isSessionResumed());
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
 
@@ -1298,12 +1297,9 @@ void tst_QSslSocket::peerSessionSharedIsReset()
     socket->setSslConfiguration(config);
     socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
     QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
-    QVERIFY(!QSslConfigurationPrivate::peerSessionWasShared(socket->sslConfiguration()));
+    QVERIFY(!socket->sslConfiguration().isSessionResumed());
     socket->disconnectFromHost();
     QTRY_COMPARE(socket->state(), QAbstractSocket::UnconnectedState);
-#else
-    QSKIP("This test requires a developer build (QT_BUILD_INTERNAL)");
-#endif
 }
 
 void tst_QSslSocket::localCertificate_data()

@@ -108,6 +108,7 @@ public:
     QByteArray sessionTicket() const;
     void setSessionTicket(const QByteArray &sessionTicket);
     int sessionTicketLifeTimeHint() const;
+    bool isSessionResumed() const;
 
     QSslKey ephemeralServerKey() const;
 
