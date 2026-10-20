@@ -76,6 +76,9 @@ template<typename ...Ts, typename BaseConsumer>
 std::enable_if_t<std::is_assignable<QOhosConsumer<Ts...>, BaseConsumer>::value, std::function<bool(Ts...)>>
 makeCallOnceConsumerWrapper(BaseConsumer &&baseConsumer);
 
+template<typename T>
+QOhosSupplier<T> makeMemoizingSupplier(QOhosSupplier<T> baseSupplier);
+
 std::optional<double> tryParseStringAsFiniteDouble(const std::string &inputString);
 
 std::string printfToString(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
@@ -219,6 +222,18 @@ makeCallOnceConsumerWrapper(BaseConsumer &&baseConsumer)
         } else {
             return false;
         }
+    };
+}
+
+template<typename T>
+QOhosSupplier<T> makeMemoizingSupplier(QOhosSupplier<T> baseSupplier)
+{
+    return [baseSupplier = std::move(baseSupplier), value = std::optional<T>()]() mutable {
+        if (!value.has_value()) {
+            value.emplace(baseSupplier());
+            baseSupplier = nullptr;
+        }
+        return value.value();
     };
 }
 
