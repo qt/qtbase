@@ -1086,8 +1086,10 @@ set_target_properties(myapp PROPERTIES
 \preliminarycmakeproperty
 \cmakepropertyharmonyosonly
 
-Specifies the list of target architectures that the HAP package is built for,
-for example \c {arm64-v8a}.
+Specifies the list of target architectures that the HAP package is built for.
+Use \c {arm64-v8a} for physical devices and \c {x86_64} for the emulator. The
+value must match the architecture Qt was built for, \c OHOS_ARCH. CMake does
+not validate it.
 
 If this property is not set, it defaults to the architecture of the current
 build, \c OHOS_ARCH.
