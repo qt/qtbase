@@ -61,11 +61,114 @@ endfunction()
 
 # Define a Qt feature.
 #
-# The vcpkg-related arguments are relevant for configure only and are documented
-# at the top of the qt_feature implementation in QtProcessConfigureArgs.cmake.
+# Define features in configure.cmake files between qt_feature_module_begin() and
+# qt_feature_module_end(), which evaluates them.
 #
-# Features that share an EXCLUSIVE_GROUP name must not be ON at the same time. This is checked in
-# qt_feature_module_end, so a group only covers features defined in the same module.
+# Synopsis
+#
+#   qt_feature(<feature>
+#       [PRIVATE] [PUBLIC]
+#       [LABEL <string>]
+#       [PURPOSE <string>]
+#       [SECTION <string>]
+#       [EXCLUSIVE_GROUP <name>]
+#       [CONDITION <expression>]
+#       [AUTODETECT <expression>]
+#       [ENABLE <expression>]
+#       [DISABLE <expression>]
+#       [EMIT_IF <expression>]
+#       [SYSTEM_LIBRARY]
+#       [VCPKG_DEFAULT] [VCPKG_OPTIONAL]
+#       [VCPKG_DESCRIPTION <string>]
+#       [VCPKG_DEPENDENT_FEATURES <features>]
+#   )
+#
+# Arguments
+#
+# `<feature>`
+#   The feature name. qt_feature replaces characters other than letters, digits and
+#   underscores with underscores (or with `x` if the name contains `c++`), so the feature
+#   `foo-bar` maps to `FEATURE_foo_bar` and `QT_FEATURE_foo_bar`.
+#
+# `PRIVATE`, `PUBLIC`
+#   Write a `#define QT_FEATURE_<feature>` line into the module's PRIVATE_FILE or PUBLIC_FILE
+#   header (for example qtcore-config_p.h or qtcore-config.h), so that C++ code can use
+#   `QT_CONFIG(<feature>)`. The value is 1 if the feature is ON and -1 otherwise.
+#   Without either option, the feature is internal and only available in CMake as
+#   `QT_FEATURE_<feature>`.
+#
+# `LABEL`
+#   Short description, used in the configure summary and as the help string of the
+#   `FEATURE_<feature>` cache variable.
+#
+# `PURPOSE`, `SECTION`
+#   Description and section that `configure -list-features` shows. It omits features without
+#   PURPOSE.
+#
+# `EXCLUSIVE_GROUP`
+#   Features that share a group name must not be ON at the same time. qt_feature_module_end
+#   checks this, so a group only covers features defined in the same module.
+#
+# `CONDITION`
+#   Requirements of the feature. If the condition is false, configure does not autodetect the
+#   feature and reports an error if you enable it explicitly. Defaults to ON.
+#
+# `AUTODETECT`
+#   If true, configure enables the feature by default whenever CONDITION is true. Defaults to
+#   ON. Set it to OFF for features that you must enable explicitly.
+#
+# `ENABLE`, `DISABLE`
+#   Expressions that force the default value of the feature to ON or OFF, regardless of
+#   AUTODETECT. DISABLE takes precedence over ENABLE. They usually use configure
+#   input, for example `ENABLE INPUT_linker STREQUAL 'mold'`. Note that ENABLE does not
+#   check CONDITION. If ENABLE is true and CONDITION is false, configure reports an error.
+#
+# `EMIT_IF`
+#   If false, the feature is insignificant on this platform: it is OFF, has no
+#   `FEATURE_<feature>` cache variable, and configure ignores any user provided value with a
+#   warning. Defaults to ON.
+#
+# `SYSTEM_LIBRARY`
+#   Mark a feature that selects the system version of a 3rd party library. The `force_system_libs`
+#   feature enables such features, and `force_bundled_libs` disables them.
+#
+# `VCPKG_*`
+#   The vcpkg-related arguments are relevant for configure only. QtProcessConfigureArgs.cmake
+#   documents them at the top of the qt_feature implementation.
+#
+# Expressions
+#
+# qt_evaluate_config_expression() evaluates the expressions. They use if() syntax with
+# these additions:
+# - `QT_FEATURE_<other>` evaluates the other feature first, which may come from another module.
+# - `TEST_<name>` runs the compile test <name>, defined with qt_config_compile_test() and
+#   similar functions, on first use.
+# - Use single quotes for string literals, for example `INPUT_foo STREQUAL 'bar'` or
+#   `INPUT_foo STREQUAL ''`.
+# - AND and OR have no precedence and group from the right: `A AND B OR C` means
+#   `A AND (B OR C)`. Use parentheses when combining them.
+#
+# Feature selection
+#
+# qt_feature computes the default value of a feature as follows:
+# 1. OFF if DISABLE is true.
+# 2. ON if ENABLE is true.
+# 3. The value of CONDITION if AUTODETECT is true.
+# 4. OFF otherwise.
+#
+# The user can override the default by setting the `FEATURE_<feature>` cache variable, for
+# example with `-DFEATURE_foo=OFF` or the configure options `-feature-foo`, `-no-feature-foo`.
+# The user provided value takes precedence over ENABLE, DISABLE and AUTODETECT, but not over
+# CONDITION and EMIT_IF.
+#
+# configure passes other options, defined with qt_commandline_option() in configure.cmake, to
+# CMake as `-DINPUT_<option>=<value>`. For a boolean option whose name equals a feature name,
+# it passes `-DFEATURE_<option>=ON/OFF` instead. INPUT_ variables only affect a feature through
+# its expressions.
+#
+# qt_feature stores the result in the `QT_FEATURE_<feature>` cache variable, which build system
+# code checks with if(QT_FEATURE_<feature>). See qt_evaluate_feature() for how it uses the two
+# cache variables to detect changes on reconfiguration.
 function(qt_feature feature)
     set(original_name "${feature}")
     qt_feature_normalize_name("${feature}" feature)
@@ -872,7 +975,7 @@ endmacro()
 #
 # If a value is not provided on initial configuration, the value will be auto-computed based on the
 # various conditions of the feature.
-# TODO: Document the various conditions and how they relate to each other.
+# See qt_feature() for how the conditions relate to each other.
 #
 #
 # `QT_FEATURE_foo` stores the value of the feature from the previous configuration run.
