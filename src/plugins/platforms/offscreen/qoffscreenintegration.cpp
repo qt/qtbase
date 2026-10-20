@@ -348,6 +348,7 @@ bool QOffscreenIntegration::hasCapability(QPlatformIntegration::Capability cap) 
     case ThreadedPixmaps: return true;
     case MultipleWindows: return true;
     case RhiBasedRendering: return false;
+    case MouseCursorPositioning: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
