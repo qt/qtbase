@@ -1728,6 +1728,7 @@ findOffsetPrefixImpl(QStringView text, const QLocale &locale,
         }
         Q_UNREACHABLE_RETURN(false);
     };
+    QString bestCandidate; // The displayName() for which best was a match.
 
     /* Scan with locale-appropriate digits first, then with ASCII (C-locale)
        digits, if different. Note that both scan's use the locale-appropriate
@@ -1747,8 +1748,9 @@ findOffsetPrefixImpl(QStringView text, const QLocale &locale,
 
         // Updates best if it finds a better match.
         // Returns true if candidate uses digitLocale's digits.
-        const auto consider = [&best, &aligner, txtSign = textPattern.sign, digitLocale]
-            (QStringView candidate, char sign, QTimeZone::TimeType season) {
+        const auto consider = [&best, &aligner, &bestCandidate,
+                               txtSign = textPattern.sign, digitLocale]
+            (const QString &candidate, char sign, QTimeZone::TimeType season) {
             const auto idForOffset = [](int offsetSeconds) -> QByteArray {
                 if (!offsetSeconds)
                     return "UTC";
@@ -1773,6 +1775,7 @@ findOffsetPrefixImpl(QStringView text, const QLocale &locale,
                     // offset, but parsing is allowed to be permissive.
                     const int offset = sign == '-' ? -parsed.offset : parsed.offset;
                     best = { idForOffset(offset), parsed.length, season, offset };
+                    bestCandidate = candidate;
                 }
                 return pat.digitsAreLocale;
             }
@@ -1788,18 +1791,20 @@ findOffsetPrefixImpl(QStringView text, const QLocale &locale,
                     continue;
                 if (const QString pos = positive.displayName(season, format, locale);
                     pos.size() > best.nameLength) {
-                    if (consider(pos, '+', season))
+                    if (pos != bestCandidate && consider(pos, '+', season))
                         nativeSeen = true;
                 }
                 if (const QString neg = negative.displayName(season, format, locale);
                     neg.size() > best.nameLength) {
-                    if (consider(neg, '-', season))
+                    if (neg != bestCandidate && consider(neg, '-', season))
                         nativeSeen = true;
                 }
                 if (const QString nul = greenwich.displayName(season, format, locale);
                     nul.size() > best.nameLength) {
-                    if (aligner.compare(nul))
+                    if (nul != bestCandidate && aligner.compare(nul)) {
                         best = { "UTC"_ba, nul.size(), QTimeZone::GenericTime, 0 };
+                        bestCandidate = nul;
+                    }
                 }
                 if (best.nameLength == text.size()) // Shortcut when fully matched.
                     return best;
