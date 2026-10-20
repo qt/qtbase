@@ -1079,6 +1079,15 @@ void QXmlStreamReaderPrivate::init()
     state_stack[tos] = 0;
     putStack.clear();
     putStack.reserve(32);
+    dtdName.clear();
+    dtdPublicId.clear();
+    dtdSystemId.clear();
+    entityDeclarations.clear();
+    entityDeclarations.reserve(16);
+    publicEntityDeclarations.clear();
+    notationDeclarations.clear();
+    notationDeclarations.reserve(16);
+    publicNotationDeclarations.clear();
     textBuffer.clear();
     textBuffer.reserve(256);
     tagStack.clear();
