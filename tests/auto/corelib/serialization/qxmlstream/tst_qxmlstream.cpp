@@ -2654,11 +2654,7 @@ void tst_QXmlStream::clearReallyResetsDtdInformation() const
     // THEN: no information from the first document's DTD is visible, at any token
     //
 
-    QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
-    QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
     QVERIFY(r.entityDeclarations().isEmpty());
-    QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
-    QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
     QVERIFY(r.notationDeclarations().isEmpty());
     QCOMPARE(r.dtdName(), ""_L1);
     QCOMPARE(r.dtdPublicId(), ""_L1);
@@ -2668,13 +2664,7 @@ void tst_QXmlStream::clearReallyResetsDtdInformation() const
         [[maybe_unused]]
         const auto tok = r.readNext();
         auto printOnFail = qScopeGuard([&] { qDebug() << "failed at" << r.tokenString(); });
-        QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
-        if (tok == QXmlStreamReader::TokenType::StartDocument) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
-        if (tok == QXmlStreamReader::TokenType::DTD) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
         QVERIFY(r.entityDeclarations().isEmpty());
-        QEXPECT_FAIL("no-dtd,lazy", "QTBUG-151675", Continue);
-        if (tok == QXmlStreamReader::TokenType::StartDocument) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
-        if (tok == QXmlStreamReader::TokenType::DTD) QEXPECT_FAIL("empty-dtd,lazy", "QTBUG-151675", Continue);
         QVERIFY(r.notationDeclarations().isEmpty());
         QCOMPARE(r.dtdPublicId(), ""_L1);
         QCOMPARE(r.dtdSystemId(), ""_L1);
