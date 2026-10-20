@@ -8,6 +8,7 @@
 #include <QtCore/qlocale.h>
 #include <QtCore/private/qlocale_p.h>
 #include <QtCore/private/qlocaltime_p.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qstring.h>
 
 using namespace Qt::StringLiterals;
@@ -1356,9 +1357,12 @@ void tst_QtParseTimeZone::prefix()
             // may use as generic name what others use as standard name.
         } else {
 #ifdef Q_OS_DARWIN
-            QEXPECT_FAIL("Casablanca/ar-Arab-MA/lng/std/any/0",
-                         "Best match to same name is Africa/Bissau DST, inconveniently.",
-                         Abort);
+            if (QOperatingSystemVersion::current()
+                < QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 27)) {
+                QEXPECT_FAIL("Casablanca/ar-Arab-MA/lng/std/any/0",
+                             "Best match to same name is Africa/Bissau DST, inconveniently.",
+                             Abort);
+            }
 #endif
             QCOMPARE(parse.timeType, type);
         }
