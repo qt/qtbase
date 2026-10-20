@@ -881,11 +881,11 @@ static QList<quint32> getTrueTypeFontOffsets(const uchar *fontData, const uchar 
         return offsets;
     }
 
-    if (quintptr(fileEndSentinel - fontData) > 12 + (numFonts - 1) * 4) {
+    if (quintptr(fileEndSentinel - fontData) >= 12 + numFonts * 4) {
         for (quint32 i = 0; i < numFonts; ++i)
             offsets << qFromBigEndian<quint32>(fontData + 12 + i * 4);
     } else {
-        qCWarning(lcQpaFonts) << "Corrupted font data detected";
+        qCWarning(lcQpaFonts) << "TTC offset table too short";
     }
 
     return offsets;
