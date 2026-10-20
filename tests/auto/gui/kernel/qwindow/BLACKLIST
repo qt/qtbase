@@ -30,6 +30,7 @@ windows-10
 windows-11
 android
 macos-26 # QTBUG-142157
+macos-27 # QTBUG-142157
 # QT6HAROS-120
 harmonyos
 [stateChangeSignal]
