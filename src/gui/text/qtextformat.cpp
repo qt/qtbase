@@ -2005,14 +2005,15 @@ QMap<QFont::Tag, float> QTextCharFormat::fontVariableAxes() const
 /*!
     \fn void QTextCharFormat::setAnchor(bool anchor)
 
-    If \a anchor is true, text with this format represents an anchor, and is
-    formatted in the appropriate way; otherwise the text is formatted normally.
-    (Anchors are hyperlinks which are often shown underlined and in a different
-    color from plain text.)
+    If \a anchor is true, text with this format represents an anchor;
+    otherwise it doesn't. Use setAnchorHref() to set the link target, and
+    optionally setAnchorNames() to make the text the destination of a link.
 
-    The way the text is rendered is independent of whether or not the format
-    has a valid anchor defined. Use setAnchorHref(), and optionally
-    setAnchorNames() to create a hypertext link.
+    Marking text as an anchor doesn't change its appearance. To make a link
+    look different from plain text, set the appearance explicitly, for
+    example, with setForeground() and setFontUnderline(). Text that you insert
+    as HTML with an \c{<a href="...">} element uses link styling
+    automatically.
 
     \sa isAnchor()
 */
@@ -2021,7 +2022,7 @@ QMap<QFont::Tag, float> QTextCharFormat::fontVariableAxes() const
 /*!
     \fn bool QTextCharFormat::isAnchor() const
 
-    Returns \c true if the text is formatted as an anchor; otherwise
+    Returns \c true if this format marks text as an anchor; otherwise
     returns \c false.
 
     \sa setAnchor(), setAnchorHref(), setAnchorNames()
@@ -2032,12 +2033,11 @@ QMap<QFont::Tag, float> QTextCharFormat::fontVariableAxes() const
     \fn void QTextCharFormat::setAnchorHref(const QString &value)
 
     Sets the hypertext link for the text format to the given \a value.
-    This is typically a URL like "http://example.com/index.html".
+    This is typically a URL, such as "http://example.com/index.html".
 
-    The anchor will be displayed with the \a value as its display text;
-    if you want to display different text call setAnchorNames().
-
-    To format the text as a hypertext link use setAnchor().
+    The link applies to the text that has this format; \a value doesn't
+    appear in the document. For the text to act as a hypertext link, also
+    call setAnchor().
 */
 
 
