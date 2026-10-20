@@ -1556,6 +1556,7 @@ auto PatternAligner::match(QStringView str, const QList<qsizetype> &strPat,
 
         if (len < 0) {
             qsizetype txtLen = txtInd < txtPat.size() ? txtPat.at(txtInd) : 0;
+            // First and last fields aren't between others, so can't be separators:
             const bool maybeSep = txtInd > 0 && txtInd + 1 < strPat.size();
             // If we've seen a separator and str has something else, skip over
             // any extra separator-numeric pairs in txt:
