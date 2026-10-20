@@ -2533,14 +2533,35 @@ void tst_QXmlStream::clearReallyResets_data() const
             xml.arg(value2),
             QXmlStreamReader::Error::NoError);
     }
+    {
+        // If dtdAttributes is not reset, attribute default values would be
+        // injected into the second document:
+
+        row("dtd-attributes-dont-leak-across-documents",
+            64, // doesn't matter
+            u"<!DOCTYPE e [<!ATTLIST e a CDATA 'v'>]><e/>"_s, // parsed as <e a='v'/>
+            u"<e/>"_s, // no DOCTYPE at all                   // parsed as <e/>
+            QXmlStreamReader::Error::NoError);
+    }
 }
 
 static QString readAllText(QXmlStreamReader &reader)
 {
     QString result;
     while (!reader.atEnd()) {
-        if (reader.readNext() == QXmlStreamReader::Characters)
+        switch (reader.readNext()) {
+        case QXmlStreamReader::TokenType::Characters:
             result += reader.text();
+            break;
+        case QXmlStreamReader::TokenType::StartElement: {
+            const auto attrs = reader.attributes();
+            for (const auto &attr : attrs)
+                result += attr.value();
+            break;
+        }
+        default:
+            ;
+        }
     }
     return result;
 }
