@@ -3,24 +3,12 @@
 
 #include <QtCore/qstringlist.h>
 #include <QtGui/private/qinternalmimedata_p.h>
-#include <optional>
 #include <qohosmimedata.h>
+#include <qohosutils.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace {
-
-template<typename T>
-QOhosSupplier<T> makeMemoizingSupplier(QOhosSupplier<T> baseSupplier)
-{
-    return [baseSupplier = std::move(baseSupplier), value = std::optional<T>()]() mutable {
-        if (!value.has_value()) {
-            value.emplace(baseSupplier());
-            baseSupplier = nullptr;
-        }
-        return value.value();
-    };
-}
 
 class SuppliersBasedMimeData : public QInternalMimeData
 {
@@ -70,7 +58,8 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeQOhosLazyFetchMimeDataFactory(
 {
     auto memoizingSuppliers = std::make_shared<std::map<QString, QOhosSupplier<QVariant>>>();
     for (auto &entry : mimeValuesSuppliers)
-        memoizingSuppliers->emplace(entry.first, makeMemoizingSupplier(std::move(entry.second)));
+        memoizingSuppliers->emplace(
+            entry.first, QtOhos::makeMemoizingSupplier(std::move(entry.second)));
 
     return [memoizingSuppliers]() {
         return std::make_unique<SuppliersBasedMimeData>(memoizingSuppliers);
