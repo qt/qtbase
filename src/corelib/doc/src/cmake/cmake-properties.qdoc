@@ -1414,6 +1414,21 @@ retained.
 
 This is useful if you want to strip QML source code from the binary.
 
+The \l qt_add_resources(), \l qt_add_qml_module(), and \l qt_target_qml_sources()
+functions read the property when you call them.
+Therefore, set the property before the call, in the same directory scope:
+
+\badcode
+set_source_files_properties(Main.qml
+    PROPERTIES QT_DISCARD_FILE_CONTENTS TRUE
+)
+
+qt_add_qml_module(app
+    URI MyApp
+    QML_FILES Main.qml
+)
+\endcode
+
 \note If you omit the QML source code from the binary, the QML engine has to
 rely on the compilation units created by \l{qmlcachegen} or \l{qmlsc}.
 Those are tied to the specific version of Qt they were built with. If you change

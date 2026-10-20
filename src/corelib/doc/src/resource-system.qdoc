@@ -176,6 +176,9 @@
 
     This is useful to strip QML source code from an application binary.
 
+    When building with CMake, use the \l{QT_DISCARD_FILE_CONTENTS} source file
+    property to achieve the same.
+
     \note If you omit the QML source code from the binary, the QML engine has to
     rely on the compilation units created by \l{qmlcachegen} or \l{qmlsc}.
     Those are tied to the specific version of Qt they were built with. If you
