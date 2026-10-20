@@ -1620,25 +1620,35 @@ endif()
 # Restore the escaped semicolons in arguments that are lists
 list(TRANSFORM cmake_args REPLACE "\\[\\[;\\]\\]" "\\\\;")
 
-if(dry_run)
-    if(CMAKE_COMMAND MATCHES " ")
-        set(pretty_command_line "\"${CMAKE_COMMAND}\"")
-    else()
-        set(pretty_command_line "${CMAKE_COMMAND}")
+if(CMAKE_COMMAND MATCHES " ")
+    set(pretty_command_line "\"${CMAKE_COMMAND}\"")
+else()
+    set(pretty_command_line "${CMAKE_COMMAND}")
+endif()
+foreach(arg IN LISTS cmake_args)
+    if(arg MATCHES "[ ;]")
+        set(arg "\"${arg}\"")
     endif()
-    foreach(arg IN LISTS cmake_args)
-        if(arg MATCHES "[ ;]")
-            set(arg "\"${arg}\"")
-        endif()
-        string(APPEND pretty_command_line " ${arg}")
-    endforeach()
+    string(APPEND pretty_command_line " ${arg}")
+endforeach()
+
+if(dry_run)
     message("${pretty_command_line}")
     return()
 endif()
 
+# One variable for both streams keeps their order in config.log, but echoes stderr to stdout.
 execute_process(COMMAND "${CMAKE_COMMAND}" ${cmake_args}
     COMMAND_ECHO STDOUT
+    OUTPUT_VARIABLE cmake_output
+    ERROR_VARIABLE cmake_output
+    ECHO_OUTPUT_VARIABLE
+    ECHO_ERROR_VARIABLE
     RESULT_VARIABLE exit_code)
+set(config_log "${CMAKE_CURRENT_BINARY_DIR}/config.log")
+file(WRITE "${config_log}" "${pretty_command_line}\n${cmake_output}")
 if(NOT exit_code EQUAL 0)
-    message(FATAL_ERROR "CMake exited with code ${exit_code}.")
+    message(FATAL_ERROR "CMake exited with code ${exit_code}. The full output is in "
+        "${config_log}. Search it for \"CMake Error\" to find errors that did not stop the "
+        "configuration.")
 endif()
