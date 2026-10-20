@@ -1263,7 +1263,12 @@ static auto findZoneByLongName(QStringView str, const QLocale &locale, const QDa
     if (!pfx)
         pfx = QTimeZonePrivate::findLongUtcPrefix(str);
     if (pfx) {
-        result = R{ pfx.offset
+        // QUtcTZP accepts texts representing offsets in a wider range than
+        // QTZ::fromSecondsAheadOfutc() accepts:
+        const bool niceOffset = pfx.offset
+                    && *pfx.offset >= QTimeZone::MinUtcOffsetSecs
+                    && *pfx.offset <= QTimeZone::MaxUtcOffsetSecs;
+        result = R{ niceOffset
                         ? QTimeZone::fromSecondsAheadOfUtc(*pfx.offset)
                         : QTimeZone(pfx.ianaId),
                     pfx.nameLength };

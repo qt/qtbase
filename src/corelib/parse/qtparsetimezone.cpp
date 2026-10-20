@@ -461,8 +461,13 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
     if (matchesFlagWithin(flags, Flag::LocalizedZone, FieldGroup::LocalizationMask)) {
         const auto addPrefixIfMatch = [includeMatch] (QTimeZonePrivate::NamePrefixMatch &&prefix) {
             if (prefix) {
+                // QUtcTZP accepts texts representing offsets in a wider range
+                // than QTZ::fromSecondsAheadOfutc() accepts:
+                const bool niceOffset = prefix.offset
+                    && *prefix.offset >= QTimeZone::MinUtcOffsetSecs
+                    && *prefix.offset <= QTimeZone::MaxUtcOffsetSecs;
                 includeMatch(prefix.nameLength,
-                             prefix.offset
+                             niceOffset
                                  ? QTimeZone::fromSecondsAheadOfUtc(*prefix.offset)
                                  : QTimeZone(prefix.ianaId),
                              timeTypeToStatus(prefix.timeType));

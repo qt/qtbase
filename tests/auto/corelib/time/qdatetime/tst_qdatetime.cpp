@@ -3488,6 +3488,18 @@ void tst_QDateTime::fromStringStringFormat_data()
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")
                 << u"EEE1200000MUB"_s << u"t"_s << 1900 << greg << QDateTime();
+    QTest::newRow("UTC-202")
+        << u"UTC-202"_s << u"t"_s << 1900 << greg << QDateTime();
+    QTest::newRow("UTC-20") // UTC-202, minus dangling cruft:
+        << u"UTC-20"_s << u"t"_s << 1900 << greg
+        // Uses QTimeZone("UTC-20") rather than QTZ::fromSecondsAheadOfUtc(72000),
+        // as offset is outside the M{in,ax}UtcOffsetSecs range.
+        << QDateTime(QDate(1900, 1, 1), QTime(0, 0), QTimeZone("UTC-20"));
+    QTest::newRow("UTC+17:03øc-1")
+        << u"UTC+17:03\u00f8c-1"_s << u"t"_s << 1900 << greg << QDateTime();
+    QTest::newRow("UTC+17:03") // UTC+17:03øc-1, minus dangling cruft:
+        << u"UTC+17:03"_s << u"t"_s << 1900 << greg // As for UTC-20:
+        << QDateTime(QDate(1900, 1, 1), QTime(0, 0), QTimeZone("UTC+17:03"));
 
     // Rich time-zone specifiers (QTBUG-95966):
     const auto east3hours = QTimeZone::fromSecondsAheadOfUtc(10800);

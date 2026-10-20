@@ -1324,6 +1324,14 @@ void tst_QtParseTimeZone::prefix_data()
     } else {
         qDebug("Skipping UTC+02:00 tests, not recognised by UTC-offset backend :-(");
     }
+    QTest::addRow("UTC-202") // Treat final 2 as dangling cruft.
+        << u"UTC-202"_s << QLocale::c()
+        << AnyGlobalZoneForm << 0 << 6 << QDTP::UnknownDaylightTime
+        << QTimeZone("UTC-20"); // *not* QTimeZone::fromSecondsAheadOfUtc(-72000)
+    QTest::addRow("UTC+17:03øc-1") // Treat øc-1 as dangling cruft.
+        << u"UTC+17:03\u00f8c-1"_s << QLocale::c()
+        << AnyGlobalZoneForm << 0 << 9 << QDTP::UnknownDaylightTime
+        << QTimeZone("UTC+17:03"); // *not* QTimeZone::fromSecondsAheadOfUtc(1023*60)
 }
 
 void tst_QtParseTimeZone::prefix()
