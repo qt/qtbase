@@ -903,8 +903,16 @@ namespace QtAndroidAccessibility
                 max = 100.0f;
             }
 
-            QJniObject rangeInfo("android/view/accessibility/AccessibilityNodeInfo$RangeInfo",
-                                 "(IFFF)V", rangeType, min, max, current);
+            QJniObject rangeInfo;
+            if (QtAndroidPrivate::androidSdkVersion() < 30) {
+                rangeInfo = QJniObject::callStaticObjectMethod(
+                        "android/view/accessibility/AccessibilityNodeInfo$RangeInfo", "obtain",
+                        "(IFFF)Landroid/view/accessibility/AccessibilityNodeInfo$RangeInfo;",
+                        rangeType, min, max, current);
+            } else {
+                rangeInfo = QJniObject("android/view/accessibility/AccessibilityNodeInfo$RangeInfo",
+                                       "(IFFF)V", rangeType, min, max, current);
+            }
 
             if (rangeInfo.isValid()) {
                 env->CallVoidMethod(node, m_setRangeInfoMethodID, rangeInfo.object());
