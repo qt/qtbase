@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /* NOTE: The variables documented here are available when running CMake, they
-**       are not available in a deployment script. Both these and the set of
-**       deploy-time variables are all members of the cmake-variables-qtcore
-**       group.
+**       are not available in a deployment script. They are members of the
+**       cmake-variables-qtcore group. Deploy-time variables are members of
+**       the cmake-deploy-variables-qtcore group.
 **/
 
 /*!
