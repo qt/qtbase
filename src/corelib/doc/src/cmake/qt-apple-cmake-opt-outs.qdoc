@@ -1,0 +1,142 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\page qt-apple-cmake-opt-outs.html
+\title Apple Platform CMake Opt-outs
+\brief Variables and properties that turn off Qt's defaults on Apple platforms.
+
+When \l qt_finalize_target() finalizes an application bundle on macOS, iOS,
+or visionOS, Qt sets several target properties, Info.plist values, and Xcode
+attributes to sensible defaults. Most defaults are skipped when the project
+already provides a value, either through the target property or through the
+matching \c{CMAKE_XCODE_ATTRIBUTE_<name>} variable. The exceptions are:
+
+\list
+\li The bundle name and version defaults check the matching
+    \c{MACOSX_BUNDLE_*} target properties and variables instead.
+\li The bundle identifier default reuses an identifier that the project sets
+    through \c MACOSX_BUNDLE_GUI_IDENTIFIER or
+    \c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER, and sets both properties.
+\li The localization defaults overwrite an existing
+    \c CFBundleDevelopmentRegion in Info.plist.
+\endlist
+
+Each default can also be turned off with one of the variables described on
+this page.
+
+Set the variables to \c TRUE before the target is finalized, for example on the
+command line or in the project's top-level \c CMakeLists.txt.
+
+\section1 Xcode Attributes
+
+These defaults are only applied when using the Xcode generator.
+
+\table
+\header \li Variable \li Effect when set
+\row \li \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID
+     \li Do not set \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM from the first team
+         found on the system. See \l QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID.
+\row \li \c QT_NO_SET_XCODE_CODE_SIGN_STYLE
+     \li Do not set \c XCODE_ATTRIBUTE_CODE_SIGN_STYLE to \c Automatic.
+\row \li \c QT_NO_SET_XCODE_INSTALL_PATH
+     \li Do not set \c XCODE_ATTRIBUTE_INSTALL_PATH to \c{$(inherited)}.
+\row \li \c QT_NO_SET_XCODE_DEBUG_INFORMATION_FORMAT
+     \li Do not set \c XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT per
+         configuration (\c dwarf for Debug, \c dwarf-with-dsym otherwise).
+         Only a value of the property without a \c{[variant=<config>]}
+         suffix counts as provided by the project.
+\row \li \c QT_NO_SET_XCODE_GCC_GENERATE_DEBUGGING_SYMBOLS
+     \li Do not set \c XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS to
+         \c YES.
+\row \li \c QT_NO_SET_XCODE_COPY_PHASE_STRIP
+     \li Do not set \c XCODE_ATTRIBUTE_COPY_PHASE_STRIP to \c NO. Without the
+         default, Xcode strips embedded frameworks, such as the Qt
+         frameworks, when copying them into the app bundle.
+\row \li \c QT_NO_SET_XCODE_ATTRIBUTE_MARKETING_VERSION and
+         \c QT_NO_SET_XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION
+     \li Do not set the \c XCODE_ATTRIBUTE_MARKETING_VERSION and
+         \c XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION properties. Setting either
+         of the two variables turns off both properties. Info.plist then gets
+         literal version strings instead of Xcode build setting references.
+\endtable
+
+\section1 iOS Attributes
+
+These defaults are applied on iOS only.
+
+\table
+\header \li Variable \li Effect when set
+\row \li \c QT_NO_SET_XCODE_TARGETED_DEVICE_FAMILY
+     \li Do not set \c XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY to iPhone and
+         iPad (\c{1,2}).
+\row \li \c QT_NO_SET_XCODE_ENABLE_BITCODE
+     \li Do not set \c XCODE_ATTRIBUTE_ENABLE_BITCODE to \c NO.
+\row \li \c QT_NO_SET_XCODE_ARCHS
+     \li Do not restrict the iOS simulator to \c x86_64 when Qt was built with
+         that architecture.
+\row \li \c QT_NO_SET_XCODE_LD_ENTRY_POINT
+     \li Do not set \c XCODE_ATTRIBUTE_LD_ENTRY_POINT to Qt's main wrapper.
+\row \li \c QT_NO_SET_DEFAULT_IOS_LAUNCH_SCREEN
+     \li Do not use Qt's default launch screen storyboard when the project
+         provides none. See
+         \l{cmake-variable-QT_IOS_LAUNCH_SCREEN}{QT_IOS_LAUNCH_SCREEN}. The
+         target property of the same name takes precedence over the variable.
+\row \li \c QT_NO_ADD_IOS_LAUNCH_SCREEN_TO_BUNDLE
+     \li Do not add the launch screen storyboard to the app bundle.
+\endtable
+
+\section1 Bundle Metadata
+
+These defaults are applied on all Apple platforms and with all generators.
+
+\table
+\header \li Variable \li Effect when set
+\row \li \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER
+     \li Do not set the bundle identifier properties. See
+         \l QT_NO_SET_XCODE_BUNDLE_IDENTIFIER.
+\row \li \c QT_NO_SET_XCODE_BUNDLE_NAME
+     \li Do not set \c MACOSX_BUNDLE_BUNDLE_NAME.
+\row \li \c QT_NO_SET_XCODE_BUNDLE_VERSION
+     \li Do not set placeholder values for \c MACOSX_BUNDLE_BUNDLE_VERSION and
+         \c MACOSX_BUNDLE_SHORT_VERSION_STRING.
+\row \li \c QT_NO_SET_PLIST_LOCALIZATIONS
+     \li Do not write \c CFBundleDevelopmentRegion and \c CFBundleLocalizations
+         into Info.plist.
+\endtable
+
+\section1 Shared Library Embedding
+
+The \l{apple-embed-shared-library-dependencies}{embedding of shared libraries}
+into application bundles is controlled by target properties:
+
+\list
+\li \l{cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORKS}
+    {QT_NO_XCODE_EMBED_FRAMEWORKS} turns it off for an application.
+\li \l{cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS}
+    {QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS} leaves out a single library.
+\endlist
+
+\section1 SDK and Xcode Version Checks
+
+These variables affect the SDK and Xcode version checks that run when
+configuring Qt itself.
+
+\table
+\header \li Variable \li Effect when set
+\row \li \c QT_NO_APPLE_SDK_AND_XCODE_CHECK
+     \li Skip all SDK and Xcode version checks.
+\row \li \c QT_NO_APPLE_SDK_MIN_VERSION_CHECK
+     \li Skip the minimum SDK version check.
+\row \li \c QT_NO_XCODE_MIN_VERSION_CHECK
+     \li Skip the minimum Xcode version check, and do not require Xcode to be
+         installed.
+\row \li \c QT_NO_APPLE_SDK_MAX_VERSION_CHECK
+     \li Do not warn when the SDK is newer than the newest tested version.
+\row \li \c QT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK
+     \li Turn the error for an unsupported SDK or Xcode version into a
+         warning.
+\endtable
+
+\sa qt_finalize_target()
+*/
