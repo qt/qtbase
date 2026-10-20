@@ -1753,7 +1753,9 @@ namespace {
             // of the bearing here so that we can assume it's negative in the rest
             // of the code, as well ase use QFixed(1) as a sentinel to represent
             // the state where we have yet to compute the right bearing.
-            rightBearing = qMin(QFixed::fromReal(rb), QFixed(0));
+            rightBearing = QFixed::fromReal(std::clamp(rb,
+                                                       qreal(-QFIXED_MAX),
+                                                       qreal(0.0)));
         }
 
         inline void calculateRightBearing()
@@ -1908,8 +1910,10 @@ void QTextLine::layout_helper(int maxGlyphs)
             QFontEngine *fontEngine = eng->fontEngine(current);
             if (lbh.fontEngine != fontEngine) {
                 lbh.fontEngine = fontEngine;
-                lbh.minimumRightBearing = qMin(QFixed(),
-                                               QFixed::fromReal(fontEngine->minRightBearing()));
+                const qreal minRightBearing = std::clamp(fontEngine->minRightBearing(),
+                                                         qreal(-QFIXED_MAX),
+                                                         qreal(0.0));
+                lbh.minimumRightBearing = QFixed::fromReal(minRightBearing);
             }
         }
         const QScriptItem &current = eng->layoutData->items.at(item);

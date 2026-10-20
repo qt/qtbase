@@ -540,8 +540,6 @@ qreal QFontEngine::minLeftBearing() const
     return m_minLeftBearing;
 }
 
-#define q16Dot16ToFloat(i) ((i) / 65536.0)
-
 #define kMinLeftSideBearingOffset 12
 #define kMinRightSideBearingOffset 14
 
@@ -553,27 +551,31 @@ qreal QFontEngine::minRightBearing() const
         QByteArray hheaTable = getSfntTable(QFont::Tag("hhea").value());
         if (hheaTable.size() >= int(kMinRightSideBearingOffset + sizeof(qint16))) {
             const uchar *tableData = reinterpret_cast<const uchar *>(hheaTable.constData());
-            Q_ASSERT(q16Dot16ToFloat(qFromBigEndian<quint32>(tableData)) == 1.0);
 
-            qint16 minLeftSideBearing = qFromBigEndian<qint16>(tableData + kMinLeftSideBearingOffset);
-            qint16 minRightSideBearing = qFromBigEndian<qint16>(tableData + kMinRightSideBearingOffset);
+            const quint32 tableVersion = qFromBigEndian<quint32>(tableData);
+            if (tableVersion == 0x00010000) {
+                const qint16 minLeftSideBearing = qFromBigEndian<qint16>(tableData + kMinLeftSideBearingOffset);
+                const qint16 minRightSideBearing = qFromBigEndian<qint16>(tableData + kMinRightSideBearingOffset);
 
-            // The table data is expressed as FUnits, meaning we have to take the number
-            // of units per em into account. Since pixelSize already has taken DPI into
-            // account we can use that directly instead of the point size.
-            int unitsPerEm = emSquareSize().toInt();
-            qreal funitToPixelFactor = fontDef.pixelSize / unitsPerEm;
+                // The table data is expressed as FUnits, meaning we have to take the number
+                // of units per em into account. Since pixelSize already has taken DPI into
+                // account we can use that directly instead of the point size.
+                const int unitsPerEm = emSquareSize().toInt();
+                if (unitsPerEm > 0) {
+                    const qreal funitToPixelFactor = fontDef.pixelSize / unitsPerEm;
 
-            // Some fonts on OS X (such as Gurmukhi Sangam MN, Khmer MN, Lao Sangam MN, etc.), have
-            // invalid values for their NBSPACE left bearing, causing the 'hhea' minimum bearings to
-            // be way off. We detect this by assuming that the minimum bearsings are within a certain
-            // range of the em square size.
-            static const int largestValidBearing = 4 * unitsPerEm;
+                    // Some fonts on OS X (such as Gurmukhi Sangam MN, Khmer MN, Lao Sangam MN, etc.), have
+                    // invalid values for their NBSPACE left bearing, causing the 'hhea' minimum bearings to
+                    // be way off. We detect this by assuming that the minimum bearings are within a certain
+                    // range of the em square size.
+                    const int largestValidBearing = 4 * unitsPerEm;
 
-            if (qAbs(minLeftSideBearing) < largestValidBearing)
-                m_minLeftBearing = minLeftSideBearing * funitToPixelFactor;
-            if (qAbs(minRightSideBearing) < largestValidBearing)
-                m_minRightBearing = minRightSideBearing * funitToPixelFactor;
+                    if (qAbs(int(minLeftSideBearing)) < largestValidBearing)
+                        m_minLeftBearing = minLeftSideBearing * funitToPixelFactor;
+                    if (qAbs(int(minRightSideBearing)) < largestValidBearing)
+                        m_minRightBearing = minRightSideBearing * funitToPixelFactor;
+                }
+            }
         }
 
         // Fallback in case of missing 'hhea' table (bitmap fonts e.g.) or broken 'hhea' values
@@ -606,9 +608,15 @@ qreal QFontEngine::minRightBearing() const
             }
         }
 
-        if (m_minLeftBearing == kBearingNotInitialized || m_minRightBearing == kBearingNotInitialized)
+        if (m_minLeftBearing == kBearingNotInitialized || m_minRightBearing == kBearingNotInitialized) {
             qWarning() << "Failed to compute left/right minimum bearings for"
                        << fontDef.family();
+
+            // Return an arbitrarily large value, but make it smaller than DBL_MAX to avoid
+            // redoing the check over and over.
+            m_minRightBearing = qreal(QFIXED_MAX);
+            m_minLeftBearing = qreal(QFIXED_MAX);
+        }
     }
 
     return m_minRightBearing;
