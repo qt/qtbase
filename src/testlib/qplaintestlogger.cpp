@@ -218,7 +218,7 @@ namespace QTest {
                 mantissa /= 1e3;
             // When mean's mantissa was < 1, if standard deviation is small
             // (less than .1 at the same scale), allow for its leading zeros:
-            for (qreal extra = 1.0; mantissa * extra < 0.1; extra *= 10)
+            for (int extra = 1; mantissa * extra < 0.1; extra *= 10)
                 ++decimals;
         } else {
             // Find the nearest-zeroth power of 1000 for which 0.1 <= number /
