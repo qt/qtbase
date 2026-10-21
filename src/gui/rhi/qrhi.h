@@ -507,7 +507,6 @@ public:
             quint32 maybeSize;
             bool hasDynamicOffset;
         };
-        static constexpr int MAX_TEX_SAMPLER_ARRAY_SIZE = 16;
         struct TextureAndOrSamplerData {
             QVarLengthArray<TextureAndSampler, 4> texSamplers;
             int count() const { return int(texSamplers.size()); }

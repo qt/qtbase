@@ -6341,7 +6341,11 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
     stages, and the array of texture-sampler pairs specified by \a binding, \a
     stage, \a count, and \a texSamplers.
 
-    \note \a count must be at least 1, and not larger than 16.
+    \note \a count must be at least 1. There is no fixed upper limit, but each
+    element counts towards the per-stage texture and sampler limits of the
+    underlying graphics API, summed over all bindings visible to a given
+    stage. Portable applications should not use more than 16 samplers per
+    stage in total.
 
     \note When \a count is 1, this function is equivalent to sampledTexture().
 
@@ -6373,7 +6377,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
 QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
         int binding, StageFlags stage, int count, const TextureAndSampler *texSamplers)
 {
-    Q_ASSERT(count >= 1 && count <= Data::MAX_TEX_SAMPLER_ARRAY_SIZE);
+    Q_ASSERT(count >= 1);
     QRhiShaderResourceBinding b;
     b.d.binding = binding;
     b.d.stage = stage;
@@ -6431,7 +6435,10 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::texture(int binding, StageF
     stages, and the array of (separate) textures specified by \a binding, \a
     stage, \a count, and \a tex.
 
-    \note \a count must be at least 1, and not larger than 16.
+    \note \a count must be at least 1. There is no fixed upper limit, but each
+    element counts towards the per-stage texture limit of the underlying
+    graphics API, summed over all bindings visible to a given stage. Portable
+    applications should not use more than 16 textures per stage in total.
 
     \note When \a count is 1, this function is equivalent to texture().
 
@@ -6448,7 +6455,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::texture(int binding, StageF
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::textures(int binding, StageFlags stage, int count, QRhiTexture **tex)
 {
-    Q_ASSERT(count >= 1 && count <= Data::MAX_TEX_SAMPLER_ARRAY_SIZE);
+    Q_ASSERT(count >= 1);
     QRhiShaderResourceBinding b;
     b.d.binding = binding;
     b.d.stage = stage;
