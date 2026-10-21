@@ -1586,10 +1586,10 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     for (int i = 0, ie = srbD->m_bindings.size(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings[i]);
         QD3D12ShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[i]);
-        switch (b->type) {
+        switch (b->type()) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
-            QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, b->u.ubuf.buf);
+            QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, b->ubuf().buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer));
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
             sanityCheckResourceOwnership(bufD);
@@ -1605,7 +1605,7 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex();
             if (bd.stex.d.size() != data->count()) {
                 bd.stex.d.resize(data->count());
                 srbUpdate = true;
@@ -1651,7 +1651,7 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
-            QD3D12Texture *texD = QRHI_RES(QD3D12Texture, b->u.simage.tex);
+            QD3D12Texture *texD = QRHI_RES(QD3D12Texture, b->simage().tex);
             sanityCheckResourceOwnership(texD);
             if (texD->generation != bd.simage.generation || texD->m_id != bd.simage.id) {
                 srbUpdate = true;
@@ -1664,8 +1664,8 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                         // RaW or WaW
                         barrierGen.enqueueUavBarrier(cbD, texD->handle);
                     } else {
-                        if (b->type == QRhiShaderResourceBinding::ImageStore
-                                || b->type == QRhiShaderResourceBinding::ImageLoadStore)
+                        if (b->type() == QRhiShaderResourceBinding::ImageStore
+                                || b->type() == QRhiShaderResourceBinding::ImageLoadStore)
                         {
                             // WaR or WaW
                             barrierGen.enqueueUavBarrier(cbD, texD->handle);
@@ -1673,9 +1673,9 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                     }
                 }
                 res->uavUsage = 0;
-                if (b->type == QRhiShaderResourceBinding::ImageLoad || b->type == QRhiShaderResourceBinding::ImageLoadStore)
+                if (b->type() == QRhiShaderResourceBinding::ImageLoad || b->type() == QRhiShaderResourceBinding::ImageLoadStore)
                     res->uavUsage |= QD3D12Resource::UavUsageRead;
-                if (b->type == QRhiShaderResourceBinding::ImageStore || b->type == QRhiShaderResourceBinding::ImageLoadStore)
+                if (b->type() == QRhiShaderResourceBinding::ImageStore || b->type() == QRhiShaderResourceBinding::ImageLoadStore)
                     res->uavUsage |= QD3D12Resource::UavUsageWrite;
                 barrierGen.addTransitionBarrier(texD->handle, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
             }
@@ -1685,7 +1685,7 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
-            QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, b->u.sbuf.buf);
+            QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, b->sbuf().buf);
             sanityCheckResourceOwnership(bufD);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
@@ -1700,8 +1700,8 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                         // RaW or WaW
                         barrierGen.enqueueUavBarrier(cbD, bufD->handles[0]);
                     } else {
-                        if (b->type == QRhiShaderResourceBinding::BufferStore
-                                || b->type == QRhiShaderResourceBinding::BufferLoadStore)
+                        if (b->type() == QRhiShaderResourceBinding::BufferStore
+                                || b->type() == QRhiShaderResourceBinding::BufferLoadStore)
                         {
                             // WaR or WaW
                             barrierGen.enqueueUavBarrier(cbD, bufD->handles[0]);
@@ -1709,9 +1709,9 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                     }
                 }
                 res->uavUsage = 0;
-                if (b->type == QRhiShaderResourceBinding::BufferLoad || b->type == QRhiShaderResourceBinding::BufferLoadStore)
+                if (b->type() == QRhiShaderResourceBinding::BufferLoad || b->type() == QRhiShaderResourceBinding::BufferLoadStore)
                     res->uavUsage |= QD3D12Resource::UavUsageRead;
-                if (b->type == QRhiShaderResourceBinding::BufferStore || b->type == QRhiShaderResourceBinding::BufferLoadStore)
+                if (b->type() == QRhiShaderResourceBinding::BufferStore || b->type() == QRhiShaderResourceBinding::BufferLoadStore)
                     res->uavUsage |= QD3D12Resource::UavUsageWrite;
                 barrierGen.addTransitionBarrier(bufD->handles[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
             }
@@ -3631,81 +3631,81 @@ void QD3D12ShaderResourceVisitor::visit()
             if (!bd->stage.testFlag(qd3d12_stageToSrb(sd->stage)))
                 continue;
 
-            switch (bd->type) {
+            switch (bd->type()) {
             case QRhiShaderResourceBinding::UniformBuffer:
             {
                 const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && uniformBuffer)
-                    uniformBuffer(sd->stage, bd->u.ubuf, shaderRegister, bd->binding);
+                    uniformBuffer(sd->stage, bd->ubuf(), shaderRegister, bd->binding);
             }
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
             {
-                Q_ASSERT(bd->stex.count() > 0);
+                Q_ASSERT(bd->stex().count() > 0);
                 const int textureBaseShaderRegister = mapBinding(bd->binding, sd).first;
                 const int samplerBaseShaderRegister = mapBinding(bd->binding, sd).second;
                 if (textureBaseShaderRegister >= 0 && textures)
-                    textures(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), textureBaseShaderRegister);
+                    textures(sd->stage, bd->stex().texSamplers.constData(), bd->stex().count(), textureBaseShaderRegister);
                 if (samplerBaseShaderRegister >= 0 && samplers)
-                    samplers(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), samplerBaseShaderRegister);
+                    samplers(sd->stage, bd->stex().texSamplers.constData(), bd->stex().count(), samplerBaseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::Texture:
             {
-                Q_ASSERT(bd->stex.count() > 0);
+                Q_ASSERT(bd->stex().count() > 0);
                 const int baseShaderRegister = mapBinding(bd->binding, sd).first;
                 if (baseShaderRegister >= 0 && textures)
-                    textures(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), baseShaderRegister);
+                    textures(sd->stage, bd->stex().texSamplers.constData(), bd->stex().count(), baseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::Sampler:
             {
-                Q_ASSERT(bd->stex.count() > 0);
+                Q_ASSERT(bd->stex().count() > 0);
                 const int baseShaderRegister = mapBinding(bd->binding, sd).first;
                 if (baseShaderRegister >= 0 && samplers)
-                    samplers(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), baseShaderRegister);
+                    samplers(sd->stage, bd->stex().texSamplers.constData(), bd->stex().count(), baseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoad:
             {
                 const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageImage)
-                    storageImage(sd->stage, bd->u.simage, Load, shaderRegister);
+                    storageImage(sd->stage, bd->simage(), Load, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageStore:
             {
                 const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageImage)
-                    storageImage(sd->stage, bd->u.simage, Store, shaderRegister);
+                    storageImage(sd->stage, bd->simage(), Store, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoadStore:
             {
                 const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageImage)
-                    storageImage(sd->stage, bd->u.simage, LoadStore, shaderRegister);
+                    storageImage(sd->stage, bd->simage(), LoadStore, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::BufferLoad:
             {
                 const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageBuffer)
-                    storageBuffer(sd->stage, bd->u.sbuf, Load, shaderRegister);
+                    storageBuffer(sd->stage, bd->sbuf(), Load, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::BufferStore:
             {
                 const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageBuffer)
-                    storageBuffer(sd->stage, bd->u.sbuf, Store, shaderRegister);
+                    storageBuffer(sd->stage, bd->sbuf(), Store, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::BufferLoadStore:
             {
                 const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageBuffer)
-                    storageBuffer(sd->stage, bd->u.sbuf, LoadStore, shaderRegister);
+                    storageBuffer(sd->stage, bd->sbuf(), LoadStore, shaderRegister);
             }
                 break;
             }
@@ -6547,7 +6547,7 @@ bool QD3D12ShaderResourceBindings::create()
     hasDynamicOffset = false;
     for (const QRhiShaderResourceBinding &b : std::as_const(m_bindings)) {
         const QRhiShaderResourceBinding::Data *bd = QRhiImplementation::shaderResourceBindingData(b);
-        if (bd->type == QRhiShaderResourceBinding::UniformBuffer && bd->u.ubuf.hasDynamicOffset) {
+        if (bd->type() == QRhiShaderResourceBinding::UniformBuffer && bd->ubuf().hasDynamicOffset) {
             hasDynamicOffset = true;
             break;
         }

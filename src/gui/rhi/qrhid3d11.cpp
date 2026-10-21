@@ -1113,10 +1113,10 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings.at(i));
         QD3D11ShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[i]);
-        switch (b->type) {
+        switch (b->type()) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
-            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.ubuf.buf);
+            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->ubuf().buf);
             // NonDynamicUniformBuffers is not supported by this backend
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic && bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer));
             sanityCheckResourceOwnership(bufD);
@@ -1134,7 +1134,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex();
             if (bd.stex.d.size() != data->count()) {
                 bd.stex.d.resize(data->count());
                 srbUpdate = true;
@@ -1170,7 +1170,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
-            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.simage.tex);
+            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->simage().tex);
             sanityCheckResourceOwnership(texD);
             if (texD->generation != bd.simage.generation || texD->m_id != bd.simage.id) {
                 srbUpdate = true;
@@ -1183,7 +1183,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
-            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.sbuf.buf);
+            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->sbuf().buf);
             sanityCheckResourceOwnership(bufD);
             if (bufD->generation != bd.sbuf.generation || bufD->m_id != bd.sbuf.id) {
                 srbUpdate = true;
@@ -2754,11 +2754,11 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings.at(i));
         QD3D11ShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[i]);
-        switch (b->type) {
+        switch (b->type()) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
-            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.ubuf.buf);
-            Q_ASSERT(aligned(b->u.ubuf.offset, 256u) == b->u.ubuf.offset);
+            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->ubuf().buf);
+            Q_ASSERT(aligned(b->ubuf().offset, 256u) == b->ubuf().offset);
             bd.ubuf.id = bufD->m_id;
             bd.ubuf.generation = bufD->generation;
             // Dynamic ubuf offsets are not considered here, those are baked in
@@ -2767,11 +2767,11 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             // Metal) are different in this respect since those do not store
             // per-srb vsubufoffsets etc. data so life's a bit easier for them.
             // But here we have to defer baking in the dynamic offset.
-            const quint32 offsetInConstants = b->u.ubuf.offset / 16;
+            const quint32 offsetInConstants = b->ubuf().offset / 16;
             // size must be 16 mult. (in constants, i.e. multiple of 256 bytes).
             // We can round up if needed since the buffers's actual size
             // (ByteWidth) is always a multiple of 256.
-            const quint32 sizeInConstants = aligned(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size, 256u) / 16;
+            const quint32 sizeInConstants = aligned(b->ubuf().maybeSize ? b->ubuf().maybeSize : bufD->m_size, 256u) / 16;
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0)
@@ -2808,7 +2808,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex();
             bd.stex.d.resize(data->count());
             const std::pair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps, pushConstantStages);
             const std::pair<int, int> nativeBindingHull = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps, pushConstantStages);
@@ -2885,14 +2885,14 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
-            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.simage.tex);
+            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->simage().tex);
             bd.simage.id = texD->m_id;
             bd.simage.generation = texD->generation;
             bool validStage = false;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
-                    ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->u.simage.level);
+                    ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->simage().level);
                     if (uav)
                         res[RBM_COMPUTE].uavs.append({ nativeBinding.first, uav });
                 }
@@ -2901,7 +2901,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
-                    ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->u.simage.level);
+                    ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->simage().level);
                     if (uav)
                         res[RBM_FRAGMENT].uavs.append({ nativeBinding.first, uav });
                 }
@@ -2915,14 +2915,14 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
-            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.sbuf.buf);
+            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->sbuf().buf);
             bd.sbuf.id = bufD->m_id;
             bd.sbuf.generation = bufD->generation;
             bool validStage = false;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
-                    ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->u.sbuf.offset);
+                    ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->sbuf().offset);
                     if (uav)
                         res[RBM_COMPUTE].uavs.append({ nativeBinding.first, uav });
                 }
@@ -2931,7 +2931,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
-                    ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->u.sbuf.offset);
+                    ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->sbuf().offset);
                     if (uav)
                         res[RBM_FRAGMENT].uavs.append({ nativeBinding.first, uav });
                 }
@@ -4677,7 +4677,7 @@ bool QD3D11ShaderResourceBindings::create()
     hasDynamicOffset = false;
     for (const QRhiShaderResourceBinding &b : sortedBindings) {
         const QRhiShaderResourceBinding::Data *bd = QRhiImplementation::shaderResourceBindingData(b);
-        if (bd->type == QRhiShaderResourceBinding::UniformBuffer && bd->u.ubuf.hasDynamicOffset) {
+        if (bd->type() == QRhiShaderResourceBinding::UniformBuffer && bd->ubuf().hasDynamicOffset) {
             hasDynamicOffset = true;
             break;
         }

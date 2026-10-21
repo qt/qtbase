@@ -1511,12 +1511,12 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
 
     for (const QRhiShaderResourceBinding &binding : std::as_const(srbD->sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(binding);
-        switch (b->type) {
+        switch (b->type()) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
-            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.ubuf.buf);
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->ubuf().buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[bufD->d->slotted ? currentFrameSlot : 0];
-            quint32 offset = b->u.ubuf.offset;
+            quint32 offset = b->ubuf().offset;
             for (int i = 0; i < dynamicOffsetCount; ++i) {
                 const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
                 if (dynOfs.first == b->binding) {
@@ -1538,10 +1538,10 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex();
             for (int elem = 0; elem < data->count(); ++elem) {
-                QMetalTexture *texD = QRHI_RES(QMetalTexture, b->stex.texSamplers[elem].tex);
-                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->stex.texSamplers[elem].sampler);
+                QMetalTexture *texD = QRHI_RES(QMetalTexture, data->texSamplers[elem].tex);
+                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, data->texSamplers[elem].sampler);
 
                 for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
                     if (b->stage.testFlag(toRhiSrbStage(stage))) {
@@ -1565,14 +1565,14 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
-            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
-            id<MTLTexture> t = texD->d->viewForLevel(b->u.simage.level);
+            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->simage().tex);
+            id<MTLTexture> t = texD->d->viewForLevel(b->simage().level);
 
             for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
                 if (b->stage.testFlag(toRhiSrbStage(stage))) {
                     const int nativeBinding = mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Texture);
                     if (nativeBinding >= 0)
-                        bindingData.res[stage].textures.append({ nativeBinding, t, storageImageUsage(b->type) });
+                        bindingData.res[stage].textures.append({ nativeBinding, t, storageImageUsage(b->type()) });
                 }
             }
         }
@@ -1581,9 +1581,9 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
-            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->sbuf().buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[bufD->d->slotted ? currentFrameSlot : 0];
-            quint32 offset = b->u.sbuf.offset;
+            quint32 offset = b->sbuf().offset;
             for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
                 if (b->stage.testFlag(toRhiSrbStage(stage))) {
                     const int nativeBinding = mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Buffer);
@@ -1890,16 +1890,16 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings.at(i));
         QMetalShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[i]);
-        switch (b->type) {
+        switch (b->type()) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
-            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.ubuf.buf);
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->ubuf().buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer));
             sanityCheckResourceOwnership(bufD);
             executeBufferHostWritesForCurrentFrame(bufD);
             if (bufD->d->slotted)
                 hasSlottedResourceInSrb = true;
-            if (b->u.ubuf.hasDynamicOffset)
+            if (b->ubuf().hasDynamicOffset)
                 hasDynamicOffsetInSrb = true;
             if (bufD->generation != bd.ubuf.generation || bufD->m_id != bd.ubuf.id) {
                 resNeedsRebind = true;
@@ -1913,7 +1913,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex();
             if (bd.stex.d.size() != data->count()) {
                 bd.stex.d.resize(data->count());
                 resNeedsRebind = true;
@@ -1950,7 +1950,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
-            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
+            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->simage().tex);
             sanityCheckResourceOwnership(texD);
             if (texD->generation != bd.simage.generation || texD->m_id != bd.simage.id) {
                 resNeedsRebind = true;
@@ -1964,7 +1964,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
-            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->sbuf().buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
             sanityCheckResourceOwnership(bufD);
 
@@ -1973,7 +1973,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                     const QRhiShaderResourceBinding::StageFlag stage =
                             QRhiShaderResourceBinding::StageFlag(1 << i);
                     if (b->stage.testFlag(stage)) {
-                        storageBufferSizes[stage][b->binding] = b->u.sbuf.maybeSize ? b->u.sbuf.maybeSize : bufD->size();
+                        storageBufferSizes[stage][b->binding] = b->sbuf().maybeSize ? b->sbuf().maybeSize : bufD->size();
                     }
                 }
             }

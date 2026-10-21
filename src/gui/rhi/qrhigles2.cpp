@@ -2250,14 +2250,14 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
         for (int i = 0, ie = srbD->m_bindings.size(); i != ie; ++i) {
             const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
-            switch (b->type) {
+            switch (b->type()) {
             case QRhiShaderResourceBinding::UniformBuffer:
                 // no BufUniformRead / AccessUniform because no real uniform buffers are used
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
             case QRhiShaderResourceBinding::Texture:
-                for (int elem = 0; elem < b->stex.count(); ++elem) {
-                    QGles2Texture *texD = QRHI_RES(QGles2Texture, b->stex.texSamplers[elem].tex);
+                for (const auto &texSampler : b->stex().texSamplers) {
+                    QGles2Texture *texD = QRHI_RES(QGles2Texture, texSampler.tex);
                     sanityCheckResourceOwnership(texD);
                     trackedRegisterTexture(&passResTracker,
                                            texD,
@@ -2269,12 +2269,12 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             case QRhiShaderResourceBinding::ImageStore:
             case QRhiShaderResourceBinding::ImageLoadStore:
             {
-                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->simage().tex);
                 sanityCheckResourceOwnership(texD);
                 QRhiPassResourceTracker::TextureAccess access;
-                if (b->type == QRhiShaderResourceBinding::ImageLoad)
+                if (b->type() == QRhiShaderResourceBinding::ImageLoad)
                     access = QRhiPassResourceTracker::TexStorageLoad;
-                else if (b->type == QRhiShaderResourceBinding::ImageStore)
+                else if (b->type() == QRhiShaderResourceBinding::ImageStore)
                     access = QRhiPassResourceTracker::TexStorageStore;
                 else
                     access = QRhiPassResourceTracker::TexStorageLoadStore;
@@ -2286,12 +2286,12 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             case QRhiShaderResourceBinding::BufferStore:
             case QRhiShaderResourceBinding::BufferLoadStore:
             {
-                QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
+                QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->sbuf().buf);
                 sanityCheckResourceOwnership(bufD);
                 QRhiPassResourceTracker::BufferAccess access;
-                if (b->type == QRhiShaderResourceBinding::BufferLoad)
+                if (b->type() == QRhiShaderResourceBinding::BufferLoad)
                     access = QRhiPassResourceTracker::BufStorageLoad;
-                else if (b->type == QRhiShaderResourceBinding::BufferStore)
+                else if (b->type() == QRhiShaderResourceBinding::BufferStore)
                     access = QRhiPassResourceTracker::BufStorageStore;
                 else
                     access = QRhiPassResourceTracker::BufStorageLoadStore;
@@ -5469,17 +5469,17 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
     for (int i = 0, ie = srbD->m_bindings.size(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
 
-        switch (b->type) {
+        switch (b->type()) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
-            int viewOffset = b->u.ubuf.offset;
+            int viewOffset = b->ubuf().offset;
             for (int j = 0; j < dynOfsCount; ++j) {
                 if (dynOfsPairs[2 * j] == uint(b->binding)) {
                     viewOffset = int(dynOfsPairs[2 * j + 1]);
                     break;
                 }
             }
-            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
+            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->ubuf().buf);
             setUniformsFromBlock(uniforms, b->binding, bufD->data.constData(), bufD->data.size(),
                                  quint32(viewOffset), uniformState);
         }
@@ -5497,9 +5497,10 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                 ps = maybeComputePs;
                 psGeneration = QRHI_RES(QGles2ComputePipeline, maybeComputePs)->generation;
             }
-            for (int elem = 0; elem < b->stex.count(); ++elem) {
-                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->stex.texSamplers[elem].tex);
-                QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->stex.texSamplers[elem].sampler);
+            const auto &texSamplers = b->stex().texSamplers;
+            for (int elem = 0; elem < texSamplers.count(); ++elem) {
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, texSamplers[elem].tex);
+                QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, texSamplers[elem].sampler);
                 for (const QGles2SamplerDescription &shaderSampler : samplers) {
                     if (shaderSampler.combinedBinding == b->binding) {
                         const int loc = shaderSampler.glslLocation + elem;
@@ -5511,14 +5512,17 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         }
             break;
         case QRhiShaderResourceBinding::Texture:
-            for (int elem = 0; elem < b->stex.count(); ++elem) {
-                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->stex.texSamplers[elem].tex);
+        {
+            const auto &texSamplers = b->stex().texSamplers;
+            for (int elem = 0; elem < texSamplers.count(); ++elem) {
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, texSamplers[elem].tex);
                 m_scratch.separateTextureBindings.append({ texD, b->binding, elem });
             }
+        }
             break;
         case QRhiShaderResourceBinding::Sampler:
         {
-            QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->stex.texSamplers[0].sampler);
+            QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->stex().texSamplers[0].sampler);
             m_scratch.separateSamplerBindings.append({ samplerD, b->binding });
         }
             break;
@@ -5526,19 +5530,19 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
-            QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
+            QGles2Texture *texD = QRHI_RES(QGles2Texture, b->simage().tex);
             Q_ASSERT(texD->m_flags.testFlag(QRhiTexture::UsedWithLoadStore));
             // arrays, cubemaps, and 3D textures expose the whole texture with all layers/slices
             const bool layered = texD->m_flags.testFlag(QRhiTexture::CubeMap)
                                  || texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
                                  || texD->m_flags.testFlag(QRhiTexture::TextureArray);
             GLenum access = GL_READ_WRITE;
-            if (b->type == QRhiShaderResourceBinding::ImageLoad)
+            if (b->type() == QRhiShaderResourceBinding::ImageLoad)
                 access = GL_READ_ONLY;
-            else if (b->type == QRhiShaderResourceBinding::ImageStore)
+            else if (b->type() == QRhiShaderResourceBinding::ImageStore)
                 access = GL_WRITE_ONLY;
             f->glBindImageTexture(GLuint(b->binding), texD->texture,
-                                  b->u.simage.level, layered, 0,
+                                  b->simage().level, layered, 0,
                                   access, texD->glsizedintformat);
         }
             break;
@@ -5546,13 +5550,13 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
-            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
+            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->sbuf().buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
-            if (b->u.sbuf.offset == 0 && b->u.sbuf.maybeSize == 0)
+            if (b->sbuf().offset == 0 && b->sbuf().maybeSize == 0)
                 f->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, GLuint(b->binding), bufD->buffer);
             else
                 f->glBindBufferRange(GL_SHADER_STORAGE_BUFFER, GLuint(b->binding), bufD->buffer,
-                                     b->u.sbuf.offset, b->u.sbuf.maybeSize ? b->u.sbuf.maybeSize : bufD->m_size);
+                                     b->sbuf().offset, b->sbuf().maybeSize ? b->sbuf().maybeSize : bufD->m_size);
         }
             break;
         default:
@@ -5978,13 +5982,13 @@ GLbitfield QRhiGles2::barriersForNextDispatch(QGles2CommandBuffer *cbD)
     const int bindingCount = srbD->m_bindings.size();
     for (int i = 0; i < bindingCount; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
-        switch (b->type) {
+        switch (b->type()) {
         case QRhiShaderResourceBinding::ImageLoad:
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
             qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
-                                             b->u.simage.tex,
-                                             b->type,
+                                             b->simage().tex,
+                                             b->type(),
                                              QRhiShaderResourceBinding::ImageLoad,
                                              QRhiShaderResourceBinding::ImageStore,
                                              QRhiShaderResourceBinding::ImageLoadStore);
@@ -5993,8 +5997,8 @@ GLbitfield QRhiGles2::barriersForNextDispatch(QGles2CommandBuffer *cbD)
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
             qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
-                                             b->u.sbuf.buf,
-                                             b->type,
+                                             b->sbuf().buf,
+                                             b->type(),
                                              QRhiShaderResourceBinding::BufferLoad,
                                              QRhiShaderResourceBinding::BufferStore,
                                              QRhiShaderResourceBinding::BufferLoadStore);
@@ -7689,8 +7693,8 @@ bool QGles2ShaderResourceBindings::create()
     hasDynamicOffset = false;
     for (int i = 0, ie = m_bindings.size(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(m_bindings.at(i));
-        if (b->type == QRhiShaderResourceBinding::UniformBuffer) {
-            if (b->u.ubuf.hasDynamicOffset) {
+        if (b->type() == QRhiShaderResourceBinding::UniformBuffer) {
+            if (b->ubuf().hasDynamicOffset) {
                 hasDynamicOffset = true;
                 break;
             }

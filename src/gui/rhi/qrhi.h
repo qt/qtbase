@@ -24,6 +24,7 @@
 #include <QtGui/qimage.h>
 #include <functional>
 #include <array>
+#include <variant>
 
 #include <rhi/qshader.h>
 
@@ -500,7 +501,6 @@ public:
     {
         int binding;
         QRhiShaderResourceBinding::StageFlags stage;
-        QRhiShaderResourceBinding::Type type;
         struct UniformBufferData {
             QRhiBuffer *buf;
             quint32 offset;
@@ -521,17 +521,46 @@ public:
             quint32 offset;
             quint32 maybeSize;
         };
-        union {
-            UniformBufferData ubuf;
-            StorageImageData simage;
-            StorageBufferData sbuf;
-        } u;
-        TextureAndOrSamplerData stex;
+        // Each alternative is a distinct type, even where the data is the
+        // same, because the standard library on INTEGRITY cannot copy assign
+        // a std::variant that has the same type as more than one alternative.
+        template<Type, typename T>
+        struct Alternative : T
+        {
+            Alternative() = default;
+            Alternative(const T &t) : T(t) { }
+        };
+        std::variant<Alternative<UniformBuffer, UniformBufferData>,
+                     Alternative<SampledTexture, TextureAndOrSamplerData>,
+                     Alternative<Texture, TextureAndOrSamplerData>,
+                     Alternative<Sampler, TextureAndOrSamplerData>,
+                     Alternative<ImageLoad, StorageImageData>,
+                     Alternative<ImageStore, StorageImageData>,
+                     Alternative<ImageLoadStore, StorageImageData>,
+                     Alternative<BufferLoad, StorageBufferData>,
+                     Alternative<BufferStore, StorageBufferData>,
+                     Alternative<BufferLoadStore, StorageBufferData>> u;
+
+        Type type() const { return Type(u.index()); }
+
+        template<typename T, Type... Ts>
+        const T &get() const
+        {
+            const T *p = nullptr;
+            ((p = std::get_if<Ts>(&u)) || ...);
+            Q_ASSERT(p);
+            return *p;
+        }
+
+        const UniformBufferData &ubuf() const { return get<UniformBufferData, UniformBuffer>(); }
+        const TextureAndOrSamplerData &stex() const { return get<TextureAndOrSamplerData, SampledTexture, Texture, Sampler>(); }
+        const StorageImageData &simage() const { return get<StorageImageData, ImageLoad, ImageStore, ImageLoadStore>(); }
+        const StorageBufferData &sbuf() const { return get<StorageBufferData, BufferLoad, BufferStore, BufferLoadStore>(); }
 
         int arraySize() const
         {
-            return type == QRhiShaderResourceBinding::SampledTexture || type == QRhiShaderResourceBinding::Texture
-                    ? stex.count()
+            return type() == QRhiShaderResourceBinding::SampledTexture || type() == QRhiShaderResourceBinding::Texture
+                    ? stex().count()
                     : 1;
         }
 
@@ -541,7 +570,7 @@ public:
             // must write out exactly LAYOUT_DESC_ENTRIES_PER_BINDING elements here
             *dst++ = quint32(binding);
             *dst++ = quint32(stage);
-            *dst++ = quint32(type);
+            *dst++ = quint32(type());
             *dst++ = quint32(arraySize());
             return dst;
         }
