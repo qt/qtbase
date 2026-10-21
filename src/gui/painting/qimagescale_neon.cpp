@@ -46,7 +46,7 @@ void qt_qimageScaleAARGBA_up_x_down_y_neon(QImageScaleInfo *isi, unsigned int *d
             int Cy = yapoints[y] >> 16;
             int yap = yapoints[y] & 0xffff;
 
-            unsigned int *dptr = dest + (y * dow);
+            unsigned int *dptr = dest + qsizetype(y) * dow;
             for (int x = 0; x < dw; x++) {
                 const unsigned int *sptr = ypoints[y] + xpoints[x];
                 uint32x4_t vx = qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow);
@@ -85,7 +85,7 @@ void qt_qimageScaleAARGBA_down_x_up_y_neon(QImageScaleInfo *isi, unsigned int *d
     /* go through every scanline in the output buffer */
     auto scaleSection = [&] (int yStart, int yEnd) {
         for (int y = yStart; y < yEnd; ++y) {
-            unsigned int *dptr = dest + (y * dow);
+            unsigned int *dptr = dest + qsizetype(y) * dow;
             for (int x = 0; x < dw; x++) {
                 int Cx = xapoints[x] >> 16;
                 int xap = xapoints[x] & 0xffff;
@@ -129,7 +129,7 @@ void qt_qimageScaleAARGBA_down_xy_neon(QImageScaleInfo *isi, unsigned int *dest,
             int Cy = yapoints[y] >> 16;
             int yap = yapoints[y] & 0xffff;
 
-            unsigned int *dptr = dest + (y * dow);
+            unsigned int *dptr = dest + qsizetype(y) * dow;
             for (int x = 0; x < dw; x++) {
                 const int Cx = xapoints[x] >> 16;
                 const int xap = xapoints[x] & 0xffff;

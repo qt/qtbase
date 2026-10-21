@@ -52,7 +52,7 @@ void qt_qimageScaleAARGBA_up_x_down_y_lsx(QImageScaleInfo *isi, unsigned int *de
             const __m128i vCy = __lsx_vreplgr2vr_w(Cy);
             const __m128i vyap = __lsx_vreplgr2vr_w(yap);
 
-            unsigned int *dptr = dest + (y * dow);
+            unsigned int *dptr = dest + qsizetype(y) * dow;
             for (int x = 0; x < dw; x++) {
                 const unsigned int *sptr = ypoints[y] + xpoints[x];
                 __m128i vx = qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow, vyap, vCy);
@@ -95,7 +95,7 @@ void qt_qimageScaleAARGBA_down_x_up_y_lsx(QImageScaleInfo *isi, unsigned int *de
     /* go through every scanline in the output buffer */
     auto scaleSection = [&] (int yStart, int yEnd) {
         for (int y = yStart; y < yEnd; ++y) {
-            unsigned int *dptr = dest + (y * dow);
+            unsigned int *dptr = dest + qsizetype(y) * dow;
             for (int x = 0; x < dw; x++) {
                 int Cx = xapoints[x] >> 16;
                 int xap = xapoints[x] & 0xffff;
@@ -145,7 +145,7 @@ void qt_qimageScaleAARGBA_down_xy_lsx(QImageScaleInfo *isi, unsigned int *dest,
             const __m128i vCy = __lsx_vreplgr2vr_w(Cy);
             const __m128i vyap = __lsx_vreplgr2vr_w(yap);
 
-            unsigned int *dptr = dest + (y * dow);
+            unsigned int *dptr = dest + qsizetype(y) * dow;
             for (int x = 0; x < dw; x++) {
                 const int Cx = xapoints[x] >> 16;
                 const int xap = xapoints[x] & 0xffff;
