@@ -17,13 +17,13 @@
 #include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/qglobalstatic.h>
+#include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qrandom.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include <QtCore/private/qohosjsonconversions_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 
 #include <array>
@@ -426,7 +426,7 @@ QNapi::Object makeJsCompletionHandler(
             QNapi::String messageValue;
             cbInfo.getLeadingArgs(Q_FUNC_INFO, elementNameObj, messageValue);
 
-            const QJsonObject elementName = QtOhos::mapNapiObjectToJsonObject(elementNameObj);
+            const QJsonObject elementName = QtHarmony::mapJsObjectToQJsonObject(elementNameObj.Env(), elementNameObj);
             const QString message = QString::fromStdString(messageValue);
 
             QNativeInterface::QHarmonyApplication::runOnQtThread(
@@ -565,7 +565,8 @@ void requestStartAbilityForResult(
             auto optUiAbility = optInstanceMainWindowRef.has_value()
                 ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
                 : jsState.defaultQAbility();
-            if (!optUiAbility.has_value()) {
+            auto napiWant = QNapi::Object(jsState.env(), QtHarmony::mapQJsonObjectToJsObject(jsState.env(), wantJson));
+            if (!optUiAbility.has_value() || napiWant.IsEmpty()) {
                 context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                     [resultConsumer](auto &) {
                         resultConsumer({});
@@ -573,7 +574,7 @@ void requestStartAbilityForResult(
                 return;
             }
 
-            auto arguments = std::vector<QNapi::ValueWrapper>{QtOhos::mapJsonObjectToNapiObject(jsState.env(), wantJson)};
+            auto arguments = std::vector<QNapi::ValueWrapper>{napiWant};
             if (options.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
@@ -585,7 +586,7 @@ void requestStartAbilityForResult(
 
                     auto wantOrEmpty = QNapi::getOptionalPropOrEmpty<QNapi::Object>(abilityResult, "want");
                     auto jsonWant = !wantOrEmpty.IsEmpty()
-                        ? std::optional<QJsonObject>(QtOhos::mapNapiObjectToJsonObject(wantOrEmpty))
+                        ? std::optional<QJsonObject>(QtHarmony::mapJsObjectToQJsonObject(wantOrEmpty.Env(), wantOrEmpty))
                         : std::nullopt;
 
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
@@ -773,7 +774,8 @@ bool startAbilityByTypeImpl(const QString &appType, const QJsonObject &wantParam
     return QOhosJsThreadGateway::evalWithPromise<bool>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             auto optQAbility = jsState.defaultQAbility();
-            if (!optQAbility.has_value()) {
+            auto napiWantParameters = QNapi::Object(jsState.env(), QtHarmony::mapQJsonObjectToJsObject(jsState.env(), wantParameters));
+            if (!optQAbility.has_value() || napiWantParameters.IsEmpty()) {
                 evalPromise(false);
                 return;
             }
@@ -783,7 +785,7 @@ bool startAbilityByTypeImpl(const QString &appType, const QJsonObject &wantParam
                 "context.startAbilityByType(*)",
                 {
                     appType.toStdString(),
-                    QtOhos::mapJsonObjectToNapiObject(jsState.env(), wantParameters),
+                    napiWantParameters,
                     QNapi::makeObject(
                         jsState.env(),
                         {
@@ -1035,7 +1037,11 @@ std::shared_ptr<OperationStatus> startAbilityImpl(
             if (mainUiAbility.IsEmpty())
                 return false;
 
-            auto arguments = std::vector<QNapi::ValueWrapper>{QtOhos::mapJsonObjectToNapiObject(jsState.env(), wantJson)};
+            auto napiWant = QNapi::Object(jsState.env(), QtHarmony::mapQJsonObjectToJsObject(jsState.env(), wantJson));
+            if (napiWant.IsEmpty())
+                return false;
+
+            auto arguments = std::vector<QNapi::ValueWrapper>{napiWant};
             if (qpaStartOptions.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, qpaStartOptions.value()));
 
@@ -1061,10 +1067,16 @@ void startAppProcessImpl(
                 ? convertStartOptionsToNapiObject(jsState, qpaStartOptions.value())
                 : QNapi::Object();
 
+            auto napiRequestWant = QNapi::Object(jsState.env(), QtHarmony::mapQJsonObjectToJsObject(jsState.env(), requestWantJson));
+            if (napiRequestWant.IsEmpty()) {
+                taskPromise();
+                return;
+            }
+
             auto sharedTaskPromise = QtOhos::moveToSharedPtr(std::move(taskPromise).makeChained(Q_FUNC_INFO));
             jsState.startAppProcess(
                 processId.toStdString(),
-                QtOhos::mapJsonObjectToNapiObject(jsState.env(), requestWantJson),
+                napiRequestWant,
                 startOptions,
                 [sharedTaskPromise](QOhosJsState &) {
                     (*sharedTaskPromise)();
