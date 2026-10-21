@@ -68,7 +68,6 @@ constexpr int itemViewSeparatorHeight = 5;
 constexpr int focusFrameWidth = 2;
 constexpr int focusFrameCornerRadius = 16;
 
-constexpr int headerMargin = 16;
 constexpr int headerDefaultSectionSizeVertical = 48;
 
 constexpr double lineEditCornerRadius = 32.0;
@@ -2079,8 +2078,6 @@ int QOhosStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, cons
         return 2 * tabBarTabRadius + 2 * tabBarTabFrameWidth;
     case PM_TitleBarHeight:
         return titleBarHeight;
-    case PM_HeaderMargin:
-        return headerMargin;
     case PM_HeaderDefaultSectionSizeVertical:
         return headerDefaultSectionSizeVertical;
     case PM_ToolTipLabelFrameWidth:
