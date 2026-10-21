@@ -106,6 +106,8 @@ private slots:
     void smoothScale4();
 
     void smoothScaleBig();
+    void smoothScaleBigDownscale_data();
+    void smoothScaleBigDownscale();
     void smoothScaleAlpha();
     void smoothScaleFormats_data();
     void smoothScaleFormats();
@@ -1958,6 +1960,46 @@ void tst_QImage::smoothScaleBig()
 
     QCOMPARE(tallScaled.pixel(0, 0), QRgb(0x0));
     QCOMPARE(wideScaled.pixel(0, 0), QRgb(0x0));
+}
+
+void tst_QImage::smoothScaleBigDownscale_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<int>("targetSize");
+    QTest::addColumn<bool>("vertical");
+
+    for (auto format :
+         { QImage::Format_ARGB32_Premultiplied, QImage::Format_RGBA64_Premultiplied }) {
+        for (int targetSize : { 140000, 262144, 262145 }) {
+            for (bool vertical : { false, true }) {
+                QTest::addRow("%d_%d_%s", int(format), targetSize, vertical ? "v" : "h")
+                        << format << targetSize << vertical;
+            }
+        }
+    }
+}
+
+void tst_QImage::smoothScaleBigDownscale()
+{
+    // Filter weights must not overflow for big target sizes
+    QFETCH(QImage::Format, format);
+    QFETCH(int, targetSize);
+    QFETCH(bool, vertical);
+
+    const int bigValue = targetSize + targetSize / 4;
+    QImage img = vertical ? QImage(2, bigValue, format) : QImage(bigValue, 2, format);
+    img.fill(QColor(0x10, 0x20, 0x30));
+    const QSize targetSz = vertical ? QSize(2, targetSize) : QSize(targetSize, 2);
+    const QImage scaled = img.scaled(targetSz, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    QCOMPARE(scaled.size(), targetSz);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            if (scaled.pixel(x, y) != qRgb(0x10, 0x20, 0x30))
+                QFAIL(qPrintable(
+                        QString::asprintf("Wrong pixel %08x at %d,%d", scaled.pixel(x, y), x, y)));
+        }
+    }
 }
 
 void tst_QImage::smoothScaleAlpha()
