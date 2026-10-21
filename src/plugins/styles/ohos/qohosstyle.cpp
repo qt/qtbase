@@ -504,24 +504,26 @@ QColor getPushButtonOverlayFill(bool isPressed, const QStyleOptionButton &option
     return option.palette.color(QPalette::Active, role);
 }
 
-QBrush getPushButtonBackgroundBrush(const QStyleOptionButton &option)
+bool hasPushButtonAccentBackground(const QStyleOptionButton &option)
 {
     const auto isDefaultButton = option.features.testFlag(QStyleOptionButton::DefaultButton);
     const auto isAutoDefaultButton = option.features.testFlag(QStyleOptionButton::AutoDefaultButton);
-    const auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
     const auto isOn = option.state.testFlag(QStyle::State_On);
 
-    const auto defaultButtonBackgroundColor = isEnabled
-        ? option.palette.color(QPalette::Active, QPalette::AlternateBase)
-        : makeInactiveOrDisabledFromColor(option.palette.color(QPalette::Active, QPalette::AlternateBase));
+    return isDefaultButton || (isOn && isAutoDefaultButton);
+}
 
-    if (isOn)
-        return isDefaultButton || isAutoDefaultButton
-            ? defaultButtonBackgroundColor
-            : getPushButtonOverlayFill(true, option);
+QBrush getPushButtonBackgroundBrush(const QStyleOptionButton &option)
+{
+    const auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
 
-    if (isDefaultButton)
-        return defaultButtonBackgroundColor;
+    if (hasPushButtonAccentBackground(option)) {
+        const auto accentColor = option.palette.color(QPalette::Active, QPalette::AlternateBase);
+        return isEnabled ? accentColor : makeInactiveOrDisabledFromColor(accentColor);
+    }
+
+    if (option.state.testFlag(QStyle::State_On))
+        return getPushButtonOverlayFill(true, option);
 
     return option.palette.brush(
         isEnabled ? QPalette::Active : QPalette::Inactive, QPalette::Button);
@@ -553,10 +555,8 @@ std::optional<QBrush> getPushButtonFillOverlayBrush(const QStyleOptionButton &op
 QColor getPushButtonTextColor(const QStyleOptionButton &option)
 {
     const auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
-    const auto isDefaultButton = option.features.testFlag(QStyleOptionButton::DefaultButton);
-    const auto isOn = option.state.testFlag(QStyle::State_On);
 
-    return isDefaultButton || isOn
+    return hasPushButtonAccentBackground(option)
         ? option.palette.color(QPalette::Active, QPalette::BrightText)
         : option.palette.color(
             isEnabled
