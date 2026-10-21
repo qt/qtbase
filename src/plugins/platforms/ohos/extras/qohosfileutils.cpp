@@ -6,7 +6,9 @@
 #include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/qharmonyappjscontext.h>
+#include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsobjectref.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
@@ -26,23 +28,27 @@ void showFileDialogAuthorization(
 {
     auto sharedResultCallback = QtOhos::moveToSharedPtr(std::move(resultCallback));
 
-    QOhosJsThreadGateway::invoke(
-        [contextWindowAbilityRef, contextJsWindowRef, filePath, sharedResultCallback](QOhosJsState &jsState) {
-            auto &appJsContext = QHarmonyAppJsContext::fromEnv(jsState.env());
+    QNativeInterface::QHarmonyApplication::runOnJsThread(
+        [contextWindowAbilityRef, contextJsWindowRef, filePath, sharedResultCallback](QHarmonyJsContext &jsContext) {
+            auto failureReportGuard = qScopeGuard(
+                [sharedResultCallback]() {
+                    QNativeInterface::QHarmonyApplication::runOnQtThread(
+                        [sharedResultCallback]() {
+                            (*sharedResultCallback)(false);
+                        });
+                });
+
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
             auto optQAbility = QNapi::Object(
-                jsState.env(),
+                jsContext.env(),
                 contextWindowAbilityRef.isNull() ? appJsContext.defaultAbility() : contextWindowAbilityRef.value(appJsContext));
             if (optQAbility.IsEmpty()) {
                 qOhosPrintfError("%s: no ability available for the file dialog", Q_FUNC_INFO);
-                QNativeInterface::QHarmonyApplication::runOnQtThread(
-                    [sharedResultCallback]() {
-                        (*sharedResultCallback)(false);
-                    });
                 return;
             }
 
             auto documentSelectOptions = QNapi::makeObject(
-                jsState.env(),
+                jsContext.env(),
                 {
                     {"defaultFilePathUri", tryMapPathToOhosFileUri(filePath.toStdString()).value_or("")},
                     {"authMode", true},
@@ -53,11 +59,15 @@ void showFileDialogAuthorization(
                 QNapi::toJsonString(documentSelectOptions).c_str());
             std::vector<QNapi::ValueWrapper> constructorParams = {optQAbility.get("context")};
             if (!contextJsWindowRef.isNull())
-                constructorParams.push_back(QNapi::Object(jsState.env(), contextJsWindowRef.value(appJsContext)));
+                constructorParams.push_back(QNapi::Object(jsContext.env(), contextJsWindowRef.value(appJsContext)));
+            auto optFilePickerModule = QNapi::Object(jsContext.env(), jsContext.tryImportModule("@ohos.file.picker"));
+            if (optFilePickerModule.IsEmpty())
+                return;
+
             auto documentViewPicker = QtOhos::moveToSharedPtr(
                 QNapi::Reference<>::makePersistentFrom(
-                    jsState.eval<QNapi::Object>(
-                        "@ohos.file.picker.DocumentViewPicker<new>(*)", constructorParams)));
+                    optFilePickerModule.eval<QNapi::Object>(
+                        "DocumentViewPicker<new>(*)", constructorParams)));
             documentViewPicker->evalToPromiseOrRejectOnThrow("select(*)", {documentSelectOptions}).onThen(
                 [documentViewPicker, sharedResultCallback](const QOhosCallbackInfo &cbInfo) {
                     auto actionResult = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
@@ -79,6 +89,7 @@ void showFileDialogAuthorization(
                             (*sharedResultCallback)(false);
                         });
                 });
+            failureReportGuard.dismiss();
         });
 }
 
