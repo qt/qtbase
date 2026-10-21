@@ -8,6 +8,7 @@
 #include <QtHarmonyExtras/private/qohoswantinfo_p.h>
 #include <QtHarmonyExtras/private/qohoswantutils_p.h>
 
+#include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
@@ -214,7 +215,7 @@ void processSerialPortPermissionResponse(std::uint32_t serialPortId, bool grante
     auto permissionContext = granted
         ? QtOhos::makeDestroyNotifier(
             [serialPortId, weakSelf = QtOhos::makeWeakPtr(serialPortPermissionsState())]() {
-                QtOhos::invokeInQtThread(
+                QNativeInterface::QHarmonyApplication::runOnQtThread(
                     [serialPortId, weakSelf]() {
                         QOhosJsThreadGateway::runAndWait(
                             [&](QOhosJsState &jsState) {
@@ -265,7 +266,7 @@ void requestSerialPortAccessRight(
         return;
     }
 
-    QtOhos::invokeInQtThread(
+    QNativeInterface::QHarmonyApplication::runOnQtThread(
         [serialPortId = optSerialPortId.value(), weakSelf = QtOhos::makeWeakPtr(serialPortPermissionsState()), asyncResultConsumer = std::move(asyncResultConsumer)]() {
             auto self = weakSelf.lock();
             if (!self)
@@ -293,7 +294,7 @@ void requestSerialPortAccessRight(
                             jsState,
                             serialPortId,
                             [serialPortId, weakSelf](bool granted) {
-                                QtOhos::invokeInQtThread(
+                                QNativeInterface::QHarmonyApplication::runOnQtThread(
                                     [serialPortId, weakSelf, granted]() {
                                         auto self = weakSelf.lock();
                                         if (self)
@@ -475,7 +476,7 @@ QOhosAppContextImpl::QOhosAppContextImpl()
         [this](double fontSizeScale) {
             Q_EMIT fontSizeScaleChanged(fontSizeScale);
         },
-        QtOhos::invokeInQtThread,
+        QNativeInterface::QHarmonyApplication::runOnQtThread,
         Q_FUNC_INFO);
 }
 

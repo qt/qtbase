@@ -14,6 +14,7 @@
 #include <QtGui/qwindow.h>
 #include <QtGui/private/qohosimageconversions_p.h>
 
+#include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qhash.h>
@@ -147,7 +148,7 @@ void setOnContinueRequestsHandlerForAbilityInstanceWindow(
                     auto jsResultContext = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsResultContext>());
                     jsResultContext->wantParamsReference = QNapi::Reference<>::makePersistentFrom(wantParamsObj);
                     jsResultContext->resultConsumer = std::move(resultConsumer);
-                    QtOhos::invokeInQtThread(
+                    QNativeInterface::QHarmonyApplication::runOnQtThread(
                         [sharedRequestsHandler, sourceVersionCode, jsResultContext]() {
                             (*sharedRequestsHandler)(
                                 AbilityOnContinueRequest{
@@ -428,7 +429,7 @@ QNapi::Object makeJsCompletionHandler(
             const QJsonObject elementName = QtOhos::mapNapiObjectToJsonObject(elementNameObj);
             const QString message = QString::fromStdString(messageValue);
 
-            QtOhos::invokeInQtThread(
+            QNativeInterface::QHarmonyApplication::runOnQtThread(
                 [qtThreadCompletionHandler, requestSuccess, elementName, message]() {
                     (*qtThreadCompletionHandler)(requestSuccess, elementName, message);
                 });
@@ -910,7 +911,7 @@ QOhosAbilityContextImpl::QOhosAbilityContextImpl(QWindow *instanceMainWindow)
             else
                 context->sendRejectResponse();
 
-            QtOhos::invokeInQtThread(
+            QNativeInterface::QHarmonyApplication::runOnQtThread(
                 [response = context->response(), responseConsumer = std::move(responseConsumer)]() {
                     responseConsumer(response);
                 });
