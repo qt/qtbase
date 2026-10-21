@@ -4,6 +4,8 @@
 #include "qohossharekitbackend_p.h"
 
 #include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyappjscontext.h>
+#include <QtCore/qharmonyjsobjectref.h>
 #include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
@@ -292,10 +294,10 @@ std::shared_ptr<void> shareData(
     ControllerOptions controllerOptions, std::function<void()> panelClosedCallback,
     QOhosConsumer<ShareOperationResult> shareCompletedCallback)
 {
-    auto optMainWindowInstanceObjectRef =
-        optInstanceMainWindow != nullptr
-            ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-            : std::nullopt;
+    auto *harmonyWindow = optInstanceMainWindow ? optInstanceMainWindow->nativeInterface<QNativeInterface::QHarmonyWindow>() : nullptr;
+    const auto optInstanceAbilityRef = optInstanceMainWindow
+        ? std::optional(harmonyWindow ? harmonyWindow->ability() : QHarmonyJsObjectRef())
+        : std::nullopt;
 
     auto panelClosedJsCallback = makeAsyncConsumer(
         std::move(panelClosedCallback), &QNativeInterface::QHarmonyApplication::runOnQtThread);
@@ -304,17 +306,18 @@ std::shared_ptr<void> shareData(
 
     return QOhosJsThreadGateway::evalWithPromise<std::shared_ptr<void>>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<std::shared_ptr<void>> evalPromise) {
-            auto optUiAbility = optMainWindowInstanceObjectRef.has_value()
-                ? jsState.tryGetQAbilityByQWindow(optMainWindowInstanceObjectRef.value())
-                : jsState.defaultQAbility();
-            if (!optUiAbility.has_value()) {
+            auto &appJsContext = QHarmonyAppJsContext::fromEnv(jsState.env());
+            auto optUiAbility = QNapi::Object(
+                jsState.env(),
+                optInstanceAbilityRef ? optInstanceAbilityRef->value(appJsContext) : appJsContext.defaultAbility());
+            if (optUiAbility.IsEmpty()) {
                 qOhosPrintfWarning("%s: no UIAbility available to share data with ShareKit", Q_FUNC_INFO);
                 evalPromise(nullptr);
                 return;
             }
 
             shareDataImpl(
-                jsState, optUiAbility.value(), recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
+                jsState, optUiAbility, recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
                 std::move(shareCompletedJsCallback), std::move(evalPromise));
         },
         Q_FUNC_INFO);
