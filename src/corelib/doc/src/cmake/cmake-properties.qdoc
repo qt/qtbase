@@ -1040,7 +1040,12 @@ Specifies the target SDK version field written to
 substituted verbatim, so it must use the format expected by the HarmonyOS
 toolchain, for example \c {14}.
 
-If this property is not set, the value defined by the package template is kept.
+If neither this property nor
+\l{cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
+is set, the version of the HarmonyOS SDK that builds the HAP is written, for
+example \c {6.1.1(23)}. It is read from the \c {sdk-pkg.json} file of the SDK
+in \c DEVECO_SDK_HOME, or of the SDK Qt was built with. If that file cannot be
+read, no target SDK version is written.
 
 \badcode
 set_target_properties(myapp PROPERTIES
