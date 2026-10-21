@@ -1763,7 +1763,7 @@ QT_WARNING_DISABLE_CLANG("-Wformat")
     QCOMPARE(n1, 5);
     qlonglong n2;
     QCOMPARE(QString::asprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz"), u"foobarwhiz");
-    QCOMPARE((int)n2, 6);
+    QCOMPARE(n2, 6);
 QT_WARNING_POP
 
     { // %ls
