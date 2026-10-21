@@ -9,10 +9,10 @@
 #include <QtHarmonyExtras/private/qohoswantutils_p.h>
 
 #include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include <QtCore/private/qohosjsonconversions_p.h>
 #include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 
@@ -82,8 +82,10 @@ Q_NORETURN void restartAppImpl(std::optional<QJsonObject> want)
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             auto napiWant = want.has_value()
-                ? QtOhos::mapJsonObjectToNapiObject(jsState.env(), want.value())
+                ? QNapi::Object(jsState.env(), QtHarmony::mapQJsonObjectToJsObject(jsState.env(), want.value()))
                 : jsState.appLaunchWant();
+            if (want.has_value() && napiWant.IsEmpty())
+                qOhosReportFatalErrorAndAbort("%s: cannot map the Want to restart the app with", Q_FUNC_INFO);
 
             constexpr auto sleepTimeBeforeRetry = std::chrono::seconds(3);
 

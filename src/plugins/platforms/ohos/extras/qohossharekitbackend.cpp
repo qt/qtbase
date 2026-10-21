@@ -4,10 +4,10 @@
 #include "qohossharekitbackend_p.h"
 
 #include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include <QtCore/private/qohosjsonconversions_p.h>
 #include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
@@ -108,9 +108,13 @@ std::optional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
     }
 
     if (record.extraData.has_value()) {
-        objectProperties.emplace_back(
-            "extraData",
-            QtOhos::mapJsonObjectToNapiObject(jsState.env(), QJsonObject::fromVariantMap(record.extraData.value())));
+        auto napiExtraData = QNapi::Object(
+            jsState.env(),
+            QtHarmony::mapQJsonObjectToJsObject(jsState.env(), QJsonObject::fromVariantMap(record.extraData.value())));
+        if (napiExtraData.IsEmpty())
+            return std::nullopt;
+
+        objectProperties.emplace_back("extraData", napiExtraData);
     }
 
     return std::make_optional(QNapi::makeObject(jsState.env(), objectProperties));
