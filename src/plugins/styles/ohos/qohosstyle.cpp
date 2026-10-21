@@ -2081,8 +2081,15 @@ int QOhosStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, cons
         return headerDefaultSectionSizeVertical;
     case PM_ToolTipLabelFrameWidth:
         return toolTipFrameWidth;
-    case PM_MenuButtonIndicator:
+    case PM_MenuButtonIndicator: {
+        const auto *toolButtonOption = qstyleoption_cast<const QStyleOptionToolButton *>(option);
+        const bool isToolButtonCornerIndicator = toolButtonOption != nullptr
+            && toolButtonOption->features.testFlag(QStyleOptionToolButton::HasMenu)
+            && !toolButtonOption->features.testFlag(QStyleOptionToolButton::MenuButtonPopup);
+        if (isToolButtonCornerIndicator)
+            return QCommonStyle::pixelMetric(metric, option, widget);
         return 2 * QCommonStyle::pixelMetric(metric, option, widget);
+    }
     default:
         return QCommonStyle::pixelMetric(metric, option, widget);
     }
