@@ -917,7 +917,9 @@ function(_qt_internal_harmonyos_test_bundle_hap_basename out_var)
             OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_FILE}
             OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_ALIAS}
             OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_PASSWORD}
-            OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_PASSWORD})
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_PASSWORD}
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_PLAIN_KEY_PASSWORD}
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_PLAIN_STORE_PASSWORD})
         set(${out_var} "entry-default-signed.hap" PARENT_SCOPE)
     else()
         set(${out_var} "entry-default-unsigned.hap" PARENT_SCOPE)
@@ -955,13 +957,8 @@ function(_qt_internal_harmonyos_add_all_tests_hap_target)
 
     # Without hvigor the signed HAP is never produced and the install fixture
     # would later fail with a confusing "file not found".
-    if(NOT HARMONYOS_HVIGOR
-            AND (DEFINED ENV{QT_HARMONYOS_SIGNING_CERT_PATH}
-                OR DEFINED ENV{QT_HARMONYOS_SIGNING_PROFILE}
-                OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_FILE}
-                OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_ALIAS}
-                OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_PASSWORD}
-                OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_PASSWORD}))
+    _qt_internal_harmonyos_test_bundle_hap_basename(hap_basename)
+    if(NOT HARMONYOS_HVIGOR AND hap_basename STREQUAL "entry-default-signed.hap")
         message(WARNING "QT_HARMONYOS_SIGNING_* environment variables are set, but "
             "HARMONYOS_HVIGOR is not. The signed test HAP will not be produced; the "
             "HAP install fixture will fail. Pass -DHARMONYOS_HVIGOR=<path-to-hvigorw> "
