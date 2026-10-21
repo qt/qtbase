@@ -1758,10 +1758,10 @@ void tst_QString::asprintfS()
 QT_WARNING_PUSH
 // Android clang emits warning: '%n' specifier not supported on this platform
 QT_WARNING_DISABLE_CLANG("-Wformat")
-    int n1;
+    int n1 = -1;
     QCOMPARE(QString::asprintf("%s%n%s", "hello", &n1, "goodbye"), u"hellogoodbye");
     QCOMPARE(n1, 5);
-    qlonglong n2;
+    qlonglong n2 = -1;
     QCOMPARE(QString::asprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz"), u"foobarwhiz");
     QCOMPARE(n2, 6);
 QT_WARNING_POP
