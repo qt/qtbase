@@ -116,21 +116,48 @@
     \row
         \li \c {--signing-key-password <s>}
         \li \c QT_HARMONYOS_SIGNING_KEY_PASSWORD
-        \li Encrypted key password.
+        \li Key password, encrypted by \c hvigor.
     \row
         \li \c {--signing-store-password <s>}
         \li \c QT_HARMONYOS_SIGNING_STORE_PASSWORD
-        \li Encrypted keystore password.
+        \li Keystore password, encrypted by \c hvigor.
+    \row
+        \li \c {--signing-plain-key-password <s>}
+        \li \c QT_HARMONYOS_SIGNING_PLAIN_KEY_PASSWORD
+        \li Key password, in plain text.
+    \row
+        \li \c {--signing-plain-store-password <s>}
+        \li \c QT_HARMONYOS_SIGNING_PLAIN_STORE_PASSWORD
+        \li Keystore password, in plain text.
     \row
         \li \c {--signing-alg <alg>}
         \li \c QT_HARMONYOS_SIGNING_ALG
         \li Signature algorithm. Defaults to \c SHA256withECDSA.
     \endtable
 
-    The passwords must be \c hvigor-encrypted blobs, not plain text. Signing is
-    all-or-nothing: if any signing input is set, all six required values (the
-    certificate, profile, keystore, key alias, key password, and keystore
-    password) must be present. Otherwise the HAP is left unsigned.
+    Signing is all-or-nothing: if any signing input is set, all six required
+    values (the certificate, profile, keystore, key alias, key password, and
+    keystore password) must be present, otherwise \c harmonydeployqt fails. With
+    none of them set, the HAP is left unsigned.
+
+    Pass each password in one form only, and both in the same form.
+
+    With encrypted passwords, \c harmonydeployqt writes the signing material
+    into the \c signingConfigs of the generated \c build-profile.json5, and
+    \c hvigor signs the HAP. \c hvigor can only decrypt passwords that were
+    encrypted against the material directory it finds, such as the ones DevEco
+    Studio writes into \c build-profile.json5.
+
+    With plain passwords, \c harmonydeployqt signs the HAP with
+    \c hap-sign-tool from the HarmonyOS SDK, after \c hvigor has packaged it.
+    This does not depend on DevEco Studio. The tool is looked up under the SDK
+    root, or at \c QT_HARMONYOS_HAP_SIGN_TOOL if that is set. It needs a Java
+    runtime, taken from \c QT_HARMONYOS_JAVA, from \c JAVA_HOME, or from
+    \c PATH.
+
+    \note Plain passwords are passed to \c hap-sign-tool on its command line,
+    which is the only input mode it supports in a non-interactive build. They
+    are visible to other processes on the machine while it runs.
 
     \section1 Running the application
 

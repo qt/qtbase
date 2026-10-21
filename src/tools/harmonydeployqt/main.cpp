@@ -102,6 +102,8 @@ struct Options
     QString signingKeyAlias;
     QString signingKeyPassword;
     QString signingStorePassword;
+    QString signingPlainKeyPassword;
+    QString signingPlainStorePassword;
     QString signingAlg;
 
     QElapsedTimer timer;
@@ -127,12 +129,21 @@ static void printHelp()
                     "  --signing-key-alias <a>     Key alias (or QT_HARMONYOS_SIGNING_KEY_ALIAS)\n"
                     "  --signing-key-password <s>  Encrypted key pwd (or QT_HARMONYOS_SIGNING_KEY_PASSWORD)\n"
                     "  --signing-store-password <s> Encrypted store pwd (or QT_HARMONYOS_SIGNING_STORE_PASSWORD)\n"
+                    "  --signing-plain-key-password <s>\n"
+                    "                              Plain key pwd (or QT_HARMONYOS_SIGNING_PLAIN_KEY_PASSWORD)\n"
+                    "  --signing-plain-store-password <s>\n"
+                    "                              Plain store pwd (or QT_HARMONYOS_SIGNING_PLAIN_STORE_PASSWORD)\n"
                     "  --signing-alg <alg>         Signature algorithm, default SHA256withECDSA\n"
                     "                              (or QT_HARMONYOS_SIGNING_ALG)\n"
                     "  --help                      Show this help\n\n"
                     "Signing: CLI flags above win per field over the matching env vars.\n"
-                    "Passwords must be hvigor-encrypted blobs. If any signing input is set,\n"
-                    "all six required values must be present, or the HAP is left unsigned.\n");
+                    "Both passwords must be given either hvigor-encrypted or in plain text.\n"
+                    "If any signing input is set, all required values must be present,\n"
+                    "otherwise harmonydeployqt fails. With none set the HAP is left unsigned.\n"
+                    "With encrypted passwords, hvigor signs the HAP. With plain passwords, the\n"
+                    "SDK's hap-sign-tool does, located via the SDK root or\n"
+                    "QT_HARMONYOS_HAP_SIGN_TOOL and run with QT_HARMONYOS_JAVA, JAVA_HOME or\n"
+                    "java from PATH.\n");
 }
 
 class QProcessExt : public QProcess
@@ -179,6 +190,10 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
         "Encrypted key password"_L1, "pwd"_L1);
     QCommandLineOption signingStorePasswordOption("signing-store-password"_L1,
         "Encrypted keystore password"_L1, "pwd"_L1);
+    QCommandLineOption signingPlainKeyPasswordOption("signing-plain-key-password"_L1,
+        "Plain text key password"_L1, "pwd"_L1);
+    QCommandLineOption signingPlainStorePasswordOption("signing-plain-store-password"_L1,
+        "Plain text keystore password"_L1, "pwd"_L1);
     QCommandLineOption signingAlgOption("signing-alg"_L1,
         "Signature algorithm (default SHA256withECDSA)"_L1, "alg"_L1);
     QCommandLineOption helpOption("help"_L1, "Show help"_L1);
@@ -199,6 +214,8 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
     parser.addOption(signingKeyAliasOption);
     parser.addOption(signingKeyPasswordOption);
     parser.addOption(signingStorePasswordOption);
+    parser.addOption(signingPlainKeyPasswordOption);
+    parser.addOption(signingPlainStorePasswordOption);
     parser.addOption(signingAlgOption);
     parser.addOption(helpOption);
 
@@ -234,6 +251,8 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
     options->signingKeyAlias = parser.value(signingKeyAliasOption);
     options->signingKeyPassword = parser.value(signingKeyPasswordOption);
     options->signingStorePassword = parser.value(signingStorePasswordOption);
+    options->signingPlainKeyPassword = parser.value(signingPlainKeyPasswordOption);
+    options->signingPlainStorePassword = parser.value(signingPlainStorePasswordOption);
     options->signingAlg = parser.value(signingAlgOption);
 
     return true;
@@ -3083,62 +3102,92 @@ static bool copyQmlImports(const Options &options,
     return true;
 }
 
-// build-profile.json5 ships with `"signingConfigs": []`; replace that literal
-// with a populated block when the user supplies signing material. JSON5 input
-// (trailing commas, // comments) precludes QJsonDocument, hence string surgery.
-static bool injectSigningConfig(const Options &options)
+// Signing material resolved from the --signing-* flags and the matching
+// QT_HARMONYOS_SIGNING_* environment variables.
+struct SigningConfig
+{
+    bool enabled = false;
+    // hvigor-encrypted passwords are left to hvigor's sign task, the only one that
+    // can decrypt them.
+    bool encryptedPasswords = false;
+    QString certPath;
+    QString profile;
+    QString storeFile;
+    QString keyAlias;
+    QString keyPassword;
+    QString storePassword;
+    QString signAlg;
+};
+
+// Signing is all-or-nothing: setting any input commits to signing, so a missing
+// one is an error rather than a silently unsigned HAP.
+static bool resolveSigningConfig(const Options &options, SigningConfig *signing)
 {
     struct Field
     {
         const char *envName;
         const char *cliFlag;
         QString cliValue;
-        QByteArray envValue;
+        QString envValue;
 
-        QByteArray resolved() const
+        QString resolved() const
         {
             if (!cliValue.isEmpty())
-                return cliValue.toUtf8();
+                return cliValue;
             return envValue;
         }
-        QString sourceLabel() const
+        QString label() const
         {
-            return cliValue.isEmpty()
-                ? QString::fromLatin1(envName)
-                : QString::fromLatin1(cliFlag);
+            return QString::fromLatin1(cliFlag) + " / "_L1 + QString::fromLatin1(envName);
         }
     };
 
     Field required[] = {
-        { "QT_HARMONYOS_SIGNING_CERT_PATH",      "--signing-cert-path",
-          options.signingCertPath,      qgetenv("QT_HARMONYOS_SIGNING_CERT_PATH")      },
-        { "QT_HARMONYOS_SIGNING_PROFILE",        "--signing-profile",
-          options.signingProfile,       qgetenv("QT_HARMONYOS_SIGNING_PROFILE")        },
-        { "QT_HARMONYOS_SIGNING_STORE_FILE",     "--signing-store-file",
-          options.signingStoreFile,     qgetenv("QT_HARMONYOS_SIGNING_STORE_FILE")     },
-        { "QT_HARMONYOS_SIGNING_KEY_ALIAS",      "--signing-key-alias",
-          options.signingKeyAlias,      qgetenv("QT_HARMONYOS_SIGNING_KEY_ALIAS")      },
-        { "QT_HARMONYOS_SIGNING_KEY_PASSWORD",   "--signing-key-password",
-          options.signingKeyPassword,   qgetenv("QT_HARMONYOS_SIGNING_KEY_PASSWORD")   },
-        { "QT_HARMONYOS_SIGNING_STORE_PASSWORD", "--signing-store-password",
-          options.signingStorePassword, qgetenv("QT_HARMONYOS_SIGNING_STORE_PASSWORD") },
+        { "QT_HARMONYOS_SIGNING_CERT_PATH", "--signing-cert-path", options.signingCertPath,
+          qEnvironmentVariable("QT_HARMONYOS_SIGNING_CERT_PATH") },
+        { "QT_HARMONYOS_SIGNING_PROFILE", "--signing-profile", options.signingProfile,
+          qEnvironmentVariable("QT_HARMONYOS_SIGNING_PROFILE") },
+        { "QT_HARMONYOS_SIGNING_STORE_FILE", "--signing-store-file", options.signingStoreFile,
+          qEnvironmentVariable("QT_HARMONYOS_SIGNING_STORE_FILE") },
+        { "QT_HARMONYOS_SIGNING_KEY_ALIAS", "--signing-key-alias", options.signingKeyAlias,
+          qEnvironmentVariable("QT_HARMONYOS_SIGNING_KEY_ALIAS") },
     };
 
-    QByteArray signAlg = options.signingAlg.isEmpty()
-        ? qgetenv("QT_HARMONYOS_SIGNING_ALG")
-        : options.signingAlg.toUtf8();
+    // Each password is required in exactly one of its two forms: encrypted, plain.
+    Field passwords[][2] = {
+        { { "QT_HARMONYOS_SIGNING_KEY_PASSWORD", "--signing-key-password",
+            options.signingKeyPassword, qEnvironmentVariable("QT_HARMONYOS_SIGNING_KEY_PASSWORD") },
+          { "QT_HARMONYOS_SIGNING_PLAIN_KEY_PASSWORD", "--signing-plain-key-password",
+            options.signingPlainKeyPassword,
+            qEnvironmentVariable("QT_HARMONYOS_SIGNING_PLAIN_KEY_PASSWORD") } },
+        { { "QT_HARMONYOS_SIGNING_STORE_PASSWORD", "--signing-store-password",
+            options.signingStorePassword,
+            qEnvironmentVariable("QT_HARMONYOS_SIGNING_STORE_PASSWORD") },
+          { "QT_HARMONYOS_SIGNING_PLAIN_STORE_PASSWORD", "--signing-plain-store-password",
+            options.signingPlainStorePassword,
+            qEnvironmentVariable("QT_HARMONYOS_SIGNING_PLAIN_STORE_PASSWORD") } },
+    };
+
+    QString signAlg = options.signingAlg.isEmpty()
+            ? qEnvironmentVariable("QT_HARMONYOS_SIGNING_ALG")
+            : options.signingAlg;
 
     bool anySet = !signAlg.isEmpty();
     for (const Field &f : required)
         anySet = anySet || !f.resolved().isEmpty();
+    for (const auto &forms : passwords)
+        anySet = anySet || !forms[0].resolved().isEmpty() || !forms[1].resolved().isEmpty();
     if (!anySet)
         return true;
 
     QStringList missing;
     for (const Field &f : required) {
         if (f.resolved().isEmpty())
-            missing << QString::fromLatin1(f.cliFlag) + " / "_L1
-                       + QString::fromLatin1(f.envName);
+            missing << f.label();
+    }
+    for (const auto &forms : passwords) {
+        if (forms[0].resolved().isEmpty() && forms[1].resolved().isEmpty())
+            missing << forms[0].label() + " or "_L1 + forms[1].label();
     }
     if (!missing.isEmpty()) {
         fprintf(stderr, "Error: HAP signing requested, but the following required input(s)\n"
@@ -3148,8 +3197,67 @@ static bool injectSigningConfig(const Options &options)
         return false;
     }
 
-    if (signAlg.isEmpty())
-        signAlg = "SHA256withECDSA";
+    for (const auto &forms : passwords) {
+        if (!forms[0].resolved().isEmpty() && !forms[1].resolved().isEmpty()) {
+            fprintf(stderr, "Error: both %s and %s are set; pass only one of them\n",
+                    qPrintable(forms[0].label()), qPrintable(forms[1].label()));
+            return false;
+        }
+    }
+
+    const bool encryptedKeyPassword = !passwords[0][0].resolved().isEmpty();
+    const bool encryptedStorePassword = !passwords[1][0].resolved().isEmpty();
+    if (encryptedKeyPassword != encryptedStorePassword) {
+        fprintf(stderr,
+                "Error: the key password and the keystore password must both be\n"
+                "       hvigor-encrypted or both plain text.\n");
+        return false;
+    }
+
+    signing->enabled = true;
+    signing->encryptedPasswords = encryptedKeyPassword;
+    signing->certPath = required[0].resolved();
+    signing->profile = required[1].resolved();
+    signing->storeFile = required[2].resolved();
+    signing->keyAlias = required[3].resolved();
+    signing->keyPassword = passwords[0][encryptedKeyPassword ? 0 : 1].resolved();
+    signing->storePassword = passwords[1][encryptedStorePassword ? 0 : 1].resolved();
+    signing->signAlg = signAlg.isEmpty() ? "SHA256withECDSA"_L1 : signAlg;
+
+    const std::pair<const char *, QString> files[] = {
+        { required[0].cliFlag, signing->certPath },
+        { required[1].cliFlag, signing->profile },
+        { required[2].cliFlag, signing->storeFile },
+    };
+    for (const auto &file : files) {
+        if (!QFile::exists(file.second)) {
+            fprintf(stderr, "Error: signing input %s does not exist: %s\n", file.first,
+                    qPrintable(file.second));
+            return false;
+        }
+    }
+
+    if (options.verbose) {
+        fprintf(stdout, "HAP signing enabled\n");
+        fprintf(stdout, "  certpath:  %s\n", qPrintable(signing->certPath));
+        fprintf(stdout, "  profile:   %s\n", qPrintable(signing->profile));
+        fprintf(stdout, "  storeFile: %s\n", qPrintable(signing->storeFile));
+        fprintf(stdout, "  keyAlias:  %s\n", qPrintable(signing->keyAlias));
+        fprintf(stdout, "  signAlg:   %s\n", qPrintable(signing->signAlg));
+        fprintf(stdout, "  passwords: %s\n",
+                signing->encryptedPasswords ? "hvigor-encrypted" : "plain text");
+    }
+    return true;
+}
+
+// build-profile.json5 ships with `"signingConfigs": []`; replace that literal
+// with a populated block, so that hvigor signs the HAP with encrypted passwords.
+// JSON5 input (trailing commas, // comments) precludes QJsonDocument, hence
+// string surgery.
+static bool injectSigningConfig(const Options &options, const SigningConfig &signing)
+{
+    if (!signing.enabled || !signing.encryptedPasswords)
+        return true;
 
     const QString buildProfilePath = options.outputDirectory + "/build-profile.json5"_L1;
     QFile profileFile(buildProfilePath);
@@ -3191,23 +3299,23 @@ static bool injectSigningConfig(const Options &options)
     replacement.append("        \"name\": \"default\",\n");
     replacement.append("        \"type\": \"HarmonyOS\",\n");
     replacement.append("        \"material\": {\n");
-    auto appendField = [&](const char *key, const QByteArray &value, bool last) {
+    auto appendField = [&](const char *key, const QString &value, bool last) {
         replacement.append("          \"");
         replacement.append(key);
         replacement.append("\": \"");
-        replacement.append(escapeJsonString(value));
+        replacement.append(escapeJsonString(value.toUtf8()));
         replacement.append('"');
         if (!last)
             replacement.append(',');
         replacement.append('\n');
     };
-    appendField("certpath",      required[0].resolved(), false);
-    appendField("keyAlias",      required[3].resolved(), false);
-    appendField("keyPassword",   required[4].resolved(), false);
-    appendField("profile",       required[1].resolved(), false);
-    appendField("signAlg",       signAlg,                false);
-    appendField("storeFile",     required[2].resolved(), false);
-    appendField("storePassword", required[5].resolved(), true);
+    appendField("certpath",      signing.certPath,      false);
+    appendField("keyAlias",      signing.keyAlias,      false);
+    appendField("keyPassword",   signing.keyPassword,   false);
+    appendField("profile",       signing.profile,       false);
+    appendField("signAlg",       signing.signAlg,       false);
+    appendField("storeFile",     signing.storeFile,     false);
+    appendField("storePassword", signing.storePassword, true);
     replacement.append("        }\n");
     replacement.append("      }\n");
     replacement.append("    ]");
@@ -3227,18 +3335,192 @@ static bool injectSigningConfig(const Options &options)
     }
     profileFile.close();
 
-    if (options.verbose) {
+    if (options.verbose)
         fprintf(stdout, "Injected HAP signingConfig into %s\n", qPrintable(buildProfilePath));
-        fprintf(stdout, "  certpath:  %s  (from %s)\n",
-                required[0].resolved().constData(), qPrintable(required[0].sourceLabel()));
-        fprintf(stdout, "  profile:   %s  (from %s)\n",
-                required[1].resolved().constData(), qPrintable(required[1].sourceLabel()));
-        fprintf(stdout, "  storeFile: %s  (from %s)\n",
-                required[2].resolved().constData(), qPrintable(required[2].sourceLabel()));
-        fprintf(stdout, "  keyAlias:  %s  (from %s)\n",
-                required[3].resolved().constData(), qPrintable(required[3].sourceLabel()));
-        fprintf(stdout, "  signAlg:   %s\n", signAlg.constData());
+    return true;
+}
+
+static QString findJavaExecutable()
+{
+    const QString envJava = qEnvironmentVariable("QT_HARMONYOS_JAVA");
+    if (!envJava.isEmpty())
+        return envJava;
+
+    const QString javaHome = qEnvironmentVariable("JAVA_HOME");
+    if (!javaHome.isEmpty()) {
+        const QString fromHome =
+                QStandardPaths::findExecutable("java"_L1, { javaHome + "/bin"_L1 });
+        if (!fromHome.isEmpty())
+            return fromHome;
     }
+
+    return QStandardPaths::findExecutable("java"_L1);
+}
+
+static QString findHapSignTool(const Options &options)
+{
+    const QString envTool = qEnvironmentVariable("QT_HARMONYOS_HAP_SIGN_TOOL");
+    if (!envTool.isEmpty())
+        return envTool;
+
+    if (options.sdkRoot.isEmpty())
+        return QString();
+
+    // OHOS_SDK_ROOT normally points at the openharmony directory; accept the
+    // enclosing directories too, matching the other SDK lookups in this tool.
+    const QStringList candidates = {
+        options.sdkRoot + "/toolchains/lib/hap-sign-tool.jar"_L1,
+        options.sdkRoot + "/openharmony/toolchains/lib/hap-sign-tool.jar"_L1,
+        options.sdkRoot
+                + "/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar"_L1,
+    };
+    for (const QString &candidate : candidates) {
+        if (QFile::exists(candidate))
+            return candidate;
+    }
+    return QString();
+}
+
+// hap-sign-tool falls back to API level 9 when -compatibleVersion is omitted,
+// which understates what the manifest declares. Recover the real level from the
+// generated build-profile.json5, where it is written as "6.1.0(23)".
+static QString compatibleApiVersion(const Options &options)
+{
+    QFile profileFile(options.outputDirectory + "/build-profile.json5"_L1);
+    if (!profileFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        return QString();
+    const QString content = QString::fromUtf8(profileFile.readAll());
+
+    static const QRegularExpression keyRe("\"compatibleSdkVersion\"\\s*:\\s*([^,\\n}]+)"_L1);
+    const QRegularExpressionMatch keyMatch = keyRe.match(content);
+    if (!keyMatch.hasMatch())
+        return QString();
+
+    QString value = keyMatch.captured(1).trimmed();
+    static const QRegularExpression apiRe("\\((\\d+)\\)"_L1);
+    const QRegularExpressionMatch apiMatch = apiRe.match(value);
+    if (apiMatch.hasMatch())
+        return apiMatch.captured(1);
+
+    value.remove(u'"');
+    value = value.trimmed();
+    bool ok = false;
+    value.toInt(&ok);
+    return ok ? value : QString();
+}
+
+// Sign the HAP that hvigor produced, using the SDK's hap-sign-tool. With
+// encrypted passwords hvigor has signed it already, and only its path changes.
+//
+// hvigor's own sign task runs both passwords through a decryptor keyed on the
+// contents of DevEco Studio's material directory, so it rejects plain passwords.
+// hap-sign-tool takes the passwords as given, which is the form material from
+// AGC, a CI secret store or Qt Creator's keychain comes in. See QTBUG-149206.
+static bool signHap(const Options &options, const SigningConfig &signing, QString *hapPath)
+{
+    if (!signing.enabled)
+        return true;
+    if (hapPath->isEmpty()) {
+        fprintf(stderr, "Warning: HAP signing is configured, but no HAP was built to sign\n");
+        return true;
+    }
+
+    const QFileInfo unsignedInfo(*hapPath);
+    QString baseName = unsignedInfo.completeBaseName();
+    if (baseName.endsWith("-unsigned"_L1))
+        baseName.chop(9);
+    const QString signedPath = unsignedInfo.absolutePath() + "/"_L1 + baseName + "-signed.hap"_L1;
+
+    if (signing.encryptedPasswords) {
+        if (!QFile::exists(signedPath)) {
+            fprintf(stderr, "Error: hvigor did not produce the signed HAP %s\n",
+                    qPrintable(signedPath));
+            return false;
+        }
+        *hapPath = signedPath;
+        return true;
+    }
+
+    const QString signTool = findHapSignTool(options);
+    if (signTool.isEmpty()) {
+        fprintf(stderr,
+                "Error: hap-sign-tool.jar not found. Set QT_HARMONYOS_HAP_SIGN_TOOL\n"
+                "       to its path, or configure with OHOS_SDK_ROOT set to the SDK\n"
+                "       that contains it.\n");
+        return false;
+    }
+
+    const QString javaExecutable = findJavaExecutable();
+    if (javaExecutable.isEmpty()) {
+        fprintf(stderr,
+                "Error: no java executable found for running hap-sign-tool.\n"
+                "       Set QT_HARMONYOS_JAVA or JAVA_HOME, or add java to PATH.\n");
+        return false;
+    }
+
+    // hap-sign-tool refuses to overwrite, and a leftover from an earlier build
+    // would otherwise be mistaken for this build's output.
+    if (QFile::exists(signedPath) && !QFile::remove(signedPath)) {
+        fprintf(stderr, "Error: cannot remove stale %s\n", qPrintable(signedPath));
+        return false;
+    }
+
+    QStringList arguments;
+    arguments << "-jar"_L1 << signTool << "sign-app"_L1
+              << "-mode"_L1 << "localSign"_L1
+              << "-signAlg"_L1 << signing.signAlg << "-signCode"_L1 << "1"_L1
+              << "-keyAlias"_L1 << signing.keyAlias << "-keystoreFile"_L1 << signing.storeFile
+              << "-appCertFile"_L1 << signing.certPath << "-profileFile"_L1 << signing.profile
+              << "-inFile"_L1 << *hapPath << "-outFile"_L1 << signedPath;
+
+    const QString apiVersion = compatibleApiVersion(options);
+    if (apiVersion.isEmpty()) {
+        fprintf(stderr,
+                "Warning: cannot determine compatibleSdkVersion from build-profile.json5;"
+                " hap-sign-tool uses its default\n");
+    } else {
+        arguments << "-compatibleVersion"_L1 << apiVersion;
+    }
+
+    if (options.verbose) {
+        fprintf(stdout, "Signing HAP with %s\n", qPrintable(signTool));
+        fprintf(stdout, "  Running: %s %s -keyPwd <hidden> -keystorePwd <hidden>\n",
+                qPrintable(javaExecutable), qPrintable(arguments.join(u' ')));
+    }
+
+    // hap-sign-tool only reads the passwords from argv (-pwdInputMode 1 prompts
+    // on a console, which a build step does not have), so they are visible in a
+    // process listing for the duration of the call.
+    arguments << "-keyPwd"_L1 << signing.keyPassword << "-keystorePwd"_L1 << signing.storePassword;
+
+    QProcessExt process;
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start(javaExecutable, arguments);
+    if (!process.waitForStarted()) {
+        fprintf(stderr, "Error: failed to start %s\n", qPrintable(javaExecutable));
+        return false;
+    }
+    // The test bundle holds every Qt library, so code signing can take long.
+    if (!process.waitForFinished(-1)) {
+        fprintf(stderr, "Error: hap-sign-tool did not finish\n");
+        process.kill();
+        return false;
+    }
+    if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
+        QFile::remove(signedPath);
+        fprintf(stderr, "Error: hap-sign-tool failed with exit code %d\n", process.exitCode());
+        return false;
+    }
+    if (!QFile::exists(signedPath)) {
+        fprintf(stderr, "Error: hap-sign-tool reported success but %s was not created\n",
+                qPrintable(signedPath));
+        return false;
+    }
+
+    if (options.verbose)
+        fprintf(stdout, "  Signed HAP: %s\n", qPrintable(signedPath));
+
+    *hapPath = signedPath;
     return true;
 }
 
@@ -3351,6 +3633,14 @@ static bool buildHap(const Options &options, QString *hapOutputPath = nullptr)
 
         if (hapDir.exists()) {
             QStringList hapFiles = hapDir.entryList(QStringList() << "*.hap"_L1, QDir::Files);
+            // A signed HAP from an earlier build sorts before the unsigned one
+            // hvigor just wrote, so pick the unsigned artifact explicitly.
+            for (qsizetype i = 0; i < hapFiles.size(); ++i) {
+                if (hapFiles.at(i).endsWith("-unsigned.hap"_L1)) {
+                    hapFiles.move(i, 0);
+                    break;
+                }
+            }
             if (!hapFiles.isEmpty()) {
                 *hapOutputPath = hapDir.absoluteFilePath(hapFiles.first());
                 if (options.verbose)
@@ -3479,6 +3769,12 @@ int main(int argc, char *argv[])
     if (!readInputConfiguration(&options))
         return 1;
 
+    // Resolve before anything is generated: bad signing input should not cost a
+    // full HAP build to report.
+    SigningConfig signing;
+    if (!resolveSigningConfig(options, &signing))
+        return 1;
+
     const QList<TestQmlModule> testQmlModules =
             options.testBundleMode ? findTestQmlModules(options) : QList<TestQmlModule>{};
 
@@ -3564,7 +3860,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!injectSigningConfig(options)) {
+    if (!injectSigningConfig(options, signing)) {
         fprintf(stderr, "Failed to inject signing configuration\n");
         return 1;
     }
@@ -3572,6 +3868,11 @@ int main(int argc, char *argv[])
     // Phase 4: Build HAP package
     if (!buildHap(options, &hapOutputPath)) {
         fprintf(stderr, "Failed to build HAP\n");
+        return 1;
+    }
+
+    if (!signHap(options, signing, &hapOutputPath)) {
+        fprintf(stderr, "Failed to sign HAP\n");
         return 1;
     }
 
