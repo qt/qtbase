@@ -3,6 +3,7 @@
 
 #include "qohossharekitbackend_p.h"
 
+#include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
@@ -293,9 +294,9 @@ std::shared_ptr<void> shareData(
             : std::nullopt;
 
     auto panelClosedJsCallback = makeAsyncConsumer(
-        std::move(panelClosedCallback), &QtOhos::invokeInQtThread);
+        std::move(panelClosedCallback), &QNativeInterface::QHarmonyApplication::runOnQtThread);
     auto shareCompletedJsCallback = makeAsyncConsumer(
-        std::move(shareCompletedCallback), &QtOhos::invokeInQtThread);
+        std::move(shareCompletedCallback), &QNativeInterface::QHarmonyApplication::runOnQtThread);
 
     return QOhosJsThreadGateway::evalWithPromise<std::shared_ptr<void>>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<std::shared_ptr<void>> evalPromise) {

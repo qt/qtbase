@@ -3,6 +3,7 @@
 
 #include "qohosfileutils_p.h"
 
+#include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
@@ -29,7 +30,7 @@ void showFileDialogAuthorization(
             auto optQAbility = optWindowQAbility ? optWindowQAbility : jsState.defaultQAbility();
             if (!optQAbility) {
                 qOhosPrintfError("%s: no ability available for the file dialog", Q_FUNC_INFO);
-                QtOhos::invokeInQtThread(
+                QNativeInterface::QHarmonyApplication::runOnQtThread(
                     [sharedResultCallback]() {
                         (*sharedResultCallback)(false);
                     });
@@ -63,14 +64,14 @@ void showFileDialogAuthorization(
                         QNapi::toJsonString(actionResult).c_str());
 
                     bool authorized = actionResult.Length() > 0;
-                    QtOhos::invokeInQtThread(
+                    QNativeInterface::QHarmonyApplication::runOnQtThread(
                         [sharedResultCallback, authorized]() {
                             (*sharedResultCallback)(authorized);
                         });
                 },
                 [sharedResultCallback]() {
                     qOhosPrintfError("DocumentViewPicker.select() call failed");
-                    QtOhos::invokeInQtThread(
+                    QNativeInterface::QHarmonyApplication::runOnQtThread(
                         [sharedResultCallback]() {
                             (*sharedResultCallback)(false);
                         });
