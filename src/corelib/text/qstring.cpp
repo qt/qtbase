@@ -8655,10 +8655,19 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
 {
     // Negative field-width for right-padding, positive for left-padding:
     const qsizetype abs_field_width = qAbs(field_width);
-    const qsizetype result_len =
-            s.size() - d.escape_len
-            + (d.occurrences - d.locale_occurrences) * qMax(abs_field_width, arg.size())
-            + d.locale_occurrences * qMax(abs_field_width, larg.size());
+    const qsizetype result_len = [&] {
+        using S = QString::size_type;
+        auto accu = s.size() - d.escape_len; // cannot overflow
+        const struct { S num, size; } summands[] = {
+            { d.occurrences - d.locale_occurrences, (std::max)(abs_field_width, arg.size()) },
+            { d.locale_occurrences, (std::max)(abs_field_width, larg.size()) },
+        };
+        for (auto e : summands) {
+            if (S tmp; mul_overflow(e.num, e.size, &tmp) || add_overflow(accu, tmp, &accu))
+                qBadAlloc();
+        }
+        return accu;
+    }();
 
     QString result(result_len, Qt::Uninitialized);
     QChar *rc = const_cast<QChar *>(result.unicode());
@@ -9139,7 +9148,8 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
                 }
             }
         }
-        totalSize += part.string.size();
+        if (add_overflow(totalSize, part.string.size(), &totalSize))
+            qBadAlloc();
     }
     return totalSize;
 }
