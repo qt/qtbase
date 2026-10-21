@@ -57,6 +57,7 @@ private:
                                              QHostAddress server = {}, quint16 port = 0,
                                              QDnsLookup::Protocol protocol = QDnsLookup::Standard);
     QStringList formatReply(const QDnsLookup *lookup) const;
+    bool lookForServerError(QDnsLookup::Error error) const;
 
     void setNameserver_helper(QDnsLookup::Protocol protocol);
 public slots:
@@ -370,6 +371,13 @@ QStringList tst_QDnsLookup::domainNameListAlternatives(const QString &input)
     return alternatives;
 }
 
+bool tst_QDnsLookup::lookForServerError(QDnsLookup::Error error) const
+{
+    return !dnsServersMustWork && (error == QDnsLookup::ServerFailureError
+                                   || error == QDnsLookup::ServerRefusedError
+                                   || error == QDnsLookup::TimeoutError);
+}
+
 std::unique_ptr<QDnsLookup>
 tst_QDnsLookup::lookupCommon(QDnsLookup::Type type, const QString &domain,
                              QHostAddress server, quint16 port,
@@ -389,9 +397,7 @@ tst_QDnsLookup::lookupCommon(QDnsLookup::Type type, const QString &domain,
     if (QTestEventLoop::instance().timeout())
         error = QDnsLookup::TimeoutError;
 
-    if (!dnsServersMustWork && (error == QDnsLookup::ServerFailureError
-                                || error == QDnsLookup::ServerRefusedError
-                                || error == QDnsLookup::TimeoutError)) {
+    if (lookForServerError(error)) {
         // It's not a QDnsLookup problem if the server refuses to answer the query.
         // This happens for queries of type ANY through Dnsmasq, for example.
         [&] {
@@ -483,7 +489,8 @@ void tst_QDnsLookup::lookupLocalhost()
     // address 127.0.0.1. However, DNS servers are not required to answer this
     // (though it appears to be a good practice).
     auto lookup = lookupCommon(QDnsLookup::Type::A, u"localhost."_s);
-    QVERIFY(lookup);
+    if (!lookup)
+        return;
     QVERIFY(lookup->error() == QDnsLookup::NoError || lookup->error() == QDnsLookup::NotFoundError);
     if (lookup->error() == QDnsLookup::NotFoundError)
         return;
@@ -663,6 +670,8 @@ void tst_QDnsLookup::lookupReuse()
 {
     // first lookup
     std::unique_ptr<QDnsLookup> lookup = lookupCommon(QDnsLookup::Type::A, "a-single");
+    if (!lookup)
+        return;
 
     QCOMPARE(lookup->error(), QDnsLookup::NoError);
     QVERIFY(!lookup->hostAddressRecords().isEmpty());
@@ -699,6 +708,12 @@ void tst_QDnsLookup::lookupAbortRetry()
     lookup.setName(domainName("aaaa-single"));
     lookup.lookup();
     QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
+
+    if (lookForServerError(lookup.error())) {
+        QString msg = u"Server refused or was unable to answer query; aaaa-single type AAAA: %1"_s
+                .arg(lookup.errorString());
+        QSKIP(msg.toLocal8Bit());
+    }
 
     QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
     QVERIFY(!lookup.hostAddressRecords().isEmpty());
