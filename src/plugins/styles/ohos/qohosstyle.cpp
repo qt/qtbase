@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosstyle_p.h"
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qnapi_p.h>
+#include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
+#include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/qhash.h>
+#include <QtGui/qfont.h>
+#include <QtGui/qfontmetrics.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpainterpath.h>
@@ -113,6 +120,8 @@ constexpr int titleBarHeight = 46;
 
 constexpr int toolButtonCornerRadius = 4;
 constexpr int toolButtonFocusFrameWidth = 2;
+
+constexpr int arrowSymbolSize = 16;
 
 constexpr int toolTipCornerRadius = 8;
 constexpr int toolTipFrameWidth = 8;
@@ -402,6 +411,106 @@ void drawArrow(
             p, QPen(color, arrowWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin), Qt::NoBrush,
             polygonPoints);
     });
+}
+
+enum class ArrowSymbol {
+    ChevronUp,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+};
+
+std::optional<char32_t> tryGetArrowSymbolCodepoint(QOhosJsState &jsState, const char *ohosSymbolName)
+{
+    try {
+        return jsState.eval<QNapi::Number>(
+            "@ohos.resourceManager.getSysResourceManager().getSymbolByName(*)",
+            {ohosSymbolName}).Uint32Value();
+    } catch (const Napi::Error &error) {
+        qOhosPrintfWarning(
+            "%s: getSymbolByName('%s') failed: %s",
+            Q_FUNC_INFO, ohosSymbolName, error.what());
+        return std::nullopt;
+    }
+}
+
+QOhosMemoizingJsThreadFetcher<QHash<ArrowSymbol, char32_t>> arrowSymbolCodepointsFetcher(
+    [](QOhosJsState &jsState) -> std::optional<QHash<ArrowSymbol, char32_t>> {
+        constexpr std::pair<ArrowSymbol, const char *> ohosSymbolNames[] = {
+            {ArrowSymbol::ChevronUp, "chevron_up"},
+            {ArrowSymbol::ChevronDown, "chevron_down"},
+            {ArrowSymbol::ChevronLeft, "chevron_left"},
+            {ArrowSymbol::ChevronRight, "chevron_right"},
+        };
+
+        QHash<ArrowSymbol, char32_t> codepoints;
+        for (const auto &[symbol, ohosSymbolName] : ohosSymbolNames) {
+            const auto optCodepoint = tryGetArrowSymbolCodepoint(jsState, ohosSymbolName);
+            if (optCodepoint)
+                codepoints.insert(symbol, *optCodepoint);
+        }
+        return codepoints;
+    },
+    "HM Symbol arrow codepoints");
+
+QFont arrowSymbolFont()
+{
+    QFont font(QStringLiteral("HM Symbol"));
+    font.setStyleStrategy(QFont::NoFontMerging);
+    font.setPixelSize(arrowSymbolSize);
+    return font;
+}
+
+bool tryDrawArrowSymbol(
+    QPainter &painter, ArrowSymbol symbol, const QRectF &boundingRect, const QColor &color)
+{
+    if (boundingRect.isEmpty())
+        return false;
+
+    const auto optCodepoints = arrowSymbolCodepointsFetcher.optValue();
+    if (!optCodepoints)
+        return false;
+
+    const auto codepointIt = optCodepoints->constFind(symbol);
+    if (codepointIt == optCodepoints->cend())
+        return false;
+
+    const char32_t codepoint = *codepointIt;
+    const QFont symbolFont = arrowSymbolFont();
+    if (!QFontMetricsF(symbolFont).inFontUcs4(codepoint))
+        return false;
+
+    QPainterPath glyphPath;
+    glyphPath.addText(QPointF(), symbolFont, QString::fromUcs4(&codepoint, 1));
+    const QRectF inkRect = glyphPath.boundingRect();
+    if (inkRect.isEmpty())
+        return false;
+
+    const qreal scale = std::min(
+        { 1.0, boundingRect.width() / inkRect.width(), boundingRect.height() / inkRect.height() });
+    paintOnStackTop(painter, [&](QPainter &painter) {
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.translate(boundingRect.center());
+        painter.scale(scale, scale);
+        painter.translate(-inkRect.center());
+        painter.fillPath(glyphPath, color);
+    });
+    return true;
+}
+
+ArrowSymbol chevronSymbol(ArrowDirection direction)
+{
+    switch (direction) {
+    case ArrowDirection::Up:
+        return ArrowSymbol::ChevronUp;
+    case ArrowDirection::Down:
+        return ArrowSymbol::ChevronDown;
+    case ArrowDirection::Left:
+        return ArrowSymbol::ChevronLeft;
+    case ArrowDirection::Right:
+        return ArrowSymbol::ChevronRight;
+    }
+    Q_UNREACHABLE_RETURN(ArrowSymbol::ChevronDown);
 }
 
 void drawCheckBoxOrRadioButtonIndicator(QPainter &painter, const QStyleOption &option, bool isCheckBox)
@@ -1411,9 +1520,9 @@ void QOhosStyle::drawPrimitive(
 
         paintOnStackTop(*painter, [&](auto &p) {
             p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
-            drawArrow(
-                p, availableRect, maxArrowSize, direction,
-                option->palette.color(QPalette::Active, QPalette::WindowText));
+            const auto arrowColor = option->palette.color(QPalette::Active, QPalette::WindowText);
+            if (!tryDrawArrowSymbol(p, chevronSymbol(direction), availableRect, arrowColor))
+                drawArrow(p, availableRect, maxArrowSize, direction, arrowColor);
         });
         break;
     }
@@ -1432,9 +1541,9 @@ void QOhosStyle::drawPrimitive(
             ? ArrowDirection::Up
             : ArrowDirection::Down;
 
-        drawArrow(
-            *painter, option->rect, option->rect.width(), direction,
-            option->palette.color(QPalette::Active, QPalette::ButtonText));
+        const auto arrowColor = option->palette.color(QPalette::Active, QPalette::ButtonText);
+        if (!tryDrawArrowSymbol(*painter, chevronSymbol(direction), option->rect, arrowColor))
+            drawArrow(*painter, option->rect, option->rect.width(), direction, arrowColor);
         break;
     }
     case PE_PanelItemViewItem:
