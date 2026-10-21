@@ -159,16 +159,18 @@ bool QAndroidPlatformWindow::isChildOfQtWindow() const
 void QAndroidPlatformWindow::updateDerivedSafeAreaMargins()
 {
     if (isChildOfQtWindow()) {
-        // The parent's safe area, clipped to the part of the parent this covers.
+        // Clipped child edges cannot add to the parent's unsafe area.
         const auto *parent = static_cast<const QAndroidPlatformWindow *>(window()->parent()->handle());
         const QMargins parentMargins = parent->safeAreaMargins();
         const QSize parentSize = parent->geometry().size();
         const QRect rect = geometry();
         const QMargins margins(
-                qMax(0, parentMargins.left() - rect.x()),
-                qMax(0, parentMargins.top() - rect.y()),
-                qMax(0, parentMargins.right() - (parentSize.width() - rect.x() - rect.width())),
-                qMax(0, parentMargins.bottom() - (parentSize.height() - rect.y() - rect.height())));
+                qBound(0, parentMargins.left() - rect.x(), parentMargins.left()),
+                qBound(0, parentMargins.top() - rect.y(), parentMargins.top()),
+                qBound(0, parentMargins.right() - (parentSize.width() - rect.x() - rect.width()),
+                       parentMargins.right()),
+                qBound(0, parentMargins.bottom() - (parentSize.height() - rect.y() - rect.height()),
+                       parentMargins.bottom()));
         if (margins != m_safeAreaMargins) {
             m_safeAreaMargins = margins;
             QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
