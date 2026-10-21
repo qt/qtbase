@@ -74,6 +74,8 @@ private slots:
     void setScaledClipRect_data();
     void setScaledClipRect();
 
+    void setScaledSizeAllocationLimit();
+
     void setFormat();
 
     void imageFormat_data();
@@ -625,6 +627,26 @@ void tst_QImageReader::setScaledClipRect()
         originalImage.convertTo(QImage::Format_RGB444);
     }
     QCOMPARE(originalImage.copy(newRect), image);
+}
+
+void tst_QImageReader::setScaledSizeAllocationLimit()
+{
+    // Fallback scaling must respect the allocation limit
+    const int oldLimit = QImageReader::allocationLimit();
+    const auto restoreLimit = qScopeGuard([&] { QImageReader::setAllocationLimit(oldLimit); });
+    QImageReader::setAllocationLimit(1);
+
+    QImageReader withinLimit(prefix + "kollada.png");
+    QVERIFY(!withinLimit.supportsOption(QImageIOHandler::ScaledSize));
+    withinLimit.setScaledSize(QSize(400, 400));
+    QCOMPARE(withinLimit.read().size(), QSize(400, 400));
+
+    QImageReader exceedsLimit(prefix + "kollada.png");
+    exceedsLimit.setScaledSize(QSize(600, 600));
+    QTest::ignoreMessage(QtWarningMsg, "QImageReader: Rejecting image as it exceeds the current "
+                                       "allocation limit of 1 megabytes");
+    QVERIFY(exceedsLimit.read().isNull());
+    QCOMPARE(exceedsLimit.error(), QImageReader::InvalidDataError);
 }
 
 void tst_QImageReader::setFormat()

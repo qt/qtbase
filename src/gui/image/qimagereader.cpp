@@ -1220,6 +1220,20 @@ bool QImageReader::read(QImage *image)
         return false;
     }
 
+    // Fallback scaling is part of reading, so it must respect the allocation limit too
+    const auto scaleImage = [&] {
+        if (QImageData::isWithinIOAllocationLimit(scaledSize.width(), scaledSize.height(),
+                                                  image->format(), "QImageReader")) {
+            *image = image->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            if (!image->isNull())
+                return true;
+        }
+        *image = QImage();
+        d->imageReaderError = InvalidDataError;
+        d->errorString = QImageReader::tr("Unable to scale image");
+        return false;
+    };
+
     // provide default implementations for any unsupported image
     // options
     if (supportClipRect) {
@@ -1236,9 +1250,8 @@ bool QImageReader::read(QImage *image)
                 // supports scaled clipping but not scaling, most
                 // likely a broken handler.
             } else {
-                if (scaledSize.isValid()) {
-                    *image = image->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                }
+                if (scaledSize.isValid() && !scaleImage())
+                    return false;
                 if (d->scaledClipRect.isValid()) {
                     *image = image->copy(d->scaledClipRect);
                 }
@@ -1263,8 +1276,8 @@ bool QImageReader::read(QImage *image)
                 // provide all workarounds.
                 if (d->clipRect.isValid())
                     *image = image->copy(d->clipRect);
-                if (scaledSize.isValid())
-                    *image = image->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                if (scaledSize.isValid() && !scaleImage())
+                    return false;
                 if (d->scaledClipRect.isValid())
                     *image = image->copy(d->scaledClipRect);
             }
