@@ -1787,12 +1787,28 @@ void tst_QString::asprintfS()
 QT_WARNING_PUSH
 // Android clang emits warning: '%n' specifier not supported on this platform
 QT_WARNING_DISABLE_CLANG("-Wformat")
-    int n1 = -1;
-    QCOMPARE(QString::asprintf("%s%n%s", "hello", &n1, "goodbye"), u"hellogoodbye");
-    QCOMPARE(n1, 5);
-    qlonglong n2 = -1;
-    QCOMPARE(QString::asprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz"), u"foobarwhiz");
-    QCOMPARE(n2, 6);
+    bool xfail = false;
+#define CHECK(mod, type) do { \
+        type n = -1; \
+        QCOMPARE(QString::asprintf("%s%s%" #mod "n%s", "foo", "bar", &n, "whiz"), "foobarwhiz"_L1); \
+        if (xfail) QEXPECT_FAIL("", "QTBUG-150334", Continue); \
+        xfail = false; \
+        QCOMPARE(n, 6); \
+    } while (false)
+    CHECK(hh, signed char);
+    CHECK(h, short);
+    CHECK(/* nothing */, int);
+    CHECK(l, long);
+    CHECK(ll, qlonglong);
+    xfail = true;
+    CHECK(j, std::intmax_t);
+    xfail = sizeof(size_t) > sizeof(int);
+    CHECK(z, std::make_signed_t<size_t>);
+    xfail = sizeof(size_t) > sizeof(int);
+    CHECK(Z, std::make_signed_t<size_t>); // glibc/legacy synonym for z
+    xfail = sizeof(std::ptrdiff_t) > sizeof(int);
+    CHECK(t, std::ptrdiff_t);
+#undef CHECK
 QT_WARNING_POP
 
     { // %ls
