@@ -626,6 +626,7 @@ private slots:
     void toUcs4();
     void arg();
     void arg_negative_tests();
+    void arg_overflow();
     void number();
     void number_double_data();
     void number_double();
@@ -7110,6 +7111,30 @@ void tst_QString::arg_negative_tests()
     static_assert(!arg_compiles_v<QString, Wrapper<double>>);
     static_assert(!arg_compiles_v<QString, Wrapper<int>>);
     static_assert(!arg_compiles_v<QString, Wrapper<char16_t>>);
+}
+
+void tst_QString::arg_overflow()
+{
+    if constexpr (sizeof(qsizetype) != sizeof(int)) // 64-bit
+        QSKIP("This test doesn't add value on 64-bit platforms"); // just allocates lots of RAM
+
+    // one replacement, but field width blows it up:
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, (void)u"123%1"_s.arg(4.0, INT_MAX - 2));
+
+    // multi-arg
+    //
+    // n = √(INT_MAX) + 1 minimizes the cumulative size of inputs such that n² > INT_MAX:
+    const auto n = int(std::sqrt(INT_MAX)) + 1;
+    QString format = u"%1%2"_s.repeated((n + 1) / 2); // ceil(n/2)
+    {
+        const QString arg1 = u"a"_s.repeated(n);
+        const QString arg2 = u"b"_s.repeated(n);
+        QVERIFY_THROWS_EXCEPTION(std::bad_alloc, (void)format.arg(arg1, arg2));
+    }
+
+    // lots of escapes × long field width:
+    format.replace(u'2', u'1');
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, (void)format.arg(4.0, 2 * n));
 }
 
 void tst_QString::number()
