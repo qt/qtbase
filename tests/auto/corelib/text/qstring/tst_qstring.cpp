@@ -1799,12 +1799,9 @@ void tst_QString::asprintfS()
 QT_WARNING_PUSH
 // Android clang emits warning: '%n' specifier not supported on this platform
 QT_WARNING_DISABLE_CLANG("-Wformat")
-    bool xfail = false;
 #define CHECK(mod, type) do { \
         type n = -1; \
         QCOMPARE(QString::asprintf("%s%s%" #mod "n%s", "foo", "bar", &n, "whiz"), "foobarwhiz"_L1); \
-        if (xfail) QEXPECT_FAIL("", "QTBUG-150334", Continue); \
-        xfail = false; \
         QCOMPARE(n, 6); \
     } while (false)
     CHECK(hh, signed char);
@@ -1812,15 +1809,20 @@ QT_WARNING_DISABLE_CLANG("-Wformat")
     CHECK(/* nothing */, int);
     CHECK(l, long);
     CHECK(ll, qlonglong);
-    xfail = true;
     CHECK(j, std::intmax_t);
-    xfail = sizeof(size_t) > sizeof(int);
     CHECK(z, std::make_signed_t<size_t>);
-    xfail = sizeof(size_t) > sizeof(int);
     CHECK(Z, std::make_signed_t<size_t>); // glibc/legacy synonym for z
-    xfail = sizeof(std::ptrdiff_t) > sizeof(int);
     CHECK(t, std::ptrdiff_t);
 #undef CHECK
+    { // %Ln: L is only defined for floating-point; must not write, but consume the argument
+        int n = 0x4242'4242;
+        QTest::ignoreMessage(QtWarningMsg, "QString::asprintf(): L modifier is invalid for %n!");
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_GCC("-Wformat")
+        QCOMPARE(QString::asprintf("%s%Ln%s%d", "foo", &n, "bar", 7), u"foobar7");
+        QT_WARNING_POP
+        QCOMPARE(n, 0x4242'4242);
+    }
 QT_WARNING_POP
 
     { // %ls
