@@ -102,6 +102,8 @@ namespace Qt_ {
 namespace TokenSeparationInMacroExpansion
 {
 #define TOKEN_SEPARATION_IN_MACRO_EXPANSION(N, A) Q_CLASSINFO(#N, #A)
+// stringizing an empty argument yields "", which then gets merged with the adjacent literals:
+#define EMPTY_ARGUMENT_STRINGIZED(N, A) Q_CLASSINFO(#N, "<" #A ">")
 
 struct C : public QObject
 {
@@ -113,6 +115,7 @@ struct C : public QObject
     TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO5, a.  b)
     TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO6, a. b)
     TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO7, a.b)
+    EMPTY_ARGUMENT_STRINGIZED(INFO8, )
 };
 }
 
@@ -5747,6 +5750,7 @@ void tst_Moc::tokenSeparationInMacroExpansion_data()
     QTest::addRow("INFO5") << QByteArray("INFO5") << QByteArray("a. b");
     QTest::addRow("INFO6") << QByteArray("INFO6") << QByteArray("a. b");
     QTest::addRow("INFO7") << QByteArray("INFO7") << QByteArray("a.b");
+    QTest::addRow("INFO8") << QByteArray("INFO8") << QByteArray("<>");
 }
 
 void tst_Moc::tokenSeparationInMacroExpansion()
