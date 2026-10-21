@@ -12,7 +12,11 @@
 #include <QtGui/qpa/qplatformwindow_p.h>
 #include <QtWidgets/qwidget.h>
 
+#include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyjscontext.h>
+#include <QtCore/qharmonyjsobjectref.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/private/qnapi_p.h>
 
 #include <optional>
 
@@ -188,11 +192,16 @@ void setMainWindowGeometryPersistenceHint(WindowGeometryPersistenceHint hint)
 
 std::optional<qint64> tryGetNativeWindowId(QWindow *window)
 {
-    auto *ohosWindow = window->nativeInterface<QNativeInterface::Private::QOhosWindow>();
-    if (!ohosWindow)
+    auto *harmonyWindow = window->nativeInterface<QNativeInterface::QHarmonyWindow>();
+    const auto jsWindowRef = harmonyWindow ? harmonyWindow->jsWindow() : QHarmonyJsObjectRef();
+    if (jsWindowRef.isNull())
         return {};
 
-    const std::optional<double> optWindowId = ohosWindow->windowId();
+    const auto optWindowId = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) -> std::optional<double> {
+            auto jsWindow = QNapi::Object(jsContext.env(), jsWindowRef.value(jsContext));
+            return jsWindow.eval<QNapi::Number>("getWindowProperties().id");
+        });
     if (!optWindowId)
         return {};
 
