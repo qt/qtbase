@@ -1844,6 +1844,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.x.value());
     v.y = format == Format_Mono ? 0 : FT_Pos(-subPixelPosition.y.value());
     FT_Set_Transform(face, &matrix, &v);
+    freetype->hasSubpixelTranslation = v.x != 0 || v.y != 0;
 
     bool hsubpixel = false;
     int vfactor = 1;
@@ -2974,12 +2975,14 @@ FT_Face QFontEngineFT::lockFace(Scaling scale) const
         freetype->xsize = xsize;
         freetype->ysize = ysize;
     }
-    if (freetype->matrix.xx != matrix.xx ||
+    if (freetype->hasSubpixelTranslation ||
+        freetype->matrix.xx != matrix.xx ||
         freetype->matrix.yy != matrix.yy ||
         freetype->matrix.xy != matrix.xy ||
         freetype->matrix.yx != matrix.yx) {
         freetype->matrix = matrix;
         FT_Set_Transform(face, &freetype->matrix, nullptr);
+        freetype->hasSubpixelTranslation = false;
     }
 
     return face;

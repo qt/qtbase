@@ -78,6 +78,7 @@ public:
     int xsize; // 26.6
     int ysize; // 26.6
     FT_Matrix matrix;
+    bool hasSubpixelTranslation = false;
     FT_CharMap unicode_map;
     FT_CharMap symbol_map;
 

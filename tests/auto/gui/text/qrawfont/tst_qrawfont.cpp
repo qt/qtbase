@@ -3,6 +3,9 @@
 
 #include <QTest>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QGlyphRun>
+#include <QtGui/QImage>
+#include <QtGui/QPainter>
 #include <QtGui/QPainterPath>
 #include <QtCore/QFile>
 #include <QtCore/QtEndian>
@@ -30,6 +33,9 @@ private slots:
     void correctFontData();
 
     void glyphIndices();
+
+    void pathForGlyphAfterRasterization_data();
+    void pathForGlyphAfterRasterization();
 
     void advances_data();
     void advances();
@@ -292,6 +298,49 @@ void tst_QRawFont::glyphIndices()
     QCOMPARE(numGlyphs, str.size());
 
     QCOMPARE(glyphIndices, expectedGlyphIndices);
+}
+
+void tst_QRawFont::pathForGlyphAfterRasterization_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<qreal>("pixelSize");
+
+    QTest::newRow("regular-28") << testFont << qreal(28);
+    QTest::newRow("regular-48") << testFont << qreal(48);
+    QTest::newRow("bold-italic-28") << testFontBoldItalic << qreal(28);
+    QTest::newRow("bold-italic-48") << testFontBoldItalic << qreal(48);
+}
+
+void tst_QRawFont::pathForGlyphAfterRasterization()
+{
+    QFETCH(QString, fileName);
+    QFETCH(qreal, pixelSize);
+
+    QRawFont font(fileName, pixelSize);
+    QVERIFY(font.isValid());
+    const auto glyphs = font.glyphIndexesForString(QStringLiteral("H"));
+    QCOMPARE(glyphs.size(), 1);
+    QVERIFY(glyphs.first() != 0);
+    const QPainterPath expected = font.pathForGlyph(glyphs.first());
+    QVERIFY(!expected.isEmpty());
+
+    QGlyphRun run;
+    run.setRawFont(font);
+    run.setGlyphIndexes(glyphs);
+    run.setPositions({QPointF()});
+
+    QImage image(128, 128, QImage::Format_ARGB32_Premultiplied);
+    for (qreal phase : {qreal(0), qreal(0.25), qreal(0.5), qreal(0.75), qreal(0)}) {
+        image.fill(Qt::transparent);
+        QPainter painter(&image);
+        painter.setRenderHint(QPainter::TextAntialiasing);
+        painter.setPen(Qt::black);
+        painter.drawGlyphRun(QPointF(32 + phase, 96), run);
+        painter.end();
+
+        // The unpositioned outline must be independent of rasterization history.
+        QCOMPARE(font.pathForGlyph(glyphs.first()), expected);
+    }
 }
 
 void tst_QRawFont::advances_data()
