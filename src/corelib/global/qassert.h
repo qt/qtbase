@@ -60,7 +60,8 @@ inline bool qt_no_assert_x(bool, const char *, const char *) noexcept { return f
     Q_ASSERT_X(cond, Q_FUNC_INFO, what) /* for now... */
 #endif
 
-Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) noexcept;
+Q_NORETURN Q_DECL_COLD_FUNCTION
+Q_CORE_EXPORT void qt_check_pointer(const char *, int) noexcept;
 Q_NORETURN Q_DECL_COLD_FUNCTION
 Q_CORE_EXPORT void qBadAlloc();
 
