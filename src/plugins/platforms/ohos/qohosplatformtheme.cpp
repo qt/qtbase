@@ -544,7 +544,8 @@ QPalette makeSystemPalette(const AllPalletesColors &palettesColors)
 
             {QPalette::Active, QPalette::Midlight, palettesColors.palettes.scrollBarSlider},
 
-            {QPalette::Active, QPalette::Mid, palettesColors.palettes.componentNormal}
+            {QPalette::Active, QPalette::Mid, palettesColors.palettes.componentNormal},
+            {QPalette::Active, QPalette::Shadow, palettesColors.groupBox.shadowXS}
         });
 }
 

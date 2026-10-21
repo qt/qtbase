@@ -658,10 +658,16 @@ void drawSliderThumb(QPainter &painter, const QStyleOptionSlider &option)
         drawEllipse(painter, Qt::NoPen, option.palette.color(QPalette::Active, QPalette::Light), option.rect);
 
     auto adjustedRect = option.rect.adjusted(sliderHoverSize, sliderHoverSize, -sliderHoverSize, -sliderHoverSize);
-    drawEllipse(painter, Qt::NoPen, option.palette.color(QPalette::Active, QPalette::AlternateBase), adjustedRect);
+    drawEllipse(painter, Qt::NoPen, option.palette.color(QPalette::Active, QPalette::BrightText), adjustedRect);
 
-    if (option.state.testFlag(QStyle::State_Sunken))
-        drawEllipse(painter, Qt::NoPen, option.palette.color(QPalette::Active, QPalette::Dark), adjustedRect);
+    if (option.state.testFlag(QStyle::State_Sunken)) {
+        const auto *buttonPalette =
+            QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::Palette::ButtonPalette);
+        const auto pressedColor = buttonPalette
+            ? buttonPalette->color(QPalette::Active, QPalette::Dark)
+            : option.palette.color(QPalette::Active, QPalette::Dark);
+        drawEllipse(painter, Qt::NoPen, pressedColor, adjustedRect);
+    }
 
     if (option.state.testFlag(QStyle::State_HasFocus)) {
         drawEllipse(
