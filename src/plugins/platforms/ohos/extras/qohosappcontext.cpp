@@ -9,6 +9,7 @@
 #include <QtHarmonyExtras/private/qohoswantutils_p.h>
 
 #include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
@@ -45,17 +46,20 @@ using QOhosSupplier = std::function<T()>;
 
 int getCurrentApplicationVersionCode()
 {
-    return QOhosJsThreadGateway::eval(
-        [](QOhosJsState &jsState) {
-            auto applicationInfoFlag = jsState.eval<QNapi::Number>(
-                "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
-            auto bundleInfo = jsState.eval<QNapi::Object>(
-                "@ohos.bundle.bundleManager.getBundleInfoForSelfSync(*)", {applicationInfoFlag});
+    return QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            auto optBundleManager = QNapi::Object(jsContext.env(), jsContext.tryImportModule("@ohos.bundle.bundleManager"));
+            if (optBundleManager.IsEmpty())
+                return 0;
+
+            auto applicationInfoFlag = optBundleManager.eval<QNapi::Number>(
+                "BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
+            auto bundleInfo = optBundleManager.eval<QNapi::Object>(
+                "getBundleInfoForSelfSync(*)", {applicationInfoFlag});
             int versionCode = bundleInfo.get<QNapi::Number>("versionCode");
 
             return versionCode;
-        },
-        Q_FUNC_INFO);
+        });
 }
 
 Q_NORETURN void killCurrentProcess()
