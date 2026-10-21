@@ -7584,37 +7584,30 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                 ++c;
                 break;
             }
-            case 'n':
+            case 'n': {
+                const auto lenSoFar = result.size();
                 switch (length_mod) {
-                    case lm_hh: {
-                        signed char *n = va_arg(ap, signed char*);
-                        *n = result.size();
-                        break;
-                    }
-                    case lm_h: {
-                        short int *n = va_arg(ap, short int*);
-                        *n = result.size();
-                            break;
-                    }
-                    case lm_l: {
-                        long int *n = va_arg(ap, long int*);
-                        *n = result.size();
-                        break;
-                    }
-                    case lm_ll: {
-                        qint64 *n = va_arg(ap, qint64*);
-                        *n = result.size();
-                        break;
-                    }
-                    default: {
-                        int *n = va_arg(ap, int*);
-                        *n = int(result.size());
-                        break;
-                    }
+                #define CASE(mod, type) case lm_##mod: \
+                    *va_arg(ap, type*) = static_cast<type>(lenSoFar); \
+                    break \
+                    /* end */
+                CASE(hh, signed char);
+                CASE(h, short);
+                CASE(l, long);
+                CASE(ll, qint64);
+                CASE(none, int);
+                CASE(j, std::intmax_t);
+                CASE(z, std::make_signed_t<size_t>);
+                CASE(t, std::ptrdiff_t);
+                #undef CASE
+                case lm_L:
+                    // only defined for floating-point, but consume pointer to not get out of sync:
+                    (void)va_arg(ap, void*);
+                    qWarning("QString::asprintf(): L modifier is invalid for %%n!");
                 }
                 ++c;
                 break;
-
+            }
             default: // bad escape, treat as non-escape text
                 for (const char *cc = escape_start; cc != c; ++cc)
                     result.append(QLatin1Char(*cc));
