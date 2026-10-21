@@ -28,6 +28,33 @@ QBasicMutex theMutex;
 }
 Q_GLOBAL_STATIC(QThreadGlobalPool, globalPool)
 
+#if !QT_CONFIG(thread)
+static void runRunnableInCurrentThread(QRunnable *runnable)
+{
+    Q_ASSERT(runnable);
+    const bool del = runnable->autoDelete();
+#ifndef QT_NO_EXCEPTIONS
+    try {
+#endif
+        runnable->run();
+#ifndef QT_NO_EXCEPTIONS
+    } catch (...) {
+        qWarning("Qt has caught an exception thrown from a runnable in a build "
+                 "without thread support.");
+    }
+#endif
+    if (del)
+        delete runnable;
+}
+
+static void queueRunnable(QThreadPool *pool, QRunnable *runnable)
+{
+    QMetaObject::invokeMethod(pool, [runnable] {
+        runRunnableInCurrentThread(runnable);
+    }, Qt::QueuedConnection);
+}
+#endif
+
 /*
     QThread wrapper, provides synchronization against a ThreadPool
 */
@@ -521,11 +548,17 @@ void QThreadPool::start(QRunnable *runnable, int priority)
     if (!runnable)
         return;
 
+#if !QT_CONFIG(thread)
+    Q_UNUSED(priority);
+    queueRunnable(this, runnable);
+    return;
+#else
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
 
     if (!d->tryStart(runnable))
         d->enqueueTask(runnable, priority);
+#endif
 }
 
 /*!
@@ -566,12 +599,17 @@ bool QThreadPool::tryStart(QRunnable *runnable)
     if (!runnable)
         return false;
 
+#if !QT_CONFIG(thread)
+    queueRunnable(this, runnable);
+    return true;
+#else
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
     if (d->tryStart(runnable))
         return true;
 
     return false;
+#endif
 }
 
 /*!
@@ -826,6 +864,10 @@ void QThreadPool::startOnReservedThread(QRunnable *runnable)
     if (!runnable)
         return releaseThread();
 
+#if !QT_CONFIG(thread)
+    queueRunnable(this, runnable);
+    return;
+#else
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
     Q_ASSERT(d->reservedThreads > 0);
@@ -836,6 +878,7 @@ void QThreadPool::startOnReservedThread(QRunnable *runnable)
         // and something took the one minimum thread.
         d->enqueueTask(runnable, INT_MAX);
     }
+#endif
 }
 
 /*!

@@ -165,6 +165,9 @@ private slots:
     void compareCompiles();
     void resultStore();
     void future();
+#if !QT_CONFIG(thread)
+    void runWithoutThreadSupport();
+#endif
     void futureToVoid();
     void futureInterface();
     void refcounting();
@@ -3601,6 +3604,24 @@ void tst_QFuture::takeResult()
         return;
     testSingleResult(result);
 }
+
+#if !QT_CONFIG(thread)
+void tst_QFuture::runWithoutThreadSupport()
+{
+    int runs = 0;
+    const QFuture<int> future = QtConcurrent::run([&runs] {
+        ++runs;
+        return 42;
+    });
+    QCOMPARE(runs, 0); // queued, not executed synchronously
+    QCoreApplication::processEvents();
+    QCOMPARE(runs, 1);
+    QVERIFY2(QTest::qWaitFor([&] { return future.isFinished(); }, 5000),
+             "QtConcurrent::run() did not finish without thread support");
+    QCOMPARE(future.result(), 42);
+    QCOMPARE(runs, 1);
+}
+#endif
 
 void tst_QFuture::runAndTake()
 {
