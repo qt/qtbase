@@ -9,6 +9,7 @@
 #include <QtHarmonyExtras/private/qohoswantutils_p.h>
 
 #include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyappjscontext.h>
 #include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/private/qcore_ohos_p.h>
@@ -389,11 +390,10 @@ AppContext *AppContext::instance()
 */
 bool AppContext::isNoUiChildMode()
 {
-    static const bool noUiChildMode = QOhosJsThreadGateway::eval(
-        [](QOhosJsState &jsState) {
-            return !jsState.defaultQAbility();
-        },
-        Q_FUNC_INFO);
+    static const bool noUiChildMode = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            return !QHarmonyAppJsContext::fromJsContext(jsContext).defaultAbility();
+        });
     return noUiChildMode;
 }
 
