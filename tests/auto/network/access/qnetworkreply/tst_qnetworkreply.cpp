@@ -103,7 +103,17 @@ typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
 
+#ifdef Q_OS_VXWORKS
+constexpr auto EventLoopTimeout = 30s;
+constexpr int ServerConnectTimeoutMs = 30000;
+constexpr int RequestPacketTimeoutMs = 30000;
+constexpr auto PutConnectTimeout = 30s;
+#else
 constexpr auto EventLoopTimeout = 25s;
+constexpr int ServerConnectTimeoutMs = -1; // wait indefinitely
+constexpr int RequestPacketTimeoutMs = 2000;
+constexpr auto PutConnectTimeout = 10s;
+#endif
 
 #if QT_CONFIG(ssl)
 QT_BEGIN_NAMESPACE
@@ -1136,7 +1146,8 @@ public:
 
     QTcpSocket* waitForNextConnectionSocket()
     {
-        waitForNewConnection(-1);
+        if (!waitForNewConnection(ServerConnectTimeoutMs))
+            return nullptr;
         if (doSsl) {
             if (!sslSocket)
                 qFatal("%s: sslSocket should not be null after calling waitForNewConnection()",
@@ -1219,6 +1230,13 @@ public:
         ready.acquire();
     }
 
+#ifdef Q_OS_VXWORKS
+    ~FastSender()
+    {
+        wait();
+    }
+#endif
+
     inline int serverPort() const { return port; }
 
     int writeNextData(QTcpSocket* socket, qint32 size)
@@ -1260,9 +1278,13 @@ protected:
         ready.release();
 
         QTcpSocket *client = server.waitForNextConnectionSocket();
+        if (!client) {
+            qDebug() << "FastSender: timed out waiting for a connection";
+            return;
+        }
 
         // get the "request" packet
-        if (!client->waitForReadyRead(2000)) {
+        if (!client->waitForReadyRead(RequestPacketTimeoutMs)) {
             qDebug() << "FastSender:" << client->error() << "waiting for \"request\" packet";
             return;
         }
@@ -10176,7 +10198,7 @@ void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
             }
 
             // get the request started and the incoming socket connected
-            QTestEventLoop::instance().enterLoop(10);
+            QTestEventLoop::instance().enterLoop(PutConnectTimeout);
             QVERIFY(!QTestEventLoop::instance().timeout());
 
             //qDebug() << "correct=" << server.m_correctUploads << "corrupt=" << server.m_corruptUploads << "expected=" <<numUploads;
