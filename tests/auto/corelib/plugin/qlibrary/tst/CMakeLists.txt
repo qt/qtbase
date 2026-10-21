@@ -8,15 +8,21 @@
 # Collect test data
 list(APPEND test_data "../library_path/invalid.so")
 
+if(TARGET mylib)
+    set(mylib_targets mylib mylib2)
+else()
+    set(mylib_targets mylib2)
+endif()
+
 qt_internal_add_test(tst_qlibrary
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qlibrary.cpp
     TESTDATA ${test_data}
-    LIBRARIES mylib mylib2 Qt::CorePrivate
+    LIBRARIES ${mylib_targets} Qt::CorePrivate
 )
 
-add_dependencies(tst_qlibrary mylib mylib2)
+add_dependencies(tst_qlibrary ${mylib_targets})
 
 if(OHOS)
     set_target_properties(tst_qlibrary PROPERTIES
