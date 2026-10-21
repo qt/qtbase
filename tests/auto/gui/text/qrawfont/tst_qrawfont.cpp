@@ -3,6 +3,7 @@
 
 #include <QTest>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QPainterPath>
 #include <QtCore/QFile>
 #include <QtCore/QtEndian>
 
@@ -66,6 +67,7 @@ private slots:
 
     void rawFontFromInvalidData();
     void rawFontFromInvalidOs2Table();
+    void bareCffFont();
 
     void kernedAdvances();
 
@@ -1030,6 +1032,44 @@ void tst_QRawFont::rawFontFromInvalidOs2Table()
         QRawFont font;
         font.loadFromData(data, 10, QFont::PreferDefaultHinting);
         // Reaching here without crashing is the actual assertion.
+    }
+}
+
+void tst_QRawFont::bareCffFont()
+{
+    // A bare CFF font (not wrapped in an sfnt container) has no cmap or hhea
+    // table. Some engines cannot map any characters for it (e.g. CoreText),
+    // while others synthesize a character map from the glyph names (e.g.
+    // FreeType). Either way, using the font must not crash, and a character
+    // must either be unmapped (glyph 0) or map to an actual glyph.
+    const QString fileName = QFINDTESTDATA("testfont_bare.cff");
+    QVERIFY(!fileName.isEmpty());
+
+    QRawFont font(fileName, 20);
+    if (!font.isValid())
+        QSKIP("The platform cannot load bare CFF fonts.");
+
+    // All of these characters have outlines in the font
+    const QString string = QStringLiteral("(CFKAg");
+    const QList<quint32> glyphIndexes = font.glyphIndexesForString(string);
+    QCOMPARE(glyphIndexes.size(), string.size());
+
+    for (qsizetype i = 0; i < string.size(); ++i) {
+        const quint32 glyphIndex = glyphIndexes.at(i);
+        QCOMPARE(font.supportsCharacter(string.at(i)), glyphIndex != 0);
+        if (glyphIndex != 0) {
+            QVERIFY2(!font.boundingRect(glyphIndex).isEmpty(),
+                     qPrintable(QStringLiteral("Character %1 mapped to bogus glyph %2")
+                                .arg(string.at(i)).arg(glyphIndex)));
+        }
+    }
+
+    // Exercise the remaining glyph APIs with whatever was mapped
+    const QList<QPointF> advances = font.advancesForGlyphIndexes(glyphIndexes);
+    QCOMPARE(advances.size(), glyphIndexes.size());
+    for (quint32 glyphIndex : glyphIndexes) {
+        font.pathForGlyph(glyphIndex);
+        font.alphaMapForGlyph(glyphIndex, QRawFont::PixelAntialiasing);
     }
 }
 

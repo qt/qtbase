@@ -320,8 +320,7 @@ glyph_t QCoreTextFontEngine::glyphIndex(uint ucs4) const
         str[len++] = QChar(ucs4);
     }
 
-    CGGlyph glyphIndices[2];
-
+    CGGlyph glyphIndices[2] = {};
     CTFontGetGlyphsForCharacters(ctfont, (const UniChar *)str, glyphIndices, len);
 
     return glyphIndices[0];
@@ -354,7 +353,7 @@ int QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *g
         return -1;
     }
 
-    QVarLengthArray<CGGlyph> cgGlyphs(len);
+    QVarLengthArray<CGGlyph> cgGlyphs(len, 0);
     CTFontGetGlyphsForCharacters(ctfont, (const UniChar*)str, cgGlyphs.data(), len);
 
     int glyph_pos = 0;
