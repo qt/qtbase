@@ -404,6 +404,15 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
                         qRound(topStableInset / dpr));
         }
 
+        QWindow child(widget.windowHandle());
+        child.setGeometry(QRect(QPoint(-20, -20), widget.size() + QSize(40, 40)));
+        child.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&child));
+        QTRY_COMPARE(child.safeAreaMargins(), widget.windowHandle()->safeAreaMargins());
+        child.setGeometry(QRect(QPoint(), widget.size()));
+        QTRY_COMPARE(child.safeAreaMargins(), widget.windowHandle()->safeAreaMargins());
+        child.hide();
+
         if (!enforced)
             continue;
 
@@ -421,14 +430,6 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
             nativeSize -= insetSize;
         }
         QTRY_COMPARE(widget.size(), nativeSize / widget.devicePixelRatio());
-
-        if (normalMode) {
-            QWindow child(widget.windowHandle());
-            child.setGeometry(0, -20, 100, 100);
-            child.show();
-            QVERIFY(QTest::qWaitForWindowExposed(&child));
-            QTRY_COMPARE(child.safeAreaMargins(), QMargins());
-        }
     }
 }
 
