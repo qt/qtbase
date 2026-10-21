@@ -17,6 +17,9 @@
 #include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/qglobalstatic.h>
+#include <QtCore/qharmonyappjscontext.h>
+#include <QtCore/qharmonyjscontext.h>
+#include <QtCore/qharmonyjsobjectref.h>
 #include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
@@ -114,15 +117,22 @@ std::optional<OnContinueResult> tryMapAbilityOnContinueResponseStatusToOhos(
     return std::nullopt;
 }
 
+QHarmonyJsObjectRef windowAbilityObjectRefOrNull(QWindow *optWindow)
+{
+    auto *harmonyWindow = optWindow ? optWindow->nativeInterface<QNativeInterface::QHarmonyWindow>() : nullptr;
+    return harmonyWindow ? harmonyWindow->ability() : QHarmonyJsObjectRef();
+}
+
 void setOnContinueRequestsHandlerForAbilityInstanceWindow(
-    QObject *windowObject,
+    QWindow *window,
     std::function<void(AbilityOnContinueRequest, QOhosConsumer<AbilityOnContinueResponse>)> requestsHandler)
 {
-    auto *qWindow = qobject_cast<QWindow *>(windowObject);
-    if (qWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: windowObject argument is null or not a QWindow", Q_FUNC_INFO);
+    const auto abilityRef = windowAbilityObjectRefOrNull(window);
+    if (abilityRef.isNull()) {
+        qCCritical(QtForOhos, "%s: no ability for window %p, handler not set", Q_FUNC_INFO, window);
+        return;
+    }
 
-    auto qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow);
     auto sharedRequestsHandler = QtOhos::moveToSharedPtr(std::move(requestsHandler));
 
     struct JsResultContext
@@ -133,16 +143,8 @@ void setOnContinueRequestsHandlerForAbilityInstanceWindow(
 
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
-            auto optQAbility = jsState.tryGetQAbilityByQWindow(qWindowRef);
-            if (!optQAbility) {
-                qOhosPrintfError(
-                    "%s: no ability for window %s, handler not set",
-                    Q_FUNC_INFO, qWindowRef.refName().c_str());
-                return;
-            }
-
             jsState.setOnContinueRequestsHandler(
-                optQAbility.value(),
+                QNapi::Object(jsState.env(), abilityRef.value(QHarmonyJsContext::fromEnv(jsState.env()))),
                 [sharedRequestsHandler](QOhosJsState &, QNapi::Object wantParamsObj, auto resultConsumer) {
                     int sourceVersionCode = wantParamsObj.get<QNapi::Number>("version");
                     auto jsResultContext = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsResultContext>());
@@ -190,19 +192,20 @@ void setOnContinueRequestsHandlerForAbilityInstanceWindow(
 }
 
 void setDestroyAllowedFlagForAbilityInstances(
-    std::vector<QObject *> instancesMainWindows, bool destroyEnabled)
+    std::vector<QWindow *> instancesMainWindows, bool destroyEnabled)
 {
-    std::vector<QtOhos::QObjectThreadSafeRef> instancesMainWindowsRefs;
-    for (auto *instanceMainWindow : instancesMainWindows)
-        instancesMainWindowsRefs.emplace_back(instanceMainWindow);
+    std::vector<QHarmonyJsObjectRef> instancesAbilityRefs;
+    for (auto *instanceMainWindow : instancesMainWindows) {
+        const auto abilityRef = windowAbilityObjectRefOrNull(instanceMainWindow);
+        if (!abilityRef.isNull())
+            instancesAbilityRefs.push_back(abilityRef);
+    }
 
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
-            for (const auto &instanceMainWindowRef : instancesMainWindowsRefs) {
-                auto optQAbility = jsState.tryGetQAbilityByQWindow(instanceMainWindowRef);
-                if (optQAbility)
-                    jsState.setDestroyFromSystemAllowed(optQAbility.value(), destroyEnabled);
-            }
+            auto &jsContext = QHarmonyJsContext::fromEnv(jsState.env());
+            for (const auto &abilityRef : instancesAbilityRefs)
+                jsState.setDestroyFromSystemAllowed(QNapi::Object(jsState.env(), abilityRef.value(jsContext)), destroyEnabled);
         },
         Q_FUNC_INFO);
 }
@@ -555,18 +558,18 @@ void requestStartAbilityForResult(
     };
 
     auto wantJson = convertWantToJsonObject(want);
-    auto optInstanceMainWindowRef =
-        optInstanceMainWindow != nullptr
-           ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-           : std::nullopt;
+    const auto optInstanceAbilityRef = optInstanceMainWindow
+        ? std::optional(windowAbilityObjectRefOrNull(optInstanceMainWindow))
+        : std::nullopt;
 
     QOhosJsThreadGateway::invoke(
-        [context, resultConsumer, wantJson, options, optInstanceMainWindowRef](QOhosJsState &jsState) {
-            auto optUiAbility = optInstanceMainWindowRef.has_value()
-                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
-                : jsState.defaultQAbility();
+        [context, resultConsumer, wantJson, options, optInstanceAbilityRef](QOhosJsState &jsState) {
+            auto &appJsContext = QHarmonyAppJsContext::fromEnv(jsState.env());
+            auto optUiAbility = QNapi::Object(
+                jsState.env(),
+                optInstanceAbilityRef ? optInstanceAbilityRef->value(appJsContext) : appJsContext.defaultAbility());
             auto napiWant = QNapi::Object(jsState.env(), QtHarmony::mapQJsonObjectToJsObject(jsState.env(), wantJson));
-            if (!optUiAbility.has_value() || napiWant.IsEmpty()) {
+            if (optUiAbility.IsEmpty() || napiWant.IsEmpty()) {
                 context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                     [resultConsumer](auto &) {
                         resultConsumer({});
@@ -578,7 +581,7 @@ void requestStartAbilityForResult(
             if (options.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
-            optUiAbility.value().evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
+            optUiAbility.evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
             .onThen(
                 [context, resultConsumer](const QOhosCallbackInfo &cbInfo) {
                     QNapi::Object abilityResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -738,7 +741,7 @@ void QOhosDefaultAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEna
 {
     qCDebug(QtForOhos, "%s: setting destroyEnabled=%d for all instances", Q_FUNC_INFO, destroyEnabled);
 
-    std::vector<QObject *> instancesMainWindows;
+    std::vector<QWindow *> instancesMainWindows;
     for (const auto &contextEntry : abilityContextsMap)
         instancesMainWindows.push_back(contextEntry.first);
 
@@ -816,21 +819,19 @@ bool startAbilityByTypeImpl(const QString &appType, const QJsonObject &wantParam
         Q_FUNC_INFO);
 }
 
-bool tryOpenLinkImpl(QObject *optInstanceMainWindow, const QString &link, std::optional<bool> appLinkingOnly)
+bool tryOpenLinkImpl(QWindow *optInstanceMainWindow, const QString &link, std::optional<bool> appLinkingOnly)
 {
-    if (optInstanceMainWindow != nullptr && qobject_cast<QWindow *>(optInstanceMainWindow) == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: the main window argument is not a QWindow", Q_FUNC_INFO);
-
-    auto optInstanceMainWindowRef = optInstanceMainWindow != nullptr
-        ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+    const auto optInstanceAbilityRef = optInstanceMainWindow
+        ? std::optional(windowAbilityObjectRefOrNull(optInstanceMainWindow))
         : std::nullopt;
 
     return QOhosJsThreadGateway::evalWithPromise<bool>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
-            auto optUiAbility = optInstanceMainWindowRef.has_value()
-                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
-                : jsState.defaultQAbility();
-            if (!optUiAbility.has_value()) {
+            auto &appJsContext = QHarmonyAppJsContext::fromEnv(jsState.env());
+            auto optUiAbility = QNapi::Object(
+                jsState.env(),
+                optInstanceAbilityRef ? optInstanceAbilityRef->value(appJsContext) : appJsContext.defaultAbility());
+            if (optUiAbility.IsEmpty()) {
                 evalPromise(false);
                 return;
             }
@@ -840,7 +841,7 @@ bool tryOpenLinkImpl(QObject *optInstanceMainWindow, const QString &link, std::o
                 openLinkOptions.emplace_back("appLinkingOnly", appLinkingOnly.value());
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            optUiAbility.value().evalToPromiseOrRejectOnThrow(
+            optUiAbility.evalToPromiseOrRejectOnThrow(
                 "context.openLink(*)",
                 {
                     link.toStdString(),
@@ -859,26 +860,27 @@ bool tryOpenLinkImpl(QObject *optInstanceMainWindow, const QString &link, std::o
         Q_FUNC_INFO);
 }
 
-void setContinuationActiveImpl(QObject *optInstanceMainWindow, bool continuationActive)
+void setContinuationActiveImpl(QWindow *optInstanceMainWindow, bool continuationActive)
 {
     using ContinueState = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::ContinueState;
 
-    auto optInstanceMainWindowRef = optInstanceMainWindow != nullptr
-        ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+    const auto optInstanceAbilityRef = optInstanceMainWindow
+        ? std::optional(windowAbilityObjectRefOrNull(optInstanceMainWindow))
         : std::nullopt;
 
     QOhosJsThreadGateway::invokeAndWaitForContinue(
         [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-            auto optUiAbility = optInstanceMainWindowRef.has_value()
-                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
-                : jsState.defaultQAbility();
-            if (!optUiAbility.has_value()) {
+            auto &appJsContext = QHarmonyAppJsContext::fromEnv(jsState.env());
+            auto optUiAbility = QNapi::Object(
+                jsState.env(),
+                optInstanceAbilityRef ? optInstanceAbilityRef->value(appJsContext) : appJsContext.defaultAbility());
+            if (optUiAbility.IsEmpty()) {
                 taskPromise();
                 return;
             }
 
             auto continueState = continuationActive ? ContinueState::ACTIVE : ContinueState::INACTIVE;
-            optUiAbility.value().evalToPromiseOrRejectOnThrow(
+            optUiAbility.evalToPromiseOrRejectOnThrow(
                 "context.setMissionContinueState(*)", {jsState.mapOhosEnumToJs(continueState)})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setMissionContinueState()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
