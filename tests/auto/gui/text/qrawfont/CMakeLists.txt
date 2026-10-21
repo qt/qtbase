@@ -15,8 +15,12 @@ endif()
 set_source_files_properties("../../../shared/resources/testfont.ttf"
     PROPERTIES QT_RESOURCE_ALIAS "testfont.ttf"
 )
+set_source_files_properties("../../../shared/resources/testfont_bare.cff"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_bare.cff"
+)
 set(testdata_resource_files
     "../../../shared/resources/testfont.ttf"
+    "../../../shared/resources/testfont_bare.cff"
     "testfont_zeroem.ttf"
     "testfont_bold_italic.ttf"
     "testfont_os2_v1.ttf"
