@@ -3552,24 +3552,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Write dependency file for CMake DEPFILE support
-    // Always write depfile (even if HAP build was skipped), using expected output path
+    // hvigor writes the unsigned HAP whether or not it also signs, so that is the
+    // OUTPUT of the CMake custom command.
     if (!options.depFilePath.isEmpty()) {
-        if (hapOutputPath.isEmpty()) {
-            // Construct expected HAP path (matches CMake's HAP_OUTPUT_FILE)
-            if (options.testBundleMode) {
-                hapOutputPath = options.outputDirectory
-                    + "/entry/build/default/outputs/default/autotests.hap"_L1;
-            } else {
-                // Extract target name from binary: libnativeresource_test.so -> nativeresource_test
-                QString targetName = QFileInfo(options.applicationBinary).completeBaseName();
-                if (targetName.startsWith("lib"_L1))
-                    targetName = targetName.mid(3);
-                hapOutputPath = options.outputDirectory + "/entry/build/default/outputs/default/"_L1
-                              + targetName + ".hap"_L1;
-            }
-        }
-        if (!writeDepfile(options, hapOutputPath))
+        const QString unsignedHapPath = options.outputDirectory
+                + "/entry/build/default/outputs/default/entry-default-unsigned.hap"_L1;
+        if (!writeDepfile(options, unsignedHapPath))
             fprintf(stderr, "Warning: Failed to write dependency file\n");
     }
 

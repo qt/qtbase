@@ -273,6 +273,15 @@ function(_qt_internal_set_harmonyos_deployment_defaults target)
     endif()
 endfunction()
 
+# Returns the directory in which harmonydeployqt generates the HAP project for the target.
+function(_qt_internal_harmonyos_get_build_dir out_var target)
+    if(NOT DEFINED QT_HARMONYOS_USE_TARGET_BUILD_DIR OR QT_HARMONYOS_USE_TARGET_BUILD_DIR)
+        set(${out_var} "${CMAKE_CURRENT_BINARY_DIR}/harmonyos-build-${target}" PARENT_SCOPE)
+    else()
+        set(${out_var} "${CMAKE_CURRENT_BINARY_DIR}/harmonyos-build" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Generates the HarmonyOS deployment settings JSON file
 function(_qt_internal_harmonyos_generate_deployment_settings target)
     # Query bundle name from target property (now guaranteed to exist)
@@ -371,6 +380,10 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     string(APPEND JSON_CONTENT "    \"harmonyos-app-name\": \"${app_name}\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-app-bundle-name\": \"${bundle_name}\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [${TARGET_ARCHS_JSON}]")
+
+    # harmonydeployqt gets the build directory from --output. Tools like Qt Creator read it here.
+    _qt_internal_harmonyos_get_build_dir(build_dir ${target})
+    string(APPEND JSON_CONTENT ",\n    \"harmonyos-build-directory\": \"${build_dir}\"")
 
     # App-level metadata set via the QT_HARMONYOS_APP_* target properties.
     # Properties are read via $<TARGET_PROPERTY:> genex so transitively-set
@@ -560,14 +573,23 @@ function(_qt_internal_harmonyos_add_hap_target target)
         return()
     endif()
 
-    # Set default output directory
-    set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/harmonyos-build")
+    _qt_internal_harmonyos_get_build_dir(OUTPUT_DIR ${target})
+    get_property(known_build_dirs GLOBAL PROPERTY _qt_internal_harmonyos_build_dirs)
+    if(OUTPUT_DIR IN_LIST known_build_dirs)
+        message(FATAL_ERROR
+            "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt contains multiple Qt HarmonyOS "
+            "executable targets, which cannot share the build directory ${OUTPUT_DIR}. "
+            "Set QT_HARMONYOS_USE_TARGET_BUILD_DIR to ON.")
+    endif()
+    set_property(GLOBAL APPEND PROPERTY _qt_internal_harmonyos_build_dirs "${OUTPUT_DIR}")
 
     # Check if the generator supports DEPFILE
     _qt_internal_check_depfile_support(has_depfile_support)
 
     # Define HAP output file and depfile paths
-    set(HAP_OUTPUT_FILE "${OUTPUT_DIR}/entry/build/default/outputs/default/${target}.hap")
+    # hvigor writes the unsigned HAP whether or not it also signs.
+    set(HAP_OUTPUT_FILE
+        "${OUTPUT_DIR}/entry/build/default/outputs/default/entry-default-unsigned.hap")
     set(DEP_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${target}_hap.d")
 
     # Find harmonydeployqt tool
@@ -887,12 +909,8 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
     file(GENERATE OUTPUT "${CONFIG_FILE}" CONTENT "${JSON_CONTENT}")
 endfunction()
 
-# Create all_tests_make_hap: invoke harmonydeployqt in test-bundle mode.
-# When HARMONYOS_HVIGOR is set, the helper also runs hvigor to build the
-# signed HAP; otherwise only the project is generated.
-# hvigor writes entry-default-signed.hap when signing is configured and
-# entry-default-unsigned.hap otherwise. Pick the matching name so the build
-# edge's OUTPUT and the install fixture target what hvigor actually produces.
+# entry-default-signed.hap is written only when signing is configured, so the
+# install fixture has to pick the matching name.
 function(_qt_internal_harmonyos_test_bundle_hap_basename out_var)
     if(DEFINED ENV{QT_HARMONYOS_SIGNING_CERT_PATH}
             OR DEFINED ENV{QT_HARMONYOS_SIGNING_PROFILE}
@@ -906,6 +924,9 @@ function(_qt_internal_harmonyos_test_bundle_hap_basename out_var)
     endif()
 endfunction()
 
+# Create all_tests_make_hap: invoke harmonydeployqt in test-bundle mode.
+# When HARMONYOS_HVIGOR is set, the helper also runs hvigor to build the
+# HAP; otherwise only the project is generated.
 function(_qt_internal_harmonyos_add_all_tests_hap_target)
     _qt_internal_harmonyos_test_bundle_settings_file(CONFIG_FILE)
     cmake_language(DEFER CALL _qt_internal_harmonyos_generate_test_bundle_deployment_settings)
@@ -913,8 +934,9 @@ function(_qt_internal_harmonyos_add_all_tests_hap_target)
 
     _qt_internal_check_depfile_support(has_depfile_support)
 
-    _qt_internal_harmonyos_test_bundle_hap_basename(_hap_basename)
-    set(HAP_OUTPUT_FILE "${OUTPUT_DIR}/entry/build/default/outputs/default/${_hap_basename}")
+    # hvigor writes the unsigned HAP whether or not it also signs.
+    set(HAP_OUTPUT_FILE
+        "${OUTPUT_DIR}/entry/build/default/outputs/default/entry-default-unsigned.hap")
     set(BINARIES_TXT_FILE "${OUTPUT_DIR}/binaries.txt")
     set(DEP_FILE_PATH "${CMAKE_BINARY_DIR}/all_tests_hap.d")
 
