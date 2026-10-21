@@ -482,6 +482,35 @@ this option is not set, you will see a warning. To disable the warning, set
 */
 
 /*!
+\page cmake-variable-qt-harmonyos-use-target-build-dir.html
+\ingroup cmake-variables-qtcore
+\ingroup cmake-harmonyos-build-variables
+
+\title QT_HARMONYOS_USE_TARGET_BUILD_DIR
+\target cmake-variable-QT_HARMONYOS_USE_TARGET_BUILD_DIR
+
+\summary {Enables the use of per-target HarmonyOS build directories.}
+
+\cmakevariablesince 6.12.1
+\preliminarycmakevariable
+\cmakevariableharmonyosonly
+
+Qt generates the HAP project of an executable target in a directory next to
+the target. By default, this directory is called \c{harmonyos-build-<target>},
+so that several executable targets in the same \c CMakeLists.txt do not
+overwrite each other's HAP project.
+
+Set this variable to \c OFF to use a directory called \c harmonyos-build
+instead. Only one executable target per \c CMakeLists.txt is supported then.
+
+The build directory is also written as \c harmonyos-build-directory into the
+target's deployment settings file, where tools like Qt Creator read it.
+
+\sa {Qt for HarmonyOS}
+\sa {Setting CMake variables and properties}
+*/
+
+/*!
 \page cmake-variable-qt-no-collect-build-tree-apk-deps.html
 \ingroup cmake-variables-qtcore
 
