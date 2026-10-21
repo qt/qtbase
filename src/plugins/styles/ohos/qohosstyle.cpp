@@ -1236,7 +1236,10 @@ void QOhosStyle::drawPrimitive(
                     ? pixelMetric(PM_MenuButtonIndicator, option, widget)
                     : 0;
             auto optionCopy = *option;
-            optionCopy.rect.setWidth(option->rect.width() + menuButtonIndicatorSize);
+            if (option->direction == Qt::RightToLeft)
+                optionCopy.rect.setLeft(option->rect.left() - menuButtonIndicatorSize);
+            else
+                optionCopy.rect.setWidth(option->rect.width() + menuButtonIndicatorSize);
             drawToolButton(*painter, optionCopy);
         }
         break;
@@ -1343,18 +1346,14 @@ void QOhosStyle::drawPrimitive(
     case PE_IndicatorArrowDown:
     case PE_IndicatorArrowLeft:
     case PE_IndicatorArrowRight: {
-        QRect availableRect;
+        const QRect availableRect = option->rect;
         int maxArrowSize = 0;
         if (qobjectIsInstanceOf<QComboBox>(widget)) {
-            availableRect = option->rect;
             maxArrowSize = std::min(availableRect.width(), availableRect.height()) * 0.5;
         } else if (qobjectIsInstanceOf<QToolButton>(widget) || qobjectIsInstanceOf<QPushButton>(widget)) {
             const auto menuButtonIndicatorSize = pixelMetric(PM_MenuButtonIndicator, option, widget);
-            availableRect = QRect(
-                widget->size().width() - menuButtonIndicatorSize, 0, menuButtonIndicatorSize, widget->size().height());
-            maxArrowSize = std::min(availableRect.width(), availableRect.height()) * 0.5;
+            maxArrowSize = std::min(menuButtonIndicatorSize, widget->size().height()) * 0.5;
         } else {
-            availableRect = option->rect;
             maxArrowSize = std::min(availableRect.width(), availableRect.height());
         }
 
