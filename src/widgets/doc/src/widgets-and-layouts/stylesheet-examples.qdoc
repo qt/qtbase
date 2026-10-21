@@ -77,24 +77,24 @@
 
     \snippet code/doc_src_stylesheet.qdoc 96
 
-    However, the result is a boring, flat button with no borders:
-
-    \image stylesheet-redbutton1.png {Flat red button}
-
-    What happened is this:
+    However, the result depends on the platform's style, and on some
+    platforms the button isn't red at all. What happens is this:
 
     \list
-    \li We have made a request that cannot be satisfied using the
-       native styles alone (for example, the native Windows theme engine
-       doesn't let us specify the background color of a button).
-    \li Therefore, the button is rendered using style sheets.
-    \li We haven't specified any values for
-       \l{Qt Style Sheets Reference#border-width-prop}{border-width} and
-       \l{Qt Style Sheets Reference#border-style-prop}{border-style}, so by default we obtain
-       a 0-pixel wide border of style \c none.
+    \li We haven't specified a border, so the button keeps its native
+       border, and Qt asks the current style to draw the button with a
+       red background.
+    \li Some styles, such as Fusion, can draw a button in a custom
+       color. They draw their usual button in red.
+    \li Styles that draw buttons from native images, such as the macOS
+       style, can't change the color of those images. Qt draws a plain
+       red button in place of the native one.
+    \li Some styles may ignore the background color entirely.
     \endlist
 
-    Let's improve the situation by specifying a border:
+    To get the same result on every platform, the style sheet must
+    take over drawing the whole button. It does so as soon as we
+    specify a border:
 
     \snippet code/doc_src_stylesheet.qdoc 97
 
