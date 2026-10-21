@@ -5,8 +5,9 @@
 
 #include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
 
+#include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qscopeguard.h>
-#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
@@ -510,15 +511,14 @@ CheckResult::~CheckResult() = default;
 */
 std::shared_ptr<ActionResult> persistPermission(const QList<PathPolicy> &policies)
 {
-    auto actionResult = QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &) {
+    auto actionResult = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileSharePersistPermission(
                 convertToFileSharePolicyInfos(policies), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
-        },
-        Q_FUNC_INFO);
+        });
     return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
@@ -536,15 +536,14 @@ std::shared_ptr<ActionResult> persistPermission(const QList<PathPolicy> &policie
 */
 std::shared_ptr<ActionResult> revokePermission(const QList<PathPolicy> &policies)
 {
-    auto actionResult = QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &) {
+    auto actionResult = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileShareRevokePermission(
                 convertToFileSharePolicyInfos(policies), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
-        },
-        Q_FUNC_INFO);
+        });
     return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
@@ -564,15 +563,14 @@ std::shared_ptr<ActionResult> revokePermission(const QList<PathPolicy> &policies
 */
 std::shared_ptr<ActionResult> activatePermission(const QList<PathPolicy> &policies)
 {
-    auto actionResult = QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &) {
+    auto actionResult = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileShareActivatePermission(
                 convertToFileSharePolicyInfos(policies), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
-        },
-        Q_FUNC_INFO);
+        });
     return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
@@ -590,15 +588,14 @@ std::shared_ptr<ActionResult> activatePermission(const QList<PathPolicy> &polici
 */
 std::shared_ptr<ActionResult> deactivatePermission(const QList<PathPolicy> &policies)
 {
-    auto actionResult = QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &) {
+    auto actionResult = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileShareDeactivatePermission(
                 convertToFileSharePolicyInfos(policies), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
-        },
-        Q_FUNC_INFO);
+        });
     return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
@@ -617,15 +614,14 @@ std::shared_ptr<ActionResult> deactivatePermission(const QList<PathPolicy> &poli
 */
 std::shared_ptr<CheckResult> checkPersistent(const QList<PathPolicy> &policies)
 {
-    auto checkResult = QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &) {
+    auto checkResult = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &) {
             std::vector<bool> outResults;
             auto retCode = fileShareCheckPersistentPermission(
                 convertToFileSharePolicyInfos(policies), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), outResults);
-        },
-        Q_FUNC_INFO);
+        });
     return std::make_shared<CheckResultImpl>(checkResult.first, checkResult.second, policies);
 }
 
