@@ -15,8 +15,12 @@ endif()
 set_source_files_properties("../../../shared/resources/QtEmojiTestFont-Regular.ttf"
     PROPERTIES QT_RESOURCE_ALIAS "QtEmojiTestFont-Regular.ttf"
 )
+set_source_files_properties("../../../shared/resources/testfont_bare.cff"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_bare.cff"
+)
 set(testdata_resource_files
     "../../../shared/resources/QtEmojiTestFont-Regular.ttf"
+    "../../../shared/resources/testfont_bare.cff"
 )
 
 qt_internal_add_test(tst_qpdfwriter

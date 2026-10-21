@@ -6,6 +6,11 @@
 #include <QtAlgorithms>
 #include <QScopeGuard>
 #include <QTemporaryFile>
+#include <QBuffer>
+#include <QDir>
+#include <QFile>
+
+#include <cctype>
 
 #include <QtGui/QAbstractTextDocumentLayout>
 #include <QtGui/QFontDatabase>
@@ -29,6 +34,7 @@ private slots:
     void testPageMetrics();
     void qtbug59443();
     void colorFont();
+    void invalidFontName();
 };
 
 void tst_QPdfWriter::basics()
@@ -306,6 +312,102 @@ void tst_QPdfWriter::colorFont()
     // are drawn as images instead.
     QVERIFY(!contents.contains("/FontFile"));
     QVERIFY(contents.contains("/Subtype /Image"));
+}
+
+// Returns true if every byte of \a name is a legal PDF name object character,
+// i.e. printable ASCII excluding whitespace, delimiters and the '#' escape
+// character (which, when present, must introduce a two-digit hex escape).
+static bool isLegalPdfName(const QByteArray &name)
+{
+    for (qsizetype i = 0; i < name.size(); ++i) {
+        const uchar c = uchar(name.at(i));
+        if (c <= ' ' || c >= 0x7f)
+            return false;
+        switch (c) {
+        case 0:
+            return false;
+        case '(': case ')': case '<': case '>': case '[': case ']':
+        case '{': case '}': case '/': case '%':
+            return false;
+        case '#':
+            // Must be followed by two hex digits.
+            if (i + 2 >= name.size()
+                || !isxdigit(uchar(name.at(i + 1)))
+                || !isxdigit(uchar(name.at(i + 2)))) {
+                return false;
+            }
+            i += 2;
+            break;
+        default:
+            break;
+        }
+    }
+    return true;
+}
+
+void tst_QPdfWriter::invalidFontName()
+{
+    const QString fontFile = QFINDTESTDATA("testfont_bare.cff");
+    QVERIFY(!fontFile.isEmpty());
+
+    // addApplicationFont() only sets a face filename (required for embedding)
+    // when loading from a real file on disk, so copy the resource out first.
+    QFile src(fontFile);
+    QVERIFY2(src.open(QIODevice::ReadOnly), qPrintable(src.errorString()));
+    QTemporaryFile fontCopy(QDir::tempPath() + "/XXXXXX.cff");
+    QVERIFY2(fontCopy.open(), qPrintable(fontCopy.errorString()));
+    fontCopy.write(src.readAll());
+    fontCopy.close();
+
+    int id = -1;
+    auto cleanup = qScopeGuard([&id] {
+        if (id >= 0)
+            QFontDatabase::removeApplicationFont(id);
+    });
+
+    id = QFontDatabase::addApplicationFont(fontCopy.fileName());
+    if (id < 0)
+        QSKIP("The platform font database could not load the bare CFF test font.");
+
+    const QStringList families = QFontDatabase::applicationFontFamilies(id);
+    if (families.isEmpty())
+        QSKIP("The platform font database exposed no family for the test font.");
+
+    QFont font(families.first());
+    font.setPixelSize(40);
+
+    QByteArray contents;
+    {
+        QBuffer buffer(&contents);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QPdfWriter writer(&buffer);
+        writer.setPageSize(QPageSize(QPageSize::A4));
+        QPainter painter(&writer);
+        painter.setFont(font);
+        painter.drawText(QRectF(100, 100, 1000, 300), "Ag");
+    }
+    QVERIFY(!contents.isEmpty());
+
+    bool checkedAny = false;
+    for (const QByteArray &key : { QByteArrayLiteral("/BaseFont /"),
+                                   QByteArrayLiteral("/FontName /") }) {
+        qsizetype at = 0;
+        while ((at = contents.indexOf(key, at)) >= 0) {
+            at += key.size();
+            // A PDF name is terminated by whitespace or a delimiter; read up to
+            // the next whitespace so that any unexpected delimiter stays part of
+            // the token under inspection.
+            qsizetype end = at;
+            while (end < contents.size() && uchar(contents.at(end)) > ' ')
+                ++end;
+            const QByteArray name = contents.mid(at, end - at);
+            QVERIFY2(isLegalPdfName(name),
+                     ("Illegal PDF name after " + key + ": " + name).constData());
+            checkedAny = true;
+            at = end;
+        }
+    }
+    QVERIFY2(checkedAny, "No embedded font name found to validate.");
 }
 
 QTEST_MAIN(tst_QPdfWriter)

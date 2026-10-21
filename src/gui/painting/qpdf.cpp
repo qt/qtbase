@@ -2128,6 +2128,35 @@ void QPdfEnginePrivate::writeNamesRoot()
     xprintf("endobj\n");
 }
 
+static QByteArray qt_toPdfName(const QByteArray &input, qsizetype maxLength)
+{
+    // The name length limit applies to the unescaped name, where an escape
+    // sequence counts as a single byte (ISO 32000-1, 7.3.5)
+    const qsizetype length = qMin(input.size(), maxLength);
+    QByteArray output;
+    output.reserve(length);
+    for (qsizetype i = 0; i < length; ++i) {
+        const uchar c = uchar(input.at(i));
+        switch (c) {
+        case 0:
+            continue;
+        case '(': case ')': case '<': case '>': case '[': case ']':
+        case '{': case '}': case '/': case '%': case '#':
+            break;
+        default:
+            if (c > ' ' && c < 0x7f) {
+                output += char(c);
+                continue;
+            }
+            break;
+        }
+        char hex[3];
+        output += '#';
+        output += QPdf::toHex(c, hex);
+    }
+    return output;
+}
+
 void QPdfEnginePrivate::embedFont(QFontSubset *font)
 {
     //qDebug() << "embedFont" << font->object_id;
@@ -2150,7 +2179,11 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
     int cidset = requestObject();
 
     QFontEngine::Properties properties = font->fontEngine->properties();
-    QByteArray postscriptName = properties.postscriptName.replace(' ', '_');
+
+    constexpr qsizetype MaxNameLength = 127; // ISO 32000-1, Annex C
+    const qsizetype subsetTagLength = 7;
+    const QByteArray postscriptName = qt_toPdfName(properties.postscriptName,
+                                                   MaxNameLength - subsetTagLength);
 
     {
         qreal scale = 1000/properties.emSquare.toReal();

@@ -2156,7 +2156,7 @@ QFontEngine::Properties QFontEngineFT::properties() const
         p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family().toUtf8());
     }
 
-    return freetype->properties();
+    return p;
 }
 
 QFixed QFontEngineFT::emSquareSize() const
