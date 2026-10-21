@@ -239,6 +239,31 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
     return true;
 }
 
+// Returns the version of the SDK that hvigor builds with, in build-profile.json5
+// format, for example "6.1.1(24)", or an empty string if it cannot be determined.
+// hvigor uses DEVECO_SDK_HOME; without it, assume the SDK Qt was built with.
+static QString sdkVersion(const QString &sdkRoot)
+{
+    QStringList candidates;
+    const QString devEcoSdkHome = qEnvironmentVariable("DEVECO_SDK_HOME");
+    if (!devEcoSdkHome.isEmpty())
+        candidates << devEcoSdkHome + "/default/sdk-pkg.json"_L1;
+    if (!sdkRoot.isEmpty())
+        candidates << sdkRoot + "/../sdk-pkg.json"_L1;
+    for (const QString &candidate : std::as_const(candidates)) {
+        QFile file(candidate);
+        if (!file.open(QIODevice::ReadOnly))
+            continue;
+        const QJsonObject data = QJsonDocument::fromJson(file.readAll())["data"_L1].toObject();
+        const QString platformVersion = data["platformVersion"_L1].toString();
+        const QString apiVersion = data["apiVersion"_L1].toVariant().toString();
+        if (platformVersion.isEmpty() || apiVersion.isEmpty())
+            return {};
+        return platformVersion + u'(' + apiVersion + u')';
+    }
+    return {};
+}
+
 static bool readInputConfiguration(Options *options)
 {
     QFile inputFile(options->inputFile);
@@ -336,6 +361,12 @@ static bool readInputConfiguration(Options *options)
         obj["harmonyos-target-sdk-version"_L1].toString();
     options->harmonyOsCompileSdkVersion =
         obj["harmonyos-compile-sdk-version"_L1].toString();
+    // DevEco Studio asks to add a targetSdkVersion matching the SDK when it is missing.
+    // With an explicit compileSdkVersion the SDK version could exceed it.
+    if (options->harmonyOsTargetSdkVersion.isEmpty()
+        && options->harmonyOsCompileSdkVersion.isEmpty()) {
+        options->harmonyOsTargetSdkVersion = sdkVersion(options->sdkRoot);
+    }
 
     // Extra plugins (resolved file paths). Categories are derived from the
     // parent directory name of each path.
@@ -1138,7 +1169,7 @@ static bool customizeTemplate(const Options &options)
     }
 
     // Customize build-profile.json5 with the SDK version metadata. Only fields
-    // the user explicitly set are substituted; others keep the template default.
+    // that are set are substituted; others keep the template default.
     //
     //   * compatibleSdkVersion is an existing key with a default value -- we
     //     replace its value via the same regex pattern used in app.json5.
