@@ -2643,7 +2643,7 @@ void tst_QTextEdit::highlightLongLine()
     };
     NumHighlighter nh(edit.document());
     edit.show();
-    QVERIFY(QTest::qWaitForWindowActive(&edit));
+    QTRY_VERIFY(edit.isActiveWindow());
     QCoreApplication::processEvents();
     //If there is a quadratic behaviour, this would take forever.
     QVERIFY(true);
