@@ -3357,24 +3357,25 @@ static QString findJavaExecutable()
     return QStandardPaths::findExecutable("java"_L1);
 }
 
+// OHOS_SDK_ROOT normally points at the openharmony directory; accept the
+// enclosing directories too.
+static QStringList sdkToolchainsDirs(const Options &options)
+{
+    if (options.sdkRoot.isEmpty())
+        return {};
+    return { options.sdkRoot + "/toolchains"_L1,
+             options.sdkRoot + "/openharmony/toolchains"_L1,
+             options.sdkRoot + "/command-line-tools/sdk/default/openharmony/toolchains"_L1 };
+}
+
 static QString findHapSignTool(const Options &options)
 {
     const QString envTool = qEnvironmentVariable("QT_HARMONYOS_HAP_SIGN_TOOL");
     if (!envTool.isEmpty())
         return envTool;
 
-    if (options.sdkRoot.isEmpty())
-        return QString();
-
-    // OHOS_SDK_ROOT normally points at the openharmony directory; accept the
-    // enclosing directories too, matching the other SDK lookups in this tool.
-    const QStringList candidates = {
-        options.sdkRoot + "/toolchains/lib/hap-sign-tool.jar"_L1,
-        options.sdkRoot + "/openharmony/toolchains/lib/hap-sign-tool.jar"_L1,
-        options.sdkRoot
-                + "/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar"_L1,
-    };
-    for (const QString &candidate : candidates) {
+    for (const QString &dir : sdkToolchainsDirs(options)) {
+        const QString candidate = dir + "/lib/hap-sign-tool.jar"_L1;
         if (QFile::exists(candidate))
             return candidate;
     }
@@ -3652,39 +3653,68 @@ static bool buildHap(const Options &options, QString *hapOutputPath = nullptr)
     return true;
 }
 
-static bool installToDevice(const Options &options, const QString &hapPath)
+// Returns the mainElement of the generated module.json5, which is the ability to launch.
+static QString mainAbilityName(const Options &options)
+{
+    QFile moduleFile(options.outputDirectory + "/entry/src/main/module.json5"_L1);
+    if (moduleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        static const QRegularExpression re("\"mainElement\"\\s*:\\s*\"([^\"]+)\""_L1);
+        const QRegularExpressionMatch match = re.match(QString::fromUtf8(moduleFile.readAll()));
+        if (match.hasMatch())
+            return match.captured(1);
+    }
+    return "QAbility"_L1;
+}
+
+static bool installToDevice(const Options &options, const QString &builtHapPath)
 {
     if (!options.installApk)
         return true; // Not requested
 
-    if (hapPath.isEmpty()) {
+    if (builtHapPath.isEmpty()) {
         fprintf(stderr, "Error: Cannot install - HAP file path not found\n");
         return false;
+    }
+
+    // When hvigor signed the HAP with a configuration from build-profile.json5, the
+    // signed artifact sits next to the unsigned one that buildHap() reports.
+    QString hapPath = builtHapPath;
+    if (hapPath.endsWith("-unsigned.hap"_L1)) {
+        QString signedPath = hapPath;
+        signedPath.replace(signedPath.size() - 13, 13, "-signed.hap"_L1);
+        const QFileInfo signedInfo(signedPath);
+        if (signedInfo.exists()
+            && signedInfo.lastModified() >= QFileInfo(hapPath).lastModified()) {
+            hapPath = signedPath;
+        }
     }
 
     if (options.verbose)
         fprintf(stdout, "Installing HAP to device\n");
 
-    // Check if hdc is available
-    QString hdcPath = "hdc"_L1; // Assume it's in PATH
+    QString hdcPath = qEnvironmentVariable("QT_HARMONYOS_HDC");
+    if (hdcPath.isEmpty())
+        hdcPath = QStandardPaths::findExecutable("hdc"_L1, sdkToolchainsDirs(options));
+    if (hdcPath.isEmpty())
+        hdcPath = "hdc"_L1;
 
-    // Try to find hdc in SDK
-    if (!options.sdkRoot.isEmpty()) {
-        QString sdkHdc = options.sdkRoot + "/command-line-tools/hdc"_L1;
-        if (QFile::exists(sdkHdc))
-            hdcPath = std::move(sdkHdc);
-    }
-
-    // Check for connected devices
-    QProcessExt checkDevices;
+    // Plain QProcess: QProcessExt consumes the output that is parsed here.
+    QProcess checkDevices;
     checkDevices.start(hdcPath, QStringList() << "list"_L1 << "targets"_L1);
     if (!checkDevices.waitForFinished(5000)) {
-        fprintf(stderr, "Error: Failed to check for connected devices\n");
+        fprintf(stderr, "Error: Failed to check for connected devices with %s\n",
+                qPrintable(hdcPath));
         return false;
     }
 
+    // hdc exits with 0 on errors and reports them with a "[Fail]" prefix.
     QString devicesOutput = QString::fromUtf8(checkDevices.readAllStandardOutput());
-    if (devicesOutput.trimmed().isEmpty() || devicesOutput.contains("empty"_L1)) {
+    if (devicesOutput.contains("[Fail]"_L1)) {
+        fprintf(stderr, "Error: Failed to list devices:\n%s\n", qPrintable(devicesOutput));
+        return false;
+    }
+    if (devicesOutput.trimmed().isEmpty()
+        || devicesOutput.contains("[Empty]"_L1, Qt::CaseInsensitive)) {
         fprintf(stderr, "Error: No HarmonyOS devices connected\n");
         fprintf(stderr, "Connect a device and ensure USB debugging is enabled\n");
         return false;
@@ -3706,9 +3736,10 @@ static bool installToDevice(const Options &options, const QString &hapPath)
     if (options.verbose)
         fprintf(stdout, "  Installing: %s\n", qPrintable(hapPath));
 
-    QProcessExt install;
+    QProcess install;
     install.setProcessChannelMode(QProcess::MergedChannels);
-    install.start(hdcPath, QStringList() << "install"_L1 << hapPath);
+    // hdc on Windows takes a path with forward slashes as relative.
+    install.start(hdcPath, QStringList() << "install"_L1 << QDir::toNativeSeparators(hapPath));
 
     if (!install.waitForFinished(60000)) { // 60 second timeout
         fprintf(stderr, "Error: Installation timed out\n");
@@ -3717,7 +3748,8 @@ static bool installToDevice(const Options &options, const QString &hapPath)
 
     QString installOutput = QString::fromUtf8(install.readAll());
 
-    if (install.exitCode() != 0) {
+    if (install.exitCode() != 0 || installOutput.contains("[Fail]"_L1)
+        || installOutput.contains("failed to install"_L1)) {
         fprintf(stderr, "Error: Installation failed\n");
         fprintf(stderr, "%s\n", qPrintable(installOutput));
         return false;
@@ -3730,18 +3762,23 @@ static bool installToDevice(const Options &options, const QString &hapPath)
     if (options.verbose)
         fprintf(stdout, "  Launching application\n");
 
-    QProcessExt launch;
+    QProcess launch;
+    launch.setProcessChannelMode(QProcess::MergedChannels);
     QStringList launchArgs;
     launchArgs << "shell"_L1 << "aa"_L1 << "start"_L1
-               << "-a"_L1 << "EntryAbility"_L1
+               << "-a"_L1 << mainAbilityName(options)
                << "-b"_L1 << options.harmonyOsAppBundleName;
 
     launch.start(hdcPath, launchArgs);
     launch.waitForFinished(5000);
 
-    if (launch.exitCode() != 0) {
-        fprintf(stderr, "Warning: Failed to launch application\n");
+    const QString launchOutput = QString::fromUtf8(launch.readAll());
+    if (launch.exitCode() != 0 || launchOutput.contains("[Fail]"_L1)
+        || launchOutput.contains("error:"_L1)) {
         // Not fatal
+        fprintf(stderr, "Warning: Failed to launch application:\n%s\n", qPrintable(launchOutput));
+        fprintf(stdout, "Successfully installed application on device\n");
+        return true;
     }
 
     fprintf(stdout, "Successfully installed and launched application on device\n");
