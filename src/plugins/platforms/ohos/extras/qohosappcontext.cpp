@@ -169,10 +169,19 @@ std::optional<std::uint32_t> tryConvertPortNameToSystemPortId(const QString &por
     return static_cast<std::uint32_t>(parsedValue);
 }
 
-bool hasSerialPortAccessRightJsImpl(QOhosJsState &jsState, std::uint32_t serialPortId)
+QNapi::Object usbSerialModuleOrEmpty(QHarmonyJsContext &jsContext)
 {
+    return QNapi::Object(jsContext.env(), jsContext.tryImportModule("@ohos.usbManager.serial"));
+}
+
+bool hasSerialPortAccessRightJsImpl(QHarmonyJsContext &jsContext, std::uint32_t serialPortId)
+{
+    auto optUsbSerialModule = usbSerialModuleOrEmpty(jsContext);
+    if (optUsbSerialModule.IsEmpty())
+        return false;
+
     try {
-        return jsState.eval<QNapi::Boolean>("@ohos.usbManager.serial.hasSerialRight(*)", {serialPortId});
+        return optUsbSerialModule.eval<QNapi::Boolean>("hasSerialRight(*)", {serialPortId});
     } catch (const Napi::Error &error) {
         qOhosPrintfError(
             "%s: hasSerialRight for port %d failed with error: %s",
@@ -182,11 +191,16 @@ bool hasSerialPortAccessRightJsImpl(QOhosJsState &jsState, std::uint32_t serialP
 }
 
 void requestSerialPortAccessRightJsImpl(
-    QOhosJsState &jsState, std::uint32_t serialPortId, QOhosConsumer<bool> resultConsumer)
+    QHarmonyJsContext &jsContext, std::uint32_t serialPortId, QOhosConsumer<bool> resultConsumer)
 {
+    auto optUsbSerialModule = usbSerialModuleOrEmpty(jsContext);
+    if (optUsbSerialModule.IsEmpty()) {
+        resultConsumer(false);
+        return;
+    }
+
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
-    jsState.evalToPromiseOrRejectOnThrow(
-        "@ohos.usbManager.serial.requestSerialRight(*)", {serialPortId})
+    optUsbSerialModule.evalToPromiseOrRejectOnThrow("requestSerialRight(*)", {serialPortId})
     .onThen(
         [sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             bool granted = cbInfo.getFirstArg<QNapi::Boolean>(Q_FUNC_INFO);
@@ -200,13 +214,14 @@ void requestSerialPortAccessRightJsImpl(
         });
 }
 
-void cancelSerialPortAccessRightJsImpl(QOhosJsState &jsState, std::uint32_t serialPortId)
+void cancelSerialPortAccessRightJsImpl(QHarmonyJsContext &jsContext, std::uint32_t serialPortId)
 {
-    if (!hasSerialPortAccessRightJsImpl(jsState, serialPortId))
+    auto optUsbSerialModule = usbSerialModuleOrEmpty(jsContext);
+    if (optUsbSerialModule.IsEmpty() || !hasSerialPortAccessRightJsImpl(jsContext, serialPortId))
         return;
 
     try {
-        jsState.eval("@ohos.usbManager.serial.cancelSerialRight(*)", {serialPortId});
+        optUsbSerialModule.eval("cancelSerialRight(*)", {serialPortId});
     } catch (const Napi::Error &error) {
         qOhosPrintfError(
             "%s: cancelSerialRight(%u) failed with error (ignoring): %s",
@@ -223,11 +238,10 @@ void processSerialPortPermissionResponse(std::uint32_t serialPortId, bool grante
             [serialPortId, weakSelf = QtOhos::makeWeakPtr(serialPortPermissionsState())]() {
                 QNativeInterface::QHarmonyApplication::runOnQtThread(
                     [serialPortId, weakSelf]() {
-                        QOhosJsThreadGateway::runAndWait(
-                            [&](QOhosJsState &jsState) {
-                                cancelSerialPortAccessRightJsImpl(jsState, serialPortId);
-                            },
-                            Q_FUNC_INFO);
+                        QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+                            [&](QHarmonyJsContext &jsContext) {
+                                cancelSerialPortAccessRightJsImpl(jsContext, serialPortId);
+                            });
 
                         auto self = weakSelf.lock();
                         if (self)
@@ -294,10 +308,10 @@ void requestSerialPortAccessRight(
                 std::move(asyncResultConsumer));
 
             if (self->m_pendingSerialPortsPermissionRequestsConsumers[serialPortId].size() == 1) {
-                QOhosJsThreadGateway::invoke(
-                    [serialPortId, weakSelf](QOhosJsState &jsState) {
+                QNativeInterface::QHarmonyApplication::runOnJsThread(
+                    [serialPortId, weakSelf](QHarmonyJsContext &jsContext) {
                         requestSerialPortAccessRightJsImpl(
-                            jsState,
+                            jsContext,
                             serialPortId,
                             [serialPortId, weakSelf](bool granted) {
                                 QNativeInterface::QHarmonyApplication::runOnQtThread(
@@ -518,11 +532,10 @@ bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) cons
         return false;
     }
 
-    return QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &jsState) {
-            return hasSerialPortAccessRightJsImpl(jsState, optSerialPortId.value());
-        },
-        Q_FUNC_INFO);
+    return QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            return hasSerialPortAccessRightJsImpl(jsContext, optSerialPortId.value());
+        });
 }
 
 /*!
