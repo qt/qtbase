@@ -661,9 +661,9 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     }
 
                     stringified.replace('"', "\\\"");
-                    stringified.prepend('"');
-                    stringified.append('"');
                 }
+                stringified.prepend('"');
+                stringified.append('"');
 
                 expansion += Symbol(lineNum, STRING_LITERAL, stringified);
             } else if (mode == HashHash){
