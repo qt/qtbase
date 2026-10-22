@@ -1063,7 +1063,8 @@ void QOhosView::setFullScreen()
         return;
     }
 
-    windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE);
+    if (!windowProxy->tryMaximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE))
+        QOhosPlatformWindow::fromQWindow(m_ownerWindow)->resetRefusedMaximizeState();
 }
 
 void QOhosView::recover()
@@ -1117,7 +1118,8 @@ void QOhosView::maximize()
         return;
     }
 
-    windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE);
+    if (!windowProxy->tryMaximize(QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE))
+        QOhosPlatformWindow::fromQWindow(m_ownerWindow)->resetRefusedMaximizeState();
 }
 
 std::unique_ptr<QOhosView> QOhosView::createForWindow(QOhosPlatformWindow *window, QOhosPropertiesProvider windowPropertiesProvider)
