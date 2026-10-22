@@ -3,6 +3,7 @@
 
 add_subdirectory(initmain)
 add_subdirectory(outformat)
+add_subdirectory(qeventspy)
 add_subdirectory(qsignalspy)
 add_subdirectory(tostring)
 
