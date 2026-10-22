@@ -1308,7 +1308,10 @@ void QRhiGles2::destroy()
         for (uint shader : std::as_const(m_shaderCache))
             f->glDeleteShader(shader);
         m_shaderCache.clear();
+
+        releaseBufferNameCache();
     }
+    bufferNameCacheCount = 0; // clear even when the context is lost
 
     if (!importedContext) {
         delete ctx;
@@ -1316,6 +1319,24 @@ void QRhiGles2::destroy()
     }
 
     f = nullptr;
+}
+
+GLuint QRhiGles2::genBuffer()
+{
+    if (!bufferNameCacheCount) {
+        bufferNameCache.fill(0);
+        f->glGenBuffers(GLsizei(bufferNameCache.size()), bufferNameCache.data());
+        bufferNameCacheCount = int(bufferNameCache.size());
+    }
+    return bufferNameCache[--bufferNameCacheCount];
+}
+
+void QRhiGles2::releaseBufferNameCache()
+{
+    if (bufferNameCacheCount) {
+        f->glDeleteBuffers(GLsizei(bufferNameCacheCount), bufferNameCache.data());
+        bufferNameCacheCount = 0;
+    }
 }
 
 void QRhiGles2::executeDeferredReleases()
@@ -1829,6 +1850,8 @@ void QRhiGles2::releaseCachedResources()
     m_shaderCache.clear();
 
     m_pipelineCache.clear();
+
+    releaseBufferNameCache();
 }
 
 bool QRhiGles2::isDeviceLost() const
@@ -5963,7 +5986,7 @@ bool QGles2Buffer::create()
     else if (m_usage.testFlag(QRhiBuffer::IndirectBuffer))
         targetForDataOps = GL_DRAW_INDIRECT_BUFFER;
 
-    rhiD->f->glGenBuffers(1, &buffer);
+    buffer = rhiD->genBuffer();
     rhiD->f->glBindBuffer(targetForDataOps, buffer);
     rhiD->f->glBufferData(targetForDataOps, nonZeroSize, nullptr, m_type == Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 

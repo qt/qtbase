@@ -912,6 +912,8 @@ public:
     bool ensureContext(QSurface *surface = nullptr) const;
     QSurface *evaluateFallbackSurface() const;
     void executeDeferredReleases();
+    GLuint genBuffer();
+    void releaseBufferNameCache();
     void trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *bufD, QGles2Buffer::Access access);
     void trackedImageBarrier(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Texture::Access access);
     void enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cbD,
@@ -1146,6 +1148,8 @@ public:
     QRhiDriverInfo driverInfoStruct;
     mutable bool contextLost = false;
     uint frameNo = 0;
+    std::array<GLuint, 8> bufferNameCache;
+    int bufferNameCacheCount = 0;
 
     struct DeferredReleaseEntry {
         enum Type {
