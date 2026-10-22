@@ -2699,7 +2699,17 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                                              const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[],
                                              uint pushConstantStages)
 {
-    srbD->resourceBatches.clear();
+    // Share resourceBatches with command buffers that recorded a bind of this
+    // srb, so that retaining the batches for executeCommandBuffer() is cheap.
+    // The batches may be retained by a command buffer for a bind that is
+    // recorded but not yet executed. Those must stay intact, so build into
+    // a new object in that case.
+    if (!srbD->resourceBatches || srbD->resourceBatches.use_count() > 1)
+        srbD->resourceBatches = std::make_shared<QD3D11ShaderResourceBindings::ResourceBatches>();
+    else
+        srbD->resourceBatches->clear();
+
+    QD3D11ShaderResourceBindings::ResourceBatches &batches(*srbD->resourceBatches);
 
     struct Stage {
         struct Buffer {
@@ -2966,22 +2976,22 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         });
     }
 
-    res[RBM_VERTEX].buildBufferBatches(srbD->resourceBatches.vsUniformBufferBatches);
-    res[RBM_HULL].buildBufferBatches(srbD->resourceBatches.hsUniformBufferBatches);
-    res[RBM_DOMAIN].buildBufferBatches(srbD->resourceBatches.dsUniformBufferBatches);
-    res[RBM_GEOMETRY].buildBufferBatches(srbD->resourceBatches.gsUniformBufferBatches);
-    res[RBM_FRAGMENT].buildBufferBatches(srbD->resourceBatches.fsUniformBufferBatches);
-    res[RBM_COMPUTE].buildBufferBatches(srbD->resourceBatches.csUniformBufferBatches);
+    res[RBM_VERTEX].buildBufferBatches(batches.vsUniformBufferBatches);
+    res[RBM_HULL].buildBufferBatches(batches.hsUniformBufferBatches);
+    res[RBM_DOMAIN].buildBufferBatches(batches.dsUniformBufferBatches);
+    res[RBM_GEOMETRY].buildBufferBatches(batches.gsUniformBufferBatches);
+    res[RBM_FRAGMENT].buildBufferBatches(batches.fsUniformBufferBatches);
+    res[RBM_COMPUTE].buildBufferBatches(batches.csUniformBufferBatches);
 
-    res[RBM_VERTEX].buildSamplerBatches(srbD->resourceBatches.vsSamplerBatches);
-    res[RBM_HULL].buildSamplerBatches(srbD->resourceBatches.hsSamplerBatches);
-    res[RBM_DOMAIN].buildSamplerBatches(srbD->resourceBatches.dsSamplerBatches);
-    res[RBM_GEOMETRY].buildSamplerBatches(srbD->resourceBatches.gsSamplerBatches);
-    res[RBM_FRAGMENT].buildSamplerBatches(srbD->resourceBatches.fsSamplerBatches);
-    res[RBM_COMPUTE].buildSamplerBatches(srbD->resourceBatches.csSamplerBatches);
+    res[RBM_VERTEX].buildSamplerBatches(batches.vsSamplerBatches);
+    res[RBM_HULL].buildSamplerBatches(batches.hsSamplerBatches);
+    res[RBM_DOMAIN].buildSamplerBatches(batches.dsSamplerBatches);
+    res[RBM_GEOMETRY].buildSamplerBatches(batches.gsSamplerBatches);
+    res[RBM_FRAGMENT].buildSamplerBatches(batches.fsSamplerBatches);
+    res[RBM_COMPUTE].buildSamplerBatches(batches.csSamplerBatches);
 
-    res[RBM_FRAGMENT].buildUavBatches(srbD->resourceBatches.fsUavBatches);
-    res[RBM_COMPUTE].buildUavBatches(srbD->resourceBatches.csUavBatches);
+    res[RBM_FRAGMENT].buildUavBatches(batches.fsUavBatches);
+    res[RBM_COMPUTE].buildUavBatches(batches.csUavBatches);
 }
 
 void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
@@ -3366,7 +3376,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
             break;
         case QD3D11CommandBuffer::Command::BindShaderResources:
             bindShaderResources(cbD,
-                                cbD->resourceBatchRetainPool[cmd.args.bindShaderResources.resourceBatchesIndex],
+                                *cbD->resourceBatchRetainPool[cmd.args.bindShaderResources.resourceBatchesIndex],
                                 cmd.args.bindShaderResources.dynamicOffsetPairs,
                                 cmd.args.bindShaderResources.dynamicOffsetCount,
                                 cmd.args.bindShaderResources.offsetOnlyChange,

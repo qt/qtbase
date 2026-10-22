@@ -24,6 +24,8 @@
 #include <dxgi1_6.h>
 #include <dcomp.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QRhiD3D11;
@@ -339,7 +341,8 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
             csUavBatches.clear();
             fsUavBatches.clear();
         }
-    } resourceBatches;
+    };
+    std::shared_ptr<ResourceBatches> resourceBatches;
 
     friend class QRhiD3D11;
 };
@@ -633,7 +636,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     QVarLengthArray<QByteArray, 4> dataRetainPool;
     QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
     QVarLengthArray<QImage, 4> imageRetainPool;
-    QVarLengthArray<QD3D11ShaderResourceBindings::ResourceBatches, 4> resourceBatchRetainPool;
+    QVarLengthArray<std::shared_ptr<const QD3D11ShaderResourceBindings::ResourceBatches>, 4> resourceBatchRetainPool;
     QVarLengthArray<char, 1024> pushConstantPool;
     QVarLengthArray<ID3D11UnorderedAccessView *, 4> ownedUavs;
 
@@ -650,8 +653,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         imageRetainPool.append(image);
         return imageRetainPool.last().constBits();
     }
-    // except this one
-    int retainResourceBatches(const QD3D11ShaderResourceBindings::ResourceBatches &resourceBatches) {
+    int retainResourceBatches(const std::shared_ptr<QD3D11ShaderResourceBindings::ResourceBatches> &resourceBatches) {
         resourceBatchRetainPool.append(resourceBatches);
         return resourceBatchRetainPool.count() - 1;
     }
