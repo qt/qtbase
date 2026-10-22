@@ -635,8 +635,10 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
     if (q_check_ptr(buffer) == nullptr)
         return nullptr;
 
-    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, reinterpret_cast<uchar *>(buffer), &length)))
-        return nullptr;
+    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, reinterpret_cast<uchar *>(buffer), &length))) {
+        free(buffer);
+        return hb_blob_get_empty();
+    }
 
     return hb_blob_create(const_cast<const char *>(buffer), length,
                           HB_MEMORY_MODE_WRITABLE,

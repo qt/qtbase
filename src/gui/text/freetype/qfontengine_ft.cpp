@@ -583,8 +583,9 @@ void QFreetypeFace::computeSize(const QFontDef &fontDef, int *xsize, int *ysize,
         // According to freetype documentation we must use FT_Select_Size
         // to make sure we can select the desired bitmap strike index
         if (FT_Select_Size(face, best) == 0) {
-            if (isScalableBitmap())
-                *scalableBitmapScaleFactor = QFixed::fromReal((qreal)fontDef.pixelSize / face->available_sizes[best].height);
+            const auto bestHeight = face->available_sizes[best].height;
+            if (isScalableBitmap() && bestHeight != 0)
+                *scalableBitmapScaleFactor = QFixed::fromReal((qreal)fontDef.pixelSize / bestHeight);
             *xsize = face->available_sizes[best].x_ppem;
             *ysize = face->available_sizes[best].y_ppem;
         } else {
