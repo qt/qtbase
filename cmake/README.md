@@ -266,11 +266,14 @@ To use a custom toolchain file, use `-DQT_CHAINLOAD_TOOLCHAIN_FILE=<file path>`.
 
 The same as `qt-cmake`, but in addition, sets the CMake generator to Ninja.
 
+On Unix, `qt-cmake-private` lives in the `libexec` directory. On Windows, use
+`bin\qt-cmake-private.bat`.
+
 Example:
 
 ```
 $ cd some/empty/directory
-$ ~/Qt/6.0.0/bin/qt-cmake-private ~/source/of/qtdeclarative -DFEATURE_qml_network=OFF
+$ ~/Qt/6.0.0/libexec/qt-cmake-private ~/source/of/qtdeclarative -DFEATURE_qml_network=OFF
 $ cmake --build . && cmake --install .
 ```
 
@@ -286,17 +289,23 @@ $ ~/Qt/6.0.0/bin/qt-configure-module ~/source/of/qtdeclarative -no-feature-qml-n
 $ cmake --build . && cmake --install .
 ```
 
-## qt-cmake-standalone-test
+## Building a single test
 
-Build a single standalone test outside the Qt build.
+To build a single test outside the Qt build, pass the test's source directory to
+`qt-cmake-private`. For Apple platforms other than macOS, use `qt-cmake` instead, which selects the
+Xcode generator.
 
 Example:
 
 ```
 $ cd some/empty/directory
-$ ~/Qt/6.0.0/bin/qt-cmake-standalone-test ~/source/of/qtbase/test/auto/corelib/io/qprocess
+$ ~/Qt/6.0.0/libexec/qt-cmake-private ~/source/of/qtbase/tests/auto/corelib/tools/qflatmap
 $ cmake --build .
+$ ctest
 ```
+
+The `qt-cmake-standalone-test` script only forwards its arguments to one of these scripts. You
+no longer need it.
 
 ## qt-cmake-create
 
