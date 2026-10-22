@@ -9,6 +9,7 @@
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qjsonvalue.h>
+#include <QtCore/qsemaphore.h>
 #include <QtCore/qset.h>
 #include <QtCore/qthread.h>
 #include <QtTest/qtest.h>
@@ -73,6 +74,9 @@ constexpr char keptJsObjectPropName[] = "qtTestKeptObject";
 
 // Stays below the HarmonyOS app-freeze limit for a blocked JS thread.
 constexpr auto jsThreadBlockTimeout = 3s;
+
+// Gives a release that does not wait for a busy JS thread time to return.
+constexpr auto busyJsThreadReleaseCheckTime = 100ms;
 
 QString nonAsciiText()
 {
@@ -457,6 +461,192 @@ std::shared_ptr<void> blockJsThread(std::shared_ptr<bool> timedOut)
         });
 }
 
+struct DelegateCall
+{
+    std::string delegateName;
+    QHarmonyJsObjectRef thisRef;
+    std::vector<QHarmonyJsObjectRef> argRefs;
+};
+
+struct DelegateCallRecorder
+{
+    std::string delegateName;
+    std::vector<DelegateCall> *calls = nullptr;
+    std::shared_ptr<void> *optHandleToRelease = nullptr;
+};
+
+std::vector<napi_value> getJsCallbackArgs(napi_env env, napi_callback_info callbackInfo, napi_value *thisValue, void **data)
+{
+    std::size_t argc = 0;
+    checkNapiStatus(napi_get_cb_info(env, callbackInfo, &argc, nullptr, nullptr, nullptr), "napi_get_cb_info");
+    std::vector<napi_value> args(argc);
+    checkNapiStatus(napi_get_cb_info(env, callbackInfo, &argc, args.data(), thisValue, data), "napi_get_cb_info");
+    return args;
+}
+
+void recordDelegateCall(napi_env env, napi_callback_info callbackInfo)
+{
+    napi_value thisValue = nullptr;
+    void *data = nullptr;
+    const auto args = getJsCallbackArgs(env, callbackInfo, &thisValue, &data);
+    auto &jsContext = QHarmonyJsContext::fromEnv(env);
+    auto *recorder = static_cast<DelegateCallRecorder *>(data);
+    DelegateCall call{
+        .delegateName = recorder->delegateName,
+        .thisRef = QHarmonyJsObjectRef::fromValue(jsContext, thisValue),
+    };
+    for (const auto argValue : args)
+        call.argRefs.push_back(QHarmonyJsObjectRef::fromValue(jsContext, argValue));
+    recorder->calls->push_back(std::move(call));
+    if (recorder->optHandleToRelease)
+        recorder->optHandleToRelease->reset();
+}
+
+napi_value recordingDelegateCallback(napi_env env, napi_callback_info callbackInfo)
+{
+    recordDelegateCall(env, callbackInfo);
+    return nullptr;
+}
+
+napi_value throwingDelegateCallback(napi_env env, napi_callback_info callbackInfo)
+{
+    recordDelegateCall(env, callbackInfo);
+    checkNapiStatus(napi_throw_error(env, nullptr, "delegate failed"), "napi_throw_error");
+    return nullptr;
+}
+
+napi_value sevenReturningDelegateCallback(napi_env env, napi_callback_info)
+{
+    return makeJsNumber(env, 7);
+}
+
+napi_value promiseReturningDelegateCallback(napi_env env, napi_callback_info callbackInfo)
+{
+    void *data = nullptr;
+    getJsCallbackArgs(env, callbackInfo, nullptr, &data);
+    napi_deferred deferred = nullptr;
+    napi_value promiseValue = nullptr;
+    checkNapiStatus(napi_create_promise(env, &deferred, &promiseValue), "napi_create_promise");
+    checkNapiStatus(napi_resolve_deferred(env, deferred, makeJsNumber(env, 0)), "napi_resolve_deferred");
+    *static_cast<QHarmonyJsObjectRef *>(data) = QHarmonyJsObjectRef::fromValue(QHarmonyJsContext::fromEnv(env), promiseValue);
+    return promiseValue;
+}
+
+napi_value makeUiAbilityDelegate(napi_env env, const char *methodName, napi_callback callback, void *data = nullptr)
+{
+    const auto delegateValue = makeJsObject(env);
+    setJsProperty(env, delegateValue, methodName, makeJsFunction(env, callback, data));
+    return delegateValue;
+}
+
+napi_value callJsMethod(napi_env env, napi_value objectValue, const char *name, const std::vector<napi_value> &args)
+{
+    napi_value resultValue = nullptr;
+    checkNapiStatus(
+        napi_call_function(env, objectValue, getJsProperty(env, objectValue, name), args.size(), args.data(), &resultValue),
+        "napi_call_function");
+    return resultValue;
+}
+
+bool isJsPromise(napi_env env, napi_value value)
+{
+    bool isPromise = false;
+    checkNapiStatus(napi_is_promise(env, value, &isPromise), "napi_is_promise");
+    return isPromise;
+}
+
+napi_value makeTestWant(napi_env env)
+{
+    const auto wantValue = makeJsObject(env);
+    setJsProperty(env, wantValue, "parameters", makeJsObject(env));
+    return wantValue;
+}
+
+napi_value makeTestLaunchParam(napi_env env)
+{
+    const auto launchParamValue = makeJsObject(env);
+    setJsProperty(env, launchParamValue, "launchReason", makeJsNumber(env, 0));
+    setJsProperty(env, launchParamValue, "lastExitReason", makeJsNumber(env, 0));
+    return launchParamValue;
+}
+
+void callAbilityOnNewWant(QHarmonyJsContext &jsContext, napi_value wantValue, napi_value launchParamValue)
+{
+    const auto env = jsContext.env();
+    callJsMethod(env, QHarmonyAppJsContext::fromJsContext(jsContext).defaultAbility(), "onNewWant", {wantValue, launchParamValue});
+}
+
+void callAbilityOnNewWant(QHarmonyJsContext &jsContext)
+{
+    const auto env = jsContext.env();
+    callAbilityOnNewWant(jsContext, makeTestWant(env), makeTestLaunchParam(env));
+}
+
+napi_value callAbilityOnContinue(QHarmonyJsContext &jsContext)
+{
+    const auto env = jsContext.env();
+    return callJsMethod(env, QHarmonyAppJsContext::fromJsContext(jsContext).defaultAbility(), "onContinue", {makeJsObject(env)});
+}
+
+napi_value onContinueRejectValue(QHarmonyJsContext &jsContext)
+{
+    const auto env = jsContext.env();
+    const auto moduleValue = jsContext.tryImportModule(abilityConstantModuleName);
+    return getJsProperty(env, getJsProperty(env, moduleValue, "OnContinueResult"), "REJECT");
+}
+
+double jsNumberValue(napi_env env, napi_value value)
+{
+    double number = 0;
+    checkNapiStatus(napi_get_value_double(env, value, &number), "napi_get_value_double");
+    return number;
+}
+
+napi_value promiseNumberRecordingCallback(napi_env env, napi_callback_info callbackInfo)
+{
+    void *data = nullptr;
+    const auto args = getJsCallbackArgs(env, callbackInfo, nullptr, &data);
+    const auto &valuePromise = *static_cast<std::shared_ptr<std::promise<double>> *>(data);
+    valuePromise->set_value(args.empty() ? 0 : jsNumberValue(env, args[0]));
+    return nullptr;
+}
+
+void releaseCallbackPromise(napi_env, void *data, void *)
+{
+    delete static_cast<std::shared_ptr<std::promise<double>> *>(data);
+}
+
+std::optional<double> waitForJsPromiseNumber(QHarmonyJsObjectRef promiseRef)
+{
+    auto valuePromise = std::make_shared<std::promise<double>>();
+    auto valueFuture = valuePromise->get_future();
+    QHarmonyApplication::runOnJsThread(
+        [promiseRef, valuePromise](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            const auto promiseValue = promiseRef.value(jsContext);
+            auto *callbackPromise = new std::shared_ptr<std::promise<double>>(valuePromise);
+            const auto callbackValue = makeJsFunction(env, promiseNumberRecordingCallback, callbackPromise);
+            checkNapiStatus(
+                napi_add_finalizer(env, callbackValue, callbackPromise, releaseCallbackPromise, nullptr, nullptr),
+                "napi_add_finalizer");
+            napi_value resultValue = nullptr;
+            checkNapiStatus(
+                napi_call_function(env, promiseValue, getJsProperty(env, promiseValue, "then"), 1, &callbackValue, &resultValue),
+                "napi_call_function");
+        });
+    if (valueFuture.wait_for(jsThreadBlockTimeout) != std::future_status::ready)
+        return std::nullopt;
+    return valueFuture.get();
+}
+
+std::vector<std::string> delegateNamesOfCalls(const std::vector<DelegateCall> &calls)
+{
+    std::vector<std::string> names;
+    for (const auto &call : calls)
+        names.push_back(call.delegateName);
+    return names;
+}
+
 template <typename Func>
 void runInWorkerThread(Func &&func)
 {
@@ -512,6 +702,25 @@ private slots:
     void appJsContext_fromEnv_inJsCallback();
     void appJsContext_defaultAbility_isUiAbility();
     void appJsContext_defaultAbility_stable();
+    void appJsContext_addUiAbilityDelegate_nonObject_data();
+    void appJsContext_addUiAbilityDelegate_nonObject();
+    void appJsContext_uiAbilityDelegate_onNewWant_receivesAbilityAndArguments();
+    void appJsContext_uiAbilityDelegate_onNewWant_allDelegatesInOrder();
+    void appJsContext_uiAbilityDelegate_onNewWant_methodLookedUpPerCall();
+    void appJsContext_uiAbilityDelegate_onNewWant_nonFunctionIgnored();
+    void appJsContext_uiAbilityDelegate_onNewWant_throwingDelegate();
+    void appJsContext_uiAbilityDelegate_onContinue_receivesAbilityAndArguments();
+    void appJsContext_uiAbilityDelegate_onContinue_firstDelegateResult();
+    void appJsContext_uiAbilityDelegate_onContinue_skipsDelegateWithoutMethod();
+    void appJsContext_uiAbilityDelegate_onContinue_promiseResult();
+    void appJsContext_uiAbilityDelegate_onContinue_throwingDelegateRejects();
+    void appJsContext_uiAbilityDelegate_onContinue_throwingDelegate_laterDelegatesNotCalled();
+    void appJsContext_uiAbilityDelegate_onContinue_noDelegate_rejects();
+    void appJsContext_uiAbilityDelegate_release_onJsThread();
+    void appJsContext_uiAbilityDelegate_release_insideDelegateCall();
+    void appJsContext_uiAbilityDelegate_release_fromQtThread();
+    void appJsContext_uiAbilityDelegate_release_fromWorkerThread();
+    void appJsContext_uiAbilityDelegate_release_fromWorkerThread_whileJsThreadBusy();
 
     void jsObjectRef_defaultConstructor_isNull();
     void jsObjectRef_fromValue_nonObject_data();
@@ -1209,6 +1418,557 @@ void tst_Harmony::appJsContext_defaultAbility_stable()
     QVERIFY(!abilityInfo.abilityRef.isNull());
     QVERIFY(abilityInfo.sameWithinTask);
     QVERIFY(sameAcrossTasks);
+}
+
+void tst_Harmony::appJsContext_addUiAbilityDelegate_nonObject_data()
+{
+    QTest::addColumn<JsValueKind>("kind");
+
+    QTest::newRow("nullPointer") << JsValueKind::NullPointer;
+    QTest::newRow("null") << JsValueKind::Null;
+    QTest::newRow("undefined") << JsValueKind::Undefined;
+    QTest::newRow("number") << JsValueKind::Number;
+    QTest::newRow("string") << JsValueKind::String;
+    QTest::newRow("boolean") << JsValueKind::Boolean;
+    QTest::newRow("symbol") << JsValueKind::Symbol;
+    QTest::newRow("bigInt") << JsValueKind::BigInt;
+}
+
+void tst_Harmony::appJsContext_addUiAbilityDelegate_nonObject()
+{
+    QFETCH(JsValueKind, kind);
+
+    struct AddDelegateInfo
+    {
+        bool handleIsNull = false;
+        bool exceptionPending = true;
+    };
+
+    const auto addDelegateInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            const auto handle = QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(makeJsValueOfKind(env, kind));
+            return AddDelegateInfo{
+                .handleIsNull = !handle,
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QVERIFY(addDelegateInfo.handleIsNull);
+    QVERIFY(!addDelegateInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onNewWant_receivesAbilityAndArguments()
+{
+    struct CallInfo
+    {
+        std::vector<DelegateCall> calls;
+        QHarmonyJsObjectRef delegateRef;
+        QHarmonyJsObjectRef abilityRef;
+        QHarmonyJsObjectRef wantRef;
+        QHarmonyJsObjectRef launchParamRef;
+    };
+
+    const auto callInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder recorder{
+                .delegateName = "delegate",
+                .calls = &calls,
+            };
+            const auto delegateValue = makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &recorder);
+            const auto handle = appJsContext.addUiAbilityDelegate(delegateValue);
+            const auto wantValue = makeTestWant(env);
+            const auto launchParamValue = makeTestLaunchParam(env);
+            callAbilityOnNewWant(jsContext, wantValue, launchParamValue);
+            return CallInfo{
+                .calls = std::move(calls),
+                .delegateRef = QHarmonyJsObjectRef::fromValue(jsContext, delegateValue),
+                .abilityRef = QHarmonyJsObjectRef::fromValue(jsContext, appJsContext.defaultAbility()),
+                .wantRef = QHarmonyJsObjectRef::fromValue(jsContext, wantValue),
+                .launchParamRef = QHarmonyJsObjectRef::fromValue(jsContext, launchParamValue),
+            };
+        });
+
+    QCOMPARE(callInfo.calls.size(), static_cast<std::size_t>(1));
+    QCOMPARE(callInfo.calls[0].thisRef, callInfo.delegateRef);
+    QCOMPARE(callInfo.calls[0].argRefs.size(), static_cast<std::size_t>(3));
+    QCOMPARE(callInfo.calls[0].argRefs[0], callInfo.abilityRef);
+    QCOMPARE(callInfo.calls[0].argRefs[1], callInfo.wantRef);
+    QCOMPARE(callInfo.calls[0].argRefs[2], callInfo.launchParamRef);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onNewWant_allDelegatesInOrder()
+{
+    const auto delegateNames = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder firstRecorder{
+                .delegateName = "first",
+                .calls = &calls,
+            };
+            DelegateCallRecorder secondRecorder{
+                .delegateName = "second",
+                .calls = &calls,
+            };
+            const auto firstHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &firstRecorder));
+            const auto secondHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &secondRecorder));
+            callAbilityOnNewWant(jsContext);
+            return delegateNamesOfCalls(calls);
+        });
+
+    QCOMPARE(delegateNames, (std::vector<std::string>{"first", "second"}));
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onNewWant_methodLookedUpPerCall()
+{
+    const auto callCounts = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder recorder{
+                .delegateName = "delegate",
+                .calls = &calls,
+            };
+            const auto delegateValue = makeJsObject(env);
+            const auto handle = appJsContext.addUiAbilityDelegate(delegateValue);
+            std::vector<std::size_t> callCounts;
+            callAbilityOnNewWant(jsContext);
+            callCounts.push_back(calls.size());
+            setJsProperty(env, delegateValue, "onNewWant", makeJsFunction(env, recordingDelegateCallback, &recorder));
+            callAbilityOnNewWant(jsContext);
+            callCounts.push_back(calls.size());
+            deleteJsProperty(env, delegateValue, "onNewWant");
+            callAbilityOnNewWant(jsContext);
+            callCounts.push_back(calls.size());
+            return callCounts;
+        });
+
+    QCOMPARE(callCounts, (std::vector<std::size_t>{0, 1, 1}));
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onNewWant_nonFunctionIgnored()
+{
+    struct DispatchInfo
+    {
+        std::vector<std::string> delegateNames;
+        bool exceptionPending = true;
+    };
+
+    const auto dispatchInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder recorder{
+                .delegateName = "function",
+                .calls = &calls,
+            };
+            const auto nonFunctionDelegateValue = makeJsObject(env);
+            setJsProperty(env, nonFunctionDelegateValue, "onNewWant", makeJsNumber(env, 1));
+            const auto nonFunctionHandle = appJsContext.addUiAbilityDelegate(nonFunctionDelegateValue);
+            const auto functionHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &recorder));
+            callAbilityOnNewWant(jsContext);
+            return DispatchInfo{
+                .delegateNames = delegateNamesOfCalls(calls),
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QCOMPARE(dispatchInfo.delegateNames, (std::vector<std::string>{"function"}));
+    QVERIFY(!dispatchInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onNewWant_throwingDelegate()
+{
+    struct DispatchInfo
+    {
+        std::vector<std::string> delegateNames;
+        bool exceptionPending = true;
+    };
+
+    const auto dispatchInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder throwingRecorder{
+                .delegateName = "throwing",
+                .calls = &calls,
+            };
+            DelegateCallRecorder recordingRecorder{
+                .delegateName = "recording",
+                .calls = &calls,
+            };
+            const auto throwingHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", throwingDelegateCallback, &throwingRecorder));
+            const auto recordingHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &recordingRecorder));
+            callAbilityOnNewWant(jsContext);
+            return DispatchInfo{
+                .delegateNames = delegateNamesOfCalls(calls),
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QCOMPARE(dispatchInfo.delegateNames, (std::vector<std::string>{"throwing", "recording"}));
+    QVERIFY(!dispatchInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onContinue_receivesAbilityAndArguments()
+{
+    struct CallInfo
+    {
+        std::vector<DelegateCall> calls;
+        QHarmonyJsObjectRef delegateRef;
+        QHarmonyJsObjectRef abilityRef;
+        QHarmonyJsObjectRef wantParamRef;
+    };
+
+    const auto callInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder recorder{
+                .delegateName = "delegate",
+                .calls = &calls,
+            };
+            const auto delegateValue = makeUiAbilityDelegate(env, "onContinue", recordingDelegateCallback, &recorder);
+            const auto handle = appJsContext.addUiAbilityDelegate(delegateValue);
+            const auto wantParamValue = makeJsObject(env);
+            callJsMethod(env, appJsContext.defaultAbility(), "onContinue", {wantParamValue});
+            return CallInfo{
+                .calls = std::move(calls),
+                .delegateRef = QHarmonyJsObjectRef::fromValue(jsContext, delegateValue),
+                .abilityRef = QHarmonyJsObjectRef::fromValue(jsContext, appJsContext.defaultAbility()),
+                .wantParamRef = QHarmonyJsObjectRef::fromValue(jsContext, wantParamValue),
+            };
+        });
+
+    QCOMPARE(callInfo.calls.size(), static_cast<std::size_t>(1));
+    QCOMPARE(callInfo.calls[0].thisRef, callInfo.delegateRef);
+    QCOMPARE(callInfo.calls[0].argRefs.size(), static_cast<std::size_t>(2));
+    QCOMPARE(callInfo.calls[0].argRefs[0], callInfo.abilityRef);
+    QCOMPARE(callInfo.calls[0].argRefs[1], callInfo.wantParamRef);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onContinue_firstDelegateResult()
+{
+    struct ContinueInfo
+    {
+        bool resultIsSeven = false;
+        std::vector<std::string> delegateNames;
+    };
+
+    const auto continueInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder recorder{
+                .delegateName = "second",
+                .calls = &calls,
+            };
+            const auto firstHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onContinue", sevenReturningDelegateCallback));
+            const auto secondHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onContinue", recordingDelegateCallback, &recorder));
+            return ContinueInfo{
+                .resultIsSeven = jsStrictEquals(env, callAbilityOnContinue(jsContext), makeJsNumber(env, 7)),
+                .delegateNames = delegateNamesOfCalls(calls),
+            };
+        });
+
+    QVERIFY(continueInfo.resultIsSeven);
+    QVERIFY(continueInfo.delegateNames.empty());
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onContinue_skipsDelegateWithoutMethod()
+{
+    const auto resultIsSeven = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            const auto newWantOnlyHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", emptyJsCallback));
+            const auto continueHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onContinue", sevenReturningDelegateCallback));
+            return jsStrictEquals(env, callAbilityOnContinue(jsContext), makeJsNumber(env, 7));
+        });
+
+    QVERIFY(resultIsSeven);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onContinue_promiseResult()
+{
+    struct ContinueInfo
+    {
+        QHarmonyJsObjectRef delegatePromiseRef;
+        QHarmonyJsObjectRef resultRef;
+    };
+
+    const auto continueInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            QHarmonyJsObjectRef delegatePromiseRef;
+            const auto handle = QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onContinue", promiseReturningDelegateCallback, &delegatePromiseRef));
+            const auto resultValue = callAbilityOnContinue(jsContext);
+            return ContinueInfo{
+                .delegatePromiseRef = delegatePromiseRef,
+                .resultRef = QHarmonyJsObjectRef::fromValue(jsContext, resultValue),
+            };
+        });
+
+    QVERIFY(!continueInfo.delegatePromiseRef.isNull());
+    QCOMPARE(continueInfo.resultRef, continueInfo.delegatePromiseRef);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onContinue_throwingDelegateRejects()
+{
+    struct ContinueInfo
+    {
+        bool resultIsReject = false;
+        bool exceptionPending = true;
+    };
+
+    const auto continueInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder recorder{
+                .delegateName = "throwing",
+                .calls = &calls,
+            };
+            const auto handle = QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onContinue", throwingDelegateCallback, &recorder));
+            const auto resultValue = callAbilityOnContinue(jsContext);
+            return ContinueInfo{
+                .resultIsReject = jsStrictEquals(env, resultValue, onContinueRejectValue(jsContext)),
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QVERIFY(continueInfo.resultIsReject);
+    QVERIFY(!continueInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onContinue_throwingDelegate_laterDelegatesNotCalled()
+{
+    const auto delegateNames = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder throwingRecorder{
+                .delegateName = "throwing",
+                .calls = &calls,
+            };
+            DelegateCallRecorder recordingRecorder{
+                .delegateName = "recording",
+                .calls = &calls,
+            };
+            const auto throwingHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onContinue", throwingDelegateCallback, &throwingRecorder));
+            const auto recordingHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onContinue", recordingDelegateCallback, &recordingRecorder));
+            callAbilityOnContinue(jsContext);
+            return delegateNamesOfCalls(calls);
+        });
+
+    QCOMPARE(delegateNames, (std::vector<std::string>{"throwing"}));
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_onContinue_noDelegate_rejects()
+{
+    struct ContinueInfo
+    {
+        bool resultIsPromise = false;
+        QHarmonyJsObjectRef resultPromiseRef;
+        double rejectValue = 0;
+    };
+
+    const auto continueInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            const auto resultValue = callAbilityOnContinue(jsContext);
+            return ContinueInfo{
+                .resultIsPromise = isJsPromise(env, resultValue),
+                .resultPromiseRef = QHarmonyJsObjectRef::fromValue(jsContext, resultValue),
+                .rejectValue = jsNumberValue(env, onContinueRejectValue(jsContext)),
+            };
+        });
+
+    QVERIFY(continueInfo.resultIsPromise);
+    const auto resolvedValue = waitForJsPromiseNumber(continueInfo.resultPromiseRef);
+    QVERIFY(resolvedValue.has_value());
+    QCOMPARE(resolvedValue.value(), continueInfo.rejectValue);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_release_onJsThread()
+{
+    const auto callCount = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            std::vector<DelegateCall> calls;
+            DelegateCallRecorder recorder{
+                .delegateName = "delegate",
+                .calls = &calls,
+            };
+            auto handle = QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &recorder));
+            callAbilityOnNewWant(jsContext);
+            handle.reset();
+            callAbilityOnNewWant(jsContext);
+            return calls.size();
+        });
+
+    QCOMPARE(callCount, static_cast<std::size_t>(1));
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_release_insideDelegateCall()
+{
+    struct ReleaseInfo
+    {
+        std::vector<std::string> delegateNames;
+        bool handleReleased = false;
+    };
+
+    const auto releaseInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            std::vector<DelegateCall> calls;
+            std::shared_ptr<void> releasingHandle;
+            DelegateCallRecorder releasingRecorder{
+                .delegateName = "releasing",
+                .calls = &calls,
+                .optHandleToRelease = &releasingHandle,
+            };
+            DelegateCallRecorder otherRecorder{
+                .delegateName = "other",
+                .calls = &calls,
+            };
+            releasingHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &releasingRecorder));
+            const auto otherHandle = appJsContext.addUiAbilityDelegate(
+                makeUiAbilityDelegate(env, "onNewWant", recordingDelegateCallback, &otherRecorder));
+            callAbilityOnNewWant(jsContext);
+            callAbilityOnNewWant(jsContext);
+            return ReleaseInfo{
+                .delegateNames = delegateNamesOfCalls(calls),
+                .handleReleased = !releasingHandle,
+            };
+        });
+
+    QCOMPARE(releaseInfo.delegateNames, (std::vector<std::string>{"releasing", "other", "other"}));
+    QVERIFY(releaseInfo.handleReleased);
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_release_fromQtThread()
+{
+    std::vector<DelegateCall> calls;
+    DelegateCallRecorder recorder{
+        .delegateName = "delegate",
+        .calls = &calls,
+    };
+    auto handle = QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            return QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(
+                makeUiAbilityDelegate(jsContext.env(), "onNewWant", recordingDelegateCallback, &recorder));
+        });
+    QVERIFY(handle);
+
+    handle.reset();
+    QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            callAbilityOnNewWant(jsContext);
+        });
+
+    QVERIFY(calls.empty());
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_release_fromWorkerThread()
+{
+    std::vector<DelegateCall> calls;
+    DelegateCallRecorder recorder{
+        .delegateName = "delegate",
+        .calls = &calls,
+    };
+    auto handle = QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            return QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(
+                makeUiAbilityDelegate(jsContext.env(), "onNewWant", recordingDelegateCallback, &recorder));
+        });
+    QVERIFY(handle);
+
+    runInWorkerThread(
+        [handle = std::move(handle)]() mutable {
+            handle.reset();
+        });
+    QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            callAbilityOnNewWant(jsContext);
+        });
+
+    QVERIFY(calls.empty());
+}
+
+void tst_Harmony::appJsContext_uiAbilityDelegate_release_fromWorkerThread_whileJsThreadBusy()
+{
+    std::vector<DelegateCall> calls;
+    DelegateCallRecorder recorder{
+        .delegateName = "delegate",
+        .calls = &calls,
+    };
+    auto handle = QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            return QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(
+                makeUiAbilityDelegate(jsContext.env(), "onNewWant", recordingDelegateCallback, &recorder));
+        });
+    QVERIFY(handle);
+
+    auto releaseReturned = std::make_shared<std::atomic<bool>>(false);
+    auto releaseReturnedAfterCall = std::make_shared<bool>(false);
+    auto jsTaskStarted = std::make_shared<QSemaphore>();
+    auto jsTaskReleased = std::make_shared<QSemaphore>();
+    auto jsTaskTimedOut = std::make_shared<bool>(false);
+    QHarmonyApplication::runOnJsThread(
+        [jsTaskStarted, jsTaskReleased, jsTaskTimedOut, releaseReturned, releaseReturnedAfterCall](QHarmonyJsContext &jsContext) {
+            jsTaskStarted->release();
+            *jsTaskTimedOut = !jsTaskReleased->tryAcquire(1, jsThreadBlockTimeout);
+            callAbilityOnNewWant(jsContext);
+            *releaseReturnedAfterCall = *releaseReturned;
+        });
+    jsTaskStarted->acquire();
+    std::unique_ptr<QThread> releasingThread(
+        QThread::create(
+            [releaseReturned, handle = std::move(handle)]() mutable {
+                handle.reset();
+                *releaseReturned = true;
+            }));
+    releasingThread->start();
+    const bool releaseReturnedWhileJsThreadBusy = releasingThread->wait(busyJsThreadReleaseCheckTime);
+    jsTaskReleased->release();
+    releasingThread->wait();
+    QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            callAbilityOnNewWant(jsContext);
+        });
+
+    QVERIFY(!*jsTaskTimedOut);
+    QVERIFY(!releaseReturnedWhileJsThreadBusy);
+    QVERIFY(!*releaseReturnedAfterCall);
+    QCOMPARE(calls.size(), static_cast<std::size_t>(1));
 }
 
 void tst_Harmony::jsObjectRef_defaultConstructor_isNull()
