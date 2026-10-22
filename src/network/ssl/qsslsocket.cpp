@@ -2061,6 +2061,7 @@ void QSslSocketPrivate::init()
     writeBuffer.clear();
     configuration.peerCertificate.clear();
     configuration.peerCertificateChain.clear();
+    configuration.peerSessionShared = false;
 
     if (backend.get()) {
         Q_ASSERT(q_ptr);
