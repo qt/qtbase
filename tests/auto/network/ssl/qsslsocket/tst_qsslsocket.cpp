@@ -165,6 +165,7 @@ private slots:
     void connectToHostEncrypted();
     void connectToHostEncryptedWithVerificationPeerName();
     void sessionCipher();
+    void peerSessionSharedIsReset();
     void localCertificate_data();
     void localCertificate();
     void mode();
@@ -1249,6 +1250,60 @@ void tst_QSslSocket::sessionCipher()
     QVERIFY(QSslConfiguration::supportedCiphers().contains(socket->sessionCipher()));
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
+}
+
+void tst_QSslSocket::peerSessionSharedIsReset()
+{
+#ifdef QT_BUILD_INTERNAL
+    if (!isTestingOpenSsl)
+        QSKIP("Session reuse is only reported by the OpenSSL backend");
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // Reuse the same socket for all connections, so that state left over
+    // from a previous connection can be observed.
+    QSslSocketPtr socket = newSocket();
+    this->socket = socket.data();
+    connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+
+    // With TLS 1.2 the session is available right after the handshake.
+    QSslConfiguration config = socket->sslConfiguration();
+    config.setProtocol(QSsl::TlsV1_2);
+    config.setSslOption(QSsl::SslOptionDisableSessionPersistence, false);
+    socket->setSslConfiguration(config);
+
+    // First connection: full handshake. The new session is stored in the
+    // socket's configuration.
+    socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
+    QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
+    QVERIFY(!QSslConfigurationPrivate::peerSessionWasShared(socket->sslConfiguration()));
+    socket->disconnectFromHost();
+    QVERIFY(socket->waitForDisconnected());
+
+    // Second connection: the stored session is offered and reused, which
+    // sets the flag. Needed so that the next connection starts with it set.
+    socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
+    QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
+    QVERIFY(QSslConfigurationPrivate::peerSessionWasShared(socket->sslConfiguration()));
+    socket->disconnectFromHost();
+    QVERIFY(socket->waitForDisconnected());
+
+    // Third connection: 'config' still holds the empty session from before
+    // the first connection, so applying it drops the stored session.
+    // Disabling persistence makes sure nothing is offered for reuse.
+    // The full handshake must not report reuse from the previous connection.
+    config.setSslOption(QSsl::SslOptionDisableSessionPersistence, true);
+    socket->setSslConfiguration(config);
+    socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
+    QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
+    QVERIFY(!QSslConfigurationPrivate::peerSessionWasShared(socket->sslConfiguration()));
+    socket->disconnectFromHost();
+    QTRY_COMPARE(socket->state(), QAbstractSocket::UnconnectedState);
+#else
+    QSKIP("This test requires a developer build (QT_BUILD_INTERNAL)");
+#endif
 }
 
 void tst_QSslSocket::localCertificate_data()
