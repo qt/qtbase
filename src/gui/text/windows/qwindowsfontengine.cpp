@@ -330,7 +330,7 @@ void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shape
 
             if (glyph >= widthCacheSize) {
                 const uint newSize = (glyph + 256) >> 8 << 8;
-                widthCache = reinterpret_cast<unsigned char *>(realloc(widthCache, newSize * sizeof(QFixed)));
+                widthCache = reinterpret_cast<unsigned char *>(realloc(widthCache, newSize));
                 Q_CHECK_PTR(widthCache);
                 memset(widthCache + widthCacheSize, 0, newSize - widthCacheSize);
                 widthCacheSize = newSize;
