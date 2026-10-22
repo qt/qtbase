@@ -382,7 +382,7 @@ static quint32 checksum(const QByteArray &table)
     quint32 sum = 0;
     int offset = 0;
     const uchar *d = (const uchar *)table.constData();
-    while (offset <= table.size()-3) {
+    while (offset < table.size() - 3) {
         sum += qFromBigEndian<quint32>(d + offset);
         offset += 4;
     }
@@ -668,6 +668,17 @@ Q_DECLARE_TYPEINFO(TTF_POINT, Q_PRIMITIVE_TYPE);
 
 static void convertPath(const QPainterPath &path, QList<TTF_POINT> *points, QList<int> *endPoints, qreal ppem)
 {
+    auto registerEndPoint = [endPoints, points]() {
+        // TTF contours are implicitly closed, so if the current contour ends on its
+        // start point, drop the duplicate. Then register the last point as the end
+        // of the contour.
+        int start = endPoints->size() > 0 ? endPoints->last() + 1 : 0;
+        int end = points->size() - 1;
+        if (points->at(end).x == points->at(start).x && points->at(end).y == points->at(start).y)
+            points->takeLast();
+        endPoints->append(points->size() - 1);
+    };
+
     int numElements = path.elementCount();
     for (int i = 0; i < numElements - 1; ++i) {
         const QPainterPath::Element &e = path.elementAt(i);
@@ -678,15 +689,8 @@ static void convertPath(const QPainterPath &path, QList<TTF_POINT> *points, QLis
 
         switch(e.type) {
         case QPainterPath::MoveToElement:
-            if (i != 0) {
-                // see if start and end points of the last contour agree
-                int start = endPoints->size() ? endPoints->at(endPoints->size()-1) - 1 : 0;
-                int end = points->size() - 1;
-                if (points->at(end).x == points->at(start).x
-                    && points->at(end).y == points->at(start).y)
-                    points->takeLast();
-                endPoints->append(points->size() - 1);
-            }
+            if (i != 0)
+                registerEndPoint();
             Q_FALLTHROUGH();
         case QPainterPath::LineToElement:
             p.flags = OnCurve;
@@ -780,12 +784,8 @@ static void convertPath(const QPainterPath &path, QList<TTF_POINT> *points, QLis
 //         qDebug() << "   appending oncurve point " << QPoint(p.x, p.y);
         points->append(p);
     }
-    int start = endPoints->size() ? endPoints->at(endPoints->size()-1) + 1 : 0;
-    int end = points->size() - 1;
-    if (points->at(end).x == points->at(start).x
-        && points->at(end).y == points->at(start).y)
-        points->takeLast();
-    endPoints->append(points->size() - 1);
+
+    registerEndPoint();
 }
 
 static void getBounds(const QList<TTF_POINT> &points, qint16 *xmin, qint16 *xmax, qint16 *ymin, qint16 *ymax)

@@ -826,16 +826,17 @@ int QWindowsFontEngine::synthesized() const
             HDC hdc = m_fontEngineData->hdc;
             SelectObject(hdc, hfont);
             uchar data[4];
-            GetFontData(hdc, HEAD, 44, &data, 4);
-            USHORT macStyle = qt_getUShort(data);
-            if (tm.tmItalic && !(macStyle & 2))
-                synthesized_flags = SynthesizedItalic;
+            if (GetFontData(hdc, HEAD, 44, &data, 4) != GDI_ERROR) {
+                USHORT macStyle = qt_getUShort(data);
+                if (tm.tmItalic && !(macStyle & 2))
+                    synthesized_flags = SynthesizedItalic;
+                if (tm.tmWeight >= 500 && tm.tmWeight < 750 && !(macStyle & 1))
+                    synthesized_flags |= SynthesizedBold;
+                //qDebug() << "font is" << _name <<
+                //    "it=" << (macStyle & 2) << fontDef.style << "flags=" << synthesized_flags;
+            }
             if (fontDef.stretch != 100 && ttf)
                 synthesized_flags |= SynthesizedStretch;
-            if (tm.tmWeight >= 500 && tm.tmWeight < 750 && !(macStyle & 1))
-                synthesized_flags |= SynthesizedBold;
-            //qDebug() << "font is" << _name <<
-            //    "it=" << (macStyle & 2) << fontDef.style << "flags=" << synthesized_flags;
         }
     }
     return synthesized_flags;

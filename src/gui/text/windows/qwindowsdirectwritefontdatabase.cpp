@@ -18,6 +18,11 @@ QT_BEGIN_NAMESPACE
 // Defined in gui/text/qfontdatabase.cpp
 Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int script);
 
+// MinGW does not always define this
+#ifndef E_NOT_SUFFICIENT_BUFFER
+#  define E_NOT_SUFFICIENT_BUFFER HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)
+#endif
+
 template<typename T>
 struct DirectWriteScope {
     DirectWriteScope(T *res = nullptr) : m_res(res) {}
@@ -282,7 +287,9 @@ QSupportedWritingSystems QWindowsDirectWriteFontDatabase::supportedWritingSystem
             quint32 rangeCount;
             hr = face1->GetUnicodeRanges(0, nullptr, &rangeCount);
 
-            if (rangeCount > 0) {
+            // Documented to return E_NO_SUFFICIENT_BUFFER when provided maxRangeCount is too
+            // small
+            if (hr == E_NOT_SUFFICIENT_BUFFER && rangeCount > 0) {
                 QVarLengthArray<DWRITE_UNICODE_RANGE, QChar::ScriptCount> ranges(rangeCount);
 
                 hr = face1->GetUnicodeRanges(rangeCount, ranges.data(), &rangeCount);

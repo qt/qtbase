@@ -335,7 +335,8 @@ namespace {
         OUT void **fragmentContext)
     {
         *fragmentContext = NULL;
-        if (fileOffset + fragmentSize <= quint64(m_fontData.size())) {
+        const UINT64 size = UINT64(m_fontData.size());
+        if (fileOffset <= size && fragmentSize <= size - fileOffset) {
             *fragmentStart = m_fontData.data() + fileOffset;
             return S_OK;
         } else {
@@ -834,8 +835,8 @@ QList<IDWriteFontFace *> QWindowsFontDatabaseBase::createDirectWriteFaces(const 
     DWRITE_FONT_FILE_TYPE fontFileType;
     DWRITE_FONT_FACE_TYPE fontFaceType;
     UINT32 numberOfFaces;
-    fontFile->Analyze(&isSupportedFontType, &fontFileType, &fontFaceType, &numberOfFaces);
-    if (!isSupportedFontType) {
+    if (FAILED(fontFile->Analyze(&isSupportedFontType, &fontFileType, &fontFaceType, &numberOfFaces))
+        || !isSupportedFontType) {
         fontFile->Release();
         return ret;
     }
