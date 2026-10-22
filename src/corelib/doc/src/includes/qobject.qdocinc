@@ -18,6 +18,15 @@ To avoid mismatches, store the connection handle returned by connect(), and use
 it in the call to \l{disconnect(const QMetaObject::Connection &connection)}{disconnect()}.
 //! [disconnect-mismatch]
 
+//! [disconnect-duplicates]
+If the same connection was made more than once, for example by calling
+connect() several times with the same arguments and without
+Qt::UniqueConnection, a single call to disconnect() breaks all of these
+connections. To break only one of them, pass the connection handle that
+connect() returned to
+\l{disconnect(const QMetaObject::Connection &connection)}{disconnect()}.
+//! [disconnect-duplicates]
+
 //! [disconnect-queued]
 \note If a \l{Qt::QueuedConnection}{queued connection} is disconnected,
 already scheduled events may still be delivered, causing the receiver to

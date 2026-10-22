@@ -3412,6 +3412,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 
     \endlist
 
+    \include includes/qobject.qdocinc disconnect-duplicates
     \include includes/qobject.qdocinc disconnect-mismatch
     \include includes/qobject.qdocinc disconnect-queued
 
@@ -3590,6 +3591,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
 
     \endlist
 
+    \include includes/qobject.qdocinc disconnect-duplicates
     \include includes/qobject.qdocinc disconnect-mismatch
     \include includes/qobject.qdocinc disconnect-queued
 
@@ -3666,6 +3668,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 
     Disconnects \a signal from \a method of \a receiver.
 
+    \include includes/qobject.qdocinc disconnect-duplicates
     \include includes/qobject.qdocinc disconnect-mismatch
     \include includes/qobject.qdocinc disconnect-queued
 
@@ -3682,6 +3685,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     Disconnects all signals in this object from \a receiver's \a
     method.
 
+    \include includes/qobject.qdocinc disconnect-duplicates
     \include includes/qobject.qdocinc disconnect-mismatch
     \include includes/qobject.qdocinc disconnect-queued
 
@@ -5779,6 +5783,8 @@ bool QObject::disconnect(QMetaObject::Connection &connection)
     and all other slots are left alone. The \a method must be \nullptr
     if \a receiver is left out, so you cannot disconnect a
     specifically-named slot on all objects.
+
+    \include includes/qobject.qdocinc disconnect-duplicates
 
     \note It is not possible to use this overload to disconnect signals
     connected to functors or lambda expressions. That is because it is not
