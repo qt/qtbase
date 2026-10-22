@@ -1893,6 +1893,7 @@ void tst_QImageReader::autoDetectImageFormat()
         reader.setAutoDetectImageFormat(false);
         QVERIFY(!reader.canRead());
         QVERIFY(reader.read().isNull());
+        QCOMPARE(reader.error(), QImageReader::FileNotFoundError);
         reader.setAutoDetectImageFormat(true);
         QVERIFY(reader.canRead());
         QVERIFY(!reader.read().isNull());
@@ -1903,6 +1904,7 @@ void tst_QImageReader::autoDetectImageFormat()
         reader.setAutoDetectImageFormat(false);
         QVERIFY(!reader.canRead());
         QVERIFY(reader.read().isNull());
+        QCOMPARE(reader.error(), QImageReader::UnsupportedFormatError);
         reader.setAutoDetectImageFormat(true);
         QVERIFY(reader.canRead());
         QVERIFY(!reader.read().isNull());
@@ -1913,6 +1915,7 @@ void tst_QImageReader::autoDetectImageFormat()
         reader.setAutoDetectImageFormat(false);
         QVERIFY(!reader.canRead());
         QVERIFY(reader.read().isNull());
+        QCOMPARE(reader.error(), QImageReader::UnsupportedFormatError);
         reader.setAutoDetectImageFormat(true);
         QVERIFY(reader.canRead());
         QVERIFY(!reader.read().isNull());

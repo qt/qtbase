@@ -476,7 +476,7 @@ bool QImageReaderPrivate::initHandler()
     }
 
     // probe the file extension
-    if (deleteDevice && !device->isOpen() && !device->open(QIODevice::ReadOnly) && autoDetectImageFormat) {
+    if (deleteDevice && !device->isOpen() && !device->open(QIODevice::ReadOnly)) {
         Q_ASSERT(qobject_cast<QFile*>(device) != nullptr); // future-proofing; for now this should always be the case, so...
         QFile *file = static_cast<QFile *>(device);
 
@@ -487,24 +487,25 @@ bool QImageReaderPrivate::initHandler()
             return false;
         }
 
-        QList<QByteArray> extensions = QImageReader::supportedImageFormats();
-        if (!format.isEmpty()) {
-            // Try the most probable extension first
-            int currentFormatIndex = extensions.indexOf(format.toLower());
-            if (currentFormatIndex > 0)
-                extensions.swapItemsAt(0, currentFormatIndex);
-        }
-
-        int currentExtension = 0;
-
         QString fileName = file->fileName();
-        bool fileIsOpen;
+        bool fileIsOpen = false;
 
-        do {
-            file->setFileName(fileName + u'.'
-                    + QLatin1StringView(extensions.at(currentExtension++).constData()));
-            fileIsOpen = file->open(QIODevice::ReadOnly);
-        } while (!fileIsOpen && currentExtension < extensions.size());
+        if (autoDetectImageFormat) {
+            QList<QByteArray> extensions = QImageReader::supportedImageFormats();
+            if (!format.isEmpty()) {
+                // Try the most probable extension first
+                int currentFormatIndex = extensions.indexOf(format.toLower());
+                if (currentFormatIndex > 0)
+                    extensions.swapItemsAt(0, currentFormatIndex);
+            }
+
+            int currentExtension = 0;
+            do {
+                file->setFileName(fileName + u'.'
+                                  + QLatin1StringView(extensions.at(currentExtension++).constData()));
+                fileIsOpen = file->open(QIODevice::ReadOnly);
+            } while (!fileIsOpen && currentExtension < extensions.size());
+        }
 
         if (!fileIsOpen) {
             imageReaderError = QImageReader::FileNotFoundError;
