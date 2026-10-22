@@ -12,6 +12,7 @@
 #include <QtCore/QtEndian>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QUuid>
+#include <QtCore/QHash>
 
 #undef QT_NO_FREETYPE
 #include "qfontengine_ft_p.h"
@@ -120,73 +121,80 @@ void QFreeTypeFontDatabase::addNamedInstancesForFace(void *face_,
             FT_Done_MM_Var(qt_getFreetype(), res);
         });
 
+        QMultiHash<FT_UInt, QString> instanceNamesForId;
+        FT_UInt count = FT_Get_Sfnt_Name_Count(face);
+        for (FT_UInt j = 0; j < count; ++j) {
+            FT_SfntName name;
+            if (FT_Get_Sfnt_Name(face, j, &name))
+                continue;
+
+            // Only support UTF-16 for now
+            const bool isUtf16 = (name.platform_id == TT_PLATFORM_MICROSOFT
+                                  && (name.encoding_id == TT_MS_ID_UNICODE_CS || name.encoding_id == TT_MS_ID_UCS_4))
+                                 || name.platform_id == TT_PLATFORM_APPLE_UNICODE;
+            if (!isUtf16)
+                continue;
+
+            // Sfnt names stored as UTF-16BE
+            QString instanceName;
+            for (FT_UInt k = 0; k + 1 < name.string_len; k += 2)
+                instanceName += QChar((name.string[k] << 8) + name.string[k + 1]);
+
+            if (instanceName != styleName)
+                instanceNamesForId.insert(name.name_id, instanceName);
+        }
+
         for (FT_UInt i = 0; i < var->num_namedstyles; ++i) {
-           FT_UInt id = var->namedstyle[i].strid;
+            const FT_UInt id = var->namedstyle[i].strid;
+            QFont::Weight instanceWeight = weight;
+            QFont::Stretch instanceStretch = stretch;
+            QFont::Style instanceStyle = style;
+            for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
+                if (var->axis[axis].tag == QFont::Tag("wght").value()) {
+                    instanceWeight = QFont::Weight(var->namedstyle[i].coords[axis] >> 16);
+                } else if (var->axis[axis].tag == QFont::Tag("wdth").value()) {
+                    instanceStretch = QFont::Stretch(var->namedstyle[i].coords[axis] >> 16);
+                }  else if (var->axis[axis].tag == QFont::Tag("ital").value()) {
+                    FT_UInt ital = var->namedstyle[i].coords[axis] >> 16;
+                    if (ital == 1)
+                        instanceStyle = QFont::StyleItalic;
+                    else
+                        instanceStyle = QFont::StyleNormal;
+                }
+            }
 
-           QFont::Weight instanceWeight = weight;
-           QFont::Stretch instanceStretch = stretch;
-           QFont::Style instanceStyle = style;
-           for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
-               if (var->axis[axis].tag == QFont::Tag("wght").value()) {
-                   instanceWeight = QFont::Weight(var->namedstyle[i].coords[axis] >> 16);
-               } else if (var->axis[axis].tag == QFont::Tag("wdth").value()) {
-                   instanceStretch = QFont::Stretch(var->namedstyle[i].coords[axis] >> 16);
-               }  else if (var->axis[axis].tag == QFont::Tag("ital").value()) {
-                   FT_UInt ital = var->namedstyle[i].coords[axis] >> 16;
-                   if (ital == 1)
-                       instanceStyle = QFont::StyleItalic;
-                   else
-                       instanceStyle = QFont::StyleNormal;
-               }
-           }
+            const auto [begin, end] = std::as_const(instanceNamesForId).equal_range(id);
+            for (auto it = begin; it != end; ++it) {
+                const QString &instanceName = it.value();
 
-           FT_UInt count = FT_Get_Sfnt_Name_Count(face);
-           for (FT_UInt j = 0; j < count; ++j) {
-               FT_SfntName name;
-               if (FT_Get_Sfnt_Name(face, j, &name))
-                   continue;
+                FontFile *variantFontFile = new FontFile{
+                    QFile::decodeName(fileName),
+                    faceIndex,
+                    int(i),
+                    fontData
+                };
 
-               if (name.name_id != id)
-                   continue;
+                qCDebug(lcFontDb) << "Registering named instance" << i
+                                  << ":" << instanceName
+                                  << "for font family" << family
+                                  << "with weight" << instanceWeight
+                                  << ", style" << instanceStyle
+                                  << ", stretch" << instanceStretch;
 
-               // Only support Unicode for now
-               if (name.encoding_id != TT_MS_ID_UNICODE_CS)
-                   continue;
-
-               // Sfnt names stored as UTF-16BE
-               QString instanceName;
-               for (FT_UInt k = 0; k + 1 < name.string_len; k += 2)
-                   instanceName += QChar((name.string[k] << 8) + name.string[k + 1]);
-               if (instanceName != styleName) {
-                   FontFile *variantFontFile = new FontFile{
-                       QFile::decodeName(fileName),
-                       faceIndex,
-                       int(i),
-                       fontData
-                   };
-
-                   qCDebug(lcFontDb) << "Registering named instance" << i
-                                     << ":" << instanceName
-                                     << "for font family" << family
-                                     << "with weight" << instanceWeight
-                                     << ", style" << instanceStyle
-                                     << ", stretch" << instanceStretch;
-
-                   registerFont(family,
-                                instanceName,
-                                QString(),
-                                instanceWeight,
-                                instanceStyle,
-                                instanceStretch,
-                                true,
-                                true,
-                                0,
-                                fixedPitch,
-                                isColor,
-                                writingSystems,
-                                variantFontFile);
-               }
-           }
+                registerFont(family,
+                             instanceName,
+                             QString(),
+                             instanceWeight,
+                             instanceStyle,
+                             instanceStretch,
+                             true,
+                             true,
+                             0,
+                             fixedPitch,
+                             isColor,
+                             writingSystems,
+                             variantFontFile);
+            }
         }
     }
 #else
