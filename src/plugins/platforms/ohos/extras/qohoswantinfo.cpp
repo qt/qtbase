@@ -6,6 +6,9 @@
 #include <QtHarmonyExtras/private/qohosharmonyextrasenums_p.h>
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/qharmonyappjscontext.h>
+#include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qlist.h>
@@ -320,21 +323,27 @@ void addNewWantConsumer(
 {
     auto contextRef = QtOhos::makeQThreadSafeRef(context);
     auto sharedWantConsumer = QtOhos::moveToSharedPtr(std::move(wantConsumer));
-    auto consumerHandle = QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &jsState) {
-            return QtOhos::makeProxyWithJsThreadDeleter(
-                jsState.registerNewWantConsumer(
-                    [contextRef, sharedWantConsumer](QOhosJsState &jsState, QNapi::Object, QNapi::Object napiWant, QNapi::Object launchParam) {
-                        auto launchReason = mapJsLaunchReasonToWantInfoEnumWithFallback(
-                            jsState, launchParam.get<QNapi::Number>("launchReason"));
-                        auto wantInfo = QSharedPointer<WantInfoImpl>::create(napiWant, launchReason);
-                        contextRef.visitInQtThreadIfAlive(
-                            [sharedWantConsumer, wantInfo](auto &) {
-                                (*sharedWantConsumer)(wantInfo);
-                            });
-                    }));
-        },
-        Q_FUNC_INFO);
+    auto consumerHandle = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            auto delegate = QNapi::Object::New(jsContext.env());
+            delegate.set(
+                "onNewWant",
+                [contextRef, sharedWantConsumer](const QOhosCallbackInfo &cbInfo) {
+                    QNapi::Object ability;
+                    QNapi::Object want;
+                    QNapi::Object launchParam;
+                    cbInfo.getLeadingArgs(Q_FUNC_INFO, ability, want, launchParam);
+
+                    auto launchReason = mapJsLaunchReasonToWantInfoEnumWithFallback(
+                        cbInfo.jsState(), launchParam.get<QNapi::Number>("launchReason"));
+                    auto wantInfo = QSharedPointer<WantInfoImpl>::create(want, launchReason);
+                    contextRef.visitInQtThreadIfAlive(
+                        [sharedWantConsumer, wantInfo](auto &) {
+                            (*sharedWantConsumer)(wantInfo);
+                        });
+                });
+            return QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(delegate);
+        });
 
     QObject::connect(
         context, &QObject::destroyed,
