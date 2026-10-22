@@ -277,6 +277,7 @@ QSupportedWritingSystems QWindowsDirectWriteFontDatabase::supportedWritingSystem
                                            &exists);
         if (SUCCEEDED(hr) && exists) {
             writingSystems = QPlatformFontDatabase::writingSystemsFromOS2Table(reinterpret_cast<const char *>(tableData), tableSize);
+            face->ReleaseFontTable(tableContext);
         } else { // Fall back to checking first character of each Unicode range in font (may include too many writing systems)
             quint32 rangeCount;
             hr = face1->GetUnicodeRanges(0, nullptr, &rangeCount);
