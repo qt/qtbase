@@ -519,8 +519,8 @@ QPalette makeSystemPalette(const AllPalletesColors &palettesColors)
         makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::Window, palettesColors.palettes.activeWindow},
-            {QPalette::Disabled, QPalette::Window, palettesColors.palettes.inactiveWindow},
-            {QPalette::Inactive, QPalette::Window, palettesColors.palettes.inactiveWindow},
+            {QPalette::Disabled, QPalette::Window, palettesColors.palettes.activeWindow},
+            {QPalette::Inactive, QPalette::Window, palettesColors.palettes.activeWindow},
 
             {QPalette::Active, QPalette::WindowText, palettesColors.palettes.textPrimary},
             {QPalette::Disabled, QPalette::WindowText, palettesColors.palettes.disabledTextPrimary},
