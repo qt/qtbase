@@ -1737,6 +1737,36 @@ QT_WARNING_POP
         QCOMPARE(QString::asprintf("%zu%s", s, "foo"), QString::fromLatin1("6foo"));
         QCOMPARE(QString::asprintf("%zu %s\n", s, "foo"), QString::fromLatin1("6 foo\n"));
     }
+
+    {
+        // check that h and hh narrow before formatting
+        int n = 0x1234'89ab;
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hhd", n), "-85"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hhi", n), "-85"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hhu", n), "171"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hho", n), "253"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hhx", n), "ab"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hhX", n), "AB"_L1);
+
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hd", n), "-30293"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hi", n), "-30293"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hu", n), "35243"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%ho", n), "104653"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hx", n), "89ab"_L1);
+        QEXPECT_FAIL("", "QTBUG-150333", Continue);
+        QCOMPARE(QString::asprintf("%hX", n), "89AB"_L1);
+    }
 }
 
 void tst_QString::asprintfS()
