@@ -187,7 +187,7 @@ int QFreetypeFace::getPointInOutline(glyph_t glyph, int flags, quint32 point, QF
     if (!(*nPoints))
         return Err_Ok;
 
-    if (point > *nPoints)
+    if (point >= *nPoints)
         return Err_Invalid_SubTable;
 
     *xpos = QFixed::fromFixed(face->glyph->outline.points[point].x);
