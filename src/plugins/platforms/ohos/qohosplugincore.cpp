@@ -4,6 +4,7 @@
 #include <qohosplugincore.h>
 
 #include "qohosmtblockingcallsgateway_p.h"
+#include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
 #include <QtCore/qabstracteventdispatcher.h>
@@ -238,6 +239,9 @@ public:
     bool isJsThread();
 
     void dispatchNewWantInJsThread(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam);
+    void callUiAbilityDelegates(const char *methodName, const std::vector<QNapi::Value> &args);
+    std::optional<QNapi::Value> tryCallFirstUiAbilityDelegate(
+        const char *methodName, const std::vector<QNapi::Value> &args, QNapi::Value resultOnThrow);
 
     void invokeTask(std::function<void(JsState &)> &&task);
 
@@ -262,6 +266,8 @@ public:
 
     std::shared_ptr<void> registerNewWantConsumer(
         QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object> wantConsumer) override;
+
+    std::shared_ptr<void> registerUiAbilityDelegate(QNapi::Object delegate) override;
 
     void setOnContinueRequestsHandler(
         QNapi::Object qAbility,
@@ -297,6 +303,8 @@ private:
     PreQueuingJsTasksExecutor m_tasksExecutor;
     std::map<std::uint64_t, std::shared_ptr<QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object>>> m_newWantConsumers;
     std::uint64_t m_nextNewWantConsumerId = 1;
+    std::map<std::uint64_t, QNapi::Reference<QNapi::Object>> m_uiAbilityDelegates;
+    std::uint64_t m_nextUiAbilityDelegateId = 1;
     std::map<std::type_index, std::vector<std::pair<int, double>>> m_ohosEnumsEnumerators;
     std::map<std::type_index, QNapi::Reference<QNapi::Symbol>> m_jsSymbolsRefs;
     QtRunMode m_qtRunMode;
@@ -358,6 +366,69 @@ void JsStateImpl::dispatchNewWantInJsThread(
             (*consumer)(*this, qAbility, want, launchParam);
         }
     }
+}
+
+std::optional<QNapi::Function> tryGetUiAbilityDelegateMethod(QNapi::Object delegate, const char *methodName)
+{
+    auto methodValue = QNapi::getPropOrUndefined(delegate, methodName);
+    if (methodValue.IsFunction())
+        return QNapi::checkedCast<QNapi::Function>(methodValue);
+
+    if (!methodValue.IsUndefined()) {
+        qOhosPrintfWarning(
+            "%s: the '%s' property of a UIAbility delegate is not a function, ignoring it",
+            Q_FUNC_INFO, methodName);
+    }
+    return std::nullopt;
+}
+
+void JsStateImpl::callUiAbilityDelegates(const char *methodName, const std::vector<QNapi::Value> &args)
+{
+    const auto logContext = std::string("UIAbility delegate ") + methodName + "()";
+
+    std::vector<std::uint64_t> delegatesIds;
+    for (const auto &delegateEntry : m_uiAbilityDelegates)
+        delegatesIds.push_back(delegateEntry.first);
+
+    for (auto delegateId : delegatesIds) {
+        auto delegateIter = m_uiAbilityDelegates.find(delegateId);
+        if (delegateIter != m_uiAbilityDelegates.end()) {
+            runQOhosJsCodeLoggingExceptions(
+                m_env, logContext.c_str(),
+                [&]() {
+                    auto delegate = delegateIter->second.Value();
+                    auto optMethod = tryGetUiAbilityDelegateMethod(delegate, methodName);
+                    if (optMethod)
+                        optMethod->Call(delegate, args);
+                });
+        }
+    }
+}
+
+std::optional<QNapi::Value> JsStateImpl::tryCallFirstUiAbilityDelegate(
+    const char *methodName, const std::vector<QNapi::Value> &args, QNapi::Value resultOnThrow)
+{
+    std::vector<std::uint64_t> delegatesIds;
+    for (const auto &delegateEntry : m_uiAbilityDelegates)
+        delegatesIds.push_back(delegateEntry.first);
+
+    for (auto delegateId : delegatesIds) {
+        auto delegateIter = m_uiAbilityDelegates.find(delegateId);
+        if (delegateIter != m_uiAbilityDelegates.end()) {
+            try {
+                auto delegate = delegateIter->second.Value();
+                auto optMethod = tryGetUiAbilityDelegateMethod(delegate, methodName);
+                if (optMethod)
+                    return optMethod->Call(delegate, args);
+            } catch (const Napi::Error &error) {
+                qOhosPrintfWarning(
+                    "%s: UIAbility delegate %s() threw: %s", Q_FUNC_INFO, methodName, error.what());
+                return resultOnThrow;
+            }
+        }
+    }
+
+    return std::nullopt;
 }
 
 void JsStateImpl::invokeTask(std::function<void(JsState &)> &&task)
@@ -520,6 +591,16 @@ std::shared_ptr<void> JsStateImpl::registerNewWantConsumer(
     return makeDestroyNotifier(
         [this, consumerId]() {
             m_newWantConsumers.erase(consumerId);
+        });
+}
+
+std::shared_ptr<void> JsStateImpl::registerUiAbilityDelegate(QNapi::Object delegate)
+{
+    const auto delegateId = m_nextUiAbilityDelegateId++;
+    m_uiAbilityDelegates.emplace(delegateId, QNapi::Reference<>::makePersistentFrom(delegate));
+    return makeDestroyNotifier(
+        [this, delegateId]() {
+            m_uiAbilityDelegates.erase(delegateId);
         });
 }
 
@@ -1193,6 +1274,17 @@ bool isJsThread()
 void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam)
 {
     getJsStateImpl().dispatchNewWantInJsThread(qAbility, want, launchParam);
+}
+
+void callUiAbilityDelegates(const char *methodName, const std::vector<QNapi::Value> &args)
+{
+    getJsStateImpl().callUiAbilityDelegates(methodName, args);
+}
+
+std::optional<QNapi::Value> tryCallFirstUiAbilityDelegate(
+    const char *methodName, const std::vector<QNapi::Value> &args, QNapi::Value resultOnThrow)
+{
+    return getJsStateImpl().tryCallFirstUiAbilityDelegate(methodName, args, resultOnThrow);
 }
 
 bool tryInvokeInQtThreadAndTryWaitForContinue(

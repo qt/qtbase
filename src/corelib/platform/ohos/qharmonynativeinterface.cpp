@@ -54,7 +54,8 @@ void runTaskLoggingExceptions(
         must not leave the JS thread. To keep a JS object longer, use a
         QHarmonyJsObjectRef.
     \li Resources bound to the JS engine, such as references and listeners,
-        must be released on the JS thread.
+        must be released on the JS thread, unless their documentation
+        states otherwise.
     \li The JS thread also runs the platform UI, so tasks must be short.
     \endlist
 

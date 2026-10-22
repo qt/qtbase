@@ -88,6 +88,9 @@ public:
         QNapi::Object qAbility,
         std::function<void(QOhosJsState &, QNapi::Object, QOhosConsumer<QOhosJsState &, QNapi::Number>)> requestsHandler) = 0;
 
+    // delegate's methods are called from the matching UIAbility methods, with the ability added before the other arguments
+    [[nodiscard]] virtual std::shared_ptr<void> registerUiAbilityDelegate(QNapi::Object delegate) = 0;
+
     virtual void setDestroyFromSystemAllowed(QNapi::Object qAbility, bool destroyAllowed) = 0;
 
     template<typename T = QNapi::Value>

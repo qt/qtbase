@@ -30,7 +30,8 @@
     \li QHarmonyJsContext provides the Node-API environment and loads JS
         modules by name.
     \li QHarmonyAppJsContext gives access to application-level JS objects,
-        such as the default \c UIAbility instance.
+        such as the default \c UIAbility instance, and registers delegates
+        for \c UIAbility methods.
     \li QHarmonyJsObjectRef keeps a JS object alive. You can store, copy,
         and compare the reference on any thread, but you can access the
         object only on the JS thread.
@@ -142,6 +143,63 @@
     application template bundled with Qt makes the kit modules that Qt
     needs available to native code. QHarmonyJsContext::tryImportModule()
     accepts their names, such as \c {@kit.ShareKit.systemShare}.
+
+    \section1 UIAbility Delegates
+
+    Some platform callbacks reach only the application's
+    \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-app-ability-uiability}{HarmonyOS UIAbility}
+    class, which the ArkTS application template bundled with Qt implements.
+    \c onNewWant() delivers a Want to a running ability, and
+    \c onContinue() asks whether the ability may be migrated to another
+    device. To receive such calls, register a delegate with
+    QHarmonyAppJsContext::addUiAbilityDelegate(). A delegate is a JS object
+    whose methods Qt calls from the matching \c UIAbility methods, with the
+    \c UIAbility instance as the first argument, followed by the arguments
+    of the \c UIAbility method. The function's documentation lists the
+    forwarded methods and the rules for each.
+
+    Delegate methods run on the JS thread and follow the same rules as
+    tasks passed to QNativeInterface::QHarmonyApplication::runOnJsThread().
+    The handle that addUiAbilityDelegate() returns can be released on any
+    thread. Releasing it on another thread blocks that thread until the JS
+    thread has unregistered the delegate.
+
+    The following class receives new Wants as QJsonObject on the Qt
+    thread. It registers the delegate in its constructor, and the handle is
+    released when the receiver is destroyed:
+
+    \code
+    class WantReceiver : public QObject
+    {
+    public:
+        WantReceiver()
+        {
+            m_delegateHandle = QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+                [self = QPointer<WantReceiver>(this)](QHarmonyJsContext &jsContext) {
+                    Napi::Env env(jsContext.env());
+                    Napi::Object delegate = Napi::Object::New(env);
+                    delegate.Set(
+                        "onNewWant",
+                        Napi::Function::New(
+                            env,
+                            [self](const Napi::CallbackInfo &info) {
+                                const QJsonObject want = QtHarmony::mapJsObjectToQJsonObject(info.Env(), info[1]);
+                                QNativeInterface::QHarmonyApplication::runOnQtThread(
+                                    [self, want]() {
+                                        if (self)
+                                            self->handleNewWant(want);
+                                    });
+                            }));
+                    return QHarmonyAppJsContext::fromJsContext(jsContext).addUiAbilityDelegate(delegate);
+                });
+        }
+
+    private:
+        void handleNewWant(const QJsonObject &want);
+
+        std::shared_ptr<void> m_delegateHandle;
+    };
+    \endcode
 
     \section1 Platform API Examples
 
