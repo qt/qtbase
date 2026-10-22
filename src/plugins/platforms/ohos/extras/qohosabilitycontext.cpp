@@ -7,6 +7,7 @@
 #include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
 #include <QtHarmonyExtras/private/qohossharekit_p.h>
 #include <QtHarmonyExtras/private/qohosstartoptions_p.h>
+#include <QtHarmonyExtras/private/qohosuiabilitydelegate_p.h>
 #include <QtHarmonyExtras/private/qohoswantinfo_p.h>
 #include <QtHarmonyExtras/private/qohoswantutils_p.h>
 
@@ -23,6 +24,7 @@
 #include <QtCore/qharmonyjsonconversions.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qrandom.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/private/qcore_ohos_p.h>
@@ -123,72 +125,79 @@ QHarmonyJsObjectRef windowAbilityObjectRefOrNull(QWindow *optWindow)
     return harmonyWindow ? harmonyWindow->ability() : QHarmonyJsObjectRef();
 }
 
-void setOnContinueRequestsHandlerForAbilityInstanceWindow(
+std::shared_ptr<void> setOnContinueRequestsHandlerForAbilityInstanceWindow(
     QWindow *window,
     std::function<void(AbilityOnContinueRequest, QOhosConsumer<AbilityOnContinueResponse>)> requestsHandler)
 {
     const auto abilityRef = windowAbilityObjectRefOrNull(window);
     if (abilityRef.isNull()) {
         qCCritical(QtForOhos, "%s: no ability for window %p, handler not set", Q_FUNC_INFO, window);
-        return;
+        return nullptr;
     }
 
     auto sharedRequestsHandler = QtOhos::moveToSharedPtr(std::move(requestsHandler));
 
     struct JsResultContext
     {
+        explicit JsResultContext(QNapi::Object wantParamsObj)
+            : wantParamsReference(QNapi::Reference<>::makePersistentFrom(wantParamsObj))
+            , resultDeferred(QNapi::Promise::Deferred::New(wantParamsObj.Env()))
+        {
+        }
+
         QNapi::Reference<QNapi::Object> wantParamsReference;
-        QOhosConsumer<QOhosJsState &, QNapi::Number> resultConsumer;
+        QNapi::Promise::Deferred resultDeferred;
     };
 
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &jsState) {
-            jsState.setOnContinueRequestsHandler(
-                QNapi::Object(jsState.env(), abilityRef.value(QHarmonyJsContext::fromEnv(jsState.env()))),
-                [sharedRequestsHandler](QOhosJsState &, QNapi::Object wantParamsObj, auto resultConsumer) {
-                    int sourceVersionCode = wantParamsObj.get<QNapi::Number>("version");
-                    auto jsResultContext = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsResultContext>());
-                    jsResultContext->wantParamsReference = QNapi::Reference<>::makePersistentFrom(wantParamsObj);
-                    jsResultContext->resultConsumer = std::move(resultConsumer);
-                    QNativeInterface::QHarmonyApplication::runOnQtThread(
-                        [sharedRequestsHandler, sourceVersionCode, jsResultContext]() {
-                            (*sharedRequestsHandler)(
-                                AbilityOnContinueRequest{
-                                    .sourceApplicationVersionCode = sourceVersionCode,
-                                },
-                                [jsResultContext](AbilityOnContinueResponse qtResponse) {
-                                    QOhosJsThreadGateway::invoke(
-                                        [jsResultContext, qtResponse](QOhosJsState &jsState) {
-                                            if (qtResponse.status == AbilityOnContinueResponseStatus::Agree) {
-                                                auto wantParamsObj = jsResultContext->wantParamsReference.Value();
-                                                auto newWantParamsIter = qtResponse.wantObjectParams.constKeyValueBegin();
-                                                while (newWantParamsIter != qtResponse.wantObjectParams.constKeyValueEnd()) {
-                                                    wantParamsObj.set(
-                                                        newWantParamsIter->first.toStdString(),
-                                                        newWantParamsIter->second.toStdString());
-                                                    ++newWantParamsIter;
+    return QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            return QtOhos::makeProxyWithJsThreadDeleter(
+                setUiAbilityOnContinueHandler(
+                    QHarmonyAppJsContext::fromJsContext(jsContext), abilityRef,
+                    [sharedRequestsHandler](QHarmonyAppJsContext &appJsContext, napi_value wantParamValue) -> napi_value {
+                        const QNapi::Object wantParamsObj(appJsContext.env(), wantParamValue);
+                        int sourceVersionCode = wantParamsObj.get<QNapi::Number>("version");
+                        auto jsResultContext = QtOhos::makeProxyWithJsThreadDeleter(
+                            std::make_shared<JsResultContext>(wantParamsObj));
+                        QNativeInterface::QHarmonyApplication::runOnQtThread(
+                            [sharedRequestsHandler, sourceVersionCode, jsResultContext]() {
+                                (*sharedRequestsHandler)(
+                                    AbilityOnContinueRequest{
+                                        .sourceApplicationVersionCode = sourceVersionCode,
+                                    },
+                                    [jsResultContext](AbilityOnContinueResponse qtResponse) {
+                                        QOhosJsThreadGateway::invoke(
+                                            [jsResultContext, qtResponse](QOhosJsState &jsState) {
+                                                if (qtResponse.status == AbilityOnContinueResponseStatus::Agree) {
+                                                    auto wantParamsObj = jsResultContext->wantParamsReference.Value();
+                                                    auto newWantParamsIter = qtResponse.wantObjectParams.constKeyValueBegin();
+                                                    while (newWantParamsIter != qtResponse.wantObjectParams.constKeyValueEnd()) {
+                                                        wantParamsObj.set(
+                                                            newWantParamsIter->first.toStdString(),
+                                                            newWantParamsIter->second.toStdString());
+                                                        ++newWantParamsIter;
+                                                    }
+                                                    if (qtResponse.exitAppOnSourceDeviceAfterMigration.has_value()) {
+                                                        wantParamsObj.set(
+                                                            jsState.eval<QNapi::String>(
+                                                                "@ohos.app.ability.wantConstant.Params.SUPPORT_CONTINUE_SOURCE_EXIT_KEY"),
+                                                            qtResponse.exitAppOnSourceDeviceAfterMigration.value());
+                                                    }
                                                 }
-                                                if (qtResponse.exitAppOnSourceDeviceAfterMigration.has_value()) {
-                                                    wantParamsObj.set(
-                                                        jsState.eval<QNapi::String>(
-                                                            "@ohos.app.ability.wantConstant.Params.SUPPORT_CONTINUE_SOURCE_EXIT_KEY"),
-                                                        qtResponse.exitAppOnSourceDeviceAfterMigration.value());
+                                                auto optResultEnum = tryMapAbilityOnContinueResponseStatusToOhos(qtResponse.status);
+                                                if (!optResultEnum) {
+                                                    qOhosPrintfWarning(
+                                                        "%s: got illegal status (%d) from requests handler, rejecting the request",
+                                                        Q_FUNC_INFO, static_cast<int>(qtResponse.status));
                                                 }
-                                            }
-                                            auto optResultEnum = tryMapAbilityOnContinueResponseStatusToOhos(qtResponse.status);
-                                            if (!optResultEnum) {
-                                                qOhosPrintfWarning(
-                                                    "%s: got illegal status (%d) from requests handler, rejecting the request",
-                                                    Q_FUNC_INFO, static_cast<int>(qtResponse.status));
-                                            }
-                                            jsResultContext->resultConsumer(
-                                                jsState, jsState.mapOhosEnumToJs(optResultEnum.value_or(OnContinueResult::REJECT)));
-                                        });
-                                });
-                        });
-                });
-        },
-        Q_FUNC_INFO);
+                                                jsResultContext->resultDeferred.Resolve(
+                                                    jsState.mapOhosEnumToJs(optResultEnum.value_or(OnContinueResult::REJECT)));
+                                            });
+                                    });
+                            });
+                        return jsResultContext->resultDeferred.Promise();
+                    }));
+        });
 }
 
 void setDestroyAllowedFlagForAbilityInstances(
@@ -683,8 +692,16 @@ public:
 
     void setContinuationActive(bool continuationActive) override;
 
+protected:
+    void connectNotify(const QMetaMethod &signal) override;
+    void disconnectNotify(const QMetaMethod &signal) override;
+
 private:
+    void queueOnContinueHandlerUpdate();
+    void updateOnContinueHandler();
+
     QPointer<QWindow> m_instanceMainWindow;
+    std::shared_ptr<void> m_onContinueHandlerHandle;
 };
 
 std::map<QWindow *, std::unique_ptr<QOhosAbilityContextImpl>> abilityContextsMap;
@@ -905,21 +922,52 @@ void QOhosDefaultAbilityContextImpl::setContinuationActive(bool continuationActi
 QOhosAbilityContextImpl::QOhosAbilityContextImpl(QWindow *instanceMainWindow)
     : m_instanceMainWindow(instanceMainWindow)
 {
-    setOnContinueRequestsHandlerForAbilityInstanceWindow(
-        instanceMainWindow,
-        [self = QPointer<QOhosAbilityContextImpl>(this)](auto request, auto responseConsumer) {
-            auto context = std::make_shared<QOhosOnContinueContextImpl>(request.sourceApplicationVersionCode);
+}
 
-            if (!self.isNull())
-                Q_EMIT self->continueRequestReceived(context);
-            else
-                context->sendRejectResponse();
+void QOhosAbilityContextImpl::connectNotify(const QMetaMethod &signal)
+{
+    if (signal == QMetaMethod::fromSignal(&AbilityContext::continueRequestReceived))
+        queueOnContinueHandlerUpdate();
+}
 
-            QNativeInterface::QHarmonyApplication::runOnQtThread(
-                [response = context->response(), responseConsumer = std::move(responseConsumer)]() {
-                    responseConsumer(response);
-                });
+void QOhosAbilityContextImpl::disconnectNotify(const QMetaMethod &signal)
+{
+    if (signal == QMetaMethod::fromSignal(&AbilityContext::continueRequestReceived) || !signal.isValid())
+        queueOnContinueHandlerUpdate();
+}
+
+// the notify functions may run under QObject's locks and on any thread, so the update runs later on the Qt thread
+void QOhosAbilityContextImpl::queueOnContinueHandlerUpdate()
+{
+    QNativeInterface::QHarmonyApplication::runOnQtThread(
+        [self = QPointer<QOhosAbilityContextImpl>(this)]() {
+            if (self)
+                self->updateOnContinueHandler();
         });
+}
+
+void QOhosAbilityContextImpl::updateOnContinueHandler()
+{
+    const bool continuationListened = isSignalConnected(QMetaMethod::fromSignal(&AbilityContext::continueRequestReceived));
+    if (continuationListened && !m_onContinueHandlerHandle) {
+        m_onContinueHandlerHandle = setOnContinueRequestsHandlerForAbilityInstanceWindow(
+            m_instanceMainWindow,
+            [self = QPointer<QOhosAbilityContextImpl>(this)](auto request, auto responseConsumer) {
+                auto context = std::make_shared<QOhosOnContinueContextImpl>(request.sourceApplicationVersionCode);
+
+                if (!self.isNull())
+                    Q_EMIT self->continueRequestReceived(context);
+                else
+                    context->sendRejectResponse();
+
+                QNativeInterface::QHarmonyApplication::runOnQtThread(
+                    [response = context->response(), responseConsumer = std::move(responseConsumer)]() {
+                        responseConsumer(response);
+                    });
+            });
+    } else if (!continuationListened && m_onContinueHandlerHandle) {
+        m_onContinueHandlerHandle.reset();
+    }
 }
 
 /*!
@@ -1113,6 +1161,10 @@ void startAppProcessImpl(
     can set onContinue response.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-uiability-V13#uiabilityoncontinue}
     {UIAbility onContinue}.
+
+    HarmonyExtras decides continuation only while this signal is connected for at least one window, and then for
+    every ability of the application. Whether it or a \c UIAbility delegate of the application that defines
+    \c onContinue() decides depends on the registration order. Use either this signal or a delegate, not both.
 
     \sa sendAgreeResponse(), sendMismatchResponse(), sendRejectResponse()
 */
