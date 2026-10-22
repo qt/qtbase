@@ -3,6 +3,8 @@
 
 #include "qharmonyappjscontext.h"
 #include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qohoslogger_p.h>
+#include <thread>
 
 QT_BEGIN_NAMESPACE
 
@@ -11,6 +13,16 @@ namespace {
 QOhosJsState &jsState()
 {
     return QOhosJsThreadOps::instance().jsState();
+}
+
+std::shared_ptr<void> tryRegisterUiAbilityDelegate(QNapi::Object delegate)
+{
+    try {
+        return jsState().registerUiAbilityDelegate(delegate);
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError("%s: registering the delegate failed: %s", Q_FUNC_INFO, error.what());
+        return nullptr;
+    }
 }
 
 }
@@ -86,6 +98,75 @@ QHarmonyAppJsContext &QHarmonyAppJsContext::fromJsContext(QHarmonyJsContext &jsC
 napi_value QHarmonyAppJsContext::defaultAbility()
 {
     return jsState().defaultQAbility().value_or(QNapi::Object());
+}
+
+/*!
+    Registers \a delegateValue as a delegate for the methods of the
+    application's \c UIAbility class and returns a handle that keeps the
+    registration. \a delegateValue must be a JS object.
+
+    Qt forwards a \c UIAbility method by calling the delegate method of the
+    same name with the \c UIAbility instance as the first argument, followed
+    by the arguments the \c UIAbility method received. It looks the method
+    up at each call and calls it as a method of the delegate. A delegate
+    defines a method when the property of that name is a function. It may
+    define any subset of the forwarded methods. Delegates are called in
+    registration order. A method with a result has a default, which Qt
+    returns when no delegate defines the method or when the delegate method
+    throws. If a delegate method throws, the exception is logged and
+    cleared. The throw does not change which other delegates are called.
+
+    The forwarded methods are:
+
+    \list
+    \li \c onNewWant(): called on every delegate. The return value is
+        ignored. The delegate must not modify the arguments. Qt does not
+        forward the Wants that it sends to its own abilities.
+    \li \c onContinue(): called on the first delegate that defines it. Its
+        result is returned to the system. The default is
+        \c {AbilityConstant.OnContinueResult.REJECT}.
+    \endlist
+
+    Methods not listed are not forwarded. Later versions may forward more
+    methods.
+
+    Qt holds a strong reference to the delegate until the handle is
+    released. Releasing it unregisters the delegate, and no delegate method
+    is called afterwards. A delegate method may release the handle.
+
+    The handle can be released on any thread. Releasing it on another
+    thread blocks that thread until the JS thread has unregistered the
+    delegate.
+
+    \sa {Qt for HarmonyOS Platform API}
+*/
+std::shared_ptr<void> QHarmonyAppJsContext::addUiAbilityDelegate(napi_value delegateValue)
+{
+    const char *funcInfo = Q_FUNC_INFO;
+
+    if (!delegateValue || !Napi::Value(env(), delegateValue).IsObject()) {
+        qOhosPrintfError("%s: the delegate is not a JS object, not registering it", funcInfo);
+        return nullptr;
+    }
+
+    auto registrationHandle = tryRegisterUiAbilityDelegate(QNapi::Object(env(), delegateValue));
+    if (!registrationHandle)
+        return nullptr;
+
+    return QtOhos::makeDestroyNotifier(
+        [registrationHandle, jsThreadId = std::this_thread::get_id(), funcInfo]() mutable {
+            if (std::this_thread::get_id() != jsThreadId) {
+                qCDebug(
+                    QtForOhos,
+                    "%s: the delegate handle is released off the JS thread, waiting for the JS thread",
+                    funcInfo);
+            }
+            QOhosJsThreadGateway::runAndWait(
+                [&](QOhosJsState &) {
+                    registrationHandle.reset();
+                },
+                funcInfo);
+        });
 }
 
 QT_END_NAMESPACE

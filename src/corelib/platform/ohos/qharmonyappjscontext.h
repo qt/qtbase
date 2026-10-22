@@ -8,6 +8,8 @@
 
 #if defined(Q_QDOC) || defined(Q_OS_HARMONY)
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QHarmonyAppJsContext : public QHarmonyJsContext
@@ -17,6 +19,8 @@ public:
     static QHarmonyAppJsContext &fromJsContext(QHarmonyJsContext &jsContext);
 
     napi_value defaultAbility();
+
+    [[nodiscard]] std::shared_ptr<void> addUiAbilityDelegate(napi_value delegateValue);
 
 private:
     QHarmonyAppJsContext();

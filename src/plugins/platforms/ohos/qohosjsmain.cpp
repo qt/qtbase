@@ -49,6 +49,7 @@
 #include <cstdlib>
 #include <optional>
 #include <unordered_map>
+#include <vector>
 
 #include "qarkui/qxcomponentregistry.h"
 #include "qohoseventdispatcher.h"
@@ -990,11 +991,26 @@ void handleAbilityOnBackground(const CallbackInfo &cbInfo)
     }
 }
 
+std::vector<QNapi::Value> getAllArgs(const CallbackInfo &cbInfo)
+{
+    const Napi::CallbackInfo &napiCbInfo = cbInfo;
+    std::vector<QNapi::Value> args;
+    for (std::size_t i = 0; i < napiCbInfo.Length(); ++i)
+        args.push_back(napiCbInfo[i]);
+    return args;
+}
+
 QNapi::Value handleAbilityOnContinue(const CallbackInfo &cbInfo)
 {
     QNapi::Object qAbility;
     QNapi::Object wantParamsObj;
     cbInfo.getLeadingArgs(Q_FUNC_INFO, qAbility, wantParamsObj);
+
+    auto optDelegateResult = tryCallFirstUiAbilityDelegate(
+        "onContinue", getAllArgs(cbInfo),
+        cbInfo.jsState().mapOhosEnumToJs(QOhosAbilityOnContinueResult::REJECT));
+    if (optDelegateResult)
+        return optDelegateResult.value();
 
     auto uiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
         cbInfo.jsState().tryGetQAbilityPeerByInstance(qAbility));
@@ -1250,10 +1266,12 @@ void handleAbilityOnNewWant(const CallbackInfo &cbInfo)
 
     tryDetectBrokenWant(cbInfo.jsState(), want);
 
-    if (!QAbilityInstancesManager::isQtInternalWantFromThisProcess(want))
+    if (!QAbilityInstancesManager::isQtInternalWantFromThisProcess(want)) {
         dispatchNewWant(qAbility, want, launchParam);
-    else
+        callUiAbilityDelegates("onNewWant", getAllArgs(cbInfo));
+    } else {
         qOhosPrintfDebug("%s: received qt-internal Want from current process, nothing to do", Q_FUNC_INFO);
+    }
 }
 
 void loadWindowStageContentPage(JsState &jsState, QNapi::Object &qAbility, const QNapi::Object &windowStage)

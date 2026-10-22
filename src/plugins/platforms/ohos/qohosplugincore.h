@@ -157,6 +157,15 @@ void removeMatchingJsQAbilityPeer(QNapi::Object qAbility);
 // this function should be called from JS thread when new Want object is received
 void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam);
 
+// These functions should be called from JS thread when the system calls a UIAbility method,
+// with the method's arguments as args, the ability first, as QAbility.ets passes them.
+// The first one calls methodName on every registered delegate, in registration order.
+// The second one calls it on the first delegate that defines it and returns the result,
+// resultOnThrow if that call throws, or nullopt if no delegate defines it.
+void callUiAbilityDelegates(const char *methodName, const std::vector<QNapi::Value> &args);
+std::optional<QNapi::Value> tryCallFirstUiAbilityDelegate(
+    const char *methodName, const std::vector<QNapi::Value> &args, QNapi::Value resultOnThrow);
+
 // Invokes the task inside the Qt thread and blocks the caller's thread until either:
 //  - the "continue" function (std::function<void()>, passed as second argument to
 //    the task) is called on the Qt side and returns,
