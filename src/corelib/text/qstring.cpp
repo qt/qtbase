@@ -7472,8 +7472,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                 qint64 i;
                 switch (length_mod) {
                     case lm_none: i = va_arg(ap, int); break;
-                    case lm_hh: i = va_arg(ap, int); break;
-                    case lm_h: i = va_arg(ap, int); break;
+                    case lm_hh: i = qint8(va_arg(ap, int)); break;
+                    case lm_h: i = short(va_arg(ap, int)); break;
                     case lm_l: i = va_arg(ap, long int); break;
                     case lm_ll: i = va_arg(ap, qint64); break;
                     case lm_j: i = qint64{va_arg(ap, intmax_t)}; break;
@@ -7494,8 +7494,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                 quint64 u;
                 switch (length_mod) {
                     case lm_none: u = va_arg(ap, uint); break;
-                    case lm_hh: u = va_arg(ap, uint); break;
-                    case lm_h: u = va_arg(ap, uint); break;
+                    case lm_hh: u = uchar(va_arg(ap, uint)); break;
+                    case lm_h: u = ushort(va_arg(ap, uint)); break;
                     case lm_l: u = va_arg(ap, ulong); break;
                     case lm_ll: u = va_arg(ap, quint64); break;
                     case lm_j: u = quint64{va_arg(ap, uintmax_t)}; break;
