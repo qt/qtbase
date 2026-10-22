@@ -24,6 +24,7 @@ macro(qt_internal_get_internal_add_plugin_keywords option_args single_args multi
         ${__default_public_args}
         ${__qt_internal_sbom_multi_args}
         DEFAULT_IF
+        PLUGIN_EXTENDS
     )
 endmacro()
 
@@ -267,6 +268,10 @@ function(qt_internal_add_plugin target)
     endif()
 
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
+    if(arg_PLUGIN_EXTENDS)
+        # Only used for the qmake .pri file, CMake does not evaluate it yet. See QTBUG-93501.
+        set_property(TARGET "${target}" PROPERTY _qt_plugin_extends "${arg_PLUGIN_EXTENDS}")
+    endif()
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_PLUGIN_TYPE;QT_MODULE;QT_DEFAULT_PLUGIN;_qt_plugin_qt_module_dependencies")
 
     qt_internal_android_add_target_export_properties(${target})

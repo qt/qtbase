@@ -643,7 +643,8 @@ endfunction()
 # QT_PLUGIN.XXX.EXTENDS is set to "-" for the following plugin types:
 #   - generic
 #   - platform, if the plugin is not the default QPA plugin
-# Otherwise, this variable is empty.
+# Otherwise, it holds the qmake names of the modules passed to the PLUGIN_EXTENDS argument of
+# qt_internal_add_plugin, or is empty.
 function(qt_generate_plugin_pri_file target)
     get_target_property(plugin_name ${target} OUTPUT_NAME)
     get_target_property(plugin_type ${target} QT_PLUGIN_TYPE)
@@ -663,6 +664,15 @@ function(qt_generate_plugin_pri_file target)
     set(plugin_extends "")
     if(NOT default_plugin)
         set(plugin_extends "-")
+    else()
+        get_target_property(extended_modules ${target} _qt_plugin_extends)
+        if(extended_modules)
+            foreach(module IN LISTS extended_modules)
+                qt_get_qmake_module_name(module "${module}")
+                list(APPEND plugin_extends "${module}")
+            endforeach()
+            list(JOIN plugin_extends " " plugin_extends)
+        endif()
     endif()
 
     set(plugin_deps "")
