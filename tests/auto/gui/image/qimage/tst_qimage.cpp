@@ -57,6 +57,8 @@ private slots:
 
     void createAlphaMask_data();
     void createAlphaMask();
+    void createAlphaMaskFormats_data();
+    void createAlphaMaskFormats();
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
     void createHeuristicMask();
 #endif
@@ -1038,6 +1040,49 @@ void tst_QImage::createAlphaMask()
     const int threshold = 5;
     QVERIFY(qAbs(sumAlpha1 * 255 / pixelsOutofLines - alpha1) < threshold);
     QVERIFY(qAbs(sumAlpha2 * 255 / pixelsInLines - alpha2) < threshold);
+}
+
+void tst_QImage::createAlphaMaskFormats_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    for (int i = QImage::Format_Mono; i < QImage::NImageFormats; ++i)
+        QTest::addRow("%s", formatToString(QImage::Format(i)).data()) << QImage::Format(i);
+}
+
+void tst_QImage::createAlphaMaskFormats()
+{
+    QFETCH(QImage::Format, format);
+
+    // Left half opaque, right half fully transparent
+    QImage argb(61, 8, QImage::Format_ARGB32);
+    for (int y = 0; y < argb.height(); ++y) {
+        for (int x = 0; x < argb.width(); ++x)
+            argb.setPixel(x, y, qRgba(255, 255, 255, x < argb.width() / 2 ? 255 : 0));
+    }
+    QImage image = argb.convertToFormat(format);
+    const bool hasAlpha = image.hasAlphaChannel();
+    // A format without alpha may keep the source alpha in its padding bits,
+    // so give it an opaque image
+    if (!hasAlpha)
+        image = argb.convertToFormat(QImage::Format_RGB32).convertToFormat(format);
+    QCOMPARE(image.format(), format);
+
+    for (Qt::ImageConversionFlag flag : { Qt::DiffuseAlphaDither, Qt::OrderedAlphaDither,
+                                          Qt::ThresholdAlphaDither }) {
+        const QImage mask = image.createAlphaMask(flag);
+        if (format == QImage::Format_RGB32) { // has no alpha mask
+            QVERIFY(mask.isNull());
+            continue;
+        }
+        QCOMPARE(mask.size(), image.size());
+        for (int y = 0; y < mask.height(); ++y) {
+            for (int x = 0; x < mask.width(); ++x) {
+                const bool opaque = !hasAlpha || x < image.width() / 2;
+                QCOMPARE(mask.pixelIndex(x, y), opaque ? 1 : 0);
+            }
+        }
+    }
 }
 
 void tst_QImage::dotsPerMeterZero()

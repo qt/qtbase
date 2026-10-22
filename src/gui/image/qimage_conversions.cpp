@@ -1638,6 +1638,10 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
     Q_ASSERT(src->width == dst->width);
     Q_ASSERT(src->height == dst->height);
     Q_ASSERT(dst->format == QImage::Format_Mono || dst->format == QImage::Format_MonoLSB);
+    Q_ASSERT(src->format == QImage::Format_Indexed8
+          || src->format == QImage::Format_RGB32
+          || src->format == QImage::Format_ARGB32
+          || src->format == QImage::Format_ARGB32_Premultiplied);
 
     dst->colortable.clear();
     dst->colortable.append(0xffffffff);
