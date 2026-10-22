@@ -733,6 +733,8 @@ bool QCalendarTextNavigator::eventFilter(QObject *o, QEvent *e)
             QKeyEvent *ke = static_cast<QKeyEvent *>(e);
             if ((ke->text().size() > 0 && ke->text().at(0).isPrint()) || m_dateFrame) {
                 if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Select) {
+                    if (!m_dateFrame)
+                        return false; // No date editing in progress, let the view handle the key
                     applyDate();
                     emit editingFinished();
                     removeDateLabel();
