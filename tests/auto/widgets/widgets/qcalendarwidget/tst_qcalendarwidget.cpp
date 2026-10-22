@@ -4,6 +4,8 @@
 
 #include <QTest>
 #include <QSignalSpy>
+#include <QCoreApplication>
+#include <QKeyEvent>
 
 #include <qcalendarwidget.h>
 #include <qtoolbutton.h>
@@ -22,6 +24,7 @@ private slots:
     void getSetCheck();
     void buttonClickCheck();
     void keyboardInput();
+    void returnAfterDeadKey();
 
     void setTextFormat();
     void resetTextFormat();
@@ -206,6 +209,35 @@ void tst_QCalendarWidget::keyboardInput()
     QTest::keyClick(calendarView, Qt::Key_Enter);
 
     QCOMPARE(calendar.selectedDate(), QDate(2023, 5, 1));
+}
+
+void tst_QCalendarWidget::returnAfterDeadKey()
+{
+    QCalendarWidget calendar;
+    calendar.show();
+    calendar.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&calendar));
+
+    const QDate selectedDate(2023, 5, 1);
+    calendar.setSelectedDate(selectedDate);
+
+    QWidget *calendarView = calendar.findChild<QWidget *>("qt_calendar_calendarview");
+    QVERIFY(calendarView);
+    calendarView->setFocus();
+
+    QSignalSpy activatedSpy(&calendar, &QCalendarWidget::activated);
+
+    // After a dead key, the following Return key event can carry the pending
+    // dead character as its text, although no date editing is in progress.
+    // This must not crash, but activate the selected date.
+    QKeyEvent press(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier, QLatin1String("^"));
+    QCoreApplication::sendEvent(calendarView, &press);
+    QKeyEvent release(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier, QLatin1String("^"));
+    QCoreApplication::sendEvent(calendarView, &release);
+
+    QCOMPARE(activatedSpy.size(), 1);
+    QCOMPARE(activatedSpy.first().first().toDate(), selectedDate);
+    QCOMPARE(calendar.selectedDate(), selectedDate);
 }
 
 void tst_QCalendarWidget::setTextFormat()
