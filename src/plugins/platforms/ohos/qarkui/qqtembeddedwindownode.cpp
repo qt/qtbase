@@ -204,6 +204,7 @@ std::shared_ptr<QQtEmbeddedWindowNode> QQtEmbeddedWindowNode::createOrFail(const
     auto stackNode = Node::createOrFail(::ARKUI_NODE_STACK);
     stackNode->setAttributeOrFail(::NODE_STACK_ALIGN_CONTENT, ::ARKUI_ALIGNMENT_TOP_START);
     stackNode->setAttributeOrFail(::NODE_Z_INDEX, createInfo.zIndex);
+    stackNode->setAttributeOrFail(::NODE_CLIP, true);
     stackNode->setAttributeOrFail(::NODE_BACKGROUND_COLOR, transparentArgb8888);
     stackNode->setAttributeOrFail(
         ::NODE_BLEND_MODE,
