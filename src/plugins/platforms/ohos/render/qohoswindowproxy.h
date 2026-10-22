@@ -185,7 +185,7 @@ public:
     void showWindow(const ShowWindowOptions &options = ShowWindowOptions());
     void recover();
     void restore();
-    void maximize(MaximizePresentation maximizePresentation);
+    bool tryMaximize(MaximizePresentation maximizePresentation);
     void minimize();
     void setWindowLayoutFullScreen(bool isLayoutFullScreen);
     void setWindowSystemBarEnable(const QStringList &names);

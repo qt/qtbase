@@ -741,26 +741,34 @@ void QOhosWindowProxy::minimize()
     Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::maximize(MaximizePresentation maximizePresentation)
+bool QOhosWindowProxy::tryMaximize(MaximizePresentation maximizePresentation)
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
 
     if (!qtIsMainWindow()) {
         qCWarning(QtForOhos(), "%s: Maximize is currently supported only on main windows", Q_FUNC_INFO);
-        return;
+        return false;
     }
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                taskPromise();
+                evalPromise(false);
                 return;
             }
 
+            auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
                 "maximize(*)", {jsState.mapOhosEnumToJs(maximizePresentation)})
-            .onCatch(QtOhos::makeErrorLoggingJsCallback("maximize()"))
-            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+            .onThen(
+                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &) {
+                    thenPromise(true);
+                })
+            .onCatch(
+                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                    QtOhos::logJsCallbackError(cbInfo, "Got error from maximize()");
+                    catchPromise(false);
+                });
         },
         Q_FUNC_INFO);
 }
