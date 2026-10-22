@@ -188,6 +188,51 @@ static Window createDummyWindow(QOffscreenX11Info *x11, GLXFBConfig config)
     return window;
 }
 
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
+#endif
+
+// glXCreateNewContext() and glXCreateContext() do not take a version or
+// profile, the implementation typically gives the highest compatibility
+// profile version it supports. Report that, not the requested format.
+static void updateFormatFromContext(QSurfaceFormat &format)
+{
+    int major = 0, minor = 0;
+    const char *versionString = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+    if (versionString && QPlatformOpenGLContext::parseOpenGLVersion(versionString, major, minor)) {
+        format.setMajorVersion(major);
+        format.setMinorVersion(minor);
+    }
+
+    format.setProfile(QSurfaceFormat::NoProfile);
+    const bool isStereo = format.testOption(QSurfaceFormat::StereoBuffers);
+    format.setOptions(QSurfaceFormat::FormatOptions());
+    // Restore flags that come from the VisualInfo/FBConfig.
+    if (isStereo)
+        format.setOption(QSurfaceFormat::StereoBuffers);
+
+    if (format.version() < std::pair(3, 0)) {
+        format.setOption(QSurfaceFormat::DeprecatedFunctions);
+        return;
+    }
+
+    GLint value = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &value);
+    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
+        format.setOption(QSurfaceFormat::DeprecatedFunctions);
+    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
+        format.setOption(QSurfaceFormat::DebugContext);
+    if (format.version() < std::pair(3, 2))
+        return;
+
+    value = 0;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
+    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
+        format.setProfile(QSurfaceFormat::CoreProfile);
+    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
+        format.setProfile(QSurfaceFormat::CompatibilityProfile);
+}
+
 QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGLContext *context)
     : d(new QOffscreenX11GLXContextData)
 {
@@ -235,6 +280,16 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
 
         d->window = createDummyWindow(x11, visualInfo);
         XFree(visualInfo);
+    }
+
+    // Query the OpenGL version and profile
+    if (d->context && d->window) {
+        GLXContext prevContext = glXGetCurrentContext();
+        GLXDrawable prevDrawable = glXGetCurrentDrawable();
+        if (glXMakeCurrent(x11->display(), d->window, d->context)) {
+            updateFormatFromContext(d->format);
+            glXMakeCurrent(x11->display(), prevDrawable, prevContext);
+        }
     }
 }
 
