@@ -3167,6 +3167,12 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::createAlphaMask(Qt::ImageConversionFlag
         return convertToFormat(Format_Indexed8, flags).createAlphaMask(flags);
     }
 
+    if (d->format != Format_Indexed8 && d->format != Format_ARGB32
+        && d->format != Format_ARGB32_Premultiplied) {
+        // dither_to_Mono() only reads alpha from a color table or from ARGB32 pixels.
+        return convertToFormat(Format_ARGB32_Premultiplied, flags).createAlphaMask(flags);
+    }
+
     QImage mask(d->width, d->height, Format_MonoLSB);
     if (!mask.isNull()) {
         dither_to_Mono(mask.d, d, flags, true);
