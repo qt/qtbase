@@ -21,6 +21,7 @@ qt_internal_add_module(HarmonyExtrasPrivate
         qohossharekit.cpp qohossharekit_p.h
         qohossharekitbackend.cpp qohossharekitbackend_p.h
         qohosstartoptions.cpp qohosstartoptions_p.h
+        qohosuiabilitydelegate.cpp qohosuiabilitydelegate_p.h
         qohoswant.cpp qohoswant_p.h
         qohoswantinfo.cpp qohoswantinfo_p.h
         qohoswantutils.cpp qohoswantutils_p.h
