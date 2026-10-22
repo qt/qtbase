@@ -7286,14 +7286,6 @@ QString QString::asprintf(const char *cformat, ...)
     return s;
 }
 
-static void append_utf8(QString &qs, const char *cs, qsizetype len)
-{
-    const qsizetype oldSize = qs.size();
-    qs.resize(oldSize + len);
-    const QChar *newEnd = QUtf8::convertToUnicode(qs.data() + oldSize, QByteArrayView(cs, len));
-    qs.resize(newEnd - qs.constData());
-}
-
 static uint parse_flag_characters(const char * &c) noexcept
 {
     uint flags = QLocaleData::ZeroPadExponent;
@@ -7388,7 +7380,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         const char *cb = c;
         while (*c != '\0' && *c != '%')
             c++;
-        append_utf8(result, cb, qsizetype(c - cb));
+        result.append(QUtf8StringView{cb, c - cb});
 
         if (*c == '\0')
             break;
