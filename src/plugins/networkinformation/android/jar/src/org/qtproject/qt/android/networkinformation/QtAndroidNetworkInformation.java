@@ -12,8 +12,7 @@ import android.net.NetworkCapabilities;
 import android.net.Network;
 import android.os.Build;
 
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 class QtAndroidNetworkInformation {
@@ -50,21 +49,27 @@ class QtAndroidNetworkInformation {
         QtNetworkInformationCallback() {
         }
 
-        private final Map<Network, NetworkCapabilities> m_networks = new HashMap<>();
+        private final Map<Network, NetworkCapabilities> m_networks = new LinkedHashMap<>();
 
         @Override
         public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
+            // A VPN runs on top of another network, which we track ourselves.
+            if (!capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN))
+                return;
             m_networks.put(network, capabilities);
             update();
         }
 
         @Override
         public void onLost(Network network) {
-            m_networks.remove(network);
-            update();
+            if (m_networks.remove(network) != null)
+                update();
         }
 
-        private static AndroidConnectivity connectivityOf(NetworkCapabilities capabilities) {
+        private AndroidConnectivity connectivityOf(NetworkCapabilities capabilities) {
+            // If we don't have any transport media: override
+            if (getTransport(capabilities) == Transport.Unknown)
+                return AndroidConnectivity.Unknown;
             if (!capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
                 return AndroidConnectivity.Disconnected;
             if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
@@ -72,29 +77,43 @@ class QtAndroidNetworkInformation {
             return AndroidConnectivity.Unknown; // = we _may_ have Internet access
         }
 
+        private static boolean isMetered(NetworkCapabilities capabilities) {
+            return !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+        }
+
+        private static boolean isCellular(NetworkCapabilities capabilities) {
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR);
+        }
+
+        // Negative if a is the better network: connected first (AndroidConnectivity is declared
+        // in that order), then unmetered, then non-cellular.
+        private int compare(NetworkCapabilities a, NetworkCapabilities b) {
+            int result = connectivityOf(a).compareTo(connectivityOf(b));
+            if (result == 0)
+                result = Boolean.compare(isMetered(a), isMetered(b));
+            if (result == 0)
+                result = Boolean.compare(isCellular(a), isCellular(b));
+            return result;
+        }
+
         private void update() {
             final NetworkCapabilities best = m_networks.values().stream()
-                    .min(Comparator.comparing(QtNetworkInformationCallback::connectivityOf))
+                    .min(this::compare)
                     .orElse(null);
             if (best == null) {
                 setState(AndroidConnectivity.Disconnected);
+                setTransportMedium(Transport.Unknown);
+                genericInfoChanged(false, false);
                 return;
             }
 
-            AndroidConnectivity s = connectivityOf(best);
-
             final Transport transport = getTransport(best);
-            if (transport == Transport.Unknown) // If we don't have any transport media: override
-                s = AndroidConnectivity.Unknown;
-
-            setState(s);
+            setState(connectivityOf(best));
             setTransportMedium(transport);
 
             final boolean captive
                     = best.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
-            final boolean metered
-                    = !best.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
-            genericInfoChanged(captive, metered);
+            genericInfoChanged(captive, isMetered(best));
         }
 
         private Transport getTransport(NetworkCapabilities capabilities)
