@@ -1631,7 +1631,11 @@ function(qt6_extract_metatypes target)
                 CMAKE_VERSION VERSION_GREATER_EQUAL "3.28") OR
                ((CMAKE_GENERATOR STREQUAL "Xcode" OR CMAKE_GENERATOR MATCHES "^Visual Studio ")
                 AND CMAKE_VERSION VERSION_GREATER_EQUAL "4.4"))
-                if(DEFINED QT_USE_CMAKE_DEPFILES)
+                # CMake 4.4.3+ may not create ${target}_autogen under Visual Studio, which the
+                # non-depfile path needs, so the option is ignored there.
+                if(DEFINED QT_USE_CMAKE_DEPFILES
+                    AND NOT (CMAKE_GENERATOR MATCHES "^Visual Studio "
+                        AND CMAKE_VERSION VERSION_GREATER_EQUAL "4.4"))
                     set(use_dep_files ${QT_USE_CMAKE_DEPFILES})
                 else()
                     set(use_dep_files TRUE)
