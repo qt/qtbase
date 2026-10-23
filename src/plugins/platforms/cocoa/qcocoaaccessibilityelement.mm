@@ -235,6 +235,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 // The view and accessibility cache own the interfaces. Native element teardown
 // must not delete interfaces that the table still references.
 - (void)dealloc {
+    if (axid)
+        NSAccessibilityPostNotification(self, NSAccessibilityUIElementDestroyedNotification);
     if (rows)
         [rows release]; // will also release all entries first
     if (columns)
