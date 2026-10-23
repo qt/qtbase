@@ -5586,16 +5586,6 @@ void QD3D11SwapChain::releaseBuffers()
 
 void QD3D11SwapChain::destroy()
 {
-    if (!swapChain)
-        return;
-
-    releaseBuffers();
-
-    timestamps.destroy();
-
-    swapChain->Release();
-    swapChain = nullptr;
-
     if (dcompVisual) {
         dcompVisual->Release();
         dcompVisual = nullptr;
@@ -5605,6 +5595,16 @@ void QD3D11SwapChain::destroy()
         dcompTarget->Release();
         dcompTarget = nullptr;
     }
+
+    if (!swapChain)
+        return;
+
+    releaseBuffers();
+
+    timestamps.destroy();
+
+    swapChain->Release();
+    swapChain = nullptr;
 
     if (frameLatencyWaitableObject) {
         CloseHandle(frameLatencyWaitableObject);

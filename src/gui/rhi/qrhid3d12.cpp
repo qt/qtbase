@@ -7893,6 +7893,16 @@ QD3D12SwapChain::~QD3D12SwapChain()
 
 void QD3D12SwapChain::destroy()
 {
+    if (dcompVisual) {
+        dcompVisual->Release();
+        dcompVisual = nullptr;
+    }
+
+    if (dcompTarget) {
+        dcompTarget->Release();
+        dcompTarget = nullptr;
+    }
+
     if (!swapChain)
         return;
 
@@ -7912,16 +7922,6 @@ void QD3D12SwapChain::destroy()
         if (fr.cmdList)
             fr.cmdList->Release();
         fr = {};
-    }
-
-    if (dcompVisual) {
-        dcompVisual->Release();
-        dcompVisual = nullptr;
-    }
-
-    if (dcompTarget) {
-        dcompTarget->Release();
-        dcompTarget = nullptr;
     }
 
     if (frameLatencyWaitableObject) {
