@@ -235,9 +235,11 @@ void QOpenGLWindowPrivate::beginPaint(const QRegion &region)
     initialize();
     context->makeCurrent(q);
 
-    const int deviceWidth = q->width() * q->devicePixelRatio();
-    const int deviceHeight = q->height() * q->devicePixelRatio();
-    const QSize deviceSize(deviceWidth, deviceHeight);
+    // Note: deviceSize is computed using rounding (not truncating), in
+    // order to match framebuffer and window size.
+    const QSize deviceSize = q->size() * q->devicePixelRatio();
+    const int deviceWidth = deviceSize.width();
+    const int deviceHeight = deviceSize.height();
     if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
         if (!fbo || fbo->size() != deviceSize) {
             QOpenGLFramebufferObjectFormat fboFormat;
@@ -280,8 +282,9 @@ void QOpenGLWindowPrivate::endPaint()
         context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
 
     if (updateBehavior == QOpenGLWindow::PartialUpdateBlit && hasFboBlit) {
-        const int deviceWidth = q->width() * q->devicePixelRatio();
-        const int deviceHeight = q->height() * q->devicePixelRatio();
+        const QSize deviceSize = q->size() * q->devicePixelRatio();
+        const int deviceWidth = deviceSize.width();
+        const int deviceHeight = deviceSize.height();
         QOpenGLExtensions extensions(context.data());
         extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo->handle());
         extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, context->defaultFramebufferObject());
