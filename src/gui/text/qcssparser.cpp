@@ -2214,7 +2214,7 @@ void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOri
                                   + (uint(origin) + depth) * 0x10000000000ULL;
             StyleRule newRule = rule;
             if (rule.selectors.size() > 1)
-                newRule.selectors.push_back(selector);
+                newRule.selectors = { selector };
 
             //We might have rules with the same weight if they came from a rule with several selectors
             weightedRules->emplace(weight, std::move(newRule));
