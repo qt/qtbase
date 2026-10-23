@@ -559,6 +559,11 @@ void QDecompressHelper::clear()
     compressedDataBuffer.clear();
     decompressedDataBuffer.clear();
     decoderHasData = false;
+#if QT_CONFIG(brotli)
+    // Points into the output of the decoder we just destroyed
+    brotliUnconsumedDataPtr = nullptr;
+    brotliUnconsumedAmount = 0;
+#endif
 
     countDecompressed = false;
     countHelper.reset();

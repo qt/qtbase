@@ -34,6 +34,9 @@ private Q_SLOTS:
     void countAheadPartialRead_data();
     void countAheadPartialRead();
 
+    void clearAndReuse_data();
+    void clearAndReuse();
+
     void decompressBigData_data();
     void decompressBigData();
 
@@ -314,6 +317,39 @@ void tst_QDecompressHelper::countAheadPartialRead()
 
     read += helper.read(actual.data() + read, expected.size() - read);
 
+    QCOMPARE(read, expected.size());
+    QCOMPARE(actual, expected);
+}
+
+void tst_QDecompressHelper::clearAndReuse_data()
+{
+    sharedDecompress_data();
+}
+
+// Test that clear() resets all of the decoder state, even if it is called
+// while the decoder still has output that has not been read yet.
+void tst_QDecompressHelper::clearAndReuse()
+{
+    QDecompressHelper helper;
+
+    QFETCH(QByteArray, encoding);
+    QFETCH(QByteArray, data);
+    QFETCH(QByteArray, expected);
+    QVERIFY(helper.setEncoding(encoding));
+    helper.feed(data);
+    char c;
+    QCOMPARE(helper.read(&c, 1), 1);
+    QCOMPARE(helper.read(&c, 1), 1);
+    QCOMPARE(c, expected.at(1));
+    helper.clear();
+    QVERIFY(!helper.isValid());
+
+    QVERIFY(helper.setEncoding(encoding));
+    helper.feed(data);
+    QByteArray actual(expected.size(), Qt::Uninitialized);
+    qsizetype read = helper.read(actual.data(), 1);
+    QCOMPARE(read, 1);
+    read += helper.read(actual.data() + read, actual.size() - read);
     QCOMPARE(read, expected.size());
     QCOMPARE(actual, expected);
 }
