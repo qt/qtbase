@@ -1498,6 +1498,7 @@ void tst_QAccessibilityMac::tableViewRepeatedModelChanges()
     // table model alive, the way an AX client that caches elements would.
     NSMutableArray *heldElements = [NSMutableArray array];
     const auto visitAll = [&] {
+        bool valid = true;
         NSArray *rows = table.tableRows;
         for (id row in rows) {
             [heldElements addObject:row];
@@ -1510,20 +1511,22 @@ void tst_QAccessibilityMac::tableViewRepeatedModelChanges()
                         [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)cell];
                 (void)cellObject.title;
                 (void)cellObject.parent;
+                valid &= ![cellObject errorOccurred];
                 [cellObject release];
             }
+            valid &= ![rowObject errorOccurred];
             [cells release];
             [rowObject release];
         }
         const NSUInteger count = rows.count;
         [rows release];
-        return count;
+        return valid ? count : NSNotFound;
     };
 
     QCOMPARE(visitAll(), 4u);
     for (int i = 0; i < 3; ++i) {
         tableWidget->setCurrentCell(tableWidget->rowCount() - 1, 1);
-        QCOMPARE(selectedChildrenTitles(tableRef).size(), 1);
+        QCOMPARE(selectedChildrenTitles(tableRef), QStringList{tableWidget->currentItem()->text()});
 
         @autoreleasepool {
             tableWidget->insertRow(1);
