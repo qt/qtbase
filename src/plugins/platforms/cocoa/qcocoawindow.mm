@@ -1954,7 +1954,7 @@ void QCocoaWindow::removePopupMonitor()
 
 void QCocoaWindow::setupPopupMonitor()
 {
-    // we open a popup window while we are not active. None of our existing event
+    // If we open a popup window while we are not active none of our existing event
     // handlers will get called if the user now clicks anywhere outside the application
     // or activates another window. Use a global event monitor to watch for mouse
     // presses, and close popups. We also want mouse tracking in the popup to work, so
@@ -1986,16 +1986,26 @@ void QCocoaWindow::setupPopupMonitor()
             }
         }];
     }
-    // The activation observer also gets called when we become active because the user clicks
-    // into the popup. This should not close the popup, so QCocoaApplicationDelegate's
-    // applicationDidBecomeActive implementation removes this observer.
+    // Similarly, if another application is activated while our non-active application is
+    // showing a popup, we want to hide the popup. Except if the activated application is
+    // our own, which might happen for example if a popup is shown during startup, before
+    // our logic to activate the app on launch runs in applicationDidFinishLaunching, or
+    // simply because the user clicks into the popup, thereby activating our app. Once
+    // our app is active the observer is no longer needed, so we remove it.
     if (!s_applicationActivationObserver) {
-        s_applicationActivationObserver = [[[NSWorkspace sharedWorkspace] notificationCenter]
-                                            addObserverForName:NSWorkspaceDidActivateApplicationNotification
-                                                        object:nil queue:nil
-                                                    usingBlock:^(NSNotification *){
-            closeAllPopups();
-        }];
+        s_applicationActivationObserver = [NSWorkspace.sharedWorkspace.notificationCenter
+            addObserverForName:NSWorkspaceDidActivateApplicationNotification object:nil queue:NSOperationQueue.mainQueue
+                usingBlock:^(NSNotification *notification) {
+                    NSRunningApplication *activatedApp = notification.userInfo[NSWorkspaceApplicationKey];
+                    if ([activatedApp isEqual:NSRunningApplication.currentApplication]) {
+                        [NSWorkspace.sharedWorkspace.notificationCenter
+                            removeObserver:s_applicationActivationObserver];
+                        s_applicationActivationObserver = nil;
+                        return;
+                    }
+                    closeAllPopups();
+                }
+            ];
     }
 }
 
