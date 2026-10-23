@@ -568,17 +568,19 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->translate(0.5, 0.5);
             const QRect rect = option->rect.adjusted(0, 0, -1, -1);
 
-            QColor pressedColor = mergedColors(option->palette.base().color(), option->palette.windowText().color(), 85);
-            painter->setBrush(Qt::NoBrush);
-
-            const auto state = option->state;
-            // Gradient fill
-            QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
-            gradient.setColorAt(0, (state & State_Sunken) ? pressedColor : option->palette.base().color().darker(115));
-            gradient.setColorAt(0.15, (state & State_Sunken) ? pressedColor : option->palette.base().color());
-            gradient.setColorAt(1, (state & State_Sunken) ? pressedColor : option->palette.base().color());
-
-            painter->setBrush((state & State_Sunken) ? QBrush(pressedColor) : gradient);
+            if (option->state & State_Sunken) {
+                const QColor pressedColor = mergedColors(option->palette.base().color(),
+                                                         option->palette.windowText().color(), 85);
+                painter->setBrush(pressedColor);
+            } else {
+                // Gradient fill
+                const QColor baseColor = option->palette.base().color();
+                QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
+                gradient.setColorAt(0, baseColor.darker(115));
+                gradient.setColorAt(0.15, baseColor);
+                gradient.setColorAt(1, baseColor);
+                painter->setBrush(gradient);
+            }
 
             if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
                 painter->setPen(highlightedOutline);
@@ -591,7 +593,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             const qreal checkMarkPadding = 1 + rect.width() * 0.13; // at least one pixel padding
 
             if (checkbox->state & State_NoChange) {
-                gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft());
+                QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
                 checkMarkColor.setAlpha(80);
                 gradient.setColorAt(0, checkMarkColor);
                 checkMarkColor.setAlpha(140);
@@ -606,8 +608,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 qreal penWidth = QStyleHelper::dpiScaled(1.5, dpi);
                 penWidth = qMax<qreal>(penWidth, 0.13 * rect.height());
                 penWidth = qMin<qreal>(penWidth, 0.20 * rect.height());
-                QPen checkPen = QPen(checkMarkColor, penWidth);
                 checkMarkColor.setAlpha(210);
+                const QPen checkPen = QPen(checkMarkColor, penWidth);
                 painter->translate(dpiScaled(-0.8, dpi), dpiScaled(0.5, dpi));
                 painter->setPen(checkPen);
                 painter->setBrush(Qt::NoBrush);
