@@ -109,14 +109,15 @@ struct PartialParse
 Q_DECLARE_OPERATORS_FOR_FLAGS(PartialParse::Flaws)
 
 QLocaleData::DigitSequence
-parseDigitSequence(QStringView text, qsizetype from, const QLocale &locale, bool allowSign)
+parseDigitSequence(QStringView text, qsizetype from, const QLocale &locale, bool allowSign,
+                   qsizetype maxDigits)
 {
     const auto *const data = QLocalePrivate::get(locale)->m_data;
     using DS = QLocaleData::DigitSequence;
     DS::Options flags;
     if (allowSign)
         flags.setFlag(DS::Option::AllowSign, true);
-    return data->digitSequence(text, flags, from);
+    return data->digitSequence(text, flags, from, maxDigits);
 }
 
 std::vector<PartialParse> spacePadExtend(std::vector<PartialParse> matched, QStringView text)
@@ -549,8 +550,15 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
         // If that's used up the string, the code below shall reject the field.
     }
 
+    // Parsed field must be representable in an int, so don't try to read more
+    // digits than an int can hold (digits10 is how many 9s in a row an int can
+    // hold; but int can hold some sequences one digit longer than that):
+    constexpr qsizetype IntMaxDigits = std::numeric_limits<int>::digits10 + 1;
+    // TODO: for SecondFraction, if width is unlimited (not yet exercised),
+    // iterate past stray dangling digits, within reason, after useful data.
+
     const auto parsed = parseDigitSequence(text, base.results.endIndex + leadingSpace,
-                                           locale, config.allowSign);
+                                           locale, config.allowSign, IntMaxDigits);
     if (parsed.sign == '-' && !config.allowNegative)
         return matches;
     const bool zeroPad = flags.testFlag(Flag::ZeroPad);
@@ -559,12 +567,6 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
     // This is necessarily positive: the use of chop(1) below depends on that.
 
     QByteArrayView digits{parsed.digits};
-    // Parsed field must be representable in an int, so don't try to read more
-    // digits than an int can hold (digits10 is how many 9s in a row an int can
-    // hold; but int can hold some sequences one digit longer than that):
-    constexpr int intMaxDigits = std::numeric_limits<int>::digits10 + 1;
-    if (digits.size() > intMaxDigits)
-        digits = digits.first(intMaxDigits);
     // Take config and flags into account, too:
     if (config.maxDigits > 0) {
         // Allow config.width to override config.maxDigits:

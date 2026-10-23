@@ -4753,7 +4753,8 @@ char NumericTokenizer::nextToken()
     The given \a numeric provides data relevant to number-parsing, including
     what constitute digits. Options in \a flags control whether a leading sign
     may be included. If \a from is passed, the scan starts at this index in \a
-    text, otherwise from the start.
+    text, otherwise from the start. If \a maxDigits is given and not negative,
+    the scan stops after this many digits.
 
     The resulting \l {QLocaleData::}{DigitSequence} contains the parsed digit
     sequence, \c digits, describes the positions of digits within \a text, by \c
@@ -4771,10 +4772,10 @@ char NumericTokenizer::nextToken()
     hasSign(), its \c sign represents
     \c{text.first(digitBounds.front()).sliced(from)}.
 
-    \sa {QLocaleData::DigitSequence::}{used()}
+    \sa {QLocaleData::DigitSequence::}{used()}, QLocaleData::digitSequence()
 */
 QLocaleData::DigitSequence::DigitSequence(QStringView text, NumericData &&numeric,
-                                          Options flags, qsizetype from)
+                                          Options flags, qsizetype from, qsizetype maxDigits)
     : digitBounds({ from })
 {
     NumericTokenizer tokens(text, std::move(numeric), IntegerMode, from);
@@ -4794,7 +4795,8 @@ QLocaleData::DigitSequence::DigitSequence(QStringView text, NumericData &&numeri
     }
 
     // Iterate what remains:
-    while (currentToken || !tokens.done()) {
+    while ((currentToken || !tokens.done())
+           && (maxDigits < 0 || digits.size() < maxDigits)) {
         if (!currentToken)
             currentToken = tokens.nextToken();
         if (!currentToken)
@@ -4813,12 +4815,28 @@ QLocaleData::DigitSequence::DigitSequence(QStringView text, NumericData &&numeri
 
 /*!
     \internal
-    QLocaleData::DigitSequence QLocaleData::digitSequence(QStringView text, QLocaleData::DigitSequence::Options, qsizetype from)
+    QLocaleData::DigitSequence QLocaleData::digitSequence(QStringView text, QLocaleData::DigitSequence::Options, qsizetype from, qsizetype maxDigits)
     \brief Returns a DigitSequence describing some portion of \a text starting at \a from.
 
     As for the \l{QLocaleData::}{DigitSequence} constructor, supplying the
     \l{QLocaleData::}{NumericData} for this QLocaleData instance and the
     IntegerMode as the relevant argument to it.
+
+    If \a maxDigits is not passed, this will scan as many digits as it finds
+    (after, where relevant, a sign) in a prefix of \a text and allocate space in
+    which to store the results. If \a text is not known to be of sensible length
+    for the data it is expected to contain, this may involve unbounded scanning
+    and allocation. Callers should consider how many digits they can possibly
+    have a use for and pass that, or a conservative upper-bound estimate of it,
+    for \a maxDigits whenever they reasonably can.
+
+    If digits beyond that are technically acceptable (albeit useless), for
+    example surplus digits in a fractional part, the caller can use a
+    QStringIterator on \a text, starting at the return's endIndex(), and
+    iterating as long as NumericData::digitValue() >= 0, to skip over the
+    surplus. (You can also use digitValue() > 0 to resolve the case where a
+    trailing 5 followed by 0s leaves open the possibility of an exact half in
+    need of rounding according to the parity of the digit before the 5.)
 */
 
 /*
