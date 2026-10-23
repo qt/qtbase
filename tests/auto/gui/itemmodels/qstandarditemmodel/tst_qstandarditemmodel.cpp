@@ -123,6 +123,11 @@ private slots:
     void signalsOnTakeItem();
     void takeChild();
     void createPersistentOnLayoutAboutToBeChanged();
+    void autoTristate();
+    void autoTristateFirstColumnOnly();
+    void autoTristateItemData();
+    void autoTristateChildrenChanged();
+    void autoTristateWithoutModel();
 private:
     QStandardItemModel *m_model = nullptr;
     QPersistentModelIndex persistent;
@@ -1895,6 +1900,280 @@ void tst_QStandardItemModel::takeChild()  // QTBUG-117900
       QCOMPARE(base1.child(0, 0), nullptr);
       QCOMPARE(base2.child(0, 0), item);
   }
+}
+
+static QStandardItem *checkableItem(const QString &text)
+{
+    auto item = new QStandardItem(text);
+    item->setCheckable(true);
+    item->setCheckState(Qt::Unchecked);
+    return item;
+}
+
+void tst_QStandardItemModel::autoTristate() // QTBUG-59173
+{
+    QStandardItemModel model;
+    QAbstractItemModelTester tester(&model);
+    QStandardItem *parent = checkableItem("parent");
+    parent->setAutoTristate(true);
+    QStandardItem *child0 = checkableItem("child0");
+    QStandardItem *child1 = checkableItem("child1");
+    child1->setAutoTristate(true);
+    QStandardItem *grandChild0 = checkableItem("grandChild0");
+    QStandardItem *grandChild1 = checkableItem("grandChild1");
+    child1->appendRow(grandChild0);
+    child1->appendRow(grandChild1);
+    parent->appendRow(child0);
+    parent->appendRow(child1);
+    model.appendRow(parent);
+    QCOMPARE(parent->checkState(), Qt::Unchecked);
+
+    QSignalSpy dataChangedSpy(&model, &QAbstractItemModel::dataChanged);
+    auto changedItems = [&] {
+        QList<QStandardItem *> items;
+        for (const QList<QVariant> &args : std::as_const(dataChangedSpy))
+            items.append(model.itemFromIndex(args.at(0).toModelIndex()));
+        dataChangedSpy.clear();
+        return items;
+    };
+
+    // A child changes: the parent follows
+    QVERIFY(model.setData(child0->index(), Qt::Checked, Qt::CheckStateRole));
+    QCOMPARE(parent->checkState(), Qt::PartiallyChecked);
+    QCOMPARE(changedItems(), (QList<QStandardItem *>{child0, parent}));
+
+    // A grandchild changes: both ancestors follow
+    grandChild0->setCheckState(Qt::Checked);
+    QCOMPARE(child1->checkState(), Qt::PartiallyChecked);
+    QCOMPARE(parent->checkState(), Qt::PartiallyChecked);
+    QCOMPARE(changedItems(), (QList<QStandardItem *>{grandChild0, child1, parent}));
+
+    grandChild1->setCheckState(Qt::Checked);
+    QCOMPARE(child1->checkState(), Qt::Checked);
+    QCOMPARE(parent->checkState(), Qt::Checked);
+    QCOMPARE(changedItems(), (QList<QStandardItem *>{grandChild1, child1, parent}));
+
+    // The parent changes: all descendants follow, each notified once
+    QVERIFY(model.setData(parent->index(), Qt::Unchecked, Qt::CheckStateRole));
+    QCOMPARE(child0->checkState(), Qt::Unchecked);
+    QCOMPARE(child1->checkState(), Qt::Unchecked);
+    QCOMPARE(grandChild0->checkState(), Qt::Unchecked);
+    QCOMPARE(grandChild1->checkState(), Qt::Unchecked);
+    QCOMPARE(parent->checkState(), Qt::Unchecked);
+    QCOMPARE(changedItems(),
+             (QList<QStandardItem *>{child0, grandChild0, grandChild1, child1, parent}));
+
+    // Checking a partially checked parent, whose own stored state is already
+    // Qt::Checked, still updates the children
+    parent->setCheckState(Qt::Checked);
+    child0->setCheckState(Qt::Unchecked);
+    QCOMPARE(parent->checkState(), Qt::PartiallyChecked);
+    dataChangedSpy.clear();
+    parent->setCheckState(Qt::Checked);
+    QCOMPARE(child0->checkState(), Qt::Checked);
+    QCOMPARE(parent->checkState(), Qt::Checked);
+    QCOMPARE(changedItems(), (QList<QStandardItem *>{child0, parent}));
+
+    // A child without a check state: the parent has none either
+    parent->appendRow(new QStandardItem("not checkable"));
+    QVERIFY(!parent->data(Qt::CheckStateRole).isValid());
+
+    // Turning auto-tristate off changes the check state
+    QCOMPARE(child1->checkState(), Qt::Checked);
+    child1->setCheckState(Qt::Unchecked);
+    for (QStandardItem *grandChild : {grandChild0, grandChild1})
+        grandChild->setCheckState(Qt::Checked);
+    dataChangedSpy.clear();
+    child1->setAutoTristate(false);
+    QCOMPARE(child1->checkState(), Qt::Unchecked);
+    QCOMPARE(dataChangedSpy.size(), 2);
+    QVERIFY(dataChangedSpy.at(0).at(2).value<QList<int>>().contains(Qt::CheckStateRole));
+    QCOMPARE(changedItems(), (QList<QStandardItem *>{child1, parent}));
+    child1->setAutoTristate(true);
+    QCOMPARE(child1->checkState(), Qt::Checked);
+    QCOMPARE(changedItems(), (QList<QStandardItem *>{child1, parent}));
+
+    // Without auto-tristate, the parent keeps its own state
+    parent->setAutoTristate(false);
+    QCOMPARE(parent->checkState(), Qt::Checked);
+    child0->setCheckState(Qt::Unchecked);
+    QCOMPARE(parent->checkState(), Qt::Checked);
+}
+
+void tst_QStandardItemModel::autoTristateFirstColumnOnly()
+{
+    // As in a QTreeView, only the children in the first column count
+    QStandardItemModel model;
+    QAbstractItemModelTester tester(&model);
+    QStandardItem *parent = checkableItem("parent");
+    parent->setAutoTristate(true);
+    QStandardItem *child0 = checkableItem("child0");
+    QStandardItem *child1 = checkableItem("child1");
+    parent->appendRow({child0, child1});
+    model.appendRow(parent);
+
+    QSignalSpy dataChangedSpy(&model, &QAbstractItemModel::dataChanged);
+    child1->setCheckState(Qt::Checked);
+    QCOMPARE(parent->checkState(), Qt::Unchecked);
+    QCOMPARE(dataChangedSpy.size(), 1);
+    QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), child1->index());
+    child0->setCheckState(Qt::Checked);
+    QCOMPARE(parent->checkState(), Qt::Checked);
+    parent->setCheckState(Qt::Unchecked);
+    QCOMPARE(child0->checkState(), Qt::Unchecked);
+    QCOMPARE(child1->checkState(), Qt::Checked);
+}
+
+void tst_QStandardItemModel::autoTristateItemData()
+{
+    QStandardItemModel model;
+    QAbstractItemModelTester tester(&model);
+    QStandardItem *parent = checkableItem("parent");
+    parent->setAutoTristate(true);
+    QStandardItem *child0 = checkableItem("child0");
+    QStandardItem *child1 = checkableItem("child1");
+    parent->appendRow(child0);
+    parent->appendRow(child1);
+    model.appendRow(parent);
+    QSignalSpy dataChangedSpy(&model, &QAbstractItemModel::dataChanged);
+
+    // setItemData() on a child notifies the parent
+    QVERIFY(model.setItemData(child0->index(), {{Qt::CheckStateRole, Qt::Checked}}));
+    QCOMPARE(parent->checkState(), Qt::PartiallyChecked);
+    QCOMPARE(model.itemData(parent->index()).value(Qt::CheckStateRole), Qt::PartiallyChecked);
+    QCOMPARE(dataChangedSpy.size(), 2);
+    QCOMPARE(dataChangedSpy.at(1).at(0).toModelIndex(), parent->index());
+    dataChangedSpy.clear();
+
+    // setItemData() on the parent sets the children
+    QVERIFY(model.setItemData(parent->index(), {{Qt::CheckStateRole, Qt::Checked}}));
+    QCOMPARE(child1->checkState(), Qt::Checked);
+    QCOMPARE(model.itemData(parent->index()).value(Qt::CheckStateRole), Qt::Checked);
+    QCOMPARE(dataChangedSpy.size(), 2);
+    QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), child1->index());
+    QCOMPARE(dataChangedSpy.at(1).at(0).toModelIndex(), parent->index());
+    dataChangedSpy.clear();
+
+    // Same when the stored value of the parent doesn't change
+    child1->setCheckState(Qt::Unchecked);
+    dataChangedSpy.clear();
+    QVERIFY(model.setItemData(parent->index(), {{Qt::CheckStateRole, Qt::Checked}}));
+    QCOMPARE(child1->checkState(), Qt::Checked);
+    QCOMPARE(dataChangedSpy.size(), 2);
+    QCOMPARE(dataChangedSpy.at(1).at(0).toModelIndex(), parent->index());
+    dataChangedSpy.clear();
+
+    // clearData() on a child: the parent has no check state anymore
+    child1->clearData();
+    QVERIFY(!parent->data(Qt::CheckStateRole).isValid());
+    QVERIFY(!model.itemData(parent->index()).contains(Qt::CheckStateRole));
+    QCOMPARE(dataChangedSpy.size(), 2);
+    QCOMPARE(dataChangedSpy.at(1).at(0).toModelIndex(), parent->index());
+}
+
+void tst_QStandardItemModel::autoTristateChildrenChanged()
+{
+    QStandardItemModel model;
+    QAbstractItemModelTester tester(&model);
+    QStandardItem *grandParent = checkableItem("grandParent");
+    grandParent->setAutoTristate(true);
+    QStandardItem *parent = checkableItem("parent");
+    parent->setAutoTristate(true);
+    parent->appendRow({checkableItem("child0"), checkableItem("child1")});
+    grandParent->appendRow(parent);
+    model.appendRow(grandParent);
+    grandParent->setCheckState(Qt::Checked);
+    QCOMPARE(parent->checkState(), Qt::Checked);
+
+    // Indexes, since itemFromIndex() would create items in empty places
+    QSignalSpy dataChangedSpy(&model, &QAbstractItemModel::dataChanged);
+    auto changedIndexes = [&] {
+        QSet<QModelIndex> indexes;
+        for (const QList<QVariant> &args : std::as_const(dataChangedSpy))
+            indexes.insert(args.at(0).toModelIndex());
+        dataChangedSpy.clear();
+        return indexes;
+    };
+
+    // Adding an unchecked row
+    parent->appendRow({checkableItem("newChild0"), checkableItem("newChild1")});
+    QCOMPARE(parent->checkState(), Qt::PartiallyChecked);
+    QCOMPARE(grandParent->checkState(), Qt::PartiallyChecked);
+    QCOMPARE(changedIndexes(), (QSet<QModelIndex>{parent->index(), grandParent->index()}));
+
+    // Removing it again
+    parent->removeRow(1);
+    QCOMPARE(parent->checkState(), Qt::Checked);
+    QCOMPARE(grandParent->checkState(), Qt::Checked);
+    QCOMPARE(changedIndexes(), (QSet<QModelIndex>{parent->index(), grandParent->index()}));
+
+    // Replacing a child
+    QStandardItem *replacement = checkableItem("replacement");
+    parent->setChild(0, 0, replacement);
+    QCOMPARE(parent->checkState(), Qt::Unchecked);
+    QCOMPARE(grandParent->checkState(), Qt::Unchecked);
+    QCOMPARE(changedIndexes(),
+             (QSet<QModelIndex>{replacement->index(), parent->index(), grandParent->index()}));
+
+    // Replacing a child in another column changes nothing
+    QStandardItem *otherReplacement = checkableItem("otherReplacement");
+    parent->setChild(0, 1, otherReplacement);
+    QCOMPARE(changedIndexes(), QSet<QModelIndex>{otherReplacement->index()});
+
+    // Deleting a child
+    QStandardItem *checkedChild = checkableItem("checkedChild");
+    checkedChild->setCheckState(Qt::Checked);
+    parent->appendRow(checkedChild);
+    QCOMPARE(parent->checkState(), Qt::PartiallyChecked);
+    dataChangedSpy.clear();
+    delete checkedChild;
+    QVERIFY(!parent->data(Qt::CheckStateRole).isValid());
+    QVERIFY(changedIndexes().contains(parent->index()));
+    parent->removeRow(1);
+    dataChangedSpy.clear();
+
+    // Inserting a first column without items: the children have no check state
+    parent->insertColumn(0, {});
+    QVERIFY(!parent->data(Qt::CheckStateRole).isValid());
+    QVERIFY(changedIndexes().contains(parent->index()));
+    parent->removeColumn(0);
+    QCOMPARE(parent->checkState(), Qt::Unchecked);
+    QVERIFY(changedIndexes().contains(parent->index()));
+
+    // Taking a child
+    delete parent->takeChild(0, 0);
+    QVERIFY(!parent->data(Qt::CheckStateRole).isValid());
+    QVERIFY(changedIndexes().contains(parent->index()));
+
+    // Taking an item with children doesn't notify while they are taken out
+    // from the model for a moment
+    parent->setChild(0, 0, checkableItem("child"));
+    bool notifiedWithoutChildren = false;
+    connect(&model, &QAbstractItemModel::dataChanged, &model, [&] {
+        if (parent->model() && parent->rowCount() == 0)
+            notifiedWithoutChildren = true;
+    });
+    QStandardItem *taken = grandParent->takeChild(0, 0);
+    QCOMPARE(taken, parent);
+    QCOMPARE(parent->rowCount(), 1);
+    QVERIFY(!notifiedWithoutChildren);
+    delete taken;
+}
+
+void tst_QStandardItemModel::autoTristateWithoutModel()
+{
+    QStandardItem parent;
+    parent.setCheckable(true);
+    parent.setAutoTristate(true);
+    QStandardItem *child0 = checkableItem("child0");
+    QStandardItem *child1 = checkableItem("child1");
+    parent.appendRow(child0);
+    parent.appendRow(child1);
+    parent.setCheckState(Qt::Checked);
+    QCOMPARE(child0->checkState(), Qt::Checked);
+    QCOMPARE(child1->checkState(), Qt::Checked);
+    child0->setCheckState(Qt::Unchecked);
+    QCOMPARE(parent.checkState(), Qt::PartiallyChecked);
 }
 
 

@@ -81,7 +81,8 @@ public:
           rows(0),
           columns(0),
           q_ptr(nullptr),
-          lastKnownIndex(-1)
+          lastKnownIndex(-1),
+          settingChildrenCheckState(false)
         { }
 
     inline int childIndex(int row, int column) const {
@@ -147,6 +148,10 @@ public:
     }
 
     void changeFlags(bool enable, Qt::ItemFlags f);
+    QStandardItem *checkStateParent() const;
+    bool setChildrenCheckState(const QVariant &value);
+    void notifyAutoTristateAncestors();
+    void notifyChildrenChanged();
     void setItemData(const QMap<int, QVariant> &roles);
     QMap<int, QVariant> itemData() const;
 
@@ -166,6 +171,7 @@ public:
     QStandardItem *q_ptr;
 
     mutable int lastKnownIndex; // this is a cached value
+    bool settingChildrenCheckState;
 };
 
 class QStandardItemModelPrivate : public QAbstractItemModelPrivate

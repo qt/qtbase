@@ -11,6 +11,7 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qbitarray.h>
 #include <QtCore/qmimedata.h>
+#include <QtCore/qscopedvaluerollback.h>
 #include <QtCore/qiodevice.h>
 #include <private/qduplicatetracker_p.h>
 #include <private/qstandarditemmodel_p.h>
@@ -128,6 +129,8 @@ void QStandardItemPrivate::setChild(int row, int column, QStandardItem *item,
             const QModelIndex idx = model->index(row, column, q->index());
             emit model->dataChanged(idx, idx);
         }
+        if (column == 0)
+            notifyChildrenChanged();
     }
 }
 
@@ -148,6 +151,113 @@ void QStandardItemPrivate::changeFlags(bool enable, Qt::ItemFlags f)
 
 /*!
   \internal
+
+  Returns the parent of this item if this item is in the first column,
+  where the children of an auto-tristate item are.
+*/
+QStandardItem *QStandardItemPrivate::checkStateParent() const
+{
+    return parent && position().second == 0 ? parent : nullptr;
+}
+
+/*!
+  \internal
+
+  Returns the check state that results from the check state of the children
+  of \a item, or an invalid QVariant if one of them has no check state.
+*/
+static QVariant childrenCheckState(const QStandardItem *item)
+{
+    bool checkedChildren = false;
+    bool uncheckedChildren = false;
+    const int rowCount = item->rowCount();
+    for (int row = 0; row < rowCount; ++row) {
+        const QStandardItem *child = item->child(row);
+        const QVariant value = child ? child->data(Qt::CheckStateRole) : QVariant();
+        if (!value.isValid())
+            return QVariant();
+
+        switch (value.toInt()) {
+        case Qt::Unchecked:
+            uncheckedChildren = true;
+            break;
+        case Qt::Checked:
+            checkedChildren = true;
+            break;
+        default:
+            return Qt::PartiallyChecked;
+        }
+
+        if (uncheckedChildren && checkedChildren)
+            return Qt::PartiallyChecked;
+    }
+    return uncheckedChildren ? Qt::Unchecked : Qt::Checked;
+}
+
+/*!
+  \internal
+
+  If this item is auto-tristate and \a value is Qt::Checked or Qt::Unchecked,
+  sets \a value as the check state of the children of this item that have
+  a check state.
+  Returns \c true if the check state of one of them changed.
+*/
+bool QStandardItemPrivate::setChildrenCheckState(const QVariant &value)
+{
+    Q_Q(QStandardItem);
+    if (rows == 0 || !value.isValid() || value.toInt() == Qt::PartiallyChecked
+        || !q->isAutoTristate()) {
+        return false;
+    }
+    // The children don't notify this item, setData() does it once at the end
+    const QScopedValueRollback guard(settingChildrenCheckState, true);
+    bool changed = false;
+    for (int row = 0; row < rows; ++row) {
+        QStandardItem *child = q->child(row);
+        const QVariant oldState = child ? child->data(Qt::CheckStateRole) : QVariant();
+        if (oldState.isValid()) {
+            child->setData(value, Qt::CheckStateRole);
+            changed = changed || oldState.toInt() != value.toInt();
+        }
+    }
+    return changed;
+}
+
+/*!
+  \internal
+
+  Makes the model emit dataChanged() for the auto-tristate ancestors whose
+  check state depends on the check state of this item.
+*/
+void QStandardItemPrivate::notifyAutoTristateAncestors()
+{
+    if (!model)
+        return;
+    for (QStandardItem *p = checkStateParent();
+         p && p->isAutoTristate() && !p->d_func()->settingChildrenCheckState;
+         p = p->d_func()->checkStateParent()) {
+        model->d_func()->itemChanged(p, {Qt::CheckStateRole});
+    }
+}
+
+/*!
+  \internal
+
+  Makes the model emit dataChanged() for this item, if it is auto-tristate,
+  and for its auto-tristate ancestors.
+  Called after children in the first column were added, removed or replaced.
+*/
+void QStandardItemPrivate::notifyChildrenChanged()
+{
+    Q_Q(QStandardItem);
+    if (!model || !q->isAutoTristate())
+        return;
+    model->d_func()->itemChanged(q, {Qt::CheckStateRole});
+    notifyAutoTristateAncestors();
+}
+
+/*!
+  \internal
 */
 void QStandardItemPrivate::childDeleted(QStandardItem *child)
 {
@@ -156,6 +266,8 @@ void QStandardItemPrivate::childDeleted(QStandardItem *child)
     const auto modelIndex = child->index();
     children.replace(index, nullptr);
     emit model->dataChanged(modelIndex, modelIndex);
+    if (index % columnCount() == 0)
+        notifyChildrenChanged();
 }
 
 namespace {
@@ -235,6 +347,10 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
         return item1.role < item2.role;
     };
 
+    const auto checkState = roles.constFind(Qt::CheckStateRole);
+    const bool hasCheckState = checkState != roles.cend();
+    const bool childrenChanged = hasCheckState && setChildrenCheckState(*checkState);
+
     std::sort(values.begin(), values.end(), byRole);
 
     /*
@@ -268,7 +384,12 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
             else if (!hasEditRole && hasDisplayRole)
                 roleKeys.push_back(Qt::EditRole);
             model->d_func()->itemChanged(q, roleKeys);
+            if (hasCheckState)
+                notifyAutoTristateAncestors();
         }
+    } else if (childrenChanged && model) {
+        model->d_func()->itemChanged(q, {Qt::CheckStateRole});
+        notifyAutoTristateAncestors();
     }
 }
 
@@ -277,10 +398,17 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
 */
 QMap<int, QVariant> QStandardItemPrivate::itemData() const
 {
+    Q_Q(const QStandardItem);
     QMap<int, QVariant> result;
     for (const auto &data : values) {
         if (data.role != Qt::StandardItemFlagsRole)
             result.insert(data.role, data.value);
+    }
+    if (rows > 0 && q->isAutoTristate()) {
+        if (const QVariant state = childrenCheckState(q); state.isValid())
+            result.insert(Qt::CheckStateRole, state);
+        else
+            result.remove(Qt::CheckStateRole);
     }
     return result;
 }
@@ -623,6 +751,7 @@ void QStandardItemModelPrivate::rowsInserted(QStandardItem *parent,
     if (parent == root.data())
         rowHeaderItems.insert(row, count, nullptr);
     q->endInsertRows();
+    parent->d_func()->notifyChildrenChanged();
 }
 
 /*!
@@ -635,6 +764,8 @@ void QStandardItemModelPrivate::columnsInserted(QStandardItem *parent,
     if (parent == root.data())
         columnHeaderItems.insert(column, count, nullptr);
     q->endInsertColumns();
+    if (column == 0)
+        parent->d_func()->notifyChildrenChanged();
 }
 
 /*!
@@ -654,6 +785,7 @@ void QStandardItemModelPrivate::rowsRemoved(QStandardItem *parent,
         rowHeaderItems.remove(row, count);
     }
     q->endRemoveRows();
+    parent->d_func()->notifyChildrenChanged();
 }
 
 /*!
@@ -673,6 +805,8 @@ void QStandardItemModelPrivate::columnsRemoved(QStandardItem *parent,
         columnHeaderItems.remove(column, count);
     }
     q->endRemoveColumns();
+    if (column == 0)
+        parent->d_func()->notifyChildrenChanged();
 }
 
 /*!
@@ -888,25 +1022,40 @@ void QStandardItem::setData(const QVariant &value, int role)
     const QList<int> roles((role == Qt::DisplayRole) ?
                                 QList<int>({Qt::DisplayRole, Qt::EditRole}) :
                                 QList<int>({role}));
+    const bool childrenChanged = role == Qt::CheckStateRole && d->setChildrenCheckState(value);
+    const bool wasAutoTristate = role == Qt::StandardItemFlagsRole && isAutoTristate();
+    auto notifyModel = [&] {
+        if (!d->model)
+            return;
+        // Turning auto-tristate on or off changes the check state
+        const bool autoTristateChanged = role == Qt::StandardItemFlagsRole
+                && wasAutoTristate != isAutoTristate();
+        const QList<int> changedRoles = autoTristateChanged
+                ? QList<int>{role, Qt::CheckStateRole} : roles;
+        d->model->d_func()->itemChanged(this, changedRoles);
+        if (role == Qt::CheckStateRole || autoTristateChanged)
+            d->notifyAutoTristateAncestors();
+    };
     for (auto it = d->values.begin(); it != d->values.end(); ++it) {
         if ((*it).role == role) {
             if (value.isValid()) {
-                if ((*it).value.userType() == value.userType() && (*it).value == value)
+                if ((*it).value.userType() == value.userType() && (*it).value == value) {
+                    if (childrenChanged)
+                        notifyModel();
                     return;
+                }
                 (*it).value = value;
             } else {
                 // Don't need to assign proper it after erase() since we
                 // return unconditionally in this code path.
                 d->values.erase(it);
             }
-            if (d->model)
-                d->model->d_func()->itemChanged(this, roles);
+            notifyModel();
             return;
         }
     }
     d->values.append(QStandardItemData(role, value));
-    if (d->model)
-        d->model->d_func()->itemChanged(this, roles);
+    notifyModel();
 }
 
 /*!
@@ -919,9 +1068,13 @@ void QStandardItem::clearData()
     Q_D(QStandardItem);
     if (d->values.isEmpty())
         return;
+    const bool hadCheckState = data(Qt::CheckStateRole).isValid();
     d->values.clear();
-    if (d->model)
+    if (d->model) {
         d->model->d_func()->itemChanged(this, QList<int>{});
+        if (hadCheckState)
+            d->notifyAutoTristateAncestors();
+    }
 }
 
 /*!
@@ -940,6 +1093,8 @@ QVariant QStandardItem::data(int role) const
 {
     Q_D(const QStandardItem);
     const int r = (role == Qt::EditRole) ? Qt::DisplayRole : role;
+    if (r == Qt::CheckStateRole && d->rows > 0 && isAutoTristate())
+        return childrenCheckState(this);
     for (const auto &value : d->values) {
         if (value.role == r)
             return value.value;
@@ -1358,11 +1513,14 @@ void QStandardItem::setCheckable(bool checkable)
 */
 
 /*!
-  Determines that the item is tristate and controlled by QTreeWidget if \a tristate
-  is \c true.
-  This enables automatic management of the state of parent items in QTreeWidget
-  (checked if all children are checked, unchecked if all children are unchecked,
-  or partially checked if only some children are checked).
+  Determines that the check state of the item depends on the check state of
+  its children if \a tristate is \c true: checked if all children are checked,
+  unchecked if all children are unchecked, or partially checked if only some
+  children are checked. Setting the item to checked or unchecked sets the
+  children that have a check state to that state too.
+
+  Each child row counts once, through its item in the first column. An item
+  without children keeps its own check state.
 
   \since 5.6
   \sa isAutoTristate(), setCheckable(), setCheckState()
@@ -1376,7 +1534,8 @@ void QStandardItem::setAutoTristate(bool tristate)
 /*!
   \fn bool QStandardItem::isAutoTristate() const
 
-  Returns whether the item is tristate and is controlled by QTreeWidget.
+  Returns whether the check state of the item depends on the check state of
+  its children.
 
   The default value is false.
 
@@ -1878,13 +2037,14 @@ QStandardItem *QStandardItem::takeChild(int row, int column)
                     model_d->rowsAboutToBeRemoved(item, 0, savedRows - 1);
                     item_d->rows = 0;
                     item_d->children = QVector<QStandardItem*>(); //slightly faster than clear
-                    model_d->rowsRemoved(item, 0, savedRows);
+                    // Not rowsRemoved(): the children come back right below
+                    d->model->endRemoveRows();
                 }
                 if (savedCols > 0) {
                     model_d->columnsAboutToBeRemoved(item, 0, savedCols - 1);
                     item_d->columns = 0;
                     item_d->children = QVector<QStandardItem*>(); //slightly faster than clear
-                    model_d->columnsRemoved(item, 0, savedCols);
+                    d->model->endRemoveColumns();
                 }
                 item_d->rows = savedRows;
                 item_d->columns = savedCols;
@@ -1896,6 +2056,8 @@ QStandardItem *QStandardItem::takeChild(int row, int column)
         d->children.replace(index, nullptr);
         if (changedIdx.isValid())
             d->model->dataChanged(changedIdx, changedIdx);
+        if (item && column == 0)
+            d->notifyChildrenChanged();
     }
     return item;
 }
