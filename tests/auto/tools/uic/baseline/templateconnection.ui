@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TemplateConnectionForm</class>
+ <widget class="QWidget" name="TemplateConnectionForm">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="CustomPlot" name="source"/>
+   </item>
+   <item>
+    <widget class="CustomPlot" name="target"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CustomPlot</class>
+   <extends>QWidget</extends>
+   <header>customplot.h</header>
+   <container>0</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>source</sender>
+   <signal>valuesChanged(QList&lt;double&gt;)</signal>
+   <receiver>target</receiver>
+   <slot>setValues(QList&lt;double&gt;)</slot>
+  </connection>
+  <connection>
+   <sender>source</sender>
+   <signal>rangesChanged(QMap&lt;QString,int&gt;)</signal>
+   <receiver>target</receiver>
+   <slot>setRanges(QMap&lt;QString,int&gt;)</slot>
+  </connection>
+ </connections>
+</ui>

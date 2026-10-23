@@ -106,10 +106,11 @@ static bool checkHeader(QStringView name)
     return !name.isEmpty() && std::all_of(name.cbegin(), name.cend(), isHeaderChar);
 }
 
-// Parameter list of a signal/slot signature, e.g. "int,QObject*"
+// Parameter list of a signal/slot signature, e.g. "int,QObject*" or "QMap<QString,int>"
 static bool isSignatureParameterChar(QChar c)
 {
-    return c == u',' || c == u' ' || c == u'*' || c == u'&' || c == u':' || isIdContinuation(c);
+    return c == u',' || c == u' ' || c == u'*' || c == u'&' || c == u'<' || c == u'>'
+            || c == u':' || isIdContinuation(c);
 }
 
 // Signal/slot signature of a connection, e.g. "valueChanged(int)": An identifier
