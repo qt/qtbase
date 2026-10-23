@@ -1841,7 +1841,7 @@ bool QOhosView::isMaximizeRequestSupportedOrLogWarning() const
     if (!m_ohosWindowProxy->isSubWindowMaximizeSupported()) {
         qCWarning(QtForOhos) << Q_FUNC_INFO << m_ownerWindow
             << "maximize request ignored: the sub window was created without maximize support"
-               " (requires API 26 and Qt::WindowMaximizeButtonHint)";
+               " (requires API 26, Qt::WindowMaximizeButtonHint and free window mode at creation)";
         return false;
     }
 
