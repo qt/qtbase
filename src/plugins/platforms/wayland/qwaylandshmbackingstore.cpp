@@ -363,10 +363,16 @@ QWaylandShmBuffer *QWaylandShmBackingStore::getBuffer(const QSize &size, bool &b
         }
     }
 
-    // Prune buffers that have mismatching size.
+    // Prune buffers that have a mismatching size or device pixel ratio. A buffer must not be
+    // reused across a scale change: its ratio is what maps logical coordinates to device
+    // pixels, and the requested pixel size carries no information about the scale (a surface
+    // whose physical size is pinned requests the same pixel size at every scale, so the scale
+    // cancels out of the size calculation).
+    const qreal scale = waylandWindow()->scale();
     for (auto i = mBuffers.size() - 1; i >= 0; --i) {
         QWaylandShmBuffer *buffer = mBuffers[i];
-        if (buffer->size() != size) {
+        if (buffer->size() != size
+            || !qFuzzyCompare(buffer->image()->devicePixelRatio(), scale)) {
             mBuffers.removeAt(i);
             if (mBackBuffer == buffer)
                 mBackBuffer = nullptr;
