@@ -584,11 +584,14 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (id)accessibilityParent {
     if (synthesizedRole == NSAccessibilityCellRole) {
-        // a synthetic cell without interface - shortcut to the row
+        QAccessibleInterface *tableInterface = QAccessible::accessibleInterface(axid);
+        if (!tableInterface || !tableInterface->isValid())
+            return nil;
         QMacAccessibilityElement *tableElement =
                     [QMacAccessibilityElement elementWithId:axid];
-        Q_ASSERT(tableElement && tableElement->rows);
-        Q_ASSERT(int(tableElement->rows.count) > m_rowIndex);
+        if (!tableElement->rows || m_rowIndex < 0
+            || m_rowIndex >= int(tableElement->rows.count))
+            return nil;
         QMacAccessibilityElement *rowElement = tableElement->rows[m_rowIndex];
         return rowElement;
     }
