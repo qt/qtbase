@@ -1453,15 +1453,22 @@ QOhosWindowProxy::createSubWindow(const SubWindowCreateInfo &createInfo)
     return std::shared_ptr<QOhosWindowProxy>(
         new QOhosWindowProxy(
             [&](QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> windowProxyDataConsumer) {
+                // HACK - outside free window mode, the platform shows a maximize button that does
+                // not work, although maximizeSupported is documented to have no effect there
+                auto subWindowCreateInfo = createInfo;
+                subWindowCreateInfo.maximizeSupported = createInfo.maximizeSupported
+                    && !m_jsScopeData->isWindowClosing()
+                    && isJsWindowInFreeWindowMode(*m_jsScopeData->jsWindowRef);
+
                 // HACK - calling createSubWindow from window may throw while the context is termination
                 // This is only a problem because we currenlty do not properly handle main window closing
                 // Remove this hacky branch after QTFOROH-1080 issues are resolved.
                 if (m_jsScopeData->isWindowClosing()) {
                     makeWindowProxyDataForSubWindowInJsThread(
-                        jsState, createInfo, std::move(windowProxyDataConsumer));
+                        jsState, subWindowCreateInfo, std::move(windowProxyDataConsumer));
                 } else {
                     makeWindowProxyDataForSubWindowInJsThread(
-                        jsState, m_jsScopeData->jsWindowRef->jsObject(), createInfo,
+                        jsState, m_jsScopeData->jsWindowRef->jsObject(), subWindowCreateInfo,
                         std::move(windowProxyDataConsumer));
                 }
             }));
