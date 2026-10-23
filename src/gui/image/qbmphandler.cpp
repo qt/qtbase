@@ -10,6 +10,8 @@
 #include <qlist.h>
 #include <qvariant.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 static void swapPixel01(QImage *image)        // 1-bpp: swap 0 and 1 pixels
@@ -576,6 +578,24 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
             memcpy(data + (h-y-1)*bpl, buf, bpl);
         }
         delete [] buf;
+    }
+
+    if (ncols > 0 && ncols < (1 << nbits)) {
+        // The pixel data can hold values the color table has no entry for.
+        // Give them one (opaque black), so the color table covers every pixel.
+        int maxIndex = 1;
+        if (depth == 8) {
+            maxIndex = 0;
+            for (int y = 0; y < image.height() && maxIndex < 255; ++y) {
+                const uchar *p = image.constScanLine(y);
+                maxIndex = qMax(maxIndex, int(*std::max_element(p, p + image.width())));
+            }
+        }
+        if (maxIndex >= ncols) {
+            image.setColorCount(maxIndex + 1);
+            for (int i = ncols; i <= maxIndex; ++i)
+                image.setColor(i, qRgb(0, 0, 0));
+        }
     }
 
     return true;

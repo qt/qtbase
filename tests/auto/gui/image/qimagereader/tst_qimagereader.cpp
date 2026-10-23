@@ -5,6 +5,7 @@
 
 #include <QBuffer>
 #include <QColorSpace>
+#include <QDataStream>
 #include <QDebug>
 #include <QImage>
 #include <QImageReader>
@@ -122,6 +123,8 @@ private slots:
     void readCorruptImage_data();
     void readCorruptImage();
     void readCorruptBmp();
+    void readBmpShortColorTable_data();
+    void readBmpShortColorTable();
 
     void supportsOption_data();
     void supportsOption();
@@ -1728,6 +1731,60 @@ void tst_QImageReader::readCorruptImage()
 void tst_QImageReader::readCorruptBmp()
 {
     QCOMPARE(QImage(prefix + "tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage(prefix + "tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
+}
+
+void tst_QImageReader::readBmpShortColorTable_data()
+{
+    QTest::addColumn<int>("bitCount");
+    QTest::addColumn<int>("colorCount");
+    QTest::addColumn<QByteArray>("pixels");
+    QTest::addColumn<int>("expectedColorCount");
+
+    QByteArray pixels8, pixels8InTable, pixels4;
+    for (int x = 0; x < 16; ++x) {
+        pixels8 += char(x * 17);
+        pixels8InTable += char(x % 4);
+    }
+    for (int x = 0; x < 16; x += 2)
+        pixels4 += char((x << 4) | (x + 1));
+
+    QTest::newRow("8 bit, 2 colors") << 8 << 2 << pixels8 << 256;
+    QTest::newRow("8 bit, 4 colors, pixels in the table") << 8 << 4 << pixels8InTable << 4;
+    QTest::newRow("4 bit, 3 colors") << 4 << 3 << pixels4 << 16;
+    QTest::newRow("1 bit, 1 color") << 1 << 1 << QByteArray("\xaa\xaa\0\0", 4) << 2;
+}
+
+void tst_QImageReader::readBmpShortColorTable()
+{
+    QFETCH(int, bitCount);
+    QFETCH(int, colorCount);
+    QFETCH(QByteArray, pixels);
+    QFETCH(int, expectedColorCount);
+
+    // A 16x1 BMP whose color table (biClrUsed) is shorter than its pixel values reach
+    QByteArray bmp;
+    QDataStream s(&bmp, QIODevice::WriteOnly);
+    s.setByteOrder(QDataStream::LittleEndian);
+    const quint32 offset = 14 + 40 + 4 * colorCount;
+    s.writeRawData("BM", 2);
+    s << quint32(offset + pixels.size()) << quint32(0) << offset;
+    s << quint32(40) << qint32(16) << qint32(1) << quint16(1) << quint16(bitCount)
+      << quint32(0) << quint32(pixels.size()) << qint32(0) << qint32(0)
+      << quint32(colorCount) << quint32(0);
+    for (int i = 0; i < colorCount; ++i)
+        s << quint32(qRgb(40 * i + 20, 100, 200) & 0xffffff);
+    s.writeRawData(pixels.constData(), pixels.size());
+
+    QImage image;
+    QVERIFY(image.loadFromData(bmp, "BMP"));
+    QCOMPARE(image.format(), bitCount == 1 ? QImage::Format_Mono : QImage::Format_Indexed8);
+    QCOMPARE(image.colorCount(), expectedColorCount);
+    for (int i = 0; i < colorCount; ++i)
+        QCOMPARE(image.color(i), qRgb(40 * i + 20, 100, 200));
+    for (int i = colorCount; i < expectedColorCount; ++i)
+        QCOMPARE(image.color(i), qRgb(0, 0, 0));
+    for (int x = 0; x < image.width(); ++x)
+        QVERIFY(image.pixelIndex(x, 0) < image.colorCount());
 }
 
 void tst_QImageReader::supportsOption_data()
