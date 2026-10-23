@@ -270,6 +270,7 @@ private slots:
 #if defined(QT_BUILD_INTERNAL)
     void scrollWithOverlap();
     void overlappedRegion();
+    void fastMove_data();
     void fastMove();
     void moveAccross();
     void moveInOutOverlapped();
@@ -985,26 +986,58 @@ void tst_QWidgetRepaintManager::overlappedRegion()
     QTRY_VERIFY(!overlap.isEmpty());
 }
 
+// Smallest move delta, starting at 25, whose size in native pixels is
+// (or is not) a whole number at the given scale factor. Returns 0 if
+// there is none.
+static int moveDelta(qreal factor, bool wholeNativePixels)
+{
+    for (int dx = 25; dx < 100; ++dx) {
+        const qreal nativeDx = dx * factor;
+        if (qFuzzyCompare(nativeDx, qreal(qRound(nativeDx))) == wholeNativePixels)
+            return dx;
+    }
+    return 0;
+}
+
+void tst_QWidgetRepaintManager::fastMove_data()
+{
+    QTest::addColumn<bool>("wholeNativePixels");
+
+    QTest::newRow("whole") << true;
+    QTest::newRow("fractional") << false;
+}
+
 void tst_QWidgetRepaintManager::fastMove()
 {
+    QFETCH(bool, wholeNativePixels);
+
     TestScene scene;
     scene.show();
     QVERIFY(QTest::qWaitForWindowExposed(&scene));
+
+    QWindow *window = scene.windowHandle();
+    const qreal roundingFactor = scene.devicePixelRatioF() / window->devicePixelRatio();
+    const qreal factor = roundingFactor * QHighDpiScaling::factor(window);
+    const int dx = moveDelta(factor, wholeNativePixels);
+    if (!dx)
+        QSKIP("No such move delta at this scale factor");
+    // QBackingStore::scroll() refuses deltas that are fractional in native pixels
+    const bool expectScroll = wholeNativePixels && m_implementsScroll;
 
     QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(&scene)->maybeRepaintManager();
     QVERIFY(repaintManager->dirtyRegion().isEmpty());
 
     // moving yellow; nothing obscured
-    scene.yellowChild->move(QPoint(25, 0));
+    scene.yellowChild->move(scene.yellowChild->pos() + QPoint(dx, 0));
     QVERIFY(repaintManager->dirtyRegion().isEmpty()); // fast move
-    if (m_implementsScroll) {
+    if (expectScroll) {
         QCOMPARE(repaintManager->dirtyWidgetList(), QList<QWidget *>() << &scene);
         QVERIFY(dirtyRegion(scene.yellowChild).isEmpty());
     } else {
         QCOMPARE(repaintManager->dirtyWidgetList(), QList<QWidget *>() << scene.yellowChild << &scene);
         QCOMPARE(dirtyRegion(scene.yellowChild), QRect(0, 0, 100, 100));
     }
-    QCOMPARE(dirtyRegion(&scene), QRect(0, 0, 25, 100));
+    QCOMPARE(dirtyRegion(&scene), QRect(0, 0, dx, 100));
     QTRY_VERIFY(dirtyRegion(&scene).isEmpty());
     QVERIFY(compareWidget(&scene));
 }
