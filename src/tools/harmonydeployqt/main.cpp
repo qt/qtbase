@@ -672,7 +672,37 @@ static bool copyRecursively(const QString &sourceDir, const QString &destDir, bo
     return true;
 }
 
-static bool copyTemplate(const Options &options)
+// Returns the array value of key in the JSON5 text content, brackets included,
+// or an empty string if there is none.
+static QString json5ArrayValue(const QString &content, QLatin1StringView key)
+{
+    const QRegularExpression keyRe("[\"']"_L1 + QRegularExpression::escape(QString(key))
+                                   + "[\"']\\s*:\\s*\\["_L1);
+    const QRegularExpressionMatch match = keyRe.match(content);
+    if (!match.hasMatch())
+        return {};
+    const qsizetype start = match.capturedEnd() - 1;
+    int depth = 0;
+    QChar quote;
+    for (qsizetype i = start; i < content.size(); ++i) {
+        const QChar c = content.at(i);
+        if (!quote.isNull()) {
+            if (c == u'\\')
+                ++i;
+            else if (c == quote)
+                quote = QChar();
+        } else if (c == u'"' || c == u'\'') {
+            quote = c;
+        } else if (c == u'[') {
+            ++depth;
+        } else if (c == u']' && --depth == 0) {
+            return content.sliced(start, i - start + 1);
+        }
+    }
+    return {};
+}
+
+static bool copyTemplate(const Options &options, bool keepSigningConfigs)
 {
     if (options.verbose) {
         fprintf(stdout, "Copying template from %s to %s\n",
@@ -708,6 +738,19 @@ static bool copyTemplate(const Options &options)
             fprintf(stdout, "Output directory already exists, will overwrite files\n");
     }
 
+    // DevEco Studio stores its signing configuration in build-profile.json5. Carry it
+    // over the overwrite below, so that it does not have to be set up after every build.
+    // Signing input passed to harmonydeployqt replaces it.
+    const QString buildProfilePath = options.outputDirectory + "/build-profile.json5"_L1;
+    QString signingConfigs;
+    if (keepSigningConfigs) {
+        QFile buildProfile(buildProfilePath);
+        if (buildProfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            signingConfigs =
+                    json5ArrayValue(QString::fromUtf8(buildProfile.readAll()), "signingConfigs"_L1);
+        }
+    }
+
     // Copy entire template
     if (!copyRecursively(options.harmonyOsPackageSourceDirectory, options.outputDirectory, options.verbose))
         return false;
@@ -725,6 +768,36 @@ static bool copyTemplate(const Options &options)
         const QString dst = options.outputDirectory + QLatin1Char('/') + QLatin1String(relPath);
         if (QFile::exists(src) && !copyFileIfNewer(src, dst, options.verbose, true))
             return false;
+    }
+
+    if (!signingConfigs.isEmpty() && signingConfigs != "[]"_L1) {
+        QFile buildProfile(buildProfilePath);
+        if (!buildProfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            fprintf(stderr, "Failed to open %s for reading\n", qPrintable(buildProfilePath));
+            return false;
+        }
+        QString content = QString::fromUtf8(buildProfile.readAll());
+        buildProfile.close();
+        const auto emptySigningConfigs = "\"signingConfigs\": []"_L1;
+        if (!content.contains(emptySigningConfigs)) {
+            fprintf(stderr,
+                    "Warning: the template's build-profile.json5 does not contain %s, so the"
+                    " existing signingConfigs are not kept\n",
+                    emptySigningConfigs.data());
+        } else {
+            content.replace(emptySigningConfigs, "\"signingConfigs\": "_L1 + signingConfigs);
+            if (!buildProfile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+                fprintf(stderr, "Failed to open %s for writing\n", qPrintable(buildProfilePath));
+                return false;
+            }
+            const QByteArray data = content.toUtf8();
+            if (buildProfile.write(data) != data.size()) {
+                fprintf(stderr, "Failed to write %s\n", qPrintable(buildProfilePath));
+                return false;
+            }
+            if (options.verbose)
+                fprintf(stdout, "  Kept signingConfigs of the existing build-profile.json5\n");
+        }
     }
 
     if (options.verbose)
@@ -3824,7 +3897,7 @@ int main(int argc, char *argv[])
     QString hapOutputPath;
 
     // Phase 1: Copy template
-    if (!copyTemplate(options)) {
+    if (!copyTemplate(options, !signing.enabled)) {
         fprintf(stderr, "Failed to copy template\n");
         return 1;
     }

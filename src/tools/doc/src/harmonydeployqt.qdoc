@@ -167,6 +167,20 @@
     \l{https://developer.huawei.com/consumer/en/deveco-studio/}{DevEco Studio}
     and use its run and debug tooling.
 
+    \c harmonydeployqt regenerates \c build-profile.json5 on every run, but keeps
+    its \c signingConfigs, so a signing configuration set up in DevEco Studio
+    survives rebuilds. This requires a package template whose
+    \c build-profile.json5 contains \c {"signingConfigs": []}, as the default
+    template does. The product uses the signing configuration named \c default.
+    If signing input is passed to \c harmonydeployqt, as described in
+    \l{Signing the HAP}, the kept \c signingConfigs are dropped.
+
+    This also applies to a signing configuration that an earlier run of
+    \c harmonydeployqt wrote into \c build-profile.json5 from signing input.
+    Later runs without signing input keep it, and hvigor signs the HAP with it.
+    To build an unsigned HAP again, delete \c build-profile.json5 from the
+    output directory or empty its \c signingConfigs.
+
     For more information about packaging and deploying a Qt application for
     HarmonyOS, see \l{Building and Deploying Qt Applications for HarmonyOS}.
 */
