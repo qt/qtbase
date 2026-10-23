@@ -12086,6 +12086,10 @@ void QWidgetPrivate::raise_sys()
     After this call the widget will be visually behind (and therefore
     obscured by) any overlapping sibling widgets.
 
+    \note On HarmonyOS, top-level windows cannot be lowered. The reason
+    is that the platform window API has no call to move a window below
+    other windows.
+
     \sa raise(), stackUnder()
 */
 
