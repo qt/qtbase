@@ -42,6 +42,7 @@ constexpr const char *napiLoadableModules[] = {
     "@ohos.bluetooth.connection",
     "@ohos.bluetooth.socket",
     "@ohos.bundle.bundleManager",
+    "@ohos.commonEventManager",
     "@ohos.data.uniformTypeDescriptor",
     "@ohos.deviceInfo",
     "@ohos.display",

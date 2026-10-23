@@ -1098,6 +1098,8 @@ qt_internal_extend_target(Core
     CONDITION
         QT_FEATURE_icu AND QT_FEATURE_timezone
         AND OHOS AND NOT QT_FEATURE_timezone_tzdb
+    SOURCES
+        platform/ohos/qohossystemtimezone.cpp platform/ohos/qohossystemtimezone_p.h
     LIBRARIES
         time_service_ndk
 )
