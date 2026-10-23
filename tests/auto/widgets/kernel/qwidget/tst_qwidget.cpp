@@ -4767,6 +4767,9 @@ void tst_QWidget::widgetAt()
     QVERIFY(QTest::qWaitForWindowExposed(w2.data()));
     QTRY_COMPARE(QApplication::widgetAt(testPos), w2.data());
 
+#ifdef Q_OS_HARMONY
+    QSKIP("HarmonyOS has no API to lower a window, QPlatformWindow::lower() does nothing there");
+#endif
     w2->lower();
     QTRY_COMPARE(QApplication::widgetAt(testPos), w1.data());
     w2->raise();
