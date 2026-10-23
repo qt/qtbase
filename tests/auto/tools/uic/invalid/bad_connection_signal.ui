@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <widget class="QWidget" name="source"/>
+  <widget class="QWidget" name="target"/>
+ </widget>
+ <connections>
+  <connection>
+   <sender>source</sender>
+   <signal>valueChanged(int) // x</signal>
+   <receiver>target</receiver>
+   <slot>setValue(int)</slot>
+  </connection>
+ </connections>
+</ui>

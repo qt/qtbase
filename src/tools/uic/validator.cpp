@@ -93,15 +93,34 @@ static bool checkClassName(QStringView name, bool allowTemplates = false)
             && std::all_of(name.cbegin() + 1, name.cend(), isValid);
 }
 
-// Sanity check: A coarse check for any characters that would allow a code injection (C++/Python)
-static bool isValidHeaderChar(QChar c)
+// Checks for characters that would allow a code injection (C++/Python):
+// Only explicitly listed characters are allowed.
+static bool isHeaderChar(QChar c)
 {
-    return !"<>\"'\n\t;#"_L1.contains(c);
+    return c == u'/' || c == u'\\' || c == u'.' || c == u'-' || c == u'+' || c == u':'
+            || c == u',' || c == u' ' || c == u'~' || isIdContinuation(c);
 }
 
-static bool sanityCheck(QStringView name)
+static bool checkHeader(QStringView name)
 {
-    return !name.isEmpty() && std::all_of(name.cbegin(), name.cend(), isValidHeaderChar);
+    return !name.isEmpty() && std::all_of(name.cbegin(), name.cend(), isHeaderChar);
+}
+
+// Parameter list of a signal/slot signature, e.g. "int,QObject*"
+static bool isSignatureParameterChar(QChar c)
+{
+    return c == u',' || c == u' ' || c == u'*' || c == u'&' || c == u':' || isIdContinuation(c);
+}
+
+// Signal/slot signature of a connection, e.g. "valueChanged(int)": An identifier
+// followed by a parameter list that must not contain parentheses
+static bool checkConnectionSignature(QStringView name)
+{
+    const qsizetype paren = name.indexOf(u'(');
+    if (paren <= 0 || !name.endsWith(u')') || !checkPropertyName(name.first(paren)))
+        return false;
+    const QStringView params = name.sliced(paren + 1, name.size() - paren - 2);
+    return std::all_of(params.cbegin(), params.cend(), isSignatureParameterChar);
 }
 
 static QString msgInvalidValue(const QString &name, const QString &value)
@@ -245,7 +264,7 @@ void Validator::acceptCustomWidget(DomCustomWidget *customWidget)
     }
     if (customWidget->hasElementHeader())  {
         const QString &header = customWidget->elementHeader()->text();
-        if (!sanityCheck(header))
+        if (!checkHeader(header))
             m_errors.append(msgInvalidHeader(header));
     }
     TreeWalker::acceptCustomWidget(customWidget);
@@ -253,15 +272,15 @@ void Validator::acceptCustomWidget(DomCustomWidget *customWidget)
 
 void Validator::acceptInclude(DomInclude *incl)
 {
-    if (!sanityCheck(incl->text()))
+    if (!checkHeader(incl->text()))
         m_errors.append(msgInvalidHeader(incl->text()));
     TreeWalker::acceptInclude(incl);
 }
 
 void Validator::acceptConnection(DomConnection *connection)
 {
-    if (!sanityCheck(connection->elementSender()) || !sanityCheck(connection->elementSignal())
-        || !sanityCheck(connection->elementReceiver()) || !sanityCheck(connection->elementSlot())) {
+    if (!checkConnectionSignature(connection->elementSignal())
+        || !checkConnectionSignature(connection->elementSlot())) {
         m_errors.append(msgInvalidConnection(connection));
     }
     TreeWalker::acceptConnection(connection);

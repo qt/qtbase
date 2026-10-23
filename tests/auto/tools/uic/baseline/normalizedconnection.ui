@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NormalizedConnectionForm</class>
+ <widget class="QWidget" name="NormalizedConnectionForm">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLineEdit" name="line-edit"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="status-label"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>line-edit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>status-label</receiver>
+   <slot>setText(QString)</slot>
+  </connection>
+ </connections>
+</ui>

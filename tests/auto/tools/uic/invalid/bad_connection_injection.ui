@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <widget class="CustomWidget" name="source"/>
+  <widget class="QWidget" name="target"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CustomWidget</class>
+   <extends>QWidget</extends>
+   <header>customwidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <connections>
+  <connection>
+   <sender>source</sender>
+   <signal>x), R, SLOT(y)), evil(0), QObject::connect(S, SIGNAL(x</signal>
+   <receiver>target</receiver>
+   <slot>setValue(int)</slot>
+  </connection>
+ </connections>
+</ui>
