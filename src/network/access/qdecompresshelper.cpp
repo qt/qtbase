@@ -628,11 +628,12 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
                 inflateStream->zfree = Z_NULL;
                 inflateStream->opaque = Z_NULL;
                 if (inflateInit2(inflateStream, MAX_WBITS + 32) != Z_OK) {
-                    delete inflateStream;
-                    decoderPointer = nullptr;
-                    // Failed to reinitialize, so we'll just return what we have
-                    compressedDataBuffer.advanceReadPointer(input.size() - avail_in);
-                    return bytesDecoded;
+                    // We can't decode the next member, and returning what we have would leave
+                    // us without a decoder for the data that follows. readInternal() calls
+                    // clear() on error, which frees the stream.
+                    errorStr = QCoreApplication::translate(
+                            "QHttp", "Failed to initialize the compression decoder.");
+                    return -1;
                 } else {
                     inflateStream->next_in = next_in;
                     inflateStream->avail_in = avail_in;
@@ -680,6 +681,12 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
     qint64 bytesDecoded = 0;
 
     BrotliDecoderState *brotliDecoderState = toBrotliPointer(decoderPointer);
+    if (!brotliDecoderState) {
+        // The stream has ended and the decoder was freed (see BROTLI_DECODER_RESULT_SUCCESS
+        // below). Brotli streams can't be concatenated, so drop anything fed after the end.
+        compressedDataBuffer.clear();
+        return 0;
+    }
 
     while (decoderHasData && bytesDecoded < maxSize) {
         Q_ASSERT(brotliUnconsumedDataPtr || BrotliDecoderHasMoreOutput(brotliDecoderState));
