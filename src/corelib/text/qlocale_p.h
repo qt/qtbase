@@ -472,7 +472,7 @@ public:
         Q_AUTOTEST_EXPORT // All the hard work is in this constructor:
         DigitSequence(QStringView text, NumericData &&numeric,
                       DigitSequence::Options flags = DigitSequence::Option::Default,
-                      qsizetype from = 0);
+                      qsizetype from = 0, qsizetype maxDigits = -1);
         DigitSequence(const DigitSequence &) = default;
         DigitSequence(DigitSequence &&) = default;
         DigitSequence &operator=(const DigitSequence &) = default;
@@ -542,8 +542,8 @@ public:
     [[nodiscard]]
     DigitSequence digitSequence(QStringView text,
                                 DigitSequence::Options flags = DigitSequence::Option::Default,
-                                qsizetype from = 0) const
-    { return DigitSequence(text, NumericData(this, IntegerMode), flags, from); }
+                                qsizetype from = 0, qsizetype maxDigits = -1) const
+    { return DigitSequence(text, NumericData(this, IntegerMode), flags, from, maxDigits); }
 
     // this function is used in QIntValidator (QtGui)
     [[nodiscard]] Q_CORE_EXPORT ParsingResult

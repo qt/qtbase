@@ -421,7 +421,8 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
 
     const QLocaleData *const locDat = QLocalePrivate::get(locale)->m_data;
     using Digits = QLocaleData::DigitSequence;
-    const Digits early = locDat->digitSequence(text, {}, cut);
+    // We can be interested in no more than four digits, two per field.
+    const Digits early = locDat->digitSequence(text, {}, cut, 4);
     Q_ASSERT(!early.sign);
 
     Digits hrs = early;
@@ -436,7 +437,7 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
     if (!sep.isEmpty()) {
         const qsizetype sepAt = text.indexOf(sep, cut);
         if (sepAt == hrs.endIndex()) // Separator must immediately follow hour field:
-            mins = locDat->digitSequence(text, {}, sepAt + sep.size());
+            mins = locDat->digitSequence(text, {}, sepAt + sep.size(), 2);
         else // If missing or misplaced, we only have an hour field:
             mins = mins.first(0);
     }
