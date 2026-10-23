@@ -41,6 +41,9 @@ private Q_SLOTS:
     void archiveBomb();
 
     void bigZlib();
+
+    void brotliDataAfterStreamEnd_data();
+    void brotliDataAfterStreamEnd();
 };
 
 void tst_QDecompressHelper::initTestCase()
@@ -452,6 +455,46 @@ void tst_QDecompressHelper::bigZlib()
     }
 #  endif
 #endif
+}
+
+void tst_QDecompressHelper::brotliDataAfterStreamEnd_data()
+{
+#if !QT_CONFIG(brotli)
+    QSKIP("This test requires brotli support");
+#endif
+    QTest::addColumn<bool>("countAhead");
+
+    QTest::newRow("read") << false;
+    QTest::newRow("count-ahead") << true;
+}
+
+// Brotli has no concept of multiple streams following each other, so data
+// arriving after the end of the stream must be discarded.
+void tst_QDecompressHelper::brotliDataAfterStreamEnd()
+{
+    const QByteArray data = QByteArray::fromBase64("DwWAaGVsbG8gd29ybGQD");
+    const QByteArray expected("hello world");
+
+    QDecompressHelper helper;
+    QFETCH(bool, countAhead);
+    helper.setCountingBytesEnabled(countAhead);
+    QVERIFY(helper.setEncoding("br"));
+
+    helper.feed(data);
+    QByteArray actual(expected.size() * 2, Qt::Uninitialized);
+    qsizetype read = helper.read(actual.data(), actual.size());
+    QCOMPARE(read, expected.size());
+    QCOMPARE(actual.first(read), expected);
+    QCOMPARE(helper.read(actual.data(), actual.size()), 0);
+    QVERIFY(!helper.hasData());
+
+    helper.feed(data);
+    QVERIFY(helper.isValid());
+    if (countAhead)
+        QCOMPARE(helper.uncompressedSize(), 0);
+    QCOMPARE(helper.read(actual.data(), actual.size()), 0);
+    QVERIFY(helper.isValid());
+    QVERIFY(!helper.hasData());
 }
 
 QTEST_MAIN(tst_QDecompressHelper)
