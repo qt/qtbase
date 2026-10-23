@@ -1313,6 +1313,20 @@ void tst_QStyleSheetStyle::background()
 
         widget->hide();
     }
+    {
+        // ensure that the correct (specific) rule is used
+        const QString styleSheet =
+                "*, *::tab { background-color: yellow; } QPushButton { background-color: red; }";
+        QPushButton button;
+        button.setStyleSheet(styleSheet);
+        button.ensurePolished();
+        QCOMPARE(button.palette().button().color(), Qt::red);
+
+        QLabel label;
+        label.setStyleSheet(styleSheet);
+        label.ensurePolished();
+        QCOMPARE(label.palette().button().color(), Qt::yellow);
+    }
 }
 
 void tst_QStyleSheetStyle::tabAlignment()
