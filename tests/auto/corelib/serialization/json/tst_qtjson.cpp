@@ -16,7 +16,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qregularexpression.h"
 #include "private/qnumeric_p.h"
 #include "private/qjson_p.h"
+
 #include <limits>
+#include <QtCore/qxptype_traits.h>
 
 using namespace Qt::StringLiterals;
 
@@ -70,6 +72,7 @@ private Q_SLOTS:
     void nullArrays();
     void nullObject();
     void constNullObject();
+    void constSubscriptIsNotAssignable();
 
     void keySorting_data();
     void keySorting();
@@ -1557,6 +1560,33 @@ void tst_QtJson::nullObject()
     QCOMPARE(nullObject, QJsonObject());
     QCOMPARE(nullObject.take("foo"), QJsonValue(QJsonValue::Undefined));
     QCOMPARE(nullObject.contains("foo"), false);
+}
+
+namespace ConstSubscriptIsNotAssignable {
+namespace detail {
+template <typename LHS, typename RHS>
+using test = decltype(std::declval<LHS &&>()[std::declval<RHS &&>()] = std::declval<QJsonValue&&>());
+}
+template <typename LHS, typename RHS>
+constexpr bool check = !qxp::is_detected_v<detail::test, LHS, RHS>;
+} // namespace ConstSubscriptIsNotAssignable
+
+void tst_QtJson::constSubscriptIsNotAssignable()
+{
+    // QTBUG-56221: `const QJsonObject o; o["foo"] = "bar";` must not compile,
+    // because it silently modifies a temporary instead of the object.
+
+    // already OK:
+    static_assert(ConstSubscriptIsNotAssignable::check<const QJsonValue&, QString>);
+    static_assert(ConstSubscriptIsNotAssignable::check<const QJsonValue&, qsizetype>);
+    static_assert(ConstSubscriptIsNotAssignable::check<const QJsonDocument&, QString>);
+    static_assert(ConstSubscriptIsNotAssignable::check<const QJsonDocument&, qsizetype>);
+
+    // not yet OK; can't QEXPECT_FAIL a static_assert, so check at run-time:
+    QEXPECT_FAIL("", "QTBUG-56221: design flaw: assigns to a temporary", Continue);
+    QVERIFY((ConstSubscriptIsNotAssignable::check<const QJsonObject&, QString>));
+    QEXPECT_FAIL("", "QTBUG-56221: design flaw: assigns to a temporary", Continue);
+    QVERIFY((ConstSubscriptIsNotAssignable::check<const QJsonArray&, qsizetype>));
 }
 
 void tst_QtJson::constNullObject()
