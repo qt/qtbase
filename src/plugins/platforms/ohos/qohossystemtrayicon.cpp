@@ -98,13 +98,24 @@ std::function<QNapi::Array(QOhosJsState &)> makeEmptyJsArrayFactory()
     };
 }
 
-QNapi::Object getContextForStatusBarManager(QOhosJsState &jsState)
+std::optional<QNapi::Object> tryGetContextForStatusBarManager(QOhosJsState &jsState)
 {
     auto optQAbility = jsState.defaultQAbility();
-    if (!optQAbility)
-        qOhosReportFatalErrorAndAbort("%s: no default Ability instance", Q_FUNC_INFO);
+    if (!optQAbility) {
+        qOhosPrintfWarning("%s: no default Ability instance", Q_FUNC_INFO);
+        return std::nullopt;
+    }
 
     return optQAbility->eval<QNapi::Object>("context");
+}
+
+QNapi::Object getContextForStatusBarManager(QOhosJsState &jsState)
+{
+    auto optContext = tryGetContextForStatusBarManager(jsState);
+    if (!optContext)
+        qOhosReportFatalErrorAndAbort("%s: no context for the status bar manager", Q_FUNC_INFO);
+
+    return *optContext;
 }
 
 std::shared_ptr<void> registerOhosIconLeftClickListener(
@@ -133,9 +144,17 @@ std::shared_ptr<void> registerOhosIconLeftClickListener(
 
 QNapi::Promise removeIconFromOhosStatusBar(QOhosJsState &jsState)
 {
+    auto optContext = tryGetContextForStatusBarManager(jsState);
+    if (!optContext) {
+        qOhosPrintfWarning(
+            "%s: no context for the status bar manager, skipping the removal of the icon",
+            Q_FUNC_INFO);
+        return QtOhos::makeResolvedPromise(jsState.env());
+    }
+
     jsState.eval(
         "@kit.StatusBarExtensionKit.statusBarManager.removeFromStatusBar(*)",
-        {getContextForStatusBarManager(jsState)});
+        {*optContext});
 
     qOhosPrintfDebug("%s: Successfully removed icon from status bar", Q_FUNC_INFO);
 
