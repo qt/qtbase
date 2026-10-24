@@ -1917,7 +1917,8 @@ Qt::DockWidgetArea QDockWidget::dockLocation() const
         return Qt::NoDockWidgetArea;
 
     auto *mainWindow = mainwindow_from_dock(this);
-    Q_ASSERT(mainWindow);
+    if (!mainWindow)
+        return Qt::NoDockWidgetArea;
     // FIXME in Qt 7: Make dockWidgetArea take a const QDockWidget* argument
     return mainWindow->dockWidgetArea(const_cast<QDockWidget *>(this));
 }
