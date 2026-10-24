@@ -9,6 +9,7 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qdiriterator.h>
 #include <QScreen>
+#include <QWindow>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtCore/qdiriterator.h>
@@ -63,6 +64,8 @@ private slots:
     void testAndroidActivity();
     void testRunOnAndroidMainThread();
     void gracefullyFailLoadingMissingLibrary();
+    void expandedClientAreaGeometry_data();
+    void expandedClientAreaGeometry();
 #if QT_CONFIG(widgets)
     void safeAreaWithWindowFlagsAndStates_data();
     void safeAreaWithWindowFlagsAndStates();
@@ -296,6 +299,38 @@ void tst_Android::testRunOnAndroidMainThread()
         QVERIFY(task.isFinished());
         QVERIFY(!task.isResultReadyAt(0));
     }
+}
+
+void tst_Android::expandedClientAreaGeometry_data()
+{
+    QTest::addColumn<Qt::WindowState>("state");
+    QTest::newRow("normal") << Qt::WindowNoState;
+    QTest::newRow("maximized") << Qt::WindowMaximized;
+    QTest::newRow("fullscreen") << Qt::WindowFullScreen;
+}
+
+void tst_Android::expandedClientAreaGeometry()
+{
+    QFETCH(Qt::WindowState, state);
+
+    QWindow window;
+    window.setFlags(Qt::Window | Qt::ExpandedClientAreaHint);
+    const QRect screenGeometry = window.screen()->geometry();
+    const QRect requestedGeometry(screenGeometry.topLeft() + QPoint(20, 20),
+                                  screenGeometry.size() / 2);
+    window.setGeometry(requestedGeometry);
+    window.setWindowState(state);
+    // show() would replace the requested state with Android's default.
+    window.setVisible(true);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCOMPARE(window.windowState(), state);
+    const QRect expectedGeometry = state == Qt::WindowNoState ? requestedGeometry : screenGeometry;
+    QTRY_COMPARE(window.geometry(), expectedGeometry);
+
+    window.hide();
+    window.setVisible(true);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QTRY_COMPARE(window.geometry(), expectedGeometry);
 }
 
 #if QT_CONFIG(widgets)

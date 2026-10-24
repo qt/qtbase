@@ -217,7 +217,8 @@ void QAndroidPlatformWindow::setVisible(bool visible)
             const Qt::WindowStates states = window()->windowStates();
             const Qt::WindowFlags flags = window()->flags();
             applySystemUi(states, flags);
-            if (states & Qt::WindowFullScreen || flags & Qt::ExpandedClientAreaHint)
+            if (states & Qt::WindowFullScreen
+                    || ((states & Qt::WindowMaximized) && (flags & Qt::ExpandedClientAreaHint)))
                 setGeometry(platformScreen()->geometry());
             else if (states & Qt::WindowMaximized)
                 setGeometry(platformScreen()->availableGeometry());
