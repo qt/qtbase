@@ -857,8 +857,11 @@ Qt::DockWidgetArea dockLocation(const QSignalSpy *spy)
 
 void tst_QDockWidget::dockLocationChanged()
 {
-    qRegisterMetaType<Qt::DockWidgetArea>("Qt::DockWidgetArea");
-
+    {
+        QWidget w;
+        QDockWidget dw(QString(), &w);  // no QMainWindow as parent, no floating
+        QCOMPARE(dw.dockLocation(), Qt::NoDockWidgetArea);
+    }
     QMainWindow mw;
     QDockWidget dw;
     dw.setObjectName("dock1");
