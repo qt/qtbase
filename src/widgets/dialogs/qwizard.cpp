@@ -1037,7 +1037,7 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
         }
 
         QFont titleFont = q->font();
-        titleFont.setPointSize(titleFont.pointSize() + (mac ? 3 : 4));
+        titleFont.setPointSizeF(QFontInfo(titleFont).pointSizeF() + (mac ? 3 : 4));
         titleFont.setBold(true);
         titleLabel->setPalette(QPalette());
 
