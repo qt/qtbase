@@ -800,9 +800,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 tool.state = mflags;
                 prx->drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
 
-                const int fontSize = painter->font().pointSize();
+                const auto fontSize = QFontInfo(painter->font()).pointSizeF();
                 QFont f(d->assetFont);
-                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+                f.setPointSizeF(fontSize * 0.9f); // a little bit smaller
                 painter->setFont(f);
                 painter->setPen(controlTextColor(option));
                 const QRect textRect(menuareaRect.topLeft(), menuareaRect.size() - QSize(fw, 0));
@@ -1660,9 +1660,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 const auto vindRect = visualRect(btn->direction, btn->rect, indRect);
                 textRect.setWidth(textRect.width() - indSize);
 
-                int fontSize = painter->font().pointSize();
+                const auto fontSize = QFontInfo(painter->font()).pointSizeF();
                 QFont f(d->assetFont);
-                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+                f.setPointSizeF(fontSize * 0.9f); // a little bit smaller
                 painter->setFont(f);
                 painter->setPen(controlTextColor(option));
                 painter->drawText(vindRect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
@@ -1815,9 +1815,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 painter->drawText(vRect, text_flags, textToDraw);
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
-                int fontSize = menuitem->font.pointSize();
+                const auto fontSize = QFontInfo(painter->font()).pointSizeF();
                 QFont f(d->assetFont);
-                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+                f.setPointSizeF(fontSize * 0.9f); // a little bit smaller
                 painter->setFont(f);
                 int yOfs = qRound(fontSize / 3.0f); // an offset to align the '>' with the baseline of the text
                 QPoint tl(rect.right() - 2 * QWindowsStylePrivate::windowsArrowHMargin - contentItemHMargin,
@@ -3204,7 +3204,7 @@ template <typename C>
 int QWindows11Style::widthFromChar(const QFont &widgetFont, Icon icon, C &cacheContainer) const
 {
     Q_D(const QWindows11Style);
-    int fontSize = widgetFont.pointSize();
+    int fontSize = QFontInfo(widgetFont).pointSize();
     if (fontSize <= 0)
         fontSize = widgetFont.pixelSize() * -1;
     auto it = cacheContainer.find(fontSize);
