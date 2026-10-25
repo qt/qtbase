@@ -265,8 +265,8 @@ QWindows11Style::QWindows11Style(QWindows11StylePrivate &dd) : QWindowsVistaStyl
 {
     Q_D(QWindows11Style);
     const QStringList assetFontFamilies{ "Segoe Fluent Icons"_L1, "Segoe MDL2 Assets"_L1 };
-    d->assetFont = QFont(assetFontFamilies);
-    d->assetFont.setStyleStrategy(QFont::NoFontMerging);
+    d->m_assetFont = QFont(assetFontFamilies);
+    d->m_assetFont.setStyleStrategy(QFont::NoFontMerging);
     highContrastTheme = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Unknown;
     colorSchemeIndex = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
 }
@@ -420,7 +420,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 if (isEnabled && sb->activeSubControls & sc)
                     drawRoundedRect(painter, rect.adjusted(1, 1, -1, -2), Qt::NoPen,
                                     winUI3Color(subtleHighlightColor));
-                painter->setFont(d->assetFont);
+                painter->setFont(d->m_assetFont);
                 painter->setPen(sb->palette.color(isEnabled ? QPalette::Active : QPalette::Disabled,
                                                   QPalette::ButtonText));
                 painter->setBrush(Qt::NoBrush);
@@ -587,7 +587,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
             if (sub & SC_ComboBoxArrow) {
                 QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
-                painter->setFont(d->assetFont);
+                painter->setFont(d->m_assetFont);
                 painter->setPen(controlTextColor(option, true));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
             }
@@ -615,9 +615,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             if (widthFactor > 0.6) {
                 const bool isRtl = option->direction == Qt::RightToLeft;
 
-                QFont f = QFont(d->assetFont);
-                f.setPointSize(6);
-                painter->setFont(f);
+                painter->setFont(d->assetFont(6));
                 painter->setPen(winUI3Color(controlStrongFill));
 
                 const QRectF rectAdd =
@@ -658,9 +656,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
         }
         break;
     case CC_MdiControls:{
-            QFont buttonFont = QFont(d->assetFont);
-            buttonFont.setPointSize(8);
-            painter->setFont(buttonFont);
+            painter->setFont(d->assetFont(8));
             drawTitleBarCloseButton(CC_MdiControls, SC_MdiCloseButton, Icon::ChromeClose);
             drawTitleBarButton(CC_MdiControls, SC_MdiNormalButton, Icon::ChromeRestore);
             drawTitleBarButton(CC_MdiControls, SC_MdiMinButton, Icon::ChromeMinimize);
@@ -681,9 +677,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             QString title = painter->fontMetrics().elidedText(titlebar->text, Qt::ElideRight, textRect.width() - 14);
             painter->drawText(textRect.adjusted(1, 1, -1, -1), title, QTextOption(Qt::AlignHCenter | Qt::AlignVCenter));
 
-            QFont buttonFont = QFont(d->assetFont);
-            buttonFont.setPointSize(8);
-            painter->setFont(buttonFont);
+            painter->setFont(d->assetFont(8));
             auto shouldDrawButton = [titlebar](SubControl sc, Qt::WindowType flag) {
                 return (titlebar->subControls & sc) && (titlebar->titleBarFlags & flag);
             };
@@ -801,9 +795,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 prx->drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
 
                 const auto fontSize = QFontInfo(painter->font()).pointSizeF();
-                QFont f(d->assetFont);
-                f.setPointSizeF(fontSize * 0.9f); // a little bit smaller
-                painter->setFont(f);
+                painter->setFont(d->assetFont(fontSize * 0.9f));
                 painter->setPen(controlTextColor(option));
                 const QRect textRect(menuareaRect.topLeft(), menuareaRect.size() - QSize(fw, 0));
                 painter->drawText(textRect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
@@ -816,7 +808,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 rect = visualRect(toolbutton->direction, buttonRect, rect);
                 const QRect lblRect = label.rect - QMargins(0, 0, rect.width(), 0);
                 label.rect = visualRect(toolbutton->direction, buttonRect, lblRect);
-                painter->setFont(QFont(d->assetFont));
+                painter->setFont(d->m_assetFont);
                 painter->setPen(controlTextColor(option));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
             }
@@ -952,9 +944,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const auto indicator = header->sortIndicator;
             if (indicator != QStyleOptionHeader::None) {
-                QFont f(d->assetFont);
-                f.setPointSize(option->rect.height());
-                painter->setFont(f);
+                painter->setFont(d->assetFont(option->rect.height()));
                 painter->setPen(header->palette.text().color());
                 const auto ico = indicator == QStyleOptionHeader::SortUp ? Icon::ChevronDown
                                                                          : Icon::ChevronUp;
@@ -973,24 +963,20 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                             controlFillBrush(option, ControlType::ControlAlt));
 
             if (isOn) {
-                QFont f(d->assetFont);
-                f.setPointSize(8);
-                painter->setFont(f);
+                painter->setFont(d->assetFont(8));
                 painter->setPen(controlTextColor(option));
                 const auto *animation =
                         qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
                 const qreal clipWidth = animation ? animation->currentValue() : 1.0;
                 const QChar ico = fluentIcon(Icon::AcceptMedium);
-                QFontMetrics fm(d->assetFont);
+                QFontMetrics fm(d->m_assetFont);
                 QRectF clipRect = fm.boundingRect(ico);
                 clipRect.moveCenter(center);
                 clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0 + 0.5);
                 clipRect.setWidth(clipWidth * clipRect.width());
                 painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, ico);
             } else if (isPartial) {
-                QFont f(d->assetFont);
-                f.setPointSize(6);
-                painter->setFont(f);
+                painter->setFont(d->assetFont(6));
                 painter->setPen(controlTextColor(option));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::Dash12));
             }
@@ -1002,9 +988,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 const bool isReverse = option->direction == Qt::RightToLeft;
                 const bool isOpen = option->state & QStyle::State_Open;
                 const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
-                QFont f(d->assetFont);
-                f.setPointSize(8);
-                painter->setFont(f);
+                painter->setFont(d->assetFont(8));
                 if (view && view->alternatingRowColors() && vopt && vopt->state & State_Selected)
                     painter->setPen(winUI3Color(textOnAccentPrimary));
                 else
@@ -1649,9 +1633,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 textRect.setWidth(textRect.width() - indSize);
 
                 const auto fontSize = QFontInfo(painter->font()).pointSizeF();
-                QFont f(d->assetFont);
-                f.setPointSizeF(fontSize * 0.9f); // a little bit smaller
-                painter->setFont(f);
+                painter->setFont(d->assetFont(fontSize * 0.9f));
                 painter->setPen(controlTextColor(option));
                 painter->drawText(vindRect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
             }
@@ -1738,7 +1720,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 QRect vRect(visualMenuRect(QRect(rect.x() + xOffset, rect.y(),
                                                  checkMarkWidth, rect.height())));
                 QPainterStateGuard psg(painter);
-                painter->setFont(d->assetFont);
+                painter->setFont(d->m_assetFont);
                 painter->setPen(option->palette.text().color());
                 painter->drawText(vRect, Qt::AlignCenter, fluentIcon(Icon::CheckMark));
             }
@@ -1804,9 +1786,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
                 const auto fontSize = QFontInfo(painter->font()).pointSizeF();
-                QFont f(d->assetFont);
-                f.setPointSizeF(fontSize * 0.9f); // a little bit smaller
-                painter->setFont(f);
+                painter->setFont(d->assetFont(fontSize * 0.9f));
                 int yOfs = qRound(fontSize / 3.0f); // an offset to align the '>' with the baseline of the text
                 QPoint tl(rect.right() - 2 * QWindowsStylePrivate::windowsArrowHMargin - contentItemHMargin,
                           rect.top() + yOfs);
@@ -2970,7 +2950,7 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
         auto *d = const_cast<QWindows11StylePrivate *>(d_func());
         QIcon &icon = d->m_standardIcons[ico];
         if (icon.isNull()) {
-            auto engine = new WinFontIconEngine(fluentIcon(ico), d->assetFont);
+            auto engine = new WinFontIconEngine(fluentIcon(ico), d->m_assetFont);
             engine->setScale(scale);
             icon = QIcon(engine);
         }
@@ -3164,7 +3144,7 @@ void QWindows11Style::drawIndicatorArrow(QPainter *painter, const QRect &rect,
         return;
     }
     QPainterStateGuard psg(painter);
-    painter->setFont(d->assetFont);
+    painter->setFont(d->m_assetFont);
     painter->setPen(pen);
     painter->drawText(rect, Qt::AlignCenter, fluentIcon(ico));
 }
@@ -3197,7 +3177,7 @@ int QWindows11Style::widthFromChar(const QFont &widgetFont, Icon icon, C &cacheC
         fontSize = widgetFont.pixelSize() * -1;
     auto it = cacheContainer.find(fontSize);
     if (it == cacheContainer.end()) {
-        QFont f(d->assetFont);
+        QFont f(d->m_assetFont);
         QFontMetrics fm(f.resolve(widgetFont));
         const auto width = fm.horizontalAdvance(fluentIcon(icon));
         cacheContainer.insert(fontSize, width);

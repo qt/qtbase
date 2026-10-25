@@ -1293,8 +1293,8 @@ QWindowsVistaStyle::QWindowsVistaStyle() : QWindowsVistaStyle(*new QWindowsVista
 QWindowsVistaStyle::QWindowsVistaStyle(QWindowsVistaStylePrivate &dd) : QWindowsStyle(dd)
 {
     Q_D(QWindowsVistaStyle);
-    d->assetFont = QFont("Segoe MDL2 Assets"_L1);
-    d->assetFont.setStyleStrategy(QFont::NoFontMerging);
+    d->m_assetFont = QFont("Segoe MDL2 Assets"_L1);
+    d->m_assetFont.setStyleStrategy(QFont::NoFontMerging);
 }
 
 /*!
@@ -4859,22 +4859,22 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
     switch (standardIcon) {
     case SP_TitleBarMinButton:
         if (d->m_titleBarMinIcon.isNull())
-            d->m_titleBarMinIcon = QIcon(new WinFontIconEngine(QChar(0xE921), d->assetFont));
+            d->m_titleBarMinIcon = QIcon(new WinFontIconEngine(QChar(0xE921), d->m_assetFont));
         return d->m_titleBarMinIcon;
 
     case SP_TitleBarMaxButton:
         if (d->m_titleBarMaxIcon.isNull())
-            d->m_titleBarMaxIcon = QIcon(new WinFontIconEngine(QChar(0xE922), d->assetFont));
+            d->m_titleBarMaxIcon = QIcon(new WinFontIconEngine(QChar(0xE922), d->m_assetFont));
         return d->m_titleBarMaxIcon;
 
     case SP_TitleBarCloseButton:
         if (d->m_titleBarCloseIcon.isNull())
-            d->m_titleBarCloseIcon = QIcon(new WinFontIconEngine(QChar(0xE8BB), d->assetFont));
+            d->m_titleBarCloseIcon = QIcon(new WinFontIconEngine(QChar(0xE8BB), d->m_assetFont));
         return d->m_titleBarCloseIcon;
 
     case SP_TitleBarNormalButton:
         if (d->m_titleBarNormalIcon.isNull())
-            d->m_titleBarNormalIcon = QIcon(new WinFontIconEngine(QChar(0xE923), d->assetFont));
+            d->m_titleBarNormalIcon = QIcon(new WinFontIconEngine(QChar(0xE923), d->m_assetFont));
         return d->m_titleBarNormalIcon;
 
     case SP_CommandLink: {

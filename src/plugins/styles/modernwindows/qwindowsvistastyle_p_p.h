@@ -157,7 +157,13 @@ public:
     bool transitionsEnabled() const;
 
 protected:
-    QFont assetFont;
+    inline QFont assetFont(qreal pointSize) const
+    {
+        QFont f(m_assetFont);
+        f.setPointSizeF(pointSize);
+        return f;
+    }
+    QFont m_assetFont;
 
 private:
     QIcon m_titleBarMinIcon;
