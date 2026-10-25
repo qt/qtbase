@@ -3333,7 +3333,8 @@ QAccessibleAttributesInterface::~QAccessibleAttributesInterface()
 /*!
     \fn QList<QAccessible::Attribute> QAccessibleAttributesInterface::attributeKeys() const
 
- Returns the keys of all attributes the object supports. The \l QAccessible::Attribute
+ Returns the keys of all attributes currently set for the object. For each returned
+ key, attributeValue() returns a valid QVariant. The \l QAccessible::Attribute
  enumeration describes available keys.
 */
 

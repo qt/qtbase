@@ -196,6 +196,8 @@ private slots:
 #if QT_CONFIG(shortcut)
     void menuTest();
 #endif
+    void menuItemAttributes_data();
+    void menuItemAttributes();
     void spinBoxTest();
     void doubleSpinBoxTest();
     void textEditTest();
@@ -4369,6 +4371,64 @@ static IUnknown *queryIA2(IAccessible *acc, const IID &iid)
     return resultInterface;
 }
 #endif
+
+void tst_QAccessibility::menuItemAttributes_data()
+{
+    QTest::addColumn<bool>("initiallyHidden");
+    QTest::newRow("initially-visible") << false;
+    QTest::newRow("initially-hidden") << true;
+}
+
+void tst_QAccessibility::menuItemAttributes()
+{
+    QFETCH(bool, initiallyHidden);
+    const auto guard = qScopeGuard([] { QTestAccessibility::clearEvents(); });
+
+    QMenu menu;
+    auto *action = menu.addAction("First"_L1);
+    menu.addSeparator();
+    menu.addAction("Second"_L1);
+    action->setVisible(!initiallyHidden);
+
+    auto *menuIface = QAccessible::queryAccessibleInterface(&menu);
+    QVERIFY(menuIface);
+    QCOMPARE(menuIface->childCount(), 3);
+    auto *itemIface = menuIface->child(0);
+    QVERIFY(itemIface);
+    auto *attributes = itemIface->attributesInterface();
+    QVERIFY(attributes);
+
+    for (const bool hidden : { initiallyHidden, !initiallyHidden, initiallyHidden }) {
+        action->setVisible(!hidden);
+        QVERIFY(itemIface->isValid());
+        const auto keys = attributes->attributeKeys();
+        QCOMPARE(keys.contains(QAccessible::Attribute::PositionInSet), !hidden);
+        QCOMPARE(keys.contains(QAccessible::Attribute::SizeOfSet), !hidden);
+        const auto position = attributes->attributeValue(QAccessible::Attribute::PositionInSet);
+        QCOMPARE(position.isValid(), !hidden);
+        if (!hidden)
+            QCOMPARE(position.toInt(), 1);
+        const auto size = attributes->attributeValue(QAccessible::Attribute::SizeOfSet);
+        QCOMPARE(size.isValid(), !hidden);
+        if (!hidden)
+            QCOMPARE(size.toInt(), 2);
+    }
+
+    action->setVisible(true);
+    menu.removeAction(action);
+    QVERIFY(itemIface->isValid());
+    QVERIFY(!attributes->attributeKeys().contains(QAccessible::Attribute::PositionInSet));
+    QVERIFY(!attributes->attributeKeys().contains(QAccessible::Attribute::SizeOfSet));
+    QVERIFY(!attributes->attributeValue(QAccessible::Attribute::PositionInSet).isValid());
+    QVERIFY(!attributes->attributeValue(QAccessible::Attribute::SizeOfSet).isValid());
+
+    menu.insertAction(menu.actions().first(), action);
+    QVERIFY(itemIface->isValid());
+    QVERIFY(attributes->attributeKeys().contains(QAccessible::Attribute::PositionInSet));
+    QVERIFY(attributes->attributeKeys().contains(QAccessible::Attribute::SizeOfSet));
+    QCOMPARE(attributes->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 1);
+    QCOMPARE(attributes->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), 2);
+}
 
 void tst_QAccessibility::bridgeTest()
 {

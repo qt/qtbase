@@ -212,6 +212,8 @@ void *QAccessibleMenuItem::interface_cast(QAccessible::InterfaceType t)
 
 QList<QAccessible::Attribute> QAccessibleMenuItem::attributeKeys() const
 {
+    if (!attributeValue(QAccessible::Attribute::PositionInSet).isValid())
+        return {};
     return { QAccessible::Attribute::PositionInSet, QAccessible::Attribute::SizeOfSet };
 }
 
@@ -223,15 +225,19 @@ QVariant QAccessibleMenuItem::attributeValue(QAccessible::Attribute key) const
     // The set is what the user sees: the visible items of the menu, without
     // its separators.
     int size = 0;
+    bool inSet = false;
     const auto actions = owner()->actions();
     for (QAction *action : actions) {
         if (action->isSeparator() || !action->isVisible())
             continue;
         ++size;
-        if (key == QAccessible::Attribute::PositionInSet && action == m_action)
-            return size;
+        if (action == m_action) {
+            if (key == QAccessible::Attribute::PositionInSet)
+                return size;
+            inSet = true;
+        }
     }
-    return (key == QAccessible::Attribute::SizeOfSet) ? QVariant(size) : QVariant();
+    return inSet ? QVariant(size) : QVariant();
 }
 
 QObject *QAccessibleMenuItem::object() const
