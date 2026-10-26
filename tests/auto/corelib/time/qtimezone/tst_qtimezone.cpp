@@ -5,6 +5,7 @@
 #include <qtimezone.h>
 #if QT_CONFIG(timezone)
 #  include <private/qtimezoneprivate_p.h>
+#  include "../../../../shared/cidetect.h"
 #endif
 #include <private/qcomparisontesthelper_p.h>
 #include <private/qtools_p.h>
@@ -89,7 +90,12 @@ private:
         "CET", "EET", "EST", "HST", "MET", "MST", "WET",
         "CST6CDT", "EST5EDT", "MST7MDT", "PST8PDT",
     };
+    static bool requireValidSystemZone()
+    {
+        return QTestCiDetect::ciInTestEnvironment();
+    }
 #endif // timezone backends
+
     // Set to true to print debug output, test Display Names and run long stress tests
     static constexpr bool debug = false;
 };
@@ -562,8 +568,8 @@ void tst_QTimeZone::asBackendZone()
 void tst_QTimeZone::systemZone()
 {
     const QTimeZone zone = QTimeZone::systemTimeZone();
-    QVERIFY2(zone.isValid(),
-             "Invalid system zone setting, tests are doomed on misconfigured system.");
+    if (!zone.isValid() && !requireValidSystemZone())
+        QSKIP("Invalid system zone setting, tests are doomed on misconfigured system.");
     // This may fail on Windows if CLDR data doesn't map system MS ID to IANA ID:
     QCOMPARE(zone.id(), QTimeZone::systemTimeZoneId());
     QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
