@@ -1359,6 +1359,8 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
         // We have to reset QHttp2ProtocolHandler's state machine, it's a new
         // connection and the handler's state is unique per connection.
         protocolHandler.reset(new QHttp2ProtocolHandler(this));
+        if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2)
+            switchedToHttp2 = true;
     }
 
     if (!socket)
