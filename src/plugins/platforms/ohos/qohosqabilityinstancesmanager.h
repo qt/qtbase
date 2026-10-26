@@ -69,6 +69,7 @@ public:
     virtual std::optional<QNapi::Object> optAppLaunchParam() = 0;
 
     virtual std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() = 0;
+    virtual void setUnusedAutoStartedQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer) = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow) = 0;
