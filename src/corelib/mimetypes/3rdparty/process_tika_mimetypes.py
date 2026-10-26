@@ -183,6 +183,7 @@ with open_input_file(inputfile) as f:
                 line = line.replace('value="P5" type="regex"', 'value="P5" type="string"') # no need to be a regex (image/x-portable-graymap)
                 line = line.replace('value="P6" type="regex"', 'value="P6" type="string"') # no need to be a regex (image/x-portable-pixmap)
                 line = line.replace('value="(X|DKIM|ARC)-" type="regex"', 'value="X-" type="string"') # simplify message/rfc822 to avoid regex
+                line = line.replace('value="BZh[1-9]" type="regex"', 'value="BZh" type="string"') # simplify application/x-bzip2 to avoid regex
 
                 # No type specified, assumed string
                 if '<match value=' in line and '>' in line and not 'type=' in line:
@@ -261,6 +262,7 @@ with open_input_file(inputfile) as f:
 
   <mime-type type="application/x-bzip2-compressed-tar">
     <comment>BZip2 compressed tar file</comment>
+    <sub-class-of type="application/x-bzip2"/>
     <glob pattern="*.tar.bz2"/>
   </mime-type>
 

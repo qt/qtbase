@@ -78,6 +78,7 @@
 
   <mime-type type="application/x-bzip2-compressed-tar">
     <comment>BZip2 compressed tar file</comment>
+    <sub-class-of type="application/x-bzip2"/>
     <glob pattern="*.tar.bz2"/>
   </mime-type>
 
@@ -3597,7 +3598,7 @@
     <sub-class-of type="application/x-bzip"/>
     <comment>Bzip 2 UNIX Compressed File</comment>
     <magic priority="40">
-<!-- DISABLED FOR QT:       <match value="BZh[1-9]" type="regex" offset="0"/>-->
+      <match value="BZh" type="string" offset="0"/>
     </magic>
     <glob pattern="*.bz2"/>
     <glob pattern="*.tbz2"/>

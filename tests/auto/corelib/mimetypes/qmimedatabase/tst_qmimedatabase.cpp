@@ -648,6 +648,7 @@ void tst_QMimeDatabase::mimeTypeForData_data()
         QTest::newRow("diff\\t") << QByteArray("diff\t") << "text/x-patch";
     else
         QTest::newRow("diff_space") << QByteArray("diff ") << "text/x-diff";
+    QTest::newRow("bzip2 magic") << QByteArray("BZh91AY&SY") << "application/x-bzip2";
     QTest::newRow("unknown") << QByteArray("\001abc?}") << "application/octet-stream";
     QTest::newRow("ambigous svg/xml") << QByteArray(R"(<?xml version="1.0"?>
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -690,6 +691,9 @@ void tst_QMimeDatabase::mimeTypeForFileNameAndData_data()
                 << QString::fromLatin1("mswordfile") << oleData << "application/x-ole-storage";
     QTest::newRow("excel file, found by extension") << QString::fromLatin1("excelfile.xls") << oleData << "application/vnd.ms-excel";
     QTest::newRow("text.xls, found by extension, user is in control") << QString::fromLatin1("text.xls") << oleData << "application/vnd.ms-excel";
+    QTest::newRow("tar.bz2, glob is a subclass of the magic match")
+            << QString::fromLatin1("foo.tar.bz2") << QByteArray("BZh91AY&SY")
+            << "application/x-bzip2-compressed-tar";
 }
 
 void tst_QMimeDatabase::mimeTypeForFileNameAndData()
