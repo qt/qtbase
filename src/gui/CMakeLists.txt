@@ -65,6 +65,7 @@ qt_internal_add_module(Gui
     QMAKE_MODULE_CONFIG "${qmake_module_config}"
     SOURCES
         compat/removed_api.cpp
+        image/qa8image.cpp image/qa8image_p.h
         image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
