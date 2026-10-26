@@ -1489,21 +1489,23 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
 
 QByteArray QTzTimeZonePrivate::staticSystemTimeZoneId()
 {
-    // Check TZ env var first, if not populated try find it
+    // Check TZ env var first, if not populated try to find system config.
     QByteArray ianaId = qgetenv("TZ");
 
-    // The TZ value can be ":/etc/localtime" which libc considers
-    // to be a "default timezone", in which case it will be read
-    // by one of the blocks below, so unset it here so it is not
-    // considered as a valid/found ianaId
+    // The TZ value can be ":/etc/localtime" which libc considers to be a
+    // "default timezone", which ZoneNameReader can find for us, so unset it
+    // here so it is not considered as a valid/found ianaId:
     if (ianaId == ":/etc/localtime")
-        ianaId.clear();
+        ianaId.clear(); // Leaves it null, as if TZ hadn't been set.
     else if (ianaId.startsWith(':'))
         ianaId = ianaId.sliced(1);
 
-    if (ianaId.isEmpty()) {
+    if (ianaId.isNull()) {
         Q_CONSTINIT thread_local static ZoneNameReader reader;
         ianaId = reader.name();
+    } else if (ianaId.isEmpty()) {
+        // For consistency with libc's time_t functions, treat set-but-empty as UTC:
+        ianaId = "UTC";
     }
 
     return ianaId;
