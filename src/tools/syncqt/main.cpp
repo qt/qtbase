@@ -981,6 +981,30 @@ public:
             m_currentFileType |= ExportHeader;
     }
 
+    [[nodiscard]] std::string currentFileOutputDir() const
+    {
+        if (m_currentFileType & QpaHeader)
+            return m_commandLineArgs->qpaIncludeDir();
+        if (m_currentFileType & RhiHeader)
+            return m_commandLineArgs->rhiIncludeDir();
+        if (m_currentFileType & SsgHeader)
+            return m_commandLineArgs->ssgIncludeDir();
+        if (m_currentFileType & SpiHeader)
+            return m_commandLineArgs->spiIncludeDir();
+        if (m_currentFileType & PrivateHeader)
+            return m_commandLineArgs->privateIncludeDir();
+        return m_commandLineArgs->includeDir();
+    }
+
+    [[nodiscard]] std::string currentFileIncludePath() const
+    {
+        std::string includePath = m_commandLineArgs->moduleName() + '/';
+        const std::string outputDir = currentFileOutputDir();
+        if (outputDir != m_commandLineArgs->includeDir())
+            includePath += std::filesystem::path(outputDir).filename().generic_string() + '/';
+        return includePath + m_currentFilename;
+    }
+
     [[nodiscard]] bool processHeader(const std::filesystem::path &headerFile)
     {
         // This regex filters any paths that contain the '3rdparty' directory.
@@ -1047,18 +1071,7 @@ public:
 
         // Chose the directory where to generate the header aliases or to copy header file if
         // the '-copy' argument is passed.
-        std::string outputDir = m_commandLineArgs->includeDir();
-        if (isQpa)
-            outputDir = m_commandLineArgs->qpaIncludeDir();
-        else if (isRhi)
-            outputDir = m_commandLineArgs->rhiIncludeDir();
-        else if (isSsg)
-            outputDir = m_commandLineArgs->ssgIncludeDir();
-        else if (isSpi)
-            outputDir = m_commandLineArgs->spiIncludeDir();
-        else if (isPrivate)
-            outputDir = m_commandLineArgs->privateIncludeDir();
-
+        const std::string outputDir = currentFileOutputDir();
         if (!utils::createDirectories(outputDir, "Unable to create output directory"))
             return false;
 
@@ -1483,8 +1496,7 @@ public:
                 } else if (std::regex_match(buffer, NoMasterIncludePragmaRegex)) {
                     result.masterInclude = false;
                 } else if (std::regex_match(buffer, match, DeprecatesPragmaRegex)) {
-                    m_deprecatedHeaders[match[1].str()] =
-                            m_commandLineArgs->moduleName() + '/' + m_currentFilename;
+                    m_deprecatedHeaders[match[1].str()] = currentFileIncludePath();
                 } else if (std::regex_match(buffer, OnceRegex)) {
                     if (!(skipChecks & PragmaOnceChecks)) {
                         faults |= PragmaOnceChecks;
@@ -1661,6 +1673,13 @@ public:
         return std::regex_match(headerFile, m_commandLineArgs->privateHeadersRegex());
     }
 
+    [[nodiscard]] bool isHeaderPublic(const std::string &headerFileName)
+    {
+        return !isHeaderPrivate(headerFileName) && !isHeaderQpa(headerFileName)
+                && !isHeaderRhi(headerFileName) && !isHeaderSsg(headerFileName)
+                && !isHeaderSpi(headerFileName);
+    }
+
     [[nodiscard]] bool isHeaderPCH(const std::string &headerFilename)
     {
         static const std::string pchSuffix("_pch.h");
@@ -1812,6 +1831,13 @@ public:
             const std::string moduleName = moduleSeparatorPos != std::string::npos
                     ? headerPath.substr(0, moduleSeparatorPos)
                     : m_commandLineArgs->moduleName();
+
+            if (!isHeaderPublic(headerName)) {
+                std::cerr << ErrorMessagePreamble << "Unable to deprecate " << headerPath
+                          << ": only public header files can be deprecated.\n";
+                result = false;
+                continue;
+            }
 
             bool isCrossModuleDeprecation = moduleName != m_commandLineArgs->moduleName();
 
