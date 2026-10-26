@@ -737,17 +737,6 @@ QOhosConsumer<std::vector<std::string>> makeQtThreadWithMainFuncLauncher(
     };
 }
 
-std::shared_ptr<QAbilityInstancesManager> &getQAbilityInstancesManagerPtr()
-{
-    static std::shared_ptr<QAbilityInstancesManager> instancePtr;
-    return instancePtr;
-}
-
-QAbilityInstancesManager &getQAbilityInstancesManager()
-{
-    return *getQAbilityInstancesManagerPtr();
-}
-
 void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbilityPeer> qAbilityPeer)
 {
     QNapi::Object launchWant = qAbilityPeer->launchWant();
@@ -793,7 +782,7 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
                     [](QOhosJsState &jsState) {
                         auto &pluginJsState = JsState::castFrom(jsState);
                         if (s_hotStartEnabled)
-                            getQAbilityInstancesManager().registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
+                            QAbilityInstancesManager::instance(jsState).registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
 
                         qOhosPrintfInfo(
                             "Qt: force-resolving pending QWindow destroy Promises before termination if needed");
@@ -849,26 +838,12 @@ std::map<std::string, QNapi::Reference<QNapi::Function>> makeJsModulesFactoriesM
 class AppFunctionsImpl : public AppFunctions
 {
 public:
-    void startQAbilityInstance(
-        QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
-        QNapi::Object optStartOptions,
-        std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) override;
-
     void startAppProcess(
         QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
         QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) override;
 
     void startNoUiChildProcess(JsState &jsState, const std::string &libraryName, const std::vector<std::string> &args) override;
 };
-
-void AppFunctionsImpl::startQAbilityInstance(
-    QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
-    QNapi::Object optStartOptions,
-    std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc)
-{
-    getQAbilityInstancesManager().startNewInstance(
-        baseQAbility, qwindow, optStartOptions, std::move(startupNotifyFunc));
-}
 
 void AppFunctionsImpl::startAppProcess(
     QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
@@ -1036,7 +1011,7 @@ QNapi::Value handleAbilityOnContinue(const CallbackInfo &cbInfo)
             return jsState.mapOhosEnumToJs(result);
         },
         [&](QOhosJsState &jsState, auto resultConsumer) {
-            getQAbilityInstancesManager().getAbilityPeerBackend(uiAbilityPeer)->handleOnContinueRequestFromSystem(
+            QAbilityInstancesManager::instance(jsState).getAbilityPeerBackend(uiAbilityPeer)->handleOnContinueRequestFromSystem(
                 JsState::castFrom(jsState), wantParamsObj, std::move(resultConsumer));
         });
 }
@@ -1060,7 +1035,7 @@ void tryDetectBrokenWant(JsState &jsState, QNapi::Object want)
     auto optDefaultQAbility = jsState.defaultQAbility();
 
     if (optDefaultQAbility) {
-        bool fromThisApp = getQAbilityInstancesManager().isWantFromThisApp(optDefaultQAbility.value(), want);
+        bool fromThisApp = QAbilityInstancesManager::instance(jsState).isWantFromThisApp(optDefaultQAbility.value(), want);
         auto optCallerPid = getWantParamOrEmptyIfNotPresent<QNapi::Number>(want, callerPidWantArgName);
         if (fromThisApp && !optCallerPid.IsEmpty() && ::kill(optCallerPid.Int64Value(), 0) != 0) {
             qOhosPrintfError(
@@ -1182,18 +1157,20 @@ QNapi::Value handleAbilityStageOnAcceptWant(const CallbackInfo &cbInfo)
         return QNapi::String::New(cbInfo.Env(), instanceId);
     }
 
+    auto &qAbilityInstancesManager = QAbilityInstancesManager::instance(cbInfo.jsState());
+
     std::shared_ptr<QAbilityPeer> defaultQAbilityPeer = cbInfo.jsState().defaultQAbilityPeer();
 
     auto defaultQAbility = defaultQAbilityPeer->qAbility();
     auto receivedQAbilityInstanceId =
         !defaultQAbility.IsEmpty()
-            ? getQAbilityInstancesManager().tryGetQAbilityInstanceIdFromWant(defaultQAbility, want)
+            ? qAbilityInstancesManager.tryGetQAbilityInstanceIdFromWant(defaultQAbility, want)
             : std::nullopt;
 
     auto qAbilityInstanceId =
         receivedQAbilityInstanceId.has_value()
             ? receivedQAbilityInstanceId.value()
-            : getQAbilityInstancesManager().pendingAutoStartedInstanceId().value_or(
+            : qAbilityInstancesManager.pendingAutoStartedInstanceId().value_or(
                 defaultQAbilityPeer->instanceId());
 
     qOhosPrintfInfo("AbilityStage::onAcceptWant: returning instanceId='%s'", qAbilityInstanceId.c_str());
@@ -1283,7 +1260,7 @@ void loadWindowStageContentPage(JsState &jsState, QNapi::Object &qAbility, const
 {
     auto *jsEnv = jsState.env();
 
-    auto qAbilityInstanceId = getQAbilityInstancesManager().getQAbilityInstanceIdOrPendingAutoStartedId(qAbility);
+    auto qAbilityInstanceId = QAbilityInstancesManager::instance(jsState).getQAbilityInstanceIdOrPendingAutoStartedId(qAbility);
     auto xComponentId = QXComponentId::createForNativeNodeMainWindow(qAbilityInstanceId);
 
     auto qAbilityRef = moveToSharedPtr(QNapi::Reference<>::makePersistentFrom(qAbility));
@@ -1302,7 +1279,7 @@ void loadWindowStageContentPage(JsState &jsState, QNapi::Object &qAbility, const
                     {
                         "onAttach",
                         [qAbilityRef, windowStageRef](const QtOhos::CallbackInfo &cbInfo) {
-                            getQAbilityInstancesManager().handleStartedUiInstance(
+                            QAbilityInstancesManager::instance(cbInfo.jsState()).handleStartedUiInstance(
                                 cbInfo.jsState(), qAbilityRef->Value(), windowStageRef->Value());
                         }},
                     {
@@ -1419,7 +1396,7 @@ QNapi::Value handleAbilityOnPrepareToTerminateAsync(const CallbackInfo &cbInfo)
         jsState.tryGetQAbilityPeerByInstance(qAbility));
 
     if (optQUiAbilityPeer) {
-        return getQAbilityInstancesManager().getAbilityPeerBackend(optQUiAbilityPeer)->handleCloseRequestFromSystem(
+        return QAbilityInstancesManager::instance(jsState).getAbilityPeerBackend(optQUiAbilityPeer)->handleCloseRequestFromSystem(
             jsState, "UIAbility::onPrepareToTerminateAsync",
             QUiAbilityPeerBackend::CloseAbilityRequestSource::OnPrepareToTerminate,
             [](QOhosJsState &jsState, QUiAbilityPeerBackend::CloseAbilityRequestResolution ohosRequestResolution) {
@@ -1611,8 +1588,7 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
 
     qOhosPrintfDebug("%s: setting up Qt in %s mode", Q_FUNC_INFO, mapQtRunModeToString(qtRunMode));
 
-    getQAbilityInstancesManagerPtr() = makeQAbilityInstancesManager();
-    getQAbilityInstancesManager().registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
+    QAbilityInstancesManager::instance(jsState).registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
 
     currentQtRunMode = qtRunMode;
     QtOhos::initJsThreadState(

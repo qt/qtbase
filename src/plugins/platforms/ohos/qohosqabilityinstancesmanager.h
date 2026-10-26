@@ -57,6 +57,8 @@ struct QAbilityInstancesManager
 public:
     virtual ~QAbilityInstancesManager();
 
+    static QAbilityInstancesManager &instance(QOhosJsState &jsState);
+
     static bool isQtInternalWantFromThisProcess(QNapi::Object want);
 
     static void setLaunchParamOnAbilityObject(JsState &jsState, QNapi::Object ability, QNapi::Object launchParam);
@@ -85,8 +87,6 @@ public:
 protected:
     QAbilityInstancesManager();
 };
-
-std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager();
 
 }
 
