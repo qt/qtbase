@@ -1468,7 +1468,7 @@ QTimeZone QTimeZone::systemTimeZone()
 {
     // Short-cut constructor's handling of empty ID:
     const QByteArray sysId = global_tz->backend->systemTimeZoneId();
-    const auto sys = sysId.isEmpty() ? QTimeZone(global_tz->backend) : QTimeZone(sysId);
+    const auto sys = sysId.isEmpty() ? QTimeZone(*global_tz->backend) : QTimeZone(sysId);
     if (!sys.isValid()) {
         static bool neverWarned = true;
         if (neverWarned) {
