@@ -44,7 +44,7 @@ public:
     bool characters(const QString &characters, bool cdata = false);
     bool processingInstruction(const QString &target, const QString &data);
     bool skippedEntity(const QString &name);
-    bool startDTD(const QString &name, const QString &publicId, const QString &systemId);
+    void startDTD(QStringView name, QStringView publicId, QStringView systemId);
     bool parseDTD(const QString &dtd);
     bool comment(const QString &characters);
     bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId);

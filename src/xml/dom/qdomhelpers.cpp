@@ -41,14 +41,13 @@ bool QDomBuilder::endDocument()
     return true;
 }
 
-bool QDomBuilder::startDTD(const QString &name, const QString &publicId, const QString &systemId)
+void QDomBuilder::startDTD(QStringView name, QStringView publicId, QStringView systemId)
 {
     QDomDocumentTypePrivate * const dt = doc->doctype();
     Q_ASSERT(dt);
-    dt->name = name;
-    dt->publicId = publicId;
-    dt->systemId = systemId;
-    return true;
+    dt->name = name.toString();
+    dt->publicId = publicId.toString();
+    dt->systemId = systemId.toString();
 }
 
 QString QDomBuilder::dtdInternalSubset(const QString &dtd)
@@ -263,12 +262,13 @@ bool QDomParser::parseProlog()
             }
             break;
         case QXmlStreamReader::DTD:
-            if (!domBuilder.startDTD(reader->dtdName().toString(),
-                                     reader->dtdPublicId().toString(),
-                                     reader->dtdSystemId().toString())) {
+            domBuilder.startDTD(reader->dtdName(),
+                                reader->dtdPublicId(),
+                                reader->dtdSystemId());
+            if constexpr (false) {
+                // ### kept for the translated string
                 domBuilder.fatalError(
                         QDomParser::tr("Error occurred while processing document type declaration"));
-                return false;
             }
             if (!domBuilder.parseDTD(reader->text().toString()))
                 return false;
