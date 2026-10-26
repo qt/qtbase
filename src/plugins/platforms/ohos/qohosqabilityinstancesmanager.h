@@ -70,7 +70,8 @@ public:
 
     virtual std::optional<std::string> pendingAutoStartedInstanceId() const = 0;
 
-    virtual void registerPendingAutoStartedInstance() = 0;
+    virtual void registerPendingAutoStartedInstance(
+        std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) = 0;
 
     virtual void startNewInstance(
         QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
@@ -85,8 +86,7 @@ protected:
     QAbilityInstancesManager();
 };
 
-std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager(
-    std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc);
+std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager();
 
 }
 

@@ -517,8 +517,7 @@ void QUiAbilityPeerImpl::setOnContinueRequestsHandler(
 class QAbilityInstancesManagerImpl final : public QAbilityInstancesManager
 {
 public:
-    explicit QAbilityInstancesManagerImpl(
-        std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc);
+    QAbilityInstancesManagerImpl();
 
     bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const override;
 
@@ -527,7 +526,8 @@ public:
 
     std::optional<std::string> pendingAutoStartedInstanceId() const override;
 
-    void registerPendingAutoStartedInstance() override;
+    void registerPendingAutoStartedInstance(
+        std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) override;
 
     void startNewInstance(
         QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
@@ -549,20 +549,16 @@ private:
         JsState &jsState, const std::string &abilityInstanceId,
         const std::function<std::shared_ptr<QAbilityPeer>(const std::string &, const InstanceStartParams &)> &qAbilityPeerFactory);
 
-    std::shared_ptr<std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)>> m_autoStartedInstanceStartupNotifyFunc;
     std::shared_ptr<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>> m_ownedUiAbilityPeers;
     QOhosSupplier<std::string> m_abilityInstanceIdsGenerator;
     std::map<std::string, InstanceStartParams> m_pendingInstancesStartParams;
     std::optional<std::string> m_pendingAutoStartedInstanceId;
 };
 
-QAbilityInstancesManagerImpl::QAbilityInstancesManagerImpl(
-    std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc)
-    : m_autoStartedInstanceStartupNotifyFunc(moveToSharedPtr(std::move(autoStartedInstanceStartupNotifyFunc)))
-    , m_ownedUiAbilityPeers(std::make_shared<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>>())
+QAbilityInstancesManagerImpl::QAbilityInstancesManagerImpl()
+    : m_ownedUiAbilityPeers(std::make_shared<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>>())
     , m_abilityInstanceIdsGenerator(makeAbilityInstanceIdsGenerator())
 {
-    registerPendingAutoStartedInstance();
 }
 
 std::optional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceIdFromWant(
@@ -620,7 +616,8 @@ std::optional<std::string> QAbilityInstancesManagerImpl::pendingAutoStartedInsta
     return m_pendingAutoStartedInstanceId;
 }
 
-void QAbilityInstancesManagerImpl::registerPendingAutoStartedInstance()
+void QAbilityInstancesManagerImpl::registerPendingAutoStartedInstance(
+    std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc)
 {
     if (m_pendingAutoStartedInstanceId.has_value()) {
         qOhosReportFatalErrorAndAbort(
@@ -629,6 +626,13 @@ void QAbilityInstancesManagerImpl::registerPendingAutoStartedInstance()
     }
 
     m_pendingAutoStartedInstanceId = m_abilityInstanceIdsGenerator();
+
+    m_pendingInstancesStartParams.emplace(
+        m_pendingAutoStartedInstanceId.value(),
+        InstanceStartParams{
+            .qwindow = QObjectThreadSafeRef(),
+            .startupNotifyFunc = std::move(startupNotifyFunc),
+        });
 
     qOhosPrintfInfo(
         "Registered pending auto-started Ability instance, id='%s'",
@@ -722,19 +726,9 @@ void QAbilityInstancesManagerImpl::handleStartedInstance(
     if (startParamsIter != m_pendingInstancesStartParams.end()) {
         auto startParams = std::move(startParamsIter->second);
         m_pendingInstancesStartParams.erase(startParamsIter);
+        if (abilityInstanceId == m_pendingAutoStartedInstanceId)
+            m_pendingAutoStartedInstanceId.reset();
 
-        auto qAbilityPeer = qAbilityPeerFactory(abilityInstanceId, startParams);
-        QtOhos::addJsQAbilityPeer(qAbilityPeer);
-        startParams.startupNotifyFunc(jsState, qAbilityPeer);
-    } else if (abilityInstanceId == m_pendingAutoStartedInstanceId) {
-        m_pendingAutoStartedInstanceId.reset();
-
-        InstanceStartParams startParams = {
-            .qwindow = QObjectThreadSafeRef(),
-            .startupNotifyFunc = [startupNotifyFunc = m_autoStartedInstanceStartupNotifyFunc](JsState &jsState, std::shared_ptr<QAbilityPeer> qAbilityPeer) {
-                (*startupNotifyFunc)(jsState, qAbilityPeer);
-            },
-        };
         auto qAbilityPeer = qAbilityPeerFactory(abilityInstanceId, startParams);
         QtOhos::addJsQAbilityPeer(qAbilityPeer);
         startParams.startupNotifyFunc(jsState, qAbilityPeer);
@@ -787,10 +781,9 @@ QAbilityInfo QAbilityInstancesManager::readAbilityInfo(const QNapi::Object &abil
     };
 }
 
-std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager(
-    std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc)
+std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager()
 {
-    return std::make_shared<QAbilityInstancesManagerImpl>(std::move(autoStartedInstanceStartupNotifyFunc));
+    return std::make_shared<QAbilityInstancesManagerImpl>();
 }
 
 }
