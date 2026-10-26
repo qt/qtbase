@@ -65,6 +65,8 @@ private slots:
 
     void setScaledSizeOneDimension_data();
     void setScaledSizeOneDimension();
+    void setScaledSizeOneDimensionExtreme_data();
+    void setScaledSizeOneDimensionExtreme();
 
     void setClipRect_data();
     void setClipRect();
@@ -462,6 +464,44 @@ void tst_QImageReader::setScaledSizeOneDimension()
     testScaledSize(QSize(originalSize.width() * 2, -1));
     testScaledSize(QSize(0, originalSize.height() * 2));
     testScaledSize(QSize(-1, originalSize.height() * 2));
+}
+
+void tst_QImageReader::setScaledSizeOneDimensionExtreme_data()
+{
+    QTest::addColumn<QSize>("sourceSize");
+    QTest::addColumn<QSize>("scaledSize");
+    QTest::addColumn<QSize>("expectedSize"); // empty if reading should fail
+
+    QTest::newRow("width out of range") << QSize(30000, 1) << QSize(0, 100000) << QSize();
+    QTest::newRow("height out of range") << QSize(1, 30000) << QSize(100000, 0) << QSize();
+    QTest::newRow("width below 1") << QSize(1, 1000) << QSize(0, 100) << QSize(1, 100);
+    QTest::newRow("height below 1") << QSize(1000, 1) << QSize(100, 0) << QSize(100, 1);
+}
+
+void tst_QImageReader::setScaledSizeOneDimensionExtreme()
+{
+    QFETCH(QSize, sourceSize);
+    QFETCH(QSize, scaledSize);
+    QFETCH(QSize, expectedSize);
+
+    QImage src(sourceSize, QImage::Format_Mono);
+    src.fill(1);
+    QByteArray data;
+    QBuffer buf(&data);
+    QVERIFY(buf.open(QIODevice::WriteOnly));
+    QVERIFY(src.save(&buf, "bmp"));
+    buf.close();
+
+    QImageReader reader(&buf, "bmp");
+    reader.setScaledSize(scaledSize);
+    QImage image;
+    if (expectedSize.isValid()) {
+        QVERIFY(reader.read(&image));
+        QCOMPARE(image.size(), expectedSize);
+    } else {
+        QVERIFY(!reader.read(&image));
+        QCOMPARE(reader.error(), QImageReader::InvalidDataError);
+    }
 }
 
 void tst_QImageReader::task255627_setNullScaledSize_data()
