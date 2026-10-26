@@ -28,8 +28,6 @@ namespace QtOhos {
 
 namespace {
 
-constexpr const char *forceLoadJsModulesEnvVariableName = "IO__QT__OHOS__FORCE_LOAD_JS_MODULES";
-
 constexpr const char *napiLoadableModules[] = {
     "@ohos.abilityAccessCtrl",
     "@ohos.accessibility",
@@ -329,6 +327,7 @@ public:
 
     napi_env env() override;
     QNapi::Object getModule(const std::string &moduleName);
+    std::vector<std::string> predefinedJsModuleNames() const;
 
     QNapi::Object appLaunchWant() override;
     std::optional<QNapi::Object> optAppLaunchParam() override;
@@ -384,8 +383,6 @@ private:
     const std::vector<std::pair<int, double>> &getOhosEnumEnumerators(
         const std::type_info &enumTypeInfo, OhosEnumInfo (*ohosEnumInfoFactory)());
     std::vector<std::pair<int, double>> resolveOhosEnumEnumerators(const OhosEnumInfo &enumInfo);
-
-    void forceLoadAllJsModulesIfRequested();
 
     pthread_t m_jsThread = {};
     napi_env m_env = nullptr;
@@ -449,8 +446,6 @@ void JsStateImpl::initInJsThread(
 
 void JsStateImpl::addQAbilityPeerInJsThread(std::shared_ptr<QAbilityPeer> qAbilityPeer)
 {
-    forceLoadAllJsModulesIfRequested();
-
     if (m_appLaunchWant.IsEmpty())
         m_appLaunchWant = Napi::Persistent(qAbilityPeer->launchWant());
 
@@ -523,15 +518,12 @@ napi_env JsStateImpl::env()
     return m_env;
 }
 
-void JsStateImpl::forceLoadAllJsModulesIfRequested()
+std::vector<std::string> JsStateImpl::predefinedJsModuleNames() const
 {
-    if (qEnvironmentVariableIntValue(forceLoadJsModulesEnvVariableName) == 0)
-        return;
-
-    qOhosPrintfDebug("%s: forcibly loading all JS modules", Q_FUNC_INFO);
-
+    std::vector<std::string> moduleNames;
     for (const auto &moduleFactoryEntry : m_jsModulesFactories)
-        getModule(moduleFactoryEntry.first);
+        moduleNames.push_back(moduleFactoryEntry.first);
+    return moduleNames;
 }
 
 QNapi::Object JsStateImpl::getModule(const std::string &moduleName)
@@ -1111,6 +1103,11 @@ bool JsWindowsTracker::isWindowClosing(QNapi::Object jsWindow)
         ? jsWindow.Get(isClosingPropSymbol)
         : QNapi::Value();
     return isClosingValue.IsBoolean() && QNapi::checkedCast<QNapi::Boolean>(isClosingValue).Value();
+}
+
+std::vector<std::string> predefinedJsModuleNames()
+{
+    return getJsStateImpl().predefinedJsModuleNames();
 }
 
 void initJsThreadState(
