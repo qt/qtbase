@@ -99,6 +99,7 @@ private slots:
     void earlyError();
     void abortReply();
     void abortReplyThenReceiveHeaders();
+    void abortReplyAfterH2Reconnect();
     void connectToHost_data();
     void connectToHost();
     void maxFrameSize();
@@ -1955,6 +1956,81 @@ void tst_Http2::duplicateRequestsWithAborts()
 
     QCOMPARE(nRequests, 0);
     QCOMPARE(finishedCount, ExpectedSuccessfulRequests);
+}
+
+/*
+    A channel that already has a (HTTP/1.1) protocol handler when the
+    connection type is HTTP2 gets a new QHttp2ProtocolHandler in
+    _q_encrypted(). Destroying a reply must then still remove it from the
+    handler, or the handler is left with a dangling pointer.
+*/
+void tst_Http2::abortReplyAfterH2Reconnect()
+{
+#if !QT_CONFIG(ssl)
+    QSKIP("TLS support is needed for this test");
+#else
+    if (defaultConnectionType() != H2Type::h2Alpn)
+        QSKIP("This test requires TLS with ALPN to work");
+
+    clearHTTP2State();
+    serverPort = 0;
+
+    ServerPtr targetServer(newServer(defaultServerSettings, H2Type::h2Alpn));
+    QMetaObject::invokeMethod(targetServer.get(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    QHttpNetworkConnection connection(1, "127.0.0.1", serverPort, true, false, nullptr,
+                                      QHttpNetworkConnection::ConnectionTypeHTTP2);
+    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+    config.setAllowedNextProtocols({"h2"});
+    connection.setSslConfiguration(config);
+    connection.ignoreSslErrors();
+
+    QHttpNetworkRequest req;
+    req.setSsl(true);
+    req.setHTTP2Allowed(true);
+    req.setOperation(QHttpNetworkRequest::Get);
+    req.setUrl(requestUrl(H2Type::h2Alpn));
+
+    // The first request only gets us an established connection and a protocol handler.
+    {
+        std::unique_ptr<QHttpNetworkReply> first{connection.sendRequest(req)};
+        QVERIFY(first);
+        // isFinished() is not set for a reply nobody reads, so use the signal.
+        bool finished = false;
+        QObject::connect(first.get(), &QHttpNetworkReply::finished, first.get(),
+                         [&finished] { finished = true; });
+        QVERIFY(QTest::qWaitFor([&finished] { return finished; }, 5s));
+    }
+
+    // Act as if the channel had negotiated http/1.1 before another channel got h2:
+    // it has a handler but has not switched to HTTP/2, and now (re-)encrypts.
+    QHttpNetworkConnectionChannel *channel = connection.channels();
+    QVERIFY(channel->protocolHandler);
+    channel->switchedToHttp2 = false;
+    QMetaObject::invokeMethod(channel, "_q_encrypted", Qt::DirectConnection);
+
+    req.setOperation(QHttpNetworkRequest::Post);
+    std::unique_ptr<QHttpNetworkReply> reply{connection.sendRequest(req)};
+    QVERIFY(reply);
+
+    qsizetype pairsAfterReplyDeleted = -1;
+    QObject::connect(reply.get(), &QHttpNetworkReply::requestSent, reply.get(), [&] {
+        reply.reset();
+        auto *handler = static_cast<QHttp2ProtocolHandler *>(channel->protocolHandler.get());
+        pairsAfterReplyDeleted = handler->requestReplyPairs.size();
+    });
+    // No qWait*() overloads that process deleteLater()s before we have looked at the handler
+    QDeadlineTimer timer(5s);
+    while (pairsAfterReplyDeleted == -1 && !timer.hasExpired())
+        QCoreApplication::processEvents();
+
+    QEXPECT_FAIL("", "QTBUG-143289: reply left in requestReplyPairs", Abort);
+    QCOMPARE(pairsAfterReplyDeleted, 0);
+#endif // QT_CONFIG(ssl)
 }
 
 void tst_Http2::abortOnEncrypted()
