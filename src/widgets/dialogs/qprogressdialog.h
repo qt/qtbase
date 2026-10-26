@@ -51,6 +51,7 @@ public:
     int value() const;
 
     QSize sizeHint() const override;
+    void setVisible(bool visible) override;
 
     QString labelText() const;
     int minimumDuration() const;

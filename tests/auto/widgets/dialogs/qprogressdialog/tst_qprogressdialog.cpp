@@ -12,6 +12,7 @@
 #include <qlabel.h>
 #include <qpointer.h>
 #include <qthread.h>
+#include <qtimer.h>
 #include <qtranslator.h>
 
 class tst_QProgressDialog : public QObject
@@ -23,6 +24,8 @@ private Q_SLOTS:
     void autoShow_data();
     void autoShow();
     void autoShowCtor();
+    void noAutoShowAfterHide_data();
+    void noAutoShowAfterHide();
     void getSetCheck();
     void task198202();
     void QTBUG_31046();
@@ -95,6 +98,35 @@ void tst_QProgressDialog::autoShowCtor()
     QVERIFY(!dlg.isVisible());
     QThread::sleep(std::chrono::milliseconds{dlg.minimumDuration()});
     QTRY_VERIFY(dlg.isVisible());
+}
+
+void tst_QProgressDialog::noAutoShowAfterHide_data()
+{
+    QTest::addColumn<bool>("callSetValue");
+
+    QTest::newRow("hide") << false;
+    QTest::newRow("setValue_hide") << true;
+}
+
+// QTBUG-49415
+void tst_QProgressDialog::noAutoShowAfterHide()
+{
+    QFETCH(bool, callSetValue);
+
+    QProgressDialog dlg;
+    const QTimer *forceTimer = dlg.findChild<QTimer *>();
+    QVERIFY(forceTimer);
+    QVERIFY(forceTimer->isActive());
+    if (callSetValue)
+        dlg.setValue(0);
+    dlg.hide();
+    QVERIFY(!forceTimer->isActive());
+    dlg.setMinimumDuration(100);
+    QVERIFY(!forceTimer->isActive());
+
+    // Starting an operation later on starts the timer again
+    dlg.setValue(0);
+    QVERIFY(forceTimer->isActive());
 }
 
 // Testing get/set functions

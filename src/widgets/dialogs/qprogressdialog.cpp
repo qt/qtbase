@@ -725,7 +725,7 @@ void QProgressDialog::setMinimumDuration(int ms)
     Q_D(QProgressDialog);
     std::chrono::milliseconds msecs{ms};
     d->showTime = msecs;
-    if (d->bar->value() == d->bar->minimum()) {
+    if (d->setValueCalled && d->bar->value() == d->bar->minimum()) {
         d->forceTimer->stop();
         d->forceTimer->start(msecs);
     }
@@ -800,6 +800,20 @@ void QProgressDialog::showEvent(QShowEvent *e)
     QDialog::showEvent(e);
     d->ensureSizeIsAtLeastSizeHint();
     d->forceTimer->stop();
+}
+
+/*!
+  \reimp
+*/
+void QProgressDialog::setVisible(bool visible)
+{
+    Q_D(QProgressDialog);
+    if (!visible) {
+        d->forceTimer->stop();
+        // let the next setValue(minimum()) restart the timer, even with an unchanged value
+        d->setValueCalled = false;
+    }
+    QDialog::setVisible(visible);
 }
 
 /*!
