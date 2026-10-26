@@ -109,7 +109,7 @@ public:
         Utf32LE,
         Utf32BE,
 #endif
-        Latin1,
+        Latin1 = 7,
         System,
         LastEncoding = System
     };

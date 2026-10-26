@@ -2090,6 +2090,13 @@ const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringCo
     { "UTF-32", fromUtf32, fromUtf32Len, toUtf32, toUtf32Len },
     { "UTF-32LE", fromUtf32LE, fromUtf32Len, toUtf32LE, toUtf32Len },
     { "UTF-32BE", fromUtf32BE, fromUtf32Len, toUtf32BE, toUtf32Len },
+#else
+    { "UTF-16", nullptr, nullptr, nullptr, nullptr },
+    { "UTF-16LE", nullptr, nullptr, nullptr, nullptr },
+    { "UTF-16BE", nullptr, nullptr, nullptr, nullptr },
+    { "UTF-32", nullptr, nullptr, nullptr, nullptr },
+    { "UTF-32LE", nullptr, nullptr, nullptr, nullptr },
+    { "UTF-32BE", nullptr, nullptr, nullptr, nullptr },
 #endif
     { "ISO-8859-1", QLatin1::convertToUnicode, fromLatin1Len, QLatin1::convertFromUnicode, toLatin1Len },
     { "Locale", fromLocal8Bit, fromUtf8Len, toLocal8Bit, toUtf8Len }
