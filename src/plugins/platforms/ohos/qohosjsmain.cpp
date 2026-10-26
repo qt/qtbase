@@ -94,6 +94,8 @@ namespace {
 
 constexpr const char *enableHotStartEnvVariableName = "IO__QT__OHOS__ENABLE_HOT_START";
 
+constexpr const char *forceLoadJsModulesEnvVariableName = "IO__QT__OHOS__FORCE_LOAD_JS_MODULES";
+
 constexpr const char *qtMainThreadStackSizeEnvVariableName = "IO__QT__OHOS__QT_MAIN_THREAD_STACK_SIZE";
 
 constexpr std::size_t defaultQtThreadStackSize = 8 * 1024 * 1024;
@@ -1431,6 +1433,17 @@ QNapi::Value handleAbilityOnPrepareToTerminateAsync(const CallbackInfo &cbInfo)
     }
 }
 
+void forceLoadAllJsModulesIfRequested(JsState &jsState)
+{
+    if (qEnvironmentVariableIntValue(forceLoadJsModulesEnvVariableName) == 0)
+        return;
+
+    qOhosPrintfDebug("%s: forcibly loading all JS modules", Q_FUNC_INFO);
+
+    for (const auto &moduleName : predefinedJsModuleNames())
+        jsState.tryGetModule(moduleName);
+}
+
 void handleAbilityOnCreate(const CallbackInfo &cbInfo)
 {
     auto __dbg = make_QCScopedDebugJS(Q_FUNC_INFO);
@@ -1439,6 +1452,8 @@ void handleAbilityOnCreate(const CallbackInfo &cbInfo)
     QNapi::Object want;
     QNapi::Object launchParam;
     cbInfo.getLeadingArgs(Q_FUNC_INFO, ability, want, launchParam);
+
+    forceLoadAllJsModulesIfRequested(cbInfo.jsState());
 
     QAbilityInstancesManager::setLaunchParamOnAbilityObject(cbInfo.jsState(), ability, launchParam);
 }

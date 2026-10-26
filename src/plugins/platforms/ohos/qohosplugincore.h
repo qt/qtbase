@@ -147,6 +147,8 @@ public:
     JsState &jsState() const;
 };
 
+std::vector<std::string> predefinedJsModuleNames();
+
 // this function should be called once from JS thread at some point during startup
 void initJsThreadState(
     napi_env env, std::map<std::string, QNapi::Reference<QNapi::Function>> &&jsModulesFactories,
