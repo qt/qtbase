@@ -7,6 +7,7 @@
 
 #include <qlocale.h>
 #include <qscopeguard.h>
+#include "../../../../shared/cidetect.h"
 
 #if defined(Q_OS_WIN) && !QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb)
 #  define USING_WIN_TZ
@@ -43,6 +44,11 @@ private:
     void testEpochTranPrivate(const QTimeZonePrivate &tzp);
     // Set to true to print debug output, test Display Names and run long stress tests
     static constexpr bool debug = false;
+
+    static bool requireValidSystemZone()
+    {
+        return QTestCiDetect::ciInTestEnvironment();
+    }
 };
 
 void tst_QTimeZoneBackend::isValidId_data()
@@ -496,8 +502,12 @@ void tst_QTimeZoneBackend::tzTest()
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0), UTC).toMSecsSinceEpoch();
 
     // Test default constructor
-    QTzTimeZonePrivate tzpd;
-    QVERIFY(tzpd.isValid());
+    if (QTimeZone::systemTimeZoneId().isEmpty() && !requireValidSystemZone()) {
+        qDebug("Skipping default zone test due to misconfigured system.");
+    } else {
+        QTzTimeZonePrivate tzpd;
+        QVERIFY(tzpd.isValid());
+    }
 
     // Test invalid constructor
     QTzTimeZonePrivate tzpi("Gondwana/Erewhon");

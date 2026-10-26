@@ -12,7 +12,9 @@
 #include <private/qglobal_p.h> // for the icu feature test
 #include <private/qcomparisontesthelper_p.h>
 #include <private/qdatetime_p.h>
-#if !QT_CONFIG(timezone)
+#if QT_CONFIG(timezone)
+#  include "../../../../shared/cidetect.h"
+#else
 #  include <private/qtenvironmentvariables_p.h> // for qTzName()
 #endif
 
@@ -118,6 +120,13 @@ private:
     static constexpr qint64 minJd = JulianDayMin;
     static constexpr qint64 maxJd = JulianDayMax;
     QDate invalidDate() const { return QDate(); }
+
+#if QT_CONFIG(timezone)
+    static bool requireValidSystemZone()
+    {
+        return QTestCiDetect::ciInTestEnvironment();
+    }
+#endif
 };
 
 Q_DECLARE_METATYPE(Qt::DateFormat)
@@ -603,16 +612,19 @@ void tst_QDate::startOfDay_endOfDay_data()
 
 #if QT_CONFIG(timezone)
     const QTimeZone sys = QTimeZone::systemTimeZone();
-    QVERIFY2(sys.isValid(), "Test depends on properly configured system");
-    for (const auto &tran : transitions) {
-        if (QTimeZone zone(tran.zone); zone.isValid()) {
-            QTest::newRow(tran.test)
-                << tran.day << zone << tran.start << tran.end << tran.msOpt;
-            if (zone == sys) {
-                QTest::addRow("Local=%s", tran.test)
-                    << tran.day << local << tran.start << tran.end << tran.msOpt;
+    if (sys.isValid() || requireValidSystemZone()) {
+        for (const auto &tran : transitions) {
+            if (QTimeZone zone(tran.zone); zone.isValid()) {
+                QTest::newRow(tran.test)
+                    << tran.day << zone << tran.start << tran.end << tran.msOpt;
+                if (zone == sys) {
+                    QTest::addRow("Local=%s", tran.test)
+                        << tran.day << local << tran.start << tran.end << tran.msOpt;
+                }
             }
         }
+    } else {
+        qDebug("Test depends on properly configured system");
     }
 #else
     const auto isLocalZone = [](const char *zone) {
@@ -771,8 +783,10 @@ void tst_QDate::startOfDay_endOfDay_bounds()
     QCOMPARE(qdteMin.startOfDay().date(), qdteMin);
 #if QT_CONFIG(timezone)
     const QTimeZone sys = QTimeZone::systemTimeZone();
-    QVERIFY2(sys.isValid(), "Test depends on properly configured system");
-    QCOMPARE(qdteMin.startOfDay(sys).date(), qdteMin);
+    if (sys.isValid() || requireValidSystemZone())
+        QCOMPARE(qdteMin.startOfDay(sys).date(), qdteMin);
+    else
+        qDebug("Skipped system zone test due to misconfigured system");
     QTimeZone berlin("Europe/Berlin");
     if (berlin.isValid())
         QCOMPARE(qdteMin.startOfDay(berlin).date(), qdteMin);
