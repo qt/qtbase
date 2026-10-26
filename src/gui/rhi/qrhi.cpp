@@ -4700,7 +4700,9 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     \variable QRhiTexture::NativeTexture::layout
     \brief Specifies the current image layout for APIs like Vulkan.
 
-    For Vulkan, \c layout contains a \c VkImageLayout value.
+    For Vulkan, \c layout contains a \c VkImageLayout value. For Direct3D 12, a
+    \c D3D12_RESOURCE_STATES value. For other APIs, this is undefined and should be
+    ignored.
  */
 
 /*!
