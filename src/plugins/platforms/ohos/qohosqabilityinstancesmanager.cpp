@@ -609,6 +609,7 @@ public:
     std::optional<QNapi::Object> optAppLaunchParam() override;
 
     std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() override;
+    void setUnusedAutoStartedQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow) override;
@@ -652,9 +653,13 @@ private:
     template<typename PeerMatchFunc>
     std::shared_ptr<QAbilityPeer> tryFindMatchingQAbilityPeer(PeerMatchFunc &&matchFunc) const;
 
+    std::shared_ptr<QAbilityPeer> tryFindLiveQAbilityPeer() const;
+    std::shared_ptr<QAbilityPeer> selectFallbackDefaultQAbilityPeer() const;
+
     QNapi::Reference<QNapi::Object> m_appLaunchWant;
     QNapi::Reference<QNapi::Object> m_optAppLaunchParam;
     std::shared_ptr<QAbilityPeer> m_defaultQAbilityPeer;
+    std::shared_ptr<QAbilityPeer> m_unusedAutoStartedQAbilityPeer;
     std::map<std::string, std::shared_ptr<QAbilityPeer>> m_qAbilityPeers;
     std::shared_ptr<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>> m_ownedUiAbilityPeers;
     QOhosSupplier<std::string> m_abilityInstanceIdsGenerator;
@@ -684,10 +689,7 @@ std::optional<QNapi::Object> QAbilityInstancesManagerImpl::optAppLaunchParam()
 std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::defaultQAbilityPeer()
 {
     if (isAbilityPeerClosing(m_defaultQAbilityPeer)) {
-        auto optLivePeer = tryFindMatchingQAbilityPeer(
-            [](const auto &peer) {
-                return !isAbilityPeerClosing(peer);
-            });
+        auto optLivePeer = tryFindLiveQAbilityPeer();
         if (optLivePeer) {
             qOhosPrintfInfo(
                 "%s: default Ability with instanceId='%s' is closing, switching to instanceId='%s'",
@@ -697,6 +699,14 @@ std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::defaultQAbilityPeer(
     }
 
     return m_defaultQAbilityPeer;
+}
+
+void QAbilityInstancesManagerImpl::setUnusedAutoStartedQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer)
+{
+    m_unusedAutoStartedQAbilityPeer = qAbilityPeer;
+    qOhosPrintfInfo(
+        "%s: auto-started Ability with instanceId='%s' is not used for a Qt window, other Abilities take precedence as default",
+        Q_FUNC_INFO, qAbilityPeer->instanceId().c_str());
 }
 
 std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::tryGetQAbilityPeerByInstanceId(const std::string &instanceId)
@@ -742,12 +752,10 @@ void QAbilityInstancesManagerImpl::removeMatchingQAbilityPeer(QNapi::Object qAbi
     if (foundPeerIter != m_qAbilityPeers.end()) {
         auto removedPeer = foundPeerIter->second;
         m_qAbilityPeers.erase(foundPeerIter);
-        if (m_defaultQAbilityPeer == removedPeer) {
-            m_defaultQAbilityPeer =
-                !m_qAbilityPeers.empty()
-                    ? m_qAbilityPeers.begin()->second
-                    : std::make_shared<DummyQAbilityPeer>();
-        }
+        if (m_unusedAutoStartedQAbilityPeer == removedPeer)
+            m_unusedAutoStartedQAbilityPeer.reset();
+        if (m_defaultQAbilityPeer == removedPeer)
+            m_defaultQAbilityPeer = selectFallbackDefaultQAbilityPeer();
         qOhosPrintfDebug(
             "%s: removed QAbilityPeer, instanceId: %s, qwindow: %s",
             Q_FUNC_INFO, removedPeer->instanceId().c_str(), removedPeer->qWindowRef().refName().c_str());
@@ -906,7 +914,7 @@ void QAbilityInstancesManagerImpl::addQAbilityPeer(std::shared_ptr<QAbilityPeer>
             Q_FUNC_INFO, qAbilityPeer->instanceId().c_str());
     }
 
-    if (m_qAbilityPeers.empty())
+    if (m_qAbilityPeers.empty() || m_defaultQAbilityPeer == m_unusedAutoStartedQAbilityPeer)
         m_defaultQAbilityPeer = qAbilityPeer;
 
     m_qAbilityPeers.emplace(qAbilityPeer->instanceId(), qAbilityPeer);
@@ -925,6 +933,30 @@ std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::tryFindMatchingQAbil
             return matchFunc(entry.second);
         });
     return foundIter != m_qAbilityPeers.end() ? foundIter->second : nullptr;
+}
+
+std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::tryFindLiveQAbilityPeer() const
+{
+    auto optLiveOtherPeer = tryFindMatchingQAbilityPeer(
+        [&](const auto &peer) {
+            return peer != m_unusedAutoStartedQAbilityPeer && !isAbilityPeerClosing(peer);
+        });
+    if (optLiveOtherPeer)
+        return optLiveOtherPeer;
+
+    return tryFindMatchingQAbilityPeer(
+        [](const auto &peer) {
+            return !isAbilityPeerClosing(peer);
+        });
+}
+
+std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::selectFallbackDefaultQAbilityPeer() const
+{
+    if (m_qAbilityPeers.empty())
+        return std::make_shared<DummyQAbilityPeer>();
+
+    auto optLivePeer = tryFindLiveQAbilityPeer();
+    return optLivePeer ? optLivePeer : m_qAbilityPeers.begin()->second;
 }
 
 std::shared_ptr<QUiAbilityPeerBackend> QAbilityInstancesManagerImpl::getAbilityPeerBackend(

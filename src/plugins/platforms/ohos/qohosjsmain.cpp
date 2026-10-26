@@ -750,6 +750,9 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
 
         setGlobalFlagsFromAppProcessLaunchOptions(launchOpts);
 
+        if (!s_autoStartedAbilityInstanceWaitingForQtWindow)
+            QAbilityInstancesManager::instance(jsState).setUnusedAutoStartedQAbilityPeer(qAbilityPeer);
+
         if (!launchOpts.redirectStdoutToFile.IsEmpty())
             redirectStandardDescriptorsToFile(launchOpts.redirectStdoutToFile.Utf8Value());
 
