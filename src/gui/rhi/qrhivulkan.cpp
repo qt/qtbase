@@ -579,8 +579,7 @@ static inline void addToChain(T *head, void *entry)
 
 bool QRhiVulkan::create(QRhi::Flags flags)
 {
-    Q_ASSERT(inst);
-    if (!inst->isValid()) {
+    if (!inst || !inst->isValid()) {
         qWarning("Vulkan instance is not valid");
         return false;
     }
