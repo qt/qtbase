@@ -6,6 +6,8 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qregularexpression.h>
 
+#include <cstdio>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -15,9 +17,21 @@ void forceStopBundle(const Hdc &hdc, const QString &bundleName)
     hdc.shell({ u"aa"_s, u"force-stop"_s, bundleName });
 }
 
-bool isProcessAlive(const Hdc &hdc, const QString &bundleName)
+ProcessState queryProcessState(const Hdc &hdc, const QString &bundleName)
 {
-    return !hdc.shell({u"pidof"_s, bundleName}).trimmed().isEmpty();
+    const QString notRunningMarker = u"HARMONYOSTESTRUNNER_NOT_RUNNING"_s;
+    static const QRegularExpression pidList(u"^\\d+(\\s+\\d+)*$"_s);
+
+    const QString output =
+        hdc.shell({ u"pidof"_s, bundleName, u"||"_s, u"echo"_s, notRunningMarker }).trimmed();
+    if (output.contains(notRunningMarker))
+        return ProcessState::NotRunning;
+    if (pidList.match(output).hasMatch())
+        return ProcessState::Running;
+
+    fprintf(stderr, "harmonyostestrunner: warning: cannot tell whether %s is running, "
+            "hdc returned \"%s\"\n", qPrintable(bundleName), qPrintable(output));
+    return ProcessState::Unknown;
 }
 
 q23::expected<QByteArray, QString> copyDeviceFile(

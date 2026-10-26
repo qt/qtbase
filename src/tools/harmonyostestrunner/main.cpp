@@ -9,6 +9,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcommandlineparser.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qelapsedtimer.h>
@@ -123,11 +124,11 @@ static void waitForProcessDeath(const Hdc &hdc, const QString &bundleName,
                                 int timeoutSecs = 15)
 {
     const int pollMs = 200;
-    const int maxIterations = (timeoutSecs * 1000) / pollMs;
-    for (int i = 0; i < maxIterations; ++i) {
+    const QDeadlineTimer deadline(std::chrono::seconds{ timeoutSecs });
+    while (!deadline.hasExpired()) {
         if (g_interrupted.load())
             return;
-        if (!isProcessAlive(hdc, bundleName))
+        if (queryProcessState(hdc, bundleName) == ProcessState::NotRunning)
             return;
         QThread::msleep(pollMs);
     }
@@ -140,10 +141,11 @@ static bool waitForProcessStart(const Hdc &hdc, const QString &bundleName,
 {
     const int pollMs = 250;
     const int maxIterations = (timeoutSecs * 1000) / pollMs;
-    for (int i = 0; i < maxIterations; ++i) {
+    const QDeadlineTimer hdcOutageDeadline(hdcOutageTolerance);
+    for (int i = 0; i < maxIterations && !hdcOutageDeadline.hasExpired(); ++i) {
         if (g_interrupted.load())
             return false;
-        if (isProcessAlive(hdc, bundleName))
+        if (queryProcessState(hdc, bundleName) == ProcessState::Running)
             return true;
         // Fast test may have finished before pidof could see it.
         const QString exitContent = readDeviceFile(hdc, shellExitCodePath);
@@ -442,7 +444,8 @@ int main(int argc, char *argv[])
 
         // Liveness check every ~1.5 s. Re-read the exit-code file to cover the
         // race where the process exits cleanly between checks.
-        if (++aliveCheckCounter % 3 == 0 && !isProcessAlive(hdc, bundleName)) {
+        if (++aliveCheckCounter % 3 == 0
+            && queryProcessState(hdc, bundleName) == ProcessState::NotRunning) {
             const QString exitContent =
                 readDeviceFile(hdc, shellExitCodePath);
             bool ok = false;

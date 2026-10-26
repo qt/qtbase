@@ -13,9 +13,10 @@
 QT_BEGIN_NAMESPACE
 
 enum class DeviceFileState { Present, Absent, Unknown };
+enum class ProcessState { Running, NotRunning, Unknown };
 
 void forceStopBundle(const Hdc &hdc, const QString &bundleName);
-bool isProcessAlive(const Hdc &hdc, const QString &bundleName);
+ProcessState queryProcessState(const Hdc &hdc, const QString &bundleName);
 QString readDeviceFile(const Hdc &hdc, const QString &devicePath);
 q23::expected<QByteArray, QString> copyDeviceFile(
         const Hdc &hdc, const QString &devicePath, const QString &localPath);
