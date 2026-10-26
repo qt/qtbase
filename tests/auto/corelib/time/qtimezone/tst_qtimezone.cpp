@@ -568,8 +568,13 @@ void tst_QTimeZone::asBackendZone()
 void tst_QTimeZone::systemZone()
 {
     const QTimeZone zone = QTimeZone::systemTimeZone();
-    if (!zone.isValid() && !requireValidSystemZone())
+    if (!zone.isValid() && !requireValidSystemZone()) {
+        // This should only happen when the system itself falls back to UTC for
+        // its time_t functions. If it has something else, the backend in use
+        // needs to learn to consult the Source Of Truth it gets that from.
+        QCOMPARE(QDateTime::currentDateTime(QTimeZone::LocalTime).offsetFromUtc(), 0);
         QSKIP("Invalid system zone setting, tests are doomed on misconfigured system.");
+    }
     // This may fail on Windows if CLDR data doesn't map system MS ID to IANA ID:
     QCOMPARE(zone.id(), QTimeZone::systemTimeZoneId());
     QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
