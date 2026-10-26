@@ -1168,10 +1168,18 @@ bool QImageReader::read(QImage *image)
         if (const QSize originalSize = size(); !originalSize.isEmpty()) {
             if (scaledSize.width() <= 0) {
                 const auto ratio = qreal(scaledSize.height()) / originalSize.height();
-                scaledSize.setWidth(qRound(originalSize.width() * ratio));
+                if (const qreal newWidth = originalSize.width() * ratio; newWidth < INT_MAX)
+                    scaledSize.setWidth(qMax(1, qRound(newWidth)));
             } else {
                 const auto ratio = qreal(scaledSize.width()) / originalSize.width();
-                scaledSize.setHeight(qRound(originalSize.height() * ratio));
+                if (const qreal newHeight = originalSize.height() * ratio; newHeight < INT_MAX)
+                    scaledSize.setHeight(qMax(1, qRound(newHeight)));
+            }
+
+            if (scaledSize.isEmpty()) {
+                d->imageReaderError = InvalidDataError;
+                d->errorString = QImageReader::tr("Scaled size out of range");
+                return false;
             }
         }
     }
