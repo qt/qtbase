@@ -966,7 +966,9 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_easingcurve
         ../3rdparty/easing
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND NOT MACOS
+qt_internal_extend_target(Core
+    CONDITION
+        UNIX AND NOT (HAIKU OR INTEGRITY OR VXWORKS OR WASM OR MACOS)
     LIBRARIES
         m
 )
@@ -976,7 +978,9 @@ qt_internal_extend_target(Core CONDITION APPLE
         text/qlocale_mac.mm
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT WASM AND NOT ANDROID
+qt_internal_extend_target(Core
+    CONDITION
+        UNIX AND NOT (APPLE OR WASM OR ANDROID)
     SOURCES
         text/qlocale_unix.cpp
 )
@@ -1015,7 +1019,9 @@ qt_internal_extend_target(Core CONDITION MACOS AND NOT QT_FEATURE_icu
         text/qcollator_macx.cpp
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT MACOS AND NOT QT_FEATURE_icu
+qt_internal_extend_target(Core
+    CONDITION
+        UNIX AND NOT (QT_FEATURE_icu OR MACOS)
     SOURCES
         text/qcollator_posix.cpp
 )
@@ -1081,8 +1087,9 @@ qt_internal_extend_target(Core
 
 qt_internal_extend_target(Core
     CONDITION
-        QT_FEATURE_timezone AND UNIX AND NOT VXWORKS AND NOT WASM
-        AND NOT ANDROID AND NOT OHOS AND NOT APPLE AND NOT QT_FEATURE_timezone_tzdb
+        QT_FEATURE_timezone AND UNIX
+            AND NOT (QT_FEATURE_timezone_tzdb
+                     OR WASM OR ANDROID OR APPLE OR OHOS OR VXWORKS)
     SOURCES
         time/qtimezoneprivate_tz.cpp
 )
