@@ -793,7 +793,7 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
                     [](QOhosJsState &jsState) {
                         auto &pluginJsState = JsState::castFrom(jsState);
                         if (s_hotStartEnabled)
-                            getQAbilityInstancesManager().registerPendingAutoStartedInstance();
+                            getQAbilityInstancesManager().registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
 
                         qOhosPrintfInfo(
                             "Qt: force-resolving pending QWindow destroy Promises before termination if needed");
@@ -1611,8 +1611,8 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
 
     qOhosPrintfDebug("%s: setting up Qt in %s mode", Q_FUNC_INFO, mapQtRunModeToString(qtRunMode));
 
-    getQAbilityInstancesManagerPtr() =
-        makeQAbilityInstancesManager(&handleDefaultQAbilityInstanceStartup);
+    getQAbilityInstancesManagerPtr() = makeQAbilityInstancesManager();
+    getQAbilityInstancesManager().registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
 
     currentQtRunMode = qtRunMode;
     QtOhos::initJsThreadState(
