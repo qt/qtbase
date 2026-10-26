@@ -283,7 +283,6 @@ private slots:
 
 private:
     EditorDateEdit* testWidget;
-    QWidget *testFocusWidget;
 };
 
 typedef QList<QDate> DateList;
@@ -405,15 +404,10 @@ void tst_QDateTimeEdit::initTestCase()
                  qPrintable(QLocale::languageToString(system.language())),
                  qPrintable(QLocale::territoryToString(system.territory())));
     testWidget = new EditorDateEdit;
-    testFocusWidget = new QWidget(nullptr);
-    testFocusWidget->resize(200, 100);
-    testFocusWidget->show();
 }
 
 void tst_QDateTimeEdit::cleanupTestCase()
 {
-    delete testFocusWidget;
-    testFocusWidget = 0;
     delete testWidget;
     testWidget = 0;
 }
@@ -427,7 +421,7 @@ void tst_QDateTimeEdit::init()
     testWidget->setDisplayFormat("dd/MM/yyyy"); // Nice default to have
     testWidget->setDateTime(QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
     testWidget->show();
-    testFocusWidget->move(-1000, -1000);
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget));
 }
 
 void tst_QDateTimeEdit::cleanup()
@@ -439,6 +433,7 @@ void tst_QDateTimeEdit::cleanup()
     testWidget->setWrapping(false);
     // Restore the default.
     testWidget->setCalendarPopup(false);
+    testWidget->hide();
 }
 
 void tst_QDateTimeEdit::constructor_qwidget()
