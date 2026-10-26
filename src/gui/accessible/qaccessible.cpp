@@ -3119,6 +3119,7 @@ const QString &QAccessibleActionInterface::setFocusAction()
 }
 
 /*!
+    \since 6.12
     Returns the name of the show on screen default action.
     \sa actionNames(), localizedActionName()
   */
