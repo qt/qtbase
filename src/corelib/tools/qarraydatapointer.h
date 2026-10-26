@@ -50,7 +50,9 @@ public:
 
     Q_NODISCARD_CTOR
     explicit QArrayDataPointer(QTypedArrayAllocationResult<T> adata, qsizetype n = 0) noexcept
-        : QArrayDataPointer(adata.header, adata.ptr, n)
+        // a failed allocation must not yield size != 0, or data() will
+        // Q_PRESUME() non-null and optimize away callers' Q_CHECK_PTR():
+        : QArrayDataPointer(adata.header, adata.ptr, adata.ptr ? n : 0)
     {
     }
 
