@@ -589,6 +589,7 @@ private slots:
     void chop();
 
     void constructor();
+    void constructorTooLarge();
 #if !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
     void constructorQByteArray_data();
     void constructorQByteArray();
@@ -1426,6 +1427,15 @@ void tst_QString::constructor()
     empty = QString::fromUtf8("");
     QVERIFY(!empty.isNull());
     QVERIFY(empty.isEmpty());
+}
+
+void tst_QString::constructorTooLarge()
+{
+    // The (final) allocation size doesn't fit qsizetype, so allocation fails
+    // deterministically, without calling malloc():
+    constexpr auto tooLarge = QString::maxSize() + 1;
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QString s(tooLarge, u'x'));
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QString s(tooLarge, Qt::Uninitialized));
 }
 
 #if !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)

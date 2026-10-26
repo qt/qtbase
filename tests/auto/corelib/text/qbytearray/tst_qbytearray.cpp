@@ -116,6 +116,7 @@ private slots:
     void compareCharStar_data();
     void compareCharStar();
 
+    void constructorTooLarge();
     void repeatedSignature() const;
     void repeated() const;
     void repeated_data() const;
@@ -2774,6 +2775,15 @@ void tst_QByteArray::compareCharStar()
     QCOMPARE(str2 <= str1, isGreater || isEqual);
     QCOMPARE(str2 >= str1, isLess || isEqual);
     QCOMPARE(str2 != str1, !isEqual);
+}
+
+void tst_QByteArray::constructorTooLarge()
+{
+    // The (final) allocation size doesn't fit qsizetype, so allocation fails
+    // deterministically, without calling malloc():
+    constexpr auto tooLarge = QByteArray::maxSize() + 1;
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QByteArray s(tooLarge, 'x'));
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QByteArray s(tooLarge, Qt::Uninitialized));
 }
 
 void tst_QByteArray::repeatedSignature() const
