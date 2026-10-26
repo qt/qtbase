@@ -455,6 +455,12 @@ if(is_qt_build_platform)
                                 BINARY_ARGS "-V")
 
     _qt_internal_test_expect_pass(test_generating_cpp_exports)
+    _qt_internal_test_expect_pass(test_deprecated_private_header)
+    _qt_internal_test_expect_fail(test_deprecated_private_header
+        TESTNAME test_deprecating_private_header_fails
+        BUILD_DIR test_deprecating_private_header_fails
+        BUILD_OPTIONS -DDEPRECATE_PRIVATE_HEADER=ON
+    )
 endif()
 
 _qt_internal_test_expect_pass(test_qt_extract_metatypes)
