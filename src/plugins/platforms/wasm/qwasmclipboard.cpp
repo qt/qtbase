@@ -194,7 +194,8 @@ void QWasmClipboard::writeToClipboardApi()
             buffer.open(QIODevice::WriteOnly);
             img.save(&buffer, "PNG");
 
-            qstdweb::Blob blob = qstdweb::Blob::fromArrayBuffer(qstdweb::Uint8Array::copyFrom(ba).buffer());
+            // The Blob type must match the ClipboardItem key, or Chromium rejects the write.
+            qstdweb::Blob blob = qstdweb::Blob::copyFrom(ba.constData(), ba.size(), "image/png");
             clipboardData.set(std::string("image/png"), blob.val());
         }
     }
