@@ -2028,7 +2028,6 @@ void tst_Http2::abortReplyAfterH2Reconnect()
     while (pairsAfterReplyDeleted == -1 && !timer.hasExpired())
         QCoreApplication::processEvents();
 
-    QEXPECT_FAIL("", "QTBUG-143289: reply left in requestReplyPairs", Abort);
     QCOMPARE(pairsAfterReplyDeleted, 0);
 #endif // QT_CONFIG(ssl)
 }
