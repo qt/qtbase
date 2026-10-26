@@ -805,13 +805,6 @@ void QWidgetRepaintManager::paintAndFlush()
     }
     dirtyWidgets.clear();
 
-    // Find all render-to-texture child widgets (including self).
-    // The search is cut at native widget boundaries, meaning that each native child widget
-    // has its own list for the subtree below it.
-    QTLWExtra *tlwExtra = tlw->d_func()->topData();
-    tlwExtra->widgetTextures.clear();
-    findAllTextureWidgetsRecursively(tlw, tlw);
-
     if (toClean.isEmpty()) {
         // Nothing to repaint. However renderToTexture widgets are handled
         // specially, they are not in the regular dirty list, in order to
@@ -848,6 +841,12 @@ void QWidgetRepaintManager::paintAndFlush()
         return;
     }
 
+    // Find all render-to-texture child widgets (including self).
+    // The search is cut at native widget boundaries, meaning that each native child widget
+    // has its own list for the subtree below it.
+    QTLWExtra *tlwExtra = tlw->d_func()->topData();
+    tlwExtra->widgetTextures.clear();
+    findAllTextureWidgetsRecursively(tlw, tlw);
     for (const auto &tl : tlwExtra->widgetTextures) {
         for (int i = 0; i < tl->count(); ++i) {
             QWidget *w = static_cast<QWidget *>(tl->source(i));
@@ -977,6 +976,12 @@ void QWidgetRepaintManager::flush()
 {
     qCInfo(lcWidgetPainting) << "Flushing top level"
         << topLevelNeedsFlush << "and children" << needsFlushWidgets;
+
+    // Paint events may have changed the render-to-texture widgets. For example,
+    // an item view may resize an index widget, replacing its texture. Collect
+    // the current textures and geometry before flushing either painting path.
+    tlw->d_func()->topData()->widgetTextures.clear();
+    findAllTextureWidgetsRecursively(tlw, tlw);
 
     const bool hasNeedsFlushWidgets = !needsFlushWidgets.isEmpty();
     bool flushed = false;

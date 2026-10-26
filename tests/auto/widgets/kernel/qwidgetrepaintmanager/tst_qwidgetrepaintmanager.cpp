@@ -15,6 +15,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformbackingstore.h>
 #include <private/qguiapplication_p.h>
+#include <private/qwindow_p.h>
 
 //#define MANUAL_DEBUG
 
@@ -264,6 +265,7 @@ private slots:
     void staticContents();
     void scroll();
     void paintOnScreenUpdates();
+    void renderToTextureChangedWhilePainting();
     void evaluateRhi();
     void rhiRecreateMaintainsWindowProperties();
 
@@ -591,6 +593,77 @@ void tst_QWidgetRepaintManager::paintOnScreenUpdates()
         paintOnScreenTopLevel.update();
         QVERIFY(QTest::qWaitFor([&]{ return paintOnScreenTopLevel.updateRequests > 1; }));
     }
+}
+
+class PaintHookWidget : public TestWidget
+{
+public:
+    using TestWidget::TestWidget;
+
+    std::function<void()> paintHook;
+
+protected:
+    void paintEvent(QPaintEvent *event) override
+    {
+        if (paintHook)
+            std::exchange(paintHook, {})();
+        paintedRegions += event->region();
+    }
+};
+
+static QRect textureListGeometry(QWidget *widget)
+{
+    for (const auto &tl : QWidgetPrivate::get(widget->window())->topData()->widgetTextures) {
+        for (int i = 0; i < tl->count(); ++i) {
+            if (tl->source(i) == widget)
+                return tl->geometry(i);
+        }
+    }
+    return QRect();
+}
+
+void tst_QWidgetRepaintManager::renderToTextureChangedWhilePainting()
+{
+    TestWidget topLevel;
+    topLevel.setObjectName("TopLevel");
+    topLevel.resize(500, 500);
+    PaintHookWidget container(&topLevel);
+    container.setObjectName("Container");
+    container.setGeometry(0, 0, 500, 500);
+    PaintHookWidget renderToTextureWidget(&container);
+    renderToTextureWidget.setObjectName("RenderToTexture");
+    renderToTextureWidget.setGeometry(0, 0, 100, 100);
+    QWidgetPrivate::get(&renderToTextureWidget)->setRenderToTexture();
+
+    topLevel.initialShow();
+    QCOMPARE(textureListGeometry(&renderToTextureWidget), QRect(0, 0, 100, 100));
+
+    // With render-to-texture children, repaint() turns into a posted update
+    // when the last composition was less than a frame ago. The checks below
+    // need it to paint and flush synchronously.
+    const auto repaintNow = [&](QWidget *widget) {
+        QWindowPrivate::get(topLevel.windowHandle())->lastComposeTime.invalidate();
+        widget->repaint();
+    };
+
+    // Resized while painting another widget, like an index widget when the
+    // item view runs its pending layout from its paint event. The texture
+    // list for the flush must reflect the widget as it is after painting.
+    container.paintHook = [&] { renderToTextureWidget.setGeometry(50, 50, 200, 200); };
+    repaintNow(&container);
+    QCOMPARE(textureListGeometry(&renderToTextureWidget), QRect(50, 50, 200, 200));
+    QVERIFY(container.waitForPainted());
+
+    // Resized while painting only the render-to-texture widget itself
+    renderToTextureWidget.paintHook = [&] { renderToTextureWidget.setGeometry(100, 100, 200, 200); };
+    repaintNow(&renderToTextureWidget);
+    QCOMPARE(textureListGeometry(&renderToTextureWidget), QRect(100, 100, 200, 200));
+    QVERIFY(container.waitForPainted());
+
+    // Hidden while painting another widget
+    container.paintHook = [&] { renderToTextureWidget.hide(); };
+    repaintNow(&container);
+    QCOMPARE(textureListGeometry(&renderToTextureWidget), QRect());
 }
 
 class RhiWidgetPrivate : public QWidgetPrivate
