@@ -6,6 +6,7 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtGui/qwindow.h>
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
@@ -103,6 +104,73 @@ QOhosSupplier<std::string> makeAbilityInstanceIdsGenerator()
         ++idsCounter;
         return instanceId;
     };
+}
+
+class DummyQAbilityPeer : public QAbilityPeer
+{
+public:
+    DummyQAbilityPeer() = default;
+
+    std::string instanceId() override;
+    QNapi::Object uiContext() override;
+    QNapi::Object qAbility() override;
+    QNapi::Object launchWant() override;
+    QObjectThreadSafeRef qWindowRef() override;
+    std::optional<QNapi::Promise> qWindowDestroyPromise() override;
+    void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) override;
+    std::shared_ptr<std::atomic_bool> destroyAllowedFlag() override;
+
+    void setQWindow(Napi::Env env, QObjectThreadSafeRef) override;
+
+    void *tryCastWithTypeIdObject(const void *matchTypeIdObject) override;
+};
+
+std::string DummyQAbilityPeer::instanceId()
+{
+    return {};
+}
+
+QNapi::Object DummyQAbilityPeer::uiContext()
+{
+    return QNapi::Object();
+}
+
+QNapi::Object DummyQAbilityPeer::qAbility()
+{
+    return QNapi::Object();
+}
+
+QNapi::Object DummyQAbilityPeer::launchWant()
+{
+    return QNapi::Object();
+}
+
+QObjectThreadSafeRef DummyQAbilityPeer::qWindowRef()
+{
+    return {};
+}
+
+std::optional<QNapi::Promise> DummyQAbilityPeer::qWindowDestroyPromise()
+{
+    return std::nullopt;
+}
+
+void DummyQAbilityPeer::forceResolveQWindowDestroyPromiseIfPresent(Napi::Env)
+{
+}
+
+std::shared_ptr<std::atomic_bool> DummyQAbilityPeer::destroyAllowedFlag()
+{
+    return std::make_shared<std::atomic_bool>(false);
+}
+
+void DummyQAbilityPeer::setQWindow(Napi::Env, QObjectThreadSafeRef)
+{
+}
+
+void *DummyQAbilityPeer::tryCastWithTypeIdObject(const void *)
+{
+    return nullptr;
 }
 
 class QAbilityPeerImpl : public virtual QAbilityPeer
@@ -514,10 +582,40 @@ void QUiAbilityPeerImpl::setOnContinueRequestsHandler(
     m_onContinueRequestsHandler = std::move(requestsHandler);
 }
 
+bool isAbilityTerminating(QNapi::Object ability)
+{
+    try {
+        return ability.eval<QNapi::Boolean>("context.isTerminating()");
+    } catch (const Napi::Error &error) {
+        qOhosPrintfWarning("context.isTerminating() failed (%s), assuming the Ability is terminating", error.what());
+        return true;
+    }
+}
+
+bool isAbilityPeerClosing(std::shared_ptr<QAbilityPeer> abilityPeer)
+{
+    auto optUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(abilityPeer);
+    return optUiAbilityPeer
+        && (JsWindowsTracker::isWindowClosing(optUiAbilityPeer->window())
+            || isAbilityTerminating(optUiAbilityPeer->qAbility()));
+}
+
 class QAbilityInstancesManagerImpl final : public QAbilityInstancesManager
 {
 public:
     QAbilityInstancesManagerImpl();
+
+    QNapi::Object appLaunchWant() override;
+    std::optional<QNapi::Object> optAppLaunchParam() override;
+
+    std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() override;
+    std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) override;
+    std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) override;
+    std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow) override;
+
+    void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) override;
+
+    void removeMatchingQAbilityPeer(QNapi::Object qAbility) override;
 
     bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const override;
 
@@ -549,6 +647,15 @@ private:
         JsState &jsState, const std::string &abilityInstanceId,
         const std::function<std::shared_ptr<QAbilityPeer>(const std::string &, const InstanceStartParams &)> &qAbilityPeerFactory);
 
+    void addQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer);
+
+    template<typename PeerMatchFunc>
+    std::shared_ptr<QAbilityPeer> tryFindMatchingQAbilityPeer(PeerMatchFunc &&matchFunc) const;
+
+    QNapi::Reference<QNapi::Object> m_appLaunchWant;
+    QNapi::Reference<QNapi::Object> m_optAppLaunchParam;
+    std::shared_ptr<QAbilityPeer> m_defaultQAbilityPeer;
+    std::map<std::string, std::shared_ptr<QAbilityPeer>> m_qAbilityPeers;
     std::shared_ptr<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>> m_ownedUiAbilityPeers;
     QOhosSupplier<std::string> m_abilityInstanceIdsGenerator;
     std::map<std::string, InstanceStartParams> m_pendingInstancesStartParams;
@@ -556,9 +663,95 @@ private:
 };
 
 QAbilityInstancesManagerImpl::QAbilityInstancesManagerImpl()
-    : m_ownedUiAbilityPeers(std::make_shared<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>>())
+    : m_defaultQAbilityPeer(std::make_shared<DummyQAbilityPeer>())
+    , m_ownedUiAbilityPeers(std::make_shared<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>>())
     , m_abilityInstanceIdsGenerator(makeAbilityInstanceIdsGenerator())
 {
+}
+
+QNapi::Object QAbilityInstancesManagerImpl::appLaunchWant()
+{
+    return m_appLaunchWant.Value();
+}
+
+std::optional<QNapi::Object> QAbilityInstancesManagerImpl::optAppLaunchParam()
+{
+    return !m_optAppLaunchParam.IsEmpty()
+        ? std::optional(m_optAppLaunchParam.Value())
+        : std::nullopt;
+}
+
+std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::defaultQAbilityPeer()
+{
+    if (isAbilityPeerClosing(m_defaultQAbilityPeer)) {
+        auto optLivePeer = tryFindMatchingQAbilityPeer(
+            [](const auto &peer) {
+                return !isAbilityPeerClosing(peer);
+            });
+        if (optLivePeer) {
+            qOhosPrintfInfo(
+                "%s: default Ability with instanceId='%s' is closing, switching to instanceId='%s'",
+                Q_FUNC_INFO, m_defaultQAbilityPeer->instanceId().c_str(), optLivePeer->instanceId().c_str());
+            m_defaultQAbilityPeer = optLivePeer;
+        }
+    }
+
+    return m_defaultQAbilityPeer;
+}
+
+std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::tryGetQAbilityPeerByInstanceId(const std::string &instanceId)
+{
+    auto foundIter = m_qAbilityPeers.find(instanceId);
+    return foundIter != m_qAbilityPeers.end() ? foundIter->second : nullptr;
+}
+
+std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::tryGetQAbilityPeerByInstance(QNapi::Object qAbility)
+{
+    Napi::HandleScope findPeerScope(qAbility.Env());
+    return tryFindMatchingQAbilityPeer(
+        [&](const auto &peer) {
+            return peer->qAbility() == qAbility;
+        });
+}
+
+std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow)
+{
+    return tryFindMatchingQAbilityPeer(
+        [&](const auto &peer) {
+            return peer->qWindowRef() == qwindow;
+        });
+}
+
+void QAbilityInstancesManagerImpl::visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor)
+{
+    auto qAbilityPeersSnapshot = m_qAbilityPeers;
+    for (const auto &qAbilityPeerEntry : qAbilityPeersSnapshot)
+        visitor(qAbilityPeerEntry.second);
+}
+
+void QAbilityInstancesManagerImpl::removeMatchingQAbilityPeer(QNapi::Object qAbility)
+{
+    Napi::HandleScope funcScope{qAbility.Env()};
+
+    auto foundPeerIter = std::find_if(
+        m_qAbilityPeers.begin(), m_qAbilityPeers.end(),
+        [&](const auto &entry) {
+            return entry.second->qAbility() == qAbility;
+        });
+
+    if (foundPeerIter != m_qAbilityPeers.end()) {
+        auto removedPeer = foundPeerIter->second;
+        m_qAbilityPeers.erase(foundPeerIter);
+        if (m_defaultQAbilityPeer == removedPeer) {
+            m_defaultQAbilityPeer =
+                !m_qAbilityPeers.empty()
+                    ? m_qAbilityPeers.begin()->second
+                    : std::make_shared<DummyQAbilityPeer>();
+        }
+        qOhosPrintfDebug(
+            "%s: removed QAbilityPeer, instanceId: %s, qwindow: %s",
+            Q_FUNC_INFO, removedPeer->instanceId().c_str(), removedPeer->qWindowRef().refName().c_str());
+    }
 }
 
 std::optional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceIdFromWant(
@@ -700,6 +893,40 @@ void QAbilityInstancesManagerImpl::handleStartedUiInstance(
         });
 }
 
+void QAbilityInstancesManagerImpl::addQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer)
+{
+    if (m_appLaunchWant.IsEmpty())
+        m_appLaunchWant = Napi::Persistent(qAbilityPeer->launchWant());
+
+    auto optQUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(qAbilityPeer);
+    if (m_optAppLaunchParam.IsEmpty() && optQUiAbilityPeer) {
+        m_optAppLaunchParam = QNapi::Reference<>::makePersistentFrom(optQUiAbilityPeer->launchParam());
+        qOhosPrintfInfo(
+            "%s: appLaunchParam set from Ability with instanceId='%s'",
+            Q_FUNC_INFO, qAbilityPeer->instanceId().c_str());
+    }
+
+    if (m_qAbilityPeers.empty())
+        m_defaultQAbilityPeer = qAbilityPeer;
+
+    m_qAbilityPeers.emplace(qAbilityPeer->instanceId(), qAbilityPeer);
+
+    qOhosPrintfDebug(
+        "%s: added QAbilityPeer, instanceId: %s, qwindow: %s",
+        Q_FUNC_INFO, qAbilityPeer->instanceId().c_str(), qAbilityPeer->qWindowRef().refName().c_str());
+}
+
+template<typename PeerMatchFunc>
+std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::tryFindMatchingQAbilityPeer(PeerMatchFunc &&matchFunc) const
+{
+    auto foundIter = std::find_if(
+        m_qAbilityPeers.begin(), m_qAbilityPeers.end(),
+        [&](const auto &entry) {
+            return matchFunc(entry.second);
+        });
+    return foundIter != m_qAbilityPeers.end() ? foundIter->second : nullptr;
+}
+
 std::shared_ptr<QUiAbilityPeerBackend> QAbilityInstancesManagerImpl::getAbilityPeerBackend(
     std::shared_ptr<QUiAbilityPeer> uiAbilityPeer)
 {
@@ -730,7 +957,7 @@ void QAbilityInstancesManagerImpl::handleStartedInstance(
             m_pendingAutoStartedInstanceId.reset();
 
         auto qAbilityPeer = qAbilityPeerFactory(abilityInstanceId, startParams);
-        QtOhos::addJsQAbilityPeer(qAbilityPeer);
+        addQAbilityPeer(qAbilityPeer);
         startParams.startupNotifyFunc(jsState, qAbilityPeer);
     } else {
         qOhosPrintfError(

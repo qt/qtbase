@@ -65,6 +65,18 @@ public:
 
     static QAbilityInfo readAbilityInfo(const QNapi::Object &ability);
 
+    virtual QNapi::Object appLaunchWant() = 0;
+    virtual std::optional<QNapi::Object> optAppLaunchParam() = 0;
+
+    virtual std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() = 0;
+    virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) = 0;
+    virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) = 0;
+    virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow) = 0;
+
+    virtual void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) = 0;
+
+    virtual void removeMatchingQAbilityPeer(QNapi::Object qAbility) = 0;
+
     virtual bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const = 0;
 
     virtual std::optional<std::string> tryGetQAbilityInstanceIdFromWant(QNapi::Object appQAbility, QNapi::Object want) const = 0;

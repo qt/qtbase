@@ -67,7 +67,7 @@ struct LocalStorageForWindowCreateInfo
 std::shared_ptr<QtOhos::QAbilityPeer> getQAbilityPeerByInstanceIdOrFail(
     QtOhos::JsState &jsState, const std::string &qAbilityInstanceId)
 {
-    auto qAbilityPeer = jsState.tryGetQAbilityPeerByInstanceId(qAbilityInstanceId);
+    auto qAbilityPeer = QtOhos::QAbilityInstancesManager::instance(jsState).tryGetQAbilityPeerByInstanceId(qAbilityInstanceId);
     if (!qAbilityPeer) {
         qOhosReportFatalErrorAndAbort(
             "Failed to find QAbilityPeer for qAbilityInstanceId: %s", qAbilityInstanceId.c_str());
@@ -448,7 +448,7 @@ void makeWindowProxyDataForFloatWindowInJsThread(
     QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> resultConsumer)
 {
     auto xComponentId = QXComponentId::createForNativeNodeFloatWindow(createInfo.internalWindowId);
-    auto qAbilityPeer = jsState.defaultQAbilityPeer();
+    auto qAbilityPeer = QtOhos::QAbilityInstancesManager::instance(jsState).defaultQAbilityPeer();
 
     if (qAbilityPeer->qAbility().IsEmpty())
         qOhosReportFatalErrorAndAbort("%s: can't create window without the default Ability instance", Q_FUNC_INFO);
