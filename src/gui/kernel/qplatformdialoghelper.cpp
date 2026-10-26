@@ -221,6 +221,13 @@ QFontDialogOptions::FontDialogOptions QFontDialogOptions::options() const
     \brief The QPlatformFontDialogHelper class allows for platform-specific customization of font dialogs.
 
 */
+
+QPlatformFontDialogHelper::QPlatformFontDialogHelper()
+    = default;
+
+QPlatformFontDialogHelper::~QPlatformFontDialogHelper()
+    = default;
+
 const QSharedPointer<QFontDialogOptions> &QPlatformFontDialogHelper::options() const
 {
     return m_options;
@@ -384,6 +391,12 @@ void QColorDialogOptions::setStandardColor(int index, QRgb color)
     \brief The QPlatformColorDialogHelper class allows for platform-specific customization of color dialogs.
 
 */
+QPlatformColorDialogHelper::QPlatformColorDialogHelper()
+    = default;
+
+QPlatformColorDialogHelper::~QPlatformColorDialogHelper()
+    = default;
+
 const QSharedPointer<QColorDialogOptions> &QPlatformColorDialogHelper::options() const
 {
     return m_options;
@@ -672,6 +685,12 @@ QStringList QFileDialogOptions::supportedSchemes() const
 {
     return d->supportedSchemes;
 }
+
+QPlatformFileDialogHelper::QPlatformFileDialogHelper()
+    = default;
+
+QPlatformFileDialogHelper::~QPlatformFileDialogHelper()
+    = default;
 
 void QPlatformFileDialogHelper::selectMimeTypeFilter(const QString &filter)
 {
@@ -1015,6 +1034,13 @@ const int *QPlatformDialogHelper::buttonLayout(Qt::Orientation orientation, Butt
     \brief The QPlatformMessageDialogHelper class allows for platform-specific customization of Message dialogs.
 
 */
+
+QPlatformMessageDialogHelper::QPlatformMessageDialogHelper()
+    = default;
+
+QPlatformMessageDialogHelper::~QPlatformMessageDialogHelper()
+    = default;
+
 const QSharedPointer<QMessageDialogOptions> &QPlatformMessageDialogHelper::options() const
 {
     return m_options;

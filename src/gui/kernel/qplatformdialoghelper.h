@@ -120,7 +120,7 @@ public:
     Q_ENUM(ButtonLayout)
 
     QPlatformDialogHelper();
-    ~QPlatformDialogHelper();
+    ~QPlatformDialogHelper() override;
 
     virtual QVariant styleHint(StyleHint hint) const;
 
@@ -193,6 +193,9 @@ class Q_GUI_EXPORT QPlatformColorDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:
+    QPlatformColorDialogHelper();
+    ~QPlatformColorDialogHelper() override;
+
     const QSharedPointer<QColorDialogOptions> &options() const;
     void setOptions(const QSharedPointer<QColorDialogOptions> &options);
 
@@ -249,6 +252,9 @@ class Q_GUI_EXPORT QPlatformFontDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:
+    QPlatformFontDialogHelper();
+    ~QPlatformFontDialogHelper() override;
+
     virtual void setCurrentFont(const QFont &) = 0;
     virtual QFont currentFont() const = 0;
 
@@ -368,6 +374,9 @@ class Q_GUI_EXPORT QPlatformFileDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:
+    QPlatformFileDialogHelper();
+    ~QPlatformFileDialogHelper() override;
+
     virtual bool defaultNameFilterDisables() const = 0;
     virtual void setDirectory(const QUrl &directory) = 0;
     virtual QUrl directory() const = 0;
@@ -486,6 +495,9 @@ class Q_GUI_EXPORT QPlatformMessageDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:
+    QPlatformMessageDialogHelper();
+    ~QPlatformMessageDialogHelper() override;
+
     const QSharedPointer<QMessageDialogOptions> &options() const;
     void setOptions(const QSharedPointer<QMessageDialogOptions> &options);
 
