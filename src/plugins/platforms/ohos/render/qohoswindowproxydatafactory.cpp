@@ -6,6 +6,7 @@
 #include <QtCore/qscopeguard.h>
 #include <cstdint>
 #include <qarkui/qxcomponentregistry.h>
+#include <qohosqabilityinstancesmanager.h>
 #include <qohosutils.h>
 #include <render/qohoswindowproxy.h>
 #include <render/qxcomponent.h>
@@ -289,7 +290,7 @@ void makeWindowProxyDataForMainWindowInJsThread(
         abilityStartupOptions.set("windowMode", fullscreenWindowMode);
     }
 
-    jsState.startNewQAbilityInstance(
+    QtOhos::QAbilityInstancesManager::instance(jsState).startNewInstance(
         optBaseQAbility.value(), createInfo.qWindowRef,
         abilityStartupOptions,
         [qWindowRef = createInfo.qWindowRef,

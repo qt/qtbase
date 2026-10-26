@@ -747,6 +747,11 @@ QAbilityInstancesManager::QAbilityInstancesManager() = default;
 
 QAbilityInstancesManager::~QAbilityInstancesManager() = default;
 
+QAbilityInstancesManager &QAbilityInstancesManager::instance(QOhosJsState &jsState)
+{
+    return JsState::castFrom(jsState).getAttachedObjectWithLazyCreate<QAbilityInstancesManagerImpl>();
+}
+
 bool QAbilityInstancesManager::isQtInternalWantFromThisProcess(QNapi::Object want)
 {
     auto optWantParameters = QNapi::getOptionalPropOrEmpty<QNapi::Object>(want, "parameters");
@@ -779,11 +784,6 @@ QAbilityInfo QAbilityInstancesManager::readAbilityInfo(const QNapi::Object &abil
         .bundleName = abilityInfo.get<QNapi::String>("bundleName"),
         .moduleName = abilityInfo.get<QNapi::String>("moduleName"),
     };
-}
-
-std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager()
-{
-    return std::make_shared<QAbilityInstancesManagerImpl>();
 }
 
 }

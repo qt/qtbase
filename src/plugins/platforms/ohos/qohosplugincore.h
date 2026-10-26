@@ -62,11 +62,6 @@ class AppFunctions
 public:
     virtual ~AppFunctions();
 
-    virtual void startQAbilityInstance(
-        QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
-        QNapi::Object optStartOptions,
-        std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) = 0;
-
     virtual void startAppProcess(
         QNapi::Object baseQAbility, const std::string &processId, QNapi::Object want,
         QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) = 0;
@@ -95,11 +90,6 @@ public:
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) = 0;
 
     virtual void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) = 0;
-
-    virtual void startNewQAbilityInstance(
-        QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
-        QNapi::Object optStartOptions,
-        std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) = 0;
 
     virtual QtRunMode qtRunMode() = 0;
 
