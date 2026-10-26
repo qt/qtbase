@@ -607,7 +607,7 @@ void setGlobalFlagsFromAppProcessLaunchOptions(const AppProcessLaunchOptions &la
 
 void terminateAllAbilityInstances(JsState &jsState, const char *logContext)
 {
-    jsState.visitEachQAbilityPeer(
+    QAbilityInstancesManager::instance(jsState).visitEachQAbilityPeer(
         [&](auto qAbilityPeer) {
             qOhosPrintfInfo(
                 "Qt: terminating QAbility with instanceId='%s'",
@@ -781,12 +781,13 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
                 QOhosJsThreadGateway::invoke(
                     [](QOhosJsState &jsState) {
                         auto &pluginJsState = JsState::castFrom(jsState);
+                        auto &qAbilityInstancesManager = QAbilityInstancesManager::instance(jsState);
                         if (s_hotStartEnabled)
-                            QAbilityInstancesManager::instance(jsState).registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
+                            qAbilityInstancesManager.registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
 
                         qOhosPrintfInfo(
                             "Qt: force-resolving pending QWindow destroy Promises before termination if needed");
-                        pluginJsState.visitEachQAbilityPeer(
+                        qAbilityInstancesManager.visitEachQAbilityPeer(
                             [&](std::shared_ptr<QtOhos::QAbilityPeer> peer) {
                                 peer->forceResolveQWindowDestroyPromiseIfPresent(
                                     Napi::Env(jsState.env()));
@@ -997,7 +998,7 @@ QNapi::Value handleAbilityOnContinue(const CallbackInfo &cbInfo)
     cbInfo.getLeadingArgs(Q_FUNC_INFO, qAbility, wantParamsObj);
 
     auto uiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
-        cbInfo.jsState().tryGetQAbilityPeerByInstance(qAbility));
+        QAbilityInstancesManager::instance(cbInfo.jsState()).tryGetQAbilityPeerByInstance(qAbility));
     if (!uiAbilityPeer) {
         qOhosPrintfWarning("%s: got unknown Ability, rejecting", Q_FUNC_INFO);
         return makeResolvedPromise(
@@ -1159,7 +1160,7 @@ QNapi::Value handleAbilityStageOnAcceptWant(const CallbackInfo &cbInfo)
 
     auto &qAbilityInstancesManager = QAbilityInstancesManager::instance(cbInfo.jsState());
 
-    std::shared_ptr<QAbilityPeer> defaultQAbilityPeer = cbInfo.jsState().defaultQAbilityPeer();
+    std::shared_ptr<QAbilityPeer> defaultQAbilityPeer = qAbilityInstancesManager.defaultQAbilityPeer();
 
     auto defaultQAbility = defaultQAbilityPeer->qAbility();
     auto receivedQAbilityInstanceId =
@@ -1353,7 +1354,7 @@ QNapi::Value handleAbilityOnPrepareToTerminate(const CallbackInfo &cbInfo)
     auto __dbg = make_QCScopedDebugJS(Q_FUNC_INFO);
     auto ability = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
-    auto abilityPeer = cbInfo.jsState().tryGetQAbilityPeerByInstance(ability);
+    auto abilityPeer = QAbilityInstancesManager::instance(cbInfo.jsState()).tryGetQAbilityPeerByInstance(ability);
     if (!abilityPeer) {
         qOhosPrintfWarning("%s: unrecognized ability, returning immediately", Q_FUNC_INFO);
         return QNapi::Boolean::New(cbInfo.Env(), false);
@@ -1391,12 +1392,13 @@ QNapi::Value handleAbilityOnPrepareToTerminateAsync(const CallbackInfo &cbInfo)
     auto qAbility = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
     JsState &jsState = cbInfo.jsState();
+    auto &qAbilityInstancesManager = QAbilityInstancesManager::instance(jsState);
 
     auto optQUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
-        jsState.tryGetQAbilityPeerByInstance(qAbility));
+        qAbilityInstancesManager.tryGetQAbilityPeerByInstance(qAbility));
 
     if (optQUiAbilityPeer) {
-        return QAbilityInstancesManager::instance(jsState).getAbilityPeerBackend(optQUiAbilityPeer)->handleCloseRequestFromSystem(
+        return qAbilityInstancesManager.getAbilityPeerBackend(optQUiAbilityPeer)->handleCloseRequestFromSystem(
             jsState, "UIAbility::onPrepareToTerminateAsync",
             QUiAbilityPeerBackend::CloseAbilityRequestSource::OnPrepareToTerminate,
             [](QOhosJsState &jsState, QUiAbilityPeerBackend::CloseAbilityRequestResolution ohosRequestResolution) {
@@ -1441,7 +1443,7 @@ QNapi::Value handleAbilityOnDestroy(const CallbackInfo &cbInfo)
 
     auto qAbility = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
-    auto qAbilityPeer = cbInfo.jsState().tryGetQAbilityPeerByInstance(qAbility);
+    auto qAbilityPeer = QAbilityInstancesManager::instance(cbInfo.jsState()).tryGetQAbilityPeerByInstance(qAbility);
     if (!qAbilityPeer) {
         qOhosPrintfDebug("%s: no matching QAbilityPeer, returning resolved Promise", Q_FUNC_INFO);
         return makeResolvedPromise(cbInfo.Env());
@@ -1459,7 +1461,7 @@ QNapi::Value handleAbilityOnDestroy(const CallbackInfo &cbInfo)
         [qAbilityPeer, resultPromiseDeferred](const CallbackInfo &cbInfo) {
             qOhosPrintfDebug("%s: initial Promise resolved for id='%s'", Q_FUNC_INFO, qAbilityPeer->instanceId().c_str());
 
-            QtOhos::removeMatchingJsQAbilityPeer(qAbilityPeer->qAbility());
+            QAbilityInstancesManager::instance(cbInfo.jsState()).removeMatchingQAbilityPeer(qAbilityPeer->qAbility());
 
             if (!cbInfo.jsState().defaultQAbility()) {
                 QtOhos::quitApplicationFromJsThread();

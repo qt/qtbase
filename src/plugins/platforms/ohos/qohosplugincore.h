@@ -85,12 +85,6 @@ public:
 
     ~JsState() override;
 
-    virtual std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() = 0;
-    virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) = 0;
-    virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) = 0;
-
-    virtual void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) = 0;
-
     virtual QtRunMode qtRunMode() = 0;
 
     template<typename T>
@@ -146,12 +140,6 @@ void initJsThreadState(
 
 // returns true iff the calling thread is the JS thread
 bool isJsThread();
-
-// this function should be called from JS thread for each UIAbility when it's ready
-void addJsQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer);
-
-// this function should be called from JS thread when WindowStage of UIAbility is destroyed
-void removeMatchingJsQAbilityPeer(QNapi::Object qAbility);
 
 // this function should be called from JS thread when new Want object is received
 void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam);

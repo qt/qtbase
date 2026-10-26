@@ -23,6 +23,7 @@
 #include <qohosplatformintegration.h>
 #include <qohosplatformscreen.h>
 #include <qohosplatformwindow.h>
+#include <qohosqabilityinstancesmanager.h>
 #include <qohosutils.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformtheme.h>
@@ -411,7 +412,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
             QOhosWindowProxy::ExistingMainWindowCreateInfo createInfo;
             createInfo.qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow);
             createInfo.qAbilityInstanceId =  QOhosJsThreadGateway::eval([](QOhosJsState &jsState) {
-                return QtOhos::JsState::castFrom(jsState).defaultQAbilityPeer()->instanceId();
+                return QtOhos::QAbilityInstancesManager::instance(jsState).defaultQAbilityPeer()->instanceId();
             },
             Q_FUNC_INFO);
             result = QOhosWindowProxy::createForExistingMainWindow(createInfo);

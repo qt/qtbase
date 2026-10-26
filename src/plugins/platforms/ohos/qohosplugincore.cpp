@@ -16,6 +16,7 @@
 #include <napi.h>
 #include <napi/native_api.h>
 #include <optional>
+#include <qohosqabilityinstancesmanager.h>
 #include <qohosutils.h>
 #include <render/qohosjswindowregistry.h>
 #include <tuple>
@@ -65,73 +66,6 @@ constexpr const char *napiLoadableModules[] = {
     "@ohos.wifiManager",
     "@ohos.window",
 };
-
-class DummyQAbilityPeer : public QAbilityPeer
-{
-public:
-    DummyQAbilityPeer() = default;
-
-    std::string instanceId() override;
-    QNapi::Object uiContext() override;
-    QNapi::Object qAbility() override;
-    QNapi::Object launchWant() override;
-    QObjectThreadSafeRef qWindowRef() override;
-    std::optional<QNapi::Promise> qWindowDestroyPromise() override;
-    void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) override;
-    std::shared_ptr<std::atomic_bool> destroyAllowedFlag() override;
-
-    void setQWindow(Napi::Env env, QObjectThreadSafeRef) override;
-
-    void *tryCastWithTypeIdObject(const void *matchTypeIdObject) override;
-};
-
-std::string DummyQAbilityPeer::instanceId()
-{
-    return {};
-}
-
-QNapi::Object DummyQAbilityPeer::uiContext()
-{
-    return QNapi::Object();
-}
-
-QNapi::Object DummyQAbilityPeer::qAbility()
-{
-    return QNapi::Object();
-}
-
-QNapi::Object DummyQAbilityPeer::launchWant()
-{
-    return QNapi::Object();
-}
-
-QObjectThreadSafeRef DummyQAbilityPeer::qWindowRef()
-{
-    return {};
-}
-
-std::optional<QNapi::Promise> DummyQAbilityPeer::qWindowDestroyPromise()
-{
-    return std::nullopt;
-}
-
-void DummyQAbilityPeer::forceResolveQWindowDestroyPromiseIfPresent(Napi::Env)
-{
-}
-
-std::shared_ptr<std::atomic_bool> DummyQAbilityPeer::destroyAllowedFlag()
-{
-    return std::make_shared<std::atomic_bool>(false);
-}
-
-void DummyQAbilityPeer::setQWindow(Napi::Env, QObjectThreadSafeRef)
-{
-}
-
-void *DummyQAbilityPeer::tryCastWithTypeIdObject(const void *)
-{
-    return nullptr;
-}
 
 template<typename Task>
 class PreQueuingTasksExecutor
@@ -289,24 +223,6 @@ std::function<T(JsState &)> makeMemoizingJsValueSupplier(std::function<T(JsState
     };
 }
 
-bool isAbilityTerminating(QNapi::Object ability)
-{
-    try {
-        return ability.eval<QNapi::Boolean>("context.isTerminating()");
-    } catch (const Napi::Error &error) {
-        qOhosPrintfWarning("context.isTerminating() failed (%s), assuming the Ability is terminating", error.what());
-        return true;
-    }
-}
-
-bool isAbilityPeerClosing(std::shared_ptr<QAbilityPeer> abilityPeer)
-{
-    auto optUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(abilityPeer);
-    return optUiAbilityPeer
-        && (JsWindowsTracker::isWindowClosing(optUiAbilityPeer->window())
-            || isAbilityTerminating(optUiAbilityPeer->qAbility()));
-}
-
 class JsStateImpl : public JsState
 {
 public:
@@ -317,9 +233,6 @@ public:
         std::shared_ptr<AppFunctions> appFunctions, QtRunMode qtRunMode);
 
     bool isJsThread();
-
-    void addQAbilityPeerInJsThread(std::shared_ptr<QAbilityPeer> qAbilityPeer);
-    void removeMatchingQAbilityPeerInJsThread(QNapi::Object qAbility);
 
     void dispatchNewWantInJsThread(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam);
 
@@ -336,14 +249,9 @@ public:
     QNapi::Object defaultWindowStageOrEmpty() override;
     QNapi::Object defaultUiContextOrEmpty() override;
 
-    std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() override;
-    std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) override;
-    std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) override;
     std::optional<QNapi::Object> tryGetJsWindowByQWindow(QObjectThreadSafeRef qwindow) override;
     std::optional<QNapi::Object> tryGetQAbilityByQWindow(QObjectThreadSafeRef qwindow) override;
     std::optional<QNapi::Object> defaultQAbility() override;
-
-    void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) override;
 
     void startAppProcess(
         const std::string &processId, QNapi::Object requestWant,
@@ -363,8 +271,7 @@ public:
     QtRunMode qtRunMode() override;
 
 private:
-    template<typename PeerMatchFunc>
-    std::shared_ptr<QAbilityPeer> tryFindMatchingQAbilityPeer(PeerMatchFunc &&matchFunc);
+    QAbilityInstancesManager &qAbilityInstancesManager();
 
     void *getAttachedObjectWithLazyCreate(
         const std::type_info &objectTypeInfo, QOhosSupplier<std::shared_ptr<void>> objectFactory) override;
@@ -381,10 +288,6 @@ private:
 
     pthread_t m_jsThread = {};
     napi_env m_env = nullptr;
-    QNapi::Reference<QNapi::Object> m_appLaunchWant;
-    QNapi::Reference<QNapi::Object> m_optAppLaunchParam;
-    std::shared_ptr<QAbilityPeer> m_defaultQAbilityPeer;
-    std::map<std::string, std::shared_ptr<QAbilityPeer>> m_qAbilityPeers;
     std::map<std::string, std::function<QNapi::Object(JsState &)>> m_jsModulesFactories;
     std::map<std::string, QNapi::Reference<QNapi::Object>> m_onDemandJsModules;
     std::shared_ptr<AppFunctions> m_appFunctions;
@@ -408,7 +311,6 @@ void JsStateImpl::initInJsThread(
 {
     m_jsThread = pthread_self();
     m_env = env;
-    m_defaultQAbilityPeer = std::make_shared<DummyQAbilityPeer>();
     m_appFunctions = appFunctions;
     m_qtRunMode = qtRunMode;
 
@@ -437,54 +339,6 @@ void JsStateImpl::initInJsThread(
         });
 
     m_tasksExecutor.setUnderlyingExecutor(makeJsThreadTasksExecutor(this));
-}
-
-void JsStateImpl::addQAbilityPeerInJsThread(std::shared_ptr<QAbilityPeer> qAbilityPeer)
-{
-    if (m_appLaunchWant.IsEmpty())
-        m_appLaunchWant = Napi::Persistent(qAbilityPeer->launchWant());
-
-    auto optQUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(qAbilityPeer);
-    if (m_optAppLaunchParam.IsEmpty() && optQUiAbilityPeer) {
-        m_optAppLaunchParam = QNapi::Reference<>::makePersistentFrom(optQUiAbilityPeer->launchParam());
-        qOhosPrintfInfo(
-            "JsStateImpl: appLaunchParam set from Ability with instanceId='%s'",
-            qAbilityPeer->instanceId().c_str());
-    }
-
-    if (m_qAbilityPeers.empty())
-        m_defaultQAbilityPeer = qAbilityPeer;
-
-    m_qAbilityPeers.emplace(qAbilityPeer->instanceId(), qAbilityPeer);
-
-    qOhosPrintfDebug(
-        "JsStateImpl: added QAbilityPeer, instanceId: %s, qwindow: %s",
-        qAbilityPeer->instanceId().c_str(), qAbilityPeer->qWindowRef().refName().c_str());
-}
-
-void JsStateImpl::removeMatchingQAbilityPeerInJsThread(QNapi::Object qAbility)
-{
-    Napi::HandleScope funcScope{qAbility.Env()};
-
-    auto foundPeerIter = std::find_if(
-        m_qAbilityPeers.begin(), m_qAbilityPeers.end(),
-        [&](const auto &entry) {
-            return entry.second->qAbility() == qAbility;
-        });
-
-    if (foundPeerIter != m_qAbilityPeers.end()) {
-        auto removedPeer = foundPeerIter->second;
-        m_qAbilityPeers.erase(foundPeerIter);
-        if (m_defaultQAbilityPeer == removedPeer) {
-            m_defaultQAbilityPeer =
-                !m_qAbilityPeers.empty()
-                    ? m_qAbilityPeers.begin()->second
-                    : std::make_shared<DummyQAbilityPeer>();
-        }
-        qOhosPrintfDebug(
-            "JsStateImpl: removed QAbilityPeer, instanceId: %s, qwindow: %s",
-            removedPeer->instanceId().c_str(), removedPeer->qWindowRef().refName().c_str());
-    }
 }
 
 void JsStateImpl::dispatchNewWantInJsThread(
@@ -552,19 +406,17 @@ std::optional<QNapi::Object> JsStateImpl::tryGetModule(const std::string &module
 
 QNapi::Object JsStateImpl::appLaunchWant()
 {
-    return m_appLaunchWant.Value();
+    return qAbilityInstancesManager().appLaunchWant();
 }
 
 std::optional<QNapi::Object> JsStateImpl::optAppLaunchParam()
 {
-    return !m_optAppLaunchParam.IsEmpty()
-        ? std::optional(m_optAppLaunchParam.Value())
-        : std::nullopt;
+    return qAbilityInstancesManager().optAppLaunchParam();
 }
 
 QNapi::Object JsStateImpl::defaultWindowStageOrEmpty()
 {
-    auto qUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(defaultQAbilityPeer());
+    auto qUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(qAbilityInstancesManager().defaultQAbilityPeer());
     if (!qUiAbilityPeer)
         return QNapi::Object();
 
@@ -573,40 +425,7 @@ QNapi::Object JsStateImpl::defaultWindowStageOrEmpty()
 
 QNapi::Object JsStateImpl::defaultUiContextOrEmpty()
 {
-    return defaultQAbilityPeer()->uiContext();
-}
-
-std::shared_ptr<QAbilityPeer> JsStateImpl::defaultQAbilityPeer()
-{
-    if (isAbilityPeerClosing(m_defaultQAbilityPeer)) {
-        auto optLivePeer = tryFindMatchingQAbilityPeer(
-            [](const auto &peer) {
-                return !isAbilityPeerClosing(peer);
-            });
-        if (optLivePeer) {
-            qOhosPrintfInfo(
-                "JsStateImpl: default Ability with instanceId='%s' is closing, switching to instanceId='%s'",
-                m_defaultQAbilityPeer->instanceId().c_str(), optLivePeer->instanceId().c_str());
-            m_defaultQAbilityPeer = optLivePeer;
-        }
-    }
-
-    return m_defaultQAbilityPeer;
-}
-
-std::shared_ptr<QAbilityPeer> JsStateImpl::tryGetQAbilityPeerByInstanceId(const std::string &instanceId)
-{
-    auto foundIter = m_qAbilityPeers.find(instanceId);
-    return foundIter != m_qAbilityPeers.end() ? foundIter->second : nullptr;
-}
-
-std::shared_ptr<QAbilityPeer> JsStateImpl::tryGetQAbilityPeerByInstance(QNapi::Object qAbility)
-{
-    Napi::HandleScope findPeerScope(qAbility.Env());
-    return tryFindMatchingQAbilityPeer(
-        [&](const auto &peer) {
-            return peer->qAbility() == qAbility;
-        });
+    return qAbilityInstancesManager().defaultQAbilityPeer()->uiContext();
 }
 
 std::optional<QNapi::Object> JsStateImpl::tryGetJsWindowByQWindow(QObjectThreadSafeRef qwindow)
@@ -617,14 +436,11 @@ std::optional<QNapi::Object> JsStateImpl::tryGetJsWindowByQWindow(QObjectThreadS
 
 std::optional<QNapi::Object> JsStateImpl::tryGetQAbilityByQWindow(QObjectThreadSafeRef qwindow)
 {
-    auto qAbilityPeer = tryFindMatchingQAbilityPeer(
-        [&](const auto &peer) {
-            return peer->qWindowRef() == qwindow;
-        });
+    auto qAbilityPeer = qAbilityInstancesManager().tryGetQAbilityPeerByQWindow(qwindow);
     if (!qAbilityPeer) {
         auto optJsWindowRef = QOhosJsWindowRegistry::instance(*this).tryFindJsWindowByQWindowRef(qwindow);
         if (optJsWindowRef)
-            qAbilityPeer = tryGetQAbilityPeerByInstanceId(
+            qAbilityPeer = qAbilityInstancesManager().tryGetQAbilityPeerByInstanceId(
                 optJsWindowRef->owningQAbilityInstanceId());
     }
     return qAbilityPeer ? std::optional(qAbilityPeer->qAbility()) : std::nullopt;
@@ -632,7 +448,7 @@ std::optional<QNapi::Object> JsStateImpl::tryGetQAbilityByQWindow(QObjectThreadS
 
 std::optional<QNapi::Object> JsStateImpl::defaultQAbility()
 {
-    auto qAbility = defaultQAbilityPeer()->qAbility();
+    auto qAbility = qAbilityInstancesManager().defaultQAbilityPeer()->qAbility();
     return !qAbility.IsEmpty() ? std::optional(qAbility) : std::nullopt;
 }
 
@@ -641,7 +457,7 @@ void JsStateImpl::setOnContinueRequestsHandler(
     std::function<void(QOhosJsState &, QNapi::Object, QOhosConsumer<QOhosJsState &, QNapi::Number>)> requestsHandler)
 {
     auto uiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
-        tryGetQAbilityPeerByInstance(qAbility));
+        qAbilityInstancesManager().tryGetQAbilityPeerByInstance(qAbility));
     if (!uiAbilityPeer) {
         qOhosPrintfError(
             "%s: no QUiAbilityPeer for the given qAbility, handler not set", Q_FUNC_INFO);
@@ -670,7 +486,7 @@ void JsStateImpl::setOnContinueRequestsHandler(
 
 void JsStateImpl::setDestroyFromSystemAllowed(QNapi::Object qAbility, bool destroyAllowed)
 {
-    auto abilityPeer = tryGetQAbilityPeerByInstance(qAbility);
+    auto abilityPeer = qAbilityInstancesManager().tryGetQAbilityPeerByInstance(qAbility);
     if (!abilityPeer) {
         qOhosPrintfWarning(
             "%s: no QAbilityPeer for the given qAbility, flag not set to %s",
@@ -678,13 +494,6 @@ void JsStateImpl::setDestroyFromSystemAllowed(QNapi::Object qAbility, bool destr
         return;
     }
     abilityPeer->destroyAllowedFlag()->store(destroyAllowed);
-}
-
-void JsStateImpl::visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor)
-{
-    auto qAbilityPeersSnapshot = m_qAbilityPeers;
-    for (const auto &qAbilityPeerEntry : qAbilityPeersSnapshot)
-        visitor(qAbilityPeerEntry.second);
 }
 
 void JsStateImpl::startAppProcess(
@@ -721,15 +530,9 @@ QtRunMode JsStateImpl::qtRunMode()
     return m_qtRunMode;
 }
 
-template<typename PeerMatchFunc>
-std::shared_ptr<QAbilityPeer> JsStateImpl::tryFindMatchingQAbilityPeer(PeerMatchFunc &&matchFunc)
+QAbilityInstancesManager &JsStateImpl::qAbilityInstancesManager()
 {
-    auto foundIter = std::find_if(
-        m_qAbilityPeers.begin(), m_qAbilityPeers.end(),
-        [&](const auto &entry) {
-            return matchFunc(entry.second);
-        });
-    return foundIter != m_qAbilityPeers.end() ? foundIter->second : nullptr;
+    return QAbilityInstancesManager::instance(*this);
 }
 
 void *JsStateImpl::getAttachedObjectWithLazyCreate(
@@ -1118,16 +921,6 @@ void initJsThreadState(
 bool isJsThread()
 {
     return getJsStateImpl().isJsThread();
-}
-
-void addJsQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer)
-{
-    getJsStateImpl().addQAbilityPeerInJsThread(qAbilityPeer);
-}
-
-void removeMatchingJsQAbilityPeer(QNapi::Object qAbility)
-{
-    getJsStateImpl().removeMatchingQAbilityPeerInJsThread(qAbility);
 }
 
 void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam)
