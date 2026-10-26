@@ -611,6 +611,10 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             element = document.call<emscripten::val>("createElement", std::string("div"));
             setAttribute(element, "tabindex", "0");
             setAttribute(element, "role", "listitem");
+            // The name gets its own text node, so updating it keeps child elements.
+            emscripten::val nameTextNode = document.call<emscripten::val>("createTextNode", std::string());
+            element.call<void>("appendChild", nameTextNode);
+            element.set("qtA11yNameNode", nameTextNode);
         } break;
         case QAccessible::ProgressBar: {
             element = document.call<emscripten::val>("createElement", std::string("div"));
@@ -849,8 +853,9 @@ void QWasmAccessibility::handleListItemUpdate(QAccessibleEvent *event)
 
     switch (event->type()) {
     case QAccessible::NameChanged: {
-        // ListItem is a div
-        setNamedProperty(iface, "innerText", QAccessible::Name);
+        // Update only the name's text node, leaving the item's child elements in place.
+        emscripten::val nameTextNode = getHtmlElement(iface)["qtA11yNameNode"];
+        nameTextNode.set("data", iface->text(QAccessible::Name).toStdString());
     } break;
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement handleListItemUpdate for event" << event->type();
