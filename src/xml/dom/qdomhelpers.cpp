@@ -43,9 +43,11 @@ bool QDomBuilder::endDocument()
 
 bool QDomBuilder::startDTD(const QString &name, const QString &publicId, const QString &systemId)
 {
-    doc->doctype()->name = name;
-    doc->doctype()->publicId = publicId;
-    doc->doctype()->systemId = systemId;
+    QDomDocumentTypePrivate * const dt = doc->doctype();
+    Q_ASSERT(dt);
+    dt->name = name;
+    dt->publicId = publicId;
+    dt->systemId = systemId;
     return true;
 }
 
