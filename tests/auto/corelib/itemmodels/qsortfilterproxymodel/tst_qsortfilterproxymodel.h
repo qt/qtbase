@@ -97,6 +97,8 @@ private slots:
     void fetchMore();
     void hiddenChildren();
     void mapFromToSource();
+    void dataChangedInvalidRange_data();
+    void dataChangedInvalidRange();
     void removeRowsRecursive();
     void doubleProxySelectionSetSourceModel();
     void appearsAndSort();
