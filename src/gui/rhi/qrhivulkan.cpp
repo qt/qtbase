@@ -6173,20 +6173,26 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     }
 
     if (addWriteBarrier) {
+        VkDependencyFlags dependencyFlags = cbD->recordingPass == QVkCommandBuffer::RenderPass ? VK_DEPENDENCY_BY_REGION_BIT : 0;
+#ifdef VK_VERSION_1_1
+        auto *rpd = cbD->currentTarget ? static_cast<QVkRenderPassDescriptor*>(cbD->currentTarget->renderPassDescriptor()) : nullptr;
+        if (rpd && rpd->multiViewCount >= 2)
+            dependencyFlags |= VK_DEPENDENCY_VIEW_LOCAL_BIT;
+#endif
         if (cbD->passUsesSecondaryCb) {
             VkMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             barrier.pNext = nullptr;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             barrier.srcAccessMask = barrier.dstAccessMask;
-            df->vkCmdPipelineBarrier(cbD->activeSecondaryCbStack.last(), writeBarrierSrcStageMask, writeBarrierDstStageMask, 0,
+            df->vkCmdPipelineBarrier(cbD->activeSecondaryCbStack.last(), writeBarrierSrcStageMask, writeBarrierDstStageMask, dependencyFlags,
                                  1, &barrier,
                                  0, VK_NULL_HANDLE,
                                  0, VK_NULL_HANDLE);
         } else {
             QVkCommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QVkCommandBuffer::Command::MemoryBarrier;
-            cmd.args.memoryBarrier.dependencyFlags = 0;
+            cmd.args.memoryBarrier.dependencyFlags = dependencyFlags;
             cmd.args.memoryBarrier.dstStageMask = writeBarrierDstStageMask;
             cmd.args.memoryBarrier.srcStageMask = writeBarrierSrcStageMask;
             cmd.args.memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
