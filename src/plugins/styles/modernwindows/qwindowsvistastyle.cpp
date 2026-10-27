@@ -4754,7 +4754,6 @@ void QWindowsVistaStyle::polish(QPalette &pal)
 
     QPixmapCache::clear();
     d->alphaCache.clear();
-    d->hasInitColors = false;
 
     if (!d->hasInitColors) {
         // Get text color for group box labels
@@ -4815,6 +4814,8 @@ void QWindowsVistaStyle::polish(QApplication *app)
 void QWindowsVistaStyle::unpolish(QApplication *app)
 {
     QWindowsStyle::unpolish(app);
+    Q_D(QWindowsVistaStyle);
+    d->hasInitColors = false;
 }
 
 /*!
