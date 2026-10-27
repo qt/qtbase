@@ -3258,6 +3258,51 @@ void tst_QSortFilterProxyModel::dataChangedInvalidRange()
     }
 }
 
+void tst_QSortFilterProxyModel::headerDataChangedInvalidRange_data()
+{
+#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
+    QSKIP("Asserts in debug builds");
+#endif
+    QTest::addColumn<Qt::Orientation>("orientation");
+    QTest::addColumn<int>("first");
+    QTest::addColumn<int>("last");
+    QTest::addColumn<int>("expectedFirst"); // -1 for no signal
+    QTest::addColumn<int>("expectedLast");
+
+    // The source model has 3 rows and 2 columns
+    QTest::newRow("last-column-past-end") << Qt::Horizontal << 1 << 2 << 1 << 1;
+    QTest::newRow("last-row-past-end") << Qt::Vertical << 1 << 3 << 1 << 2;
+    QTest::newRow("first-column-past-end") << Qt::Horizontal << 2 << 2 << -1 << -1;
+    QTest::newRow("negative-first-row") << Qt::Vertical << -1 << 0 << -1 << -1;
+    QTest::newRow("reversed-columns") << Qt::Horizontal << 1 << 0 << -1 << -1;
+}
+
+void tst_QSortFilterProxyModel::headerDataChangedInvalidRange()
+{
+    QFETCH(Qt::Orientation, orientation);
+    QFETCH(int, first);
+    QFETCH(int, last);
+    QFETCH(int, expectedFirst);
+    QFETCH(int, expectedLast);
+
+    QStandardItemModel source(3, 2);
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&source);
+    QCOMPARE(proxy.rowCount(), 3);
+    QSignalSpy spy(&proxy, &QAbstractItemModel::headerDataChanged);
+
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: invalid range in headerDataChanged() reported by source model");
+    emit source.headerDataChanged(orientation, first, last);
+    if (expectedFirst == -1) {
+        QCOMPARE(spy.size(), 0);
+    } else {
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(0).value<Qt::Orientation>(), orientation);
+        QCOMPARE(spy.at(0).at(1).toInt(), expectedFirst);
+        QCOMPARE(spy.at(0).at(2).toInt(), expectedLast);
+    }
+}
+
 static QStandardItem *addEntry(QStandardItem* pParent, const QString &description)
 {
     QStandardItem* pItem = new QStandardItem(description);

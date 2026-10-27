@@ -99,6 +99,8 @@ private slots:
     void mapFromToSource();
     void dataChangedInvalidRange_data();
     void dataChangedInvalidRange();
+    void headerDataChangedInvalidRange_data();
+    void headerDataChangedInvalidRange();
     void removeRowsRecursive();
     void doubleProxySelectionSetSourceModel();
     void appearsAndSort();
