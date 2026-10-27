@@ -459,6 +459,16 @@ void QOhosFloatingWindow::setShownFromOhos(bool shown)
     activateIfDeferredUntilExposed();
 }
 
+void QOhosFloatingWindow::updateExposedFromOhos()
+{
+    const bool exposed = m_shownFromOhos && m_view->surfaceOrNull();
+    if (exposed == isExposed())
+        return;
+
+    setExposedFromOhos(exposed);
+    activateIfDeferredUntilExposed();
+}
+
 void QOhosFloatingWindow::activateIfDeferredUntilExposed()
 {
     if (!isExposed())
@@ -500,9 +510,8 @@ void QOhosFloatingWindow::handleSurfaceStatusChanged(const std::optional<QSize> 
     bool hasSurface = m_view->surfaceOrNull() != nullptr;
     if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow) {
         setExposedFromOhos(hasSurface);
-    } else if (m_shownFromOhos && hasSurface != isExposed()) {
-        setExposedFromOhos(hasSurface);
-        activateIfDeferredUntilExposed();
+    } else {
+        updateExposedFromOhos();
     }
 
     if (hasSurface)
