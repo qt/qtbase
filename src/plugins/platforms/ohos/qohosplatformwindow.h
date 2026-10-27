@@ -134,7 +134,7 @@ protected:
     void setExposedFromOhos(bool exposed);
     void setDisplayIdFromOhos(std::optional<QOhosDisplayInfo::JsDisplayId> displayId);
     void setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry);
-    QSize lastReportedWindowSize() const;
+    QRect lastReportedWindowGeometry() const;
     void notifyWindowDestroyedFromOhos();
     bool checkWindowAcceptsFocus() const;
     bool checkWindowAcceptsInput() const;
@@ -168,7 +168,7 @@ private:
     QOhosPropertiesStore m_propertiesStore;
     bool m_exposed = false;
     QRect m_lastRequestedWindowFrameGeometry;
-    std::optional<QSize> m_optLastReportedWindowSize;
+    std::optional<QRect> m_optLastReportedWindowGeometry;
 };
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
