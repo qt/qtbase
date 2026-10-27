@@ -479,6 +479,11 @@ void QEventDispatcherWasm::onWakeup()
         return;
 
     g_mainThreadEventDispatcher->processEvents(QEventLoop::AllEvents);
+
+    // Without exec() there is no event loop to return to, so deleteLater() from a JS
+    // callback would be deferred forever. No Qt event handler is on the stack here.
+    if (g_mainThreadEventDispatcher && QThread::currentThread()->loopLevel() == 0)
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 
 void QEventDispatcherWasm::onProcessNativeEventsResume()
