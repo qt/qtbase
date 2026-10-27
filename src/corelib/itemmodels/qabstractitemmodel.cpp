@@ -2852,6 +2852,8 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
         int r, c;
         QMap<int, QVariant> v;
         stream >> r >> c >> v;
+        if (stream.status() != QDataStream::Ok)
+            return false;
         rows.append(r);
         columns.append(c);
         data.append(v);
@@ -2860,6 +2862,8 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
         bottom = qMax(r, bottom);
         right = qMax(c, right);
     }
+    if (data.isEmpty())
+        return false;
 
     // insert the dragged items into the table, use a bit array to avoid overwriting items,
     // since items from different tables can have the same row and column
@@ -4112,12 +4116,16 @@ bool QAbstractItemModelPrivate::dropOnItem(const QModelIndex &index, QDataStream
         int r, c;
         QMap<int, QVariant> v;
         stream >> r >> c >> v;
+        if (stream.status() != QDataStream::Ok)
+            return false;
         rows.append(r);
         columns.append(c);
         data.append(v);
         top = qMin(r, top);
         left = qMin(c, left);
     }
+    if (data.isEmpty())
+        return false;
 
     for (int i = 0; i < data.size(); ++i) {
         int r = (rows.at(i) - top) + index.row();
