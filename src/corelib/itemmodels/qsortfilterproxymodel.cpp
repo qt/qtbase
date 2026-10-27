@@ -1653,17 +1653,23 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
 void QSortFilterProxyModelPrivate::_q_sourceHeaderDataChanged(Qt::Orientation orientation,
                                                            int start, int end)
 {
-    Q_ASSERT(start <= end);
-
     Q_Q(QSortFilterProxyModel);
     Mapping *m = create_mapping(QModelIndex()).value();
 
     const QList<int> &source_to_proxy = (orientation == Qt::Vertical) ? m->proxy_rows : m->proxy_columns;
 
+    const bool start_out_of_range = start < 0 || start > end || start >= source_to_proxy.size();
+    if (start_out_of_range || end >= source_to_proxy.size()) {
+        qWarning("QSortFilterProxyModel: invalid range in headerDataChanged() reported by source model");
+        Q_ASSERT(!"QSortFilterProxyModel: invalid range in headerDataChanged() reported by source model");
+        if (start_out_of_range)
+            return;
+        end = source_to_proxy.size() - 1;
+    }
+
     QList<int> proxy_positions;
     proxy_positions.reserve(end - start + 1);
     {
-        Q_ASSERT(source_to_proxy.size() > end);
         QList<int>::const_iterator it = source_to_proxy.constBegin() + start;
         const QList<int>::const_iterator endIt = source_to_proxy.constBegin() + end + 1;
         for ( ; it != endIt; ++it) {
