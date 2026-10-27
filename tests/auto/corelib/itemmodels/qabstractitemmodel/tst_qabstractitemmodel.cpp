@@ -26,6 +26,8 @@
 #include <deque>
 #include <list>
 
+using namespace Qt::StringLiterals;
+
 /*!
     Note that this doesn't test models, but any functionality that QAbstractItemModel should provide
  */
@@ -50,6 +52,10 @@ private slots:
     void match();
     void dropMimeData_data();
     void dropMimeData();
+    void dropOnRootValidation_data();
+    void dropOnRootValidation();
+    void dropOnItemValidation_data();
+    void dropOnItemValidation();
     void canDropMimeData();
     void changePersistentIndex();
     void movePersistentIndex();
@@ -834,6 +840,116 @@ void tst_QAbstractItemModel::dropMimeData()
             QCOMPARE(dst_data , res_data);
         }
     }
+}
+
+struct Cell
+{
+    int row, column;
+};
+
+static QByteArray encodeDropData(const QList<Cell> &cells)
+{
+    QByteArray encoded;
+    QDataStream stream(&encoded, QIODevice::WriteOnly);
+    for (const Cell &cell : cells) {
+        const QString text =
+                "drop "_L1 + QString::number(cell.row) + u'/' + QString::number(cell.column);
+        stream << cell.row << cell.column << QMap<int, QVariant>{{Qt::DisplayRole, text}};
+    }
+    return encoded;
+}
+
+// One string per row, with the cells separated by '|'
+static QStringList modelContents(const QAbstractItemModel &model)
+{
+    QStringList result;
+    const int rowCount = model.rowCount();
+    const int columnCount = model.columnCount();
+    for (int row = 0; row < rowCount; ++row) {
+        QStringList cells;
+        for (int column = 0; column < columnCount; ++column)
+            cells << model.index(row, column).data().toString();
+        result << cells.join(u'|');
+    }
+    return result;
+}
+
+void tst_QAbstractItemModel::dropOnRootValidation_data()
+{
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<QStringList>("expectedContents");
+
+    const QStringList unchanged{u"0/0|0/1|0/2"_s, u"1/0|1/1|1/2"_s, u"2/0|2/1|2/2"_s};
+    QTest::newRow("truncated") << encodeDropData({{0, 0}, {0, 1}}).chopped(1) << false << unchanged;
+    QTest::newRow("valid") << encodeDropData({{5, 1}, {5, 2}}) << true
+                           << QStringList{u"drop 5/1|drop 5/2|"_s} + unchanged;
+    QTest::newRow("empty") << QByteArray() << false << unchanged;
+}
+
+void tst_QAbstractItemModel::dropOnRootValidation()
+{
+    QFETCH(const QByteArray, encoded);
+    QFETCH(const bool, expectedResult);
+    QFETCH(const QStringList, expectedContents);
+
+    QtTestModel model(3, 3);
+    QMimeData mimeData;
+    mimeData.setData(u"application/x-qabstractitemmodeldatalist"_s, encoded);
+    QCOMPARE(model.dropMimeData(&mimeData, Qt::CopyAction, 0, 0, QModelIndex()), expectedResult);
+    QCOMPARE_EQ(modelContents(model), expectedContents);
+}
+
+class TableModel : public QAbstractTableModel
+{
+    Q_OBJECT
+public:
+    using QAbstractTableModel::QAbstractTableModel;
+
+    std::array<std::array<QString, 3>, 3> table{{{u"a"_s, u"b"_s, u"c"_s},
+                                                 {u"d"_s, u"e"_s, u"f"_s},
+                                                 {u"g"_s, u"h"_s, u"i"_s}}};
+
+    int rowCount(const QModelIndex &parent = {}) const override
+    { return parent.isValid() ? 0 : int(table.size()); }
+    int columnCount(const QModelIndex &parent = {}) const override
+    { return parent.isValid() ? 0 : 3; }
+    QVariant data(const QModelIndex &index, int role) const override
+    { return role == Qt::DisplayRole ? table.at(index.row()).at(index.column()) : QVariant(); }
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override
+    {
+        if (role != Qt::DisplayRole)
+            return false;
+        table[index.row()][index.column()] = value.toString();
+        return true;
+    }
+};
+
+void tst_QAbstractItemModel::dropOnItemValidation_data()
+{
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<QStringList>("expectedContents");
+
+    const QStringList unchanged{u"a|b|c"_s, u"d|e|f"_s, u"g|h|i"_s};
+    QTest::newRow("truncated") << encodeDropData({{0, 0}, {0, 1}}).chopped(1) << false << unchanged;
+    QTest::newRow("empty") << QByteArray() << false << unchanged;
+    QTest::newRow("valid") << encodeDropData({{0, 0}, {1, 1}}) << true
+                           << QStringList{u"a|b|c"_s, u"d|drop 0/0|f"_s, u"g|h|drop 1/1"_s};
+}
+
+void tst_QAbstractItemModel::dropOnItemValidation()
+{
+    QFETCH(const QByteArray, encoded);
+    QFETCH(const bool, expectedResult);
+    QFETCH(const QStringList, expectedContents);
+
+    TableModel model;
+    QMimeData mimeData;
+    mimeData.setData(u"application/x-qabstractitemmodeldatalist"_s, encoded);
+    QCOMPARE(model.dropMimeData(&mimeData, Qt::CopyAction, -1, -1, model.index(1, 1)),
+             expectedResult);
+    QCOMPARE_EQ(modelContents(model), expectedContents);
 }
 
 void tst_QAbstractItemModel::canDropMimeData()
@@ -2654,7 +2770,6 @@ static void addCompareDataRow(const LHS &lhs, const RHS &rhs, bool expected,
 void tst_QAbstractItemModel::compareData_data()
 {
     using namespace std::chrono_literals;
-    using namespace Qt::StringLiterals;
 
     QTest::addColumn<QVariant>("lhs");
     QTest::addColumn<QVariant>("rhs");
