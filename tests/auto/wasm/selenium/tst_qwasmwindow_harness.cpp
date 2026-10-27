@@ -440,6 +440,13 @@ public:
             return it->second;
         return nullptr;
     }
+    QLineEdit *findLineEdit(const std::string &name)
+    {
+        auto it = m_lineEdits.find(name);
+        if (it != m_lineEdits.end())
+            return it->second;
+        return nullptr;
+    }
     void setComboBox(const std::string &name)
     {
         auto box1 = findComboBox(name + ".1");
@@ -629,6 +636,8 @@ public:
         lineEditA4->setEchoMode(QLineEdit::NoEcho);
         lineEditA5->setEchoMode(QLineEdit::PasswordEchoOnEdit);
 
+        m_lineEdits[name] = lineEditA1;
+
         layout->addWidget(lineEditA1);
         layout->addWidget(lineEditA2);
         layout->addWidget(lineEditA3);
@@ -737,6 +746,7 @@ private:
     std::map<std::string, TestSpinBox *>  m_spinBoxes;
     std::map<std::string, QComboBox   *>  m_comboBoxes;
     std::map<std::string, QTextEdit   *>  m_textEdits;
+    std::map<std::string, QLineEdit   *>  m_lineEdits;
     int                                   m_widgetY = 0;
 };
 
@@ -937,6 +947,12 @@ void activateWidget(const std::string &name)
 void setWidgetComboMenu(const std::string &name)
 {
     WidgetStorage::getInstance()->setComboBox(name);
+}
+
+void setLineEditText(const std::string &name, const std::string &text)
+{
+    if (auto *lineEdit = WidgetStorage::getInstance()->findLineEdit(name))
+        lineEdit->setText(QString::fromStdString(text));
 }
 
 bool closeWidget(const std::string &name)
@@ -1158,6 +1174,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     EMSC_BIND_FUNC("setWidgetNoFocusShow", &setWidgetNoFocusShow);
     EMSC_BIND_FUNC("showWidget", &showWidget);
     EMSC_BIND_FUNC("setWidgetComboMenu", &setWidgetComboMenu);
+    EMSC_BIND_FUNC("setLineEditText", &setLineEditText);
     EMSC_BIND_FUNC("closeWidget", &closeWidget);
     EMSC_BIND_FUNC("activateWidget", &activateWidget);
     EMSC_BIND_FUNC("hasWidgetFocus", &hasWidgetFocus);

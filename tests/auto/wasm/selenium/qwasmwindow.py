@@ -237,6 +237,10 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(plaintexteditc1.get_dom_attribute("aria-label"), None);
         self.assertEqual(plaintexteditc2.get_dom_attribute("aria-label"), None);
         self.assertEqual(labeld1.get_dom_attribute("aria-label"), None);
+
+        # Same length as the old text, so no caret move event masks a missed TextUpdated.
+        w0.setLineEditText("LineEditA1 - Next")
+        self.assertEqual(lineedita1.get_attribute("value"), "LineEditA1 - Next");
         w0.close();
         clearWidgets(self._driver)
 
@@ -1111,6 +1115,13 @@ class Widget:
         self.driver.execute_script(
             f'''
                 instance.focusRichTextWidget('{self.name}');
+            '''
+        )
+
+    def setLineEditText(self, text):
+        self.driver.execute_script(
+            f'''
+                instance.setLineEditText('{self.name}', '{text}');
             '''
         )
 
