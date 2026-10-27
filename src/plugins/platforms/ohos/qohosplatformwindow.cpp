@@ -489,8 +489,8 @@ void QOhosPlatformWindow::setExposedFromOhos(bool exposed)
 {
     m_exposed = exposed;
 
-    if (exposed && !m_optLastReportedWindowSize) {
-        m_optLastReportedWindowSize = geometry().size();
+    if (exposed && !m_optLastReportedWindowGeometry) {
+        m_optLastReportedWindowGeometry = geometry();
         QWindowSystemInterface::handleGeometryChange(window(), geometry());
     }
 
@@ -639,17 +639,17 @@ void QOhosPlatformWindow::setDisplayIdFromOhos(std::optional<QOhosDisplayInfo::J
 void QOhosPlatformWindow::setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry)
 {
     qCDebug(QtForOhos) << "window:" << window() << "geometry change to:" << nativeWindowDrawGeometry;
-    m_optLastReportedWindowSize = nativeWindowDrawGeometry.size();
+    m_optLastReportedWindowGeometry = nativeWindowDrawGeometry;
     QWindowSystemInterface::handleGeometryChange(window(), nativeWindowDrawGeometry);
 
     if (isExposed() && window()->isVisible())
         sendExposeUpdate();
 }
 
-QSize QOhosPlatformWindow::lastReportedWindowSize() const
+QRect QOhosPlatformWindow::lastReportedWindowGeometry() const
 {
-    return m_optLastReportedWindowSize.value_or(
-        QHighDpi::toNativeWindowGeometry(qt_window_private(window())->geometry, window()).size());
+    return m_optLastReportedWindowGeometry.value_or(
+        QHighDpi::toNativeWindowGeometry(qt_window_private(window())->geometry, window()));
 }
 
 void QOhosPlatformWindow::notifyWindowDestroyedFromOhos()

@@ -83,8 +83,8 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
         if (view->viewType() == QOhosView::ViewType::EmbeddedWindow)
             setWindowGeometryFromOhos(rect);
-        else if (rect.size() != lastReportedWindowSize())
-            m_optSizeBeforeResizeRequest = lastReportedWindowSize();
+        else if (rect.size() != lastReportedWindowGeometry().size())
+            m_optSizeBeforeResizeRequest = lastReportedWindowGeometry().size();
         else
             m_optSizeBeforeResizeRequest.reset();
     }
