@@ -820,7 +820,8 @@ void QWasmAccessibility::handleLineEditUpdate(QAccessibleEvent *event)
         setNamedProperty(event->accessibleInterface(), "value", QAccessible::Value);
     } break;
     case QAccessible::TextRemoved:
-    case QAccessible::TextInserted: {
+    case QAccessible::TextInserted:
+    case QAccessible::TextUpdated: {
         setNamedProperty(event->accessibleInterface(), "value", QAccessible::Value);
     } break;
     case QAccessible::TextCaretMoved: {
