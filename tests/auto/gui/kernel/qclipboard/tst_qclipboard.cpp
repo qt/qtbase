@@ -12,6 +12,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
@@ -48,6 +49,9 @@ private slots:
     void setMimeData();
     void clearBeforeSetText();
     void getTextFromHTMLMimeType();
+#ifdef Q_OS_ANDROID
+    void mimeDataFormatsAndText();
+#endif
 #  ifdef Q_OS_WIN
     void testWindowsMimeRegisterType();
     void testWindowsMime_data();
@@ -478,6 +482,29 @@ void tst_QClipboard::getTextFromHTMLMimeType()
     QCOMPARE(clipboard->mimeData()->text(), testString);
     QCOMPARE(clipboard->mimeData()->html(), htmlString);
 }
+
+#ifdef Q_OS_ANDROID
+void tst_QClipboard::mimeDataFormatsAndText()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    const QString text = QStringLiteral("Qt clipboard test");
+    clipboard->setText(text);
+
+    const QMimeData *mimeData = clipboard->mimeData();
+    QVERIFY(mimeData->hasText());
+    QCOMPARE(mimeData->text(), text);
+
+    const QList<QUrl> urls{QUrl(QStringLiteral("https://qt.io"))};
+    QMimeData *urlMimeData = new QMimeData;
+    urlMimeData->setUrls(urls);
+    clipboard->setMimeData(urlMimeData);
+
+    mimeData = clipboard->mimeData();
+    QVERIFY(mimeData->hasUrls());
+    QCOMPARE(mimeData->urls(), urls);
+}
+
+#endif
 
 #  ifdef Q_OS_WIN
 
