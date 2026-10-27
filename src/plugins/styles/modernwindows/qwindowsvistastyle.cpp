@@ -2360,14 +2360,10 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
     if (d->transitionsEnabled() && canAnimate(option)) {
         if (element == CE_PushButtonBevel) {
-            QRect oldRect;
-            QRect newRect;
-
             QObject *styleObject = option->styleObject;
 
             int oldState = styleObject->property("_q_stylestate").toInt();
-            oldRect = styleObject->property("_q_stylerect").toRect();
-            newRect = option->rect;
+            const QRect oldRect = styleObject->property("_q_stylerect").toRect();
             styleObject->setProperty("_q_stylestate", int(option->state));
             styleObject->setProperty("_q_stylerect", option->rect);
 
@@ -2383,7 +2379,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     (state & State_On)         != (oldState & State_On)     ||
                     (state & State_MouseOver)  != (oldState & State_MouseOver));
 
-            if (oldRect != newRect || (wasDefault && !isDefault)) {
+            if (oldRect != option->rect || (wasDefault && !isDefault)) {
                 doTransition = false;
                 d->stopAnimation(styleObject);
             }
@@ -3265,7 +3261,6 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
 
     State state = option->state;
     SubControls sub = option->subControls;
-    QRect r = option->rect;
 
     int partId = 0;
     int stateId = 0;
@@ -3769,7 +3764,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
 
                     QWindowsThemeData theme(widget, painter,
                                     QWindowsVistaStylePrivate::EditTheme,
-                                    partId, stateId, r);
+                                    partId, stateId, option->rect);
 
                     d->drawBackground(theme);
                 }
@@ -3950,7 +3945,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
 
                 QWindowsThemeData ftheme(widget, painter,
                                  QWindowsVistaStylePrivate::EditTheme,
-                                 partId, stateId, r);
+                                 partId, stateId, option->rect);
                 // The spinbox in Windows QStyle is drawn with frameless QLineEdit inside it
                 // That however breaks with QtQuickControls where this results in transparent
                 // spinbox background, so if there's no "widget" passed (QtQuickControls case),
