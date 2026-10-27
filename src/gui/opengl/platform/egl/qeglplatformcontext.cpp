@@ -165,8 +165,6 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
         return;
     }
 
-    m_getGraphicsResetStatus = reinterpret_cast<GLenum (QOPENGLF_APIENTRYP)()>(getProcAddress("glGetGraphicsResetStatusARB"));
-
     static const bool printConfig = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEBUG");
     if (printConfig) {
         qDebug() << "Created context for format" << format << "with config:";
@@ -473,6 +471,18 @@ void QEGLPlatformContext::updateFormatFromGL()
                 if (value == GL_LOSE_CONTEXT_ON_RESET_EXT)
                     m_format.setOption(QSurfaceFormat::ResetNotification);
             }
+        }
+        // Only query the reset status when the context actually has a reset notification
+        // strategy, and use the entry point matching the API. With libglvnd any gl* name
+        // resolves to a dispatch stub, and a vendor that does not implement it (e.g.
+        // glGetGraphicsResetStatusARB on an OpenGL ES context) ends up in a no-op that
+        // returns garbage, which would be mistaken for a graphics reset.
+        m_getGraphicsResetStatus = nullptr;
+        if (m_format.testOption(QSurfaceFormat::ResetNotification)) {
+            const char *resetStatusName = m_format.renderableType() == QSurfaceFormat::OpenGLES
+                    ? "glGetGraphicsResetStatusEXT"
+                    : "glGetGraphicsResetStatusARB";
+            m_getGraphicsResetStatus = reinterpret_cast<GLenum (QOPENGLF_APIENTRYP)()>(getProcAddress(resetStatusName));
         }
         runGLChecks();
         eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
