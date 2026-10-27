@@ -9,12 +9,64 @@
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtGui/private/qinternalmimedata_p.h>
 
 #ifndef QT_NO_CLIPBOARD
 
 using namespace QtJniTypes;
+using namespace Qt::StringLiterals;
 
 QT_BEGIN_NAMESPACE
+
+class QAndroidPlatformMimeData : public QInternalMimeData
+{
+public:
+    explicit QAndroidPlatformMimeData(const QtClipboardManager *clipboardManager)
+        : m_clipboardManager(clipboardManager)
+    {
+        if (m_clipboardManager->callMethod<jboolean>("hasClipboardText"))
+            m_formats.append("text/plain"_L1);
+        if (m_clipboardManager->callMethod<jboolean>("hasClipboardHtml"))
+            m_formats.append("text/html"_L1);
+        if (m_clipboardManager->callMethod<jboolean>("hasClipboardUri"))
+            m_formats.append("text/uri-list"_L1);
+    }
+
+protected:
+    bool hasFormat_sys(const QString &mimeType) const override
+    {
+        return m_formats.contains(mimeType);
+    }
+
+    QStringList formats_sys() const override
+    {
+        return m_formats;
+    }
+
+    QVariant retrieveData_sys(const QString &mimeType, QMetaType) const override
+    {
+        if (mimeType == "text/plain"_L1)
+            return m_clipboardManager->callMethod<QString>("getClipboardText").toUtf8();
+        if (mimeType == "text/html"_L1)
+            return m_clipboardManager->callMethod<QString>("getClipboardHtml").toUtf8();
+        if (mimeType == "text/uri-list"_L1) {
+            QByteArray result;
+            const auto uris = m_clipboardManager->callMethod<QString[]>("getClipboardUris");
+            if (!uris.isValid())
+                return result;
+            for (const QString &uri : uris) {
+                result += QUrl(uri).toEncoded();
+                result += "\r\n";
+            }
+            return result;
+        }
+        return {};
+    }
+
+private:
+    const QtClipboardManager *const m_clipboardManager;
+    QStringList m_formats;
+};
 
 void QAndroidPlatformClipboard::onClipboardDataChanged(JNIEnv *env, jobject obj, jlong nativePointer)
 {
@@ -40,23 +92,7 @@ QAndroidPlatformClipboard::~QAndroidPlatformClipboard()
 
 QMimeData *QAndroidPlatformClipboard::getClipboardMimeData()
 {
-    QMimeData *data = new QMimeData;
-    if (m_clipboardManager.callMethod<jboolean>("hasClipboardText")) {
-        data->setText(m_clipboardManager.callMethod<QString>("getClipboardText"));
-    }
-    if (m_clipboardManager.callMethod<jboolean>("hasClipboardHtml")) {
-        data->setHtml(m_clipboardManager.callMethod<QString>("getClipboardHtml"));
-    }
-    if (m_clipboardManager.callMethod<jboolean>("hasClipboardUri")) {
-        auto uris = m_clipboardManager.callMethod<QString[]>("getClipboardUris");
-        if (uris.isValid()) {
-            QList<QUrl> urls;
-            for (const QString &uri : uris)
-                urls << QUrl(uri);
-            data->setUrls(urls);
-        }
-    }
-    return data;
+    return new QAndroidPlatformMimeData(&m_clipboardManager);
 }
 
 QMimeData *QAndroidPlatformClipboard::mimeData(QClipboard::Mode mode)
