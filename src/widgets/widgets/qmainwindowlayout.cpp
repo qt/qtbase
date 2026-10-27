@@ -2439,6 +2439,12 @@ QLayoutItem *QMainWindowLayout::takeAt(int index)
             layoutState.remove(ret);
         }
 
+        if (restoredState) {
+            // restoredState aliases the same items, and is applied by a later
+            // setGeometry(); remove the item there as well or it dangles.
+            restoredState->remove(ret);
+        }
+
 #if QT_CONFIG(toolbar)
         if (!currentGapPos.isEmpty() && currentGapPos.constFirst() == 0) {
             currentGapPos = layoutState.toolBarAreaLayout.currentGapIndex();

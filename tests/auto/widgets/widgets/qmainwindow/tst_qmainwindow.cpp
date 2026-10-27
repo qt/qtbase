@@ -108,6 +108,7 @@ private slots:
     void restoreStateFromPreviousVersion();
     void restoreStateSizeChanged_data();
     void restoreStateSizeChanged();
+    void restoreStateAndRemoveToolbar();
     void restoreAndModify();
     void createPopupMenu();
     void hideBeforeLayout();
@@ -1553,6 +1554,66 @@ void tst_QMainWindow::restoreStateSizeChanged()
         }
         QCOMPARE(dockWidget->width(), dockWidgetWidth);
     }
+}
+
+void tst_QMainWindow::restoreStateAndRemoveToolbar()
+{
+    // Restoring a too-large state into a hidden, maximized window keeps an
+    // aliasing copy in QMainWindowLayout::restoredState. Removing a toolbar
+    // must also remove it from that copy, otherwise the next relayout
+    // dereferences a freed item (QTBUG-149918).
+    QMainWindow source;
+    auto *central = new QTextEdit;
+    source.setCentralWidget(central);
+    for (int i = 0; i < 4; ++i) {
+        auto *tb = new QToolBar(QStringLiteral("Toolbar %1").arg(i));
+        tb->setObjectName(QStringLiteral("toolbar%1").arg(i));
+        for (int j = 0; j < 8; ++j)
+            tb->addAction(new QAction(QStringLiteral("Action %1.%2").arg(i).arg(j), tb));
+        source.addToolBar(tb);
+    }
+    for (int i = 0; i < 3; ++i) {
+        auto *dock = new QDockWidget(QStringLiteral("Dock %1").arg(i));
+        dock->setObjectName(QStringLiteral("dock%1").arg(i));
+        dock->setWidget(new QLabel(QStringLiteral("dock %1 contents").arg(i)));
+        source.addDockWidget(i == 0 ? Qt::LeftDockWidgetArea : Qt::BottomDockWidgetArea, dock);
+    }
+    source.resize(1600, 1000);
+    source.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&source));
+    const QByteArray state = source.saveState();
+    source.close();
+
+    QMainWindow target;
+    target.setCentralWidget(new QTextEdit);
+    for (int i = 0; i < 4; ++i) {
+        auto *tb = new QToolBar(QStringLiteral("Toolbar %1").arg(i));
+        tb->setObjectName(QStringLiteral("toolbar%1").arg(i));
+        for (int j = 0; j < 8; ++j)
+            tb->addAction(new QAction(QStringLiteral("Action %1.%2").arg(i).arg(j), tb));
+        target.addToolBar(tb);
+    }
+    for (int i = 0; i < 3; ++i) {
+        auto *dock = new QDockWidget(QStringLiteral("Dock %1").arg(i));
+        dock->setObjectName(QStringLiteral("dock%1").arg(i));
+        dock->setWidget(new QLabel(QStringLiteral("dock %1 contents").arg(i)));
+        target.addDockWidget(i == 0 ? Qt::LeftDockWidgetArea : Qt::BottomDockWidgetArea, dock);
+    }
+    target.resize(200, 150);
+    target.setWindowState(target.windowState() | Qt::WindowMaximized);
+    QVERIFY(target.restoreState(state));
+
+    auto *layout = qobject_cast<QMainWindowLayout *>(target.layout());
+    QVERIFY(layout);
+    QVERIFY(layout->restoredState); // ensure the deferred state is kept
+
+    QToolBar *tb = target.findChild<QToolBar *>(QStringLiteral("toolbar2"));
+    QVERIFY(tb);
+    target.removeToolBar(tb);
+    delete tb;
+
+    target.show(); // applies the deferred restored state
+    QVERIFY(QTest::qWaitForWindowExposed(&target));
 }
 
 /*!
