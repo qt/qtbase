@@ -60,6 +60,7 @@ private:
     void handleWindowStatusChange(QOhosWindowProxy::WindowStatus evt);
     void handleWindowVisibilityChange(bool visible);
     void setShownFromOhos(bool shown);
+    void updateExposedFromOhos();
     void activateIfDeferredUntilExposed();
     void handleAvoidAreaChanged(QOhosWindowProxy::AvoidAreaType avoidAreaType,
                                 const QOhosWindowProxy::AvoidArea &systemAvoidArea);
