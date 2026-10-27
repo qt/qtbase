@@ -1533,13 +1533,25 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
 
         Mapping *m = it.value();
 
+        const int source_row_count = m->proxy_rows.size();
+        const int source_column_count = m->proxy_columns.size();
+        const bool top_left_past_end = source_top_left.row() >= source_row_count
+                || source_top_left.column() >= source_column_count;
+        if (top_left_past_end || source_bottom_right.row() >= source_row_count
+            || source_bottom_right.column() >= source_column_count) {
+            qWarning("QSortFilterProxyModel: invalid range in dataChanged() reported by source model");
+            if (top_left_past_end)
+                continue;
+        }
+        const int source_last_row = qMin(source_bottom_right.row(), source_row_count - 1);
+        const int source_last_column = qMin(source_bottom_right.column(), source_column_count - 1);
+
         // Figure out how the source changes affect us
         QList<int> source_rows_remove;
         QList<int> source_rows_insert;
         QList<int> source_rows_change;
         QList<int> source_rows_resort;
-        int end = qMin(source_bottom_right.row(), m->proxy_rows.size() - 1);
-        for (int source_row = source_top_left.row(); source_row <= end; ++source_row) {
+        for (int source_row = source_top_left.row(); source_row <= source_last_row; ++source_row) {
             if (dynamic_sortfilter && !change_in_unmapped_parent) {
                 if (m->proxy_rows.at(source_row) != -1) {
                     if (relevantForFiltering
@@ -1611,13 +1623,13 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
             if (proxy_end_row >= 0) {
                 // the row was accepted, but some columns might still be filtered out
                 int source_left_column = source_top_left.column();
-                while (source_left_column < source_bottom_right.column()
+                while (source_left_column < source_last_column
                        && m->proxy_columns.at(source_left_column) == -1)
                     ++source_left_column;
                 if (m->proxy_columns.at(source_left_column) != -1) {
                     const QModelIndex proxy_top_left = create_index(
                         proxy_start_row, m->proxy_columns.at(source_left_column), it);
-                    int source_right_column = source_bottom_right.column();
+                    int source_right_column = source_last_column;
                     while (source_right_column > source_top_left.column()
                            && m->proxy_columns.at(source_right_column) == -1)
                         --source_right_column;

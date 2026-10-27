@@ -3176,6 +3176,88 @@ void tst_QSortFilterProxyModel::mapFromToSource()
 #endif
 }
 
+void tst_QSortFilterProxyModel::dataChangedInvalidRange_data()
+{
+    // In the source
+    QTest::addColumn<int>("topRow");
+    QTest::addColumn<int>("leftColumn");
+    QTest::addColumn<int>("bottomRow");
+    QTest::addColumn<int>("rightColumn");
+    QTest::addColumn<int>("hiddenColumn"); // -1 for none
+    // In the proxy, -1 for no signal
+    QTest::addColumn<int>("expectedTopRow");
+    QTest::addColumn<int>("expectedLeftColumn");
+    QTest::addColumn<int>("expectedBottomRow");
+    QTest::addColumn<int>("expectedRightColumn");
+
+    // The source model has 3 rows and 2 columns
+    QTest::newRow("bottom-right-column-past-end") << 0 << 0 << 1 << 2 << -1
+                                                  << 0 << 0 << 1 << 1;
+    QTest::newRow("bottom-right-row-past-end") << 1 << 0 << 3 << 1 << -1
+                                               << 1 << 0 << 2 << 1;
+    QTest::newRow("top-left-column-past-end") << 0 << 2 << 1 << 2 << -1
+                                              << -1 << -1 << -1 << -1;
+    QTest::newRow("top-left-row-past-end") << 3 << 0 << 3 << 1 << -1
+                                           << -1 << -1 << -1 << -1;
+    QTest::newRow("bottom-right-column-past-end-last-hidden") << 0 << 0 << 1 << 2 << 1
+                                                              << 0 << 0 << 1 << 0;
+    QTest::newRow("bottom-right-column-past-end-all-hidden") << 0 << 1 << 1 << 2 << 1
+                                                             << -1 << -1 << -1 << -1;
+}
+
+void tst_QSortFilterProxyModel::dataChangedInvalidRange()
+{
+    QFETCH(int, topRow);
+    QFETCH(int, leftColumn);
+    QFETCH(int, bottomRow);
+    QFETCH(int, rightColumn);
+    QFETCH(int, hiddenColumn);
+    QFETCH(int, expectedTopRow);
+    QFETCH(int, expectedLeftColumn);
+    QFETCH(int, expectedBottomRow);
+    QFETCH(int, expectedRightColumn);
+
+    class BuggyModel : public QStandardItemModel
+    {
+    public:
+        using QStandardItemModel::QStandardItemModel;
+        // index() would return an invalid index for out-of-range positions
+        void emitDataChanged(int topRow, int leftColumn, int bottomRow, int rightColumn)
+        {
+            emit dataChanged(createIndex(topRow, leftColumn, invisibleRootItem()),
+                             createIndex(bottomRow, rightColumn, invisibleRootItem()));
+        }
+    };
+    class ColumnFilterProxy : public QSortFilterProxyModel
+    {
+    public:
+        int hiddenColumn = -1;
+    protected:
+        bool filterAcceptsColumn(int sourceColumn, const QModelIndex &) const override
+        {
+            return sourceColumn != hiddenColumn;
+        }
+    };
+    BuggyModel source(3, 2);
+    ColumnFilterProxy proxy;
+    proxy.hiddenColumn = hiddenColumn;
+    proxy.setSourceModel(&source);
+    QCOMPARE(proxy.rowCount(), 3);
+    QSignalSpy spy(&proxy, &QAbstractItemModel::dataChanged);
+
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: invalid range in dataChanged() reported by source model");
+    source.emitDataChanged(topRow, leftColumn, bottomRow, rightColumn);
+    if (expectedTopRow == -1) {
+        QCOMPARE(spy.size(), 0);
+    } else {
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(0).value<QModelIndex>(),
+                 proxy.index(expectedTopRow, expectedLeftColumn));
+        QCOMPARE(spy.at(0).at(1).value<QModelIndex>(),
+                 proxy.index(expectedBottomRow, expectedRightColumn));
+    }
+}
+
 static QStandardItem *addEntry(QStandardItem* pParent, const QString &description)
 {
     QStandardItem* pItem = new QStandardItem(description);
