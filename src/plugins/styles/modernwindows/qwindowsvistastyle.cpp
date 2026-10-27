@@ -1343,8 +1343,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
     QWindowsVistaStylePrivate *d = const_cast<QWindowsVistaStylePrivate*>(d_func());
 
-    int state = option->state;
-    QRect rect = option->rect;
+    const int state = option->state;
 
     if ((state & State_Enabled) && d->transitionsEnabled() && canAnimate(option)) {
         if (supportsStateTransition(element, option, widget)) {
@@ -1353,8 +1352,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             QObject *styleObject = option->styleObject;
             styleObject->setProperty("_q_no_animation", true);
             int oldState = styleObject->property("_q_stylestate").toInt();
-            QRect oldRect = styleObject->property("_q_stylerect").toRect();
-            QRect newRect = rect;
+            const QRect oldRect = styleObject->property("_q_stylerect").toRect();
             styleObject->setProperty("_q_stylestate", int(option->state));
             styleObject->setProperty("_q_stylerect", option->rect);
 
@@ -1363,7 +1361,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                     (state & State_On)         != (oldState & State_On)     ||
                     (state & State_MouseOver)  != (oldState & State_MouseOver));
 
-            if (oldRect != newRect ||
+            if (oldRect != option->rect ||
                     (state & State_Enabled) != (oldState & State_Enabled) ||
                     (state & State_Active)  != (oldState & State_Active))
                 d->stopAnimation(styleObject);
@@ -1474,6 +1472,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 fill = QBrush(option->palette.light().color(), Qt::Dense4Pattern);
             else
                 fill = option->palette.brush(QPalette::Button);
+            const auto &rect = option->rect;
             if (btn->features & QStyleOptionButton::DefaultButton && state & State_Sunken) {
                 painter->setPen(option->palette.dark().color());
                 painter->setBrush(fill);
@@ -1785,7 +1784,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                     QRegion reg = option->rect;
                     reg -= contentsRect;
                     painter->setClipRegion(reg);
-                    QWindowsThemeData theme(widget, painter, themeNumber, partId, stateId, rect);
+                    QWindowsThemeData theme(widget, painter, themeNumber, partId, stateId, option->rect);
                     theme.mirrorHorizontally = hMirrored;
                     theme.mirrorVertically = vMirrored;
                     d->drawBackground(theme);
@@ -1878,7 +1877,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                     stateId = EBS_HOT;
 
                 QWindowsThemeData theme(nullptr, painter, QWindowsVistaStylePrivate::EditTheme,
-                                partId, stateId, rect);
+                                partId, stateId, option->rect);
                 if (!theme.isValid()) {
                     QWindowsStyle::drawPrimitive(element, option, painter, widget);
                     return;
@@ -1974,10 +1973,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         if (const auto *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             if (frame->features & QStyleOptionFrame::Flat) {
                 // Windows XP does not have a theme part for a flat GroupBox, paint it with the windows style
-                QRect fr = frame->rect;
-                QPoint p1(fr.x(), fr.y() + 1);
-                QPoint p2(fr.x() + fr.width(), p1.y() + 1);
-                rect = QRect(p1, p2);
                 themeNumber = -1;
             }
         }
@@ -2206,7 +2201,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         break;
     }
 
-    QWindowsThemeData theme(widget, painter, themeNumber, partId, stateId, rect);
+    QWindowsThemeData theme(widget, painter, themeNumber, partId, stateId, option->rect);
 
     if (!theme.isValid()) {
         QWindowsStyle::drawPrimitive(element, option, painter, widget);
