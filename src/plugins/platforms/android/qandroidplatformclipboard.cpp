@@ -81,7 +81,8 @@ void QAndroidPlatformClipboard::setClipboardMimeData(QMimeData *data)
     if (data->hasUrls()) {
         QList<QUrl> urls = data->urls();
         for (const auto &u : std::as_const(urls))
-            m_clipboardManager.callMethod<void>("setClipboardUri", context, u.toEncoded());
+            m_clipboardManager.callMethod<void>("setClipboardUri", context,
+                                                 u.toString(QUrl::FullyEncoded));
     } else if (data->hasHtml()) { // html can contain text
         m_clipboardManager.callMethod<void>("setClipboardHtml",
                                             context, data->text(), data->html());
