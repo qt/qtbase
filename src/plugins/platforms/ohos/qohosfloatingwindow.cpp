@@ -455,8 +455,7 @@ void QOhosFloatingWindow::handleWindowVisibilityChange(bool visible)
 void QOhosFloatingWindow::setShownFromOhos(bool shown)
 {
     m_shownFromOhos = shown;
-    setExposedFromOhos(shown && m_view->surfaceOrNull() != nullptr);
-    activateIfDeferredUntilExposed();
+    updateExposedFromOhos();
 }
 
 void QOhosFloatingWindow::updateExposedFromOhos()
@@ -595,7 +594,11 @@ void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowN
 
         if (size != m_optSizeBeforeResizeRequest) {
             m_optSizeBeforeResizeRequest.reset();
-            setWindowGeometryFromOhos(QRect(areaChangeEvent.globalRelativeOffsetPixels, size));
+            const QRect nodeGeometry(areaChangeEvent.globalRelativeOffsetPixels, size);
+            const bool isAlreadyReported =
+                nodeGeometry == lastReportedWindowGeometry() && nodeGeometry == geometry();
+            if (!isAlreadyReported)
+                setWindowGeometryFromOhos(nodeGeometry);
         }
     }
 
