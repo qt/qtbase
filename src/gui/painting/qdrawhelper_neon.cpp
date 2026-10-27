@@ -441,10 +441,12 @@ void qt_blend_argb32_on_argb32_neon(uchar *destPixels, int dbpl,
                                               w, h);
     } else if (const_alpha != 0) {
         const uint const_alpha_255 = (static_cast<uint>(const_alpha) * 255) >> 8;
-        qt_blend_argb32_on_argb32_with_alpha_neon(destPixels, dbpl,
-                                                  srcPixels, sbpl,
-                                                  w, h,
-                                                  const_alpha_255);
+        if (const_alpha_255 != 0) {
+            qt_blend_argb32_on_argb32_with_alpha_neon(destPixels, dbpl,
+                                                      srcPixels, sbpl,
+                                                      w, h,
+                                                      const_alpha_255);
+        }
     }
 }
 
@@ -1370,4 +1372,3 @@ void QT_FASTCALL storeRGBXFromARGB32PM_neon(uchar *dest, const uint *src, int in
 QT_END_NAMESPACE
 
 #endif // __ARM_NEON__
-
