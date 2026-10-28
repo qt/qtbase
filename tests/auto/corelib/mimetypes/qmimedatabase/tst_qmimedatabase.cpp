@@ -250,6 +250,7 @@ void tst_QMimeDatabase::mimeTypeForFileName_data()
 
     QTest::newRow("text") << "textfile.txt" << "text/plain";
     QTest::newRow("case-insensitive search") << "textfile.TxT" << "text/plain";
+    QTest::newRow("extension only") << ".txt" << "text/plain";
 
     // Needs shared-mime-info > 0.91. Earlier versions wrote .Z to the mime.cache file...
     //QTest::newRow("case-insensitive match on a non-lowercase glob") << "foo.z" << "application/x-compress";
@@ -890,6 +891,7 @@ void tst_QMimeDatabase::knownSuffix()
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.bar.bz2")), QString::fromLatin1("bz2"));
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.tar.bz2")), QString::fromLatin1("tar.bz2"));
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.TAR")), QString::fromLatin1("TAR")); // preserve case
+    QCOMPARE(db.suffixForFileName(QString::fromLatin1(".txt")), QString::fromLatin1("txt")); // extension only
     if (m_hasFreedesktopOrg) {
         QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.flatpakrepo")),
                  QString::fromLatin1("flatpakrepo"));
