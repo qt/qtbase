@@ -1067,6 +1067,7 @@ void tst_QDockWidget::restoreDockWidget()
         delete dock;
         dock = createTestDock(saveWindow);
         QVERIFY(saveWindow.restoreDockWidget(dock));
+        QVERIFY(!dock->windowFlags().testFlag(Qt::X11BypassWindowManagerHint)); // QTBUG-89144
         dock->show();
         QVERIFY(QTest::qWaitForWindowExposed(dock));
         QTRY_VERIFY(dock->isFloating());
@@ -1088,6 +1089,7 @@ void tst_QDockWidget::restoreDockWidget()
         // after restoreState().
         QDockWidget *dock = createTestDock(restoreWindow);
         QVERIFY(restoreWindow.restoreDockWidget(dock));
+        QVERIFY(!dock->windowFlags().testFlag(Qt::X11BypassWindowManagerHint)); // QTBUG-89144
         restoreWindow.show();
         QVERIFY(QTest::qWaitForWindowExposed(&restoreWindow));
         QTRY_VERIFY(dock->isFloating());
