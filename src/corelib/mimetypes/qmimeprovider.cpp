@@ -490,7 +490,7 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result,
             const quint32 numChildren = *numChildrenOpt;
             const quint32 childrenOffset = *childrenOffsetOpt;
             bool success = false;
-            if (charPos > 0)
+            if (charPos >= 0)
                 success = matchSuffixTree(result, cacheFile, numChildren, childrenOffset, fileName, charPos, caseSensitiveCheck);
             if (!success) {
                 for (quint32 i = 0; i < numChildren; ++i) {
