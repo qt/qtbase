@@ -3178,6 +3178,9 @@ void tst_QSortFilterProxyModel::mapFromToSource()
 
 void tst_QSortFilterProxyModel::dataChangedInvalidRange_data()
 {
+#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
+    QSKIP("Asserts in debug builds");
+#endif
     // In the source
     QTest::addColumn<int>("topRow");
     QTest::addColumn<int>("leftColumn");

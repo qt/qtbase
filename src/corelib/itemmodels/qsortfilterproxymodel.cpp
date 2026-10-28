@@ -1540,6 +1540,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         if (top_left_past_end || source_bottom_right.row() >= source_row_count
             || source_bottom_right.column() >= source_column_count) {
             qWarning("QSortFilterProxyModel: invalid range in dataChanged() reported by source model");
+            Q_ASSERT(!"QSortFilterProxyModel: invalid range in dataChanged() reported by source model");
             if (top_left_past_end)
                 continue;
         }
