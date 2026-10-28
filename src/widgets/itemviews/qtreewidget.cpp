@@ -772,7 +772,6 @@ bool QTreeModel::isChanging() const
 /*!
   \internal
     Emits the dataChanged() signal for the given \a item.
-    if column is -1 then all columns have changed
 */
 
 void QTreeModel::emitDataChanged(QTreeWidgetItem *item, int column, const QList<int> &roles)
@@ -781,24 +780,14 @@ void QTreeModel::emitDataChanged(QTreeWidgetItem *item, int column, const QList<
         return;
 
     if (headerItem == item && column < item->columnCount()) {
-        if (column == -1)
-            emit headerDataChanged(Qt::Horizontal, 0, columnCount() - 1);
-        else
-            emit headerDataChanged(Qt::Horizontal, column, column);
+        emit headerDataChanged(Qt::Horizontal, column, column);
         return;
     }
 
     SkipSorting skipSorting(this); //This is a little bit wrong, but not doing it would kill performance
 
-    QModelIndex bottomRight, topLeft;
-    if (column == -1) {
-        topLeft = index(item, 0);
-        bottomRight = createIndex(topLeft.row(), columnCount() - 1, item);
-    } else {
-        topLeft = index(item, column);
-        bottomRight = topLeft;
-    }
-    emit dataChanged(topLeft, bottomRight, roles);
+    const QModelIndex idx = index(item, column);
+    emit dataChanged(idx, idx, roles);
 }
 
 void QTreeModel::beginInsertItems(QTreeWidgetItem *parent, int row, int count)
