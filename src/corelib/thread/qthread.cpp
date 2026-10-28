@@ -1017,20 +1017,6 @@ bool QThread::wait(QDeadlineTimer deadline)
 */
 
 /*!
-    \since 5.5
-    Returns the current event loop level for the thread.
-
-    \note This can only be called within the thread itself, i.e. when
-    it is the current thread.
-*/
-
-int QThread::loopLevel() const
-{
-    Q_D(const QThread);
-    return d->data->eventLoops.size();
-}
-
-/*!
     \internal
     Returns the thread handle of this thread.
     It can be compared with the return value of currentThreadId().
@@ -1240,6 +1226,20 @@ uint QThread::stackSize() const
 }
 
 #endif // QT_CONFIG(thread)
+
+/*!
+    \since 5.5
+    Returns the current event loop level for the thread.
+
+    \note This can only be called within the thread itself, i.e. when
+    it is the current thread.
+*/
+
+int QThread::loopLevel() const
+{
+    Q_D(const QThread);
+    return d->data->eventLoops.size();
+}
 
 /*!
     \since 5.0
