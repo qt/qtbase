@@ -207,15 +207,17 @@ static bool waitForWidgetMapped(QWidget *widget)
         return widget->windowHandle() && widget->windowHandle()->isVisible();
     };
 
+    if (isMapped())
+        return true;
     QDeadlineTimer timer(1s);
-    while (!isMapped()) {
-        if (timer.hasExpired())
-            break;
+    do {
         QCoreApplication::processEvents(QEventLoop::AllEvents, timer);
         QCoreApplication::sendPostedEvents();
+        if (isMapped())
+            return true;
         QThread::sleep(10ms);
-    }
-    return isMapped();
+    } while (!timer.hasExpired());
+    return false;
 }
 
 /*!
