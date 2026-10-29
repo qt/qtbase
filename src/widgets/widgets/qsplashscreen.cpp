@@ -203,8 +203,9 @@ void QSplashScreen::clearMessage()
 
 static bool waitForWidgetMapped(QWidget *widget)
 {
-    auto isMapped = [widget](){
-        return widget->windowHandle() && widget->windowHandle()->isVisible();
+    auto isMapped = [widget] {
+        const auto handle = widget->windowHandle();
+        return handle && handle->isVisible();
     };
 
     if (isMapped())
