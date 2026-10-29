@@ -320,7 +320,7 @@ void makeWindowProxyDataForExistingMainWindowInJsThread(
     }
     optQUiAbilityPeer->setQWindow(jsState.env(), createInfo.qWindowRef);
 
-    auto window = optQUiAbilityPeer->windowStage().eval<QNapi::Object>("getMainWindowSync()");
+    auto window = optQUiAbilityPeer->window();
     auto nativeNodeXComponentId = QXComponentId::createForNativeNodeMainWindow(createInfo.qAbilityInstanceId);
     auto nodeXComponent = takeNodeXComponentFromRegistryOrFail(nativeNodeXComponentId);
 
