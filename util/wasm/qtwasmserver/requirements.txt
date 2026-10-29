@@ -1,3 +1,3 @@
-Brotli==1.1.0
+Brotli==1.2.1
 httpcompressionserver==0.5
 netifaces==0.11.0
