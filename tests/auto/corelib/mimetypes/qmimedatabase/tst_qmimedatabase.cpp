@@ -172,6 +172,10 @@ void tst_QMimeDatabase::initTestCase()
     }
 
     initTestCaseInternal();
+
+    // QMimeDatabase skips invalid data with only a warning, make that a failure
+    QTest::failOnWarning();
+    QVERIFY(QMimeDatabase().mimeTypeForName(u"text/plain"_s).isValid()); // loads the database
 }
 
 void tst_QMimeDatabase::init()
