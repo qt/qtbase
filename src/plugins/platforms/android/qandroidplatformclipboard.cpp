@@ -6,9 +6,11 @@
 #include "qandroidplatformclipboard.h"
 
 #include <QtCore/QUrl>
+#include <QtCore/QMetaObject>
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtGui/QGuiApplication>
 #include <QtGui/private/qinternalmimedata_p.h>
 
 #ifndef QT_NO_CLIPBOARD
@@ -75,7 +77,11 @@ void QAndroidPlatformClipboard::onClipboardDataChanged(JNIEnv *env, jobject obj,
 
     auto *clipboardManager = reinterpret_cast<QAndroidPlatformClipboard *>(nativePointer);
     if (clipboardManager)
-        clipboardManager->emitChanged(QClipboard::Clipboard);
+        QMetaObject::invokeMethod(QGuiApplication::clipboard(), [] {
+            QClipboard *clipboard = QGuiApplication::clipboard();
+            emit clipboard->dataChanged();
+            emit clipboard->changed(QClipboard::Clipboard);
+        }, Qt::QueuedConnection);
 }
 
 QAndroidPlatformClipboard::QAndroidPlatformClipboard()
