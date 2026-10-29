@@ -291,6 +291,24 @@ std::function<T(JsState &)> makeMemoizingJsValueSupplier(std::function<T(JsState
     };
 }
 
+bool isAbilityTerminating(QNapi::Object ability)
+{
+    try {
+        return ability.eval<QNapi::Boolean>("context.isTerminating()");
+    } catch (const Napi::Error &error) {
+        qOhosPrintfWarning("context.isTerminating() failed (%s), assuming the Ability is terminating", error.what());
+        return true;
+    }
+}
+
+bool isAbilityPeerClosing(std::shared_ptr<QAbilityPeer> abilityPeer)
+{
+    auto optUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(abilityPeer);
+    return optUiAbilityPeer
+        && (JsWindowsTracker::isWindowClosing(optUiAbilityPeer->window())
+            || isAbilityTerminating(optUiAbilityPeer->qAbility()));
+}
+
 class JsStateImpl : public JsState
 {
 public:
@@ -559,7 +577,7 @@ std::optional<QNapi::Object> JsStateImpl::optAppLaunchParam()
 
 QNapi::Object JsStateImpl::defaultWindowStageOrEmpty()
 {
-    auto qUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_defaultQAbilityPeer);
+    auto qUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(defaultQAbilityPeer());
     if (!qUiAbilityPeer)
         return QNapi::Object();
 
@@ -568,11 +586,24 @@ QNapi::Object JsStateImpl::defaultWindowStageOrEmpty()
 
 QNapi::Object JsStateImpl::defaultUiContextOrEmpty()
 {
-    return m_defaultQAbilityPeer->uiContext();
+    return defaultQAbilityPeer()->uiContext();
 }
 
 std::shared_ptr<QAbilityPeer> JsStateImpl::defaultQAbilityPeer()
 {
+    if (isAbilityPeerClosing(m_defaultQAbilityPeer)) {
+        auto optLivePeer = tryFindMatchingQAbilityPeer(
+            [](const auto &peer) {
+                return !isAbilityPeerClosing(peer);
+            });
+        if (optLivePeer) {
+            qOhosPrintfInfo(
+                "JsStateImpl: default Ability with instanceId='%s' is closing, switching to instanceId='%s'",
+                m_defaultQAbilityPeer->instanceId().c_str(), optLivePeer->instanceId().c_str());
+            m_defaultQAbilityPeer = optLivePeer;
+        }
+    }
+
     return m_defaultQAbilityPeer;
 }
 
