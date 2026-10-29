@@ -255,7 +255,7 @@ static std::optional<NtHeaders> checkNtHeaders(QByteArrayView data, const ErrorM
     return NtHeaders{header, off};
 }
 
-static const IMAGE_SECTION_HEADER *
+static std::optional<size_t>
 findSectionTable(QByteArrayView data, const NtHeaders &ntHeaders, const ErrorMaker &error)
 {
     // macro IMAGE_FIRST_SECTION can't overflow due to limited range
@@ -268,17 +268,17 @@ findSectionTable(QByteArrayView data, const NtHeaders &ntHeaders, const ErrorMak
     size_t off = offsetof(IMAGE_NT_HEADERS, OptionalHeader);
     off += ntHeader->FileHeader.SizeOfOptionalHeader;
     if (qAddOverflow<size_t>(off, ntHeaders.offset, &off))
-        return error.toosmall(), nullptr;
+        return error.toosmall(), std::nullopt;
 
     size_t end = ntHeader->FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER);
 
     // validate that the file is big enough for all sections we're
     // supposed to have
     if (qAddOverflow(end, off, &end) || end > size_t(data.size()))
-        return error.toosmall(), nullptr;
+        return error.toosmall(), std::nullopt;
 
     peDebug << "contains" << ntHeader->FileHeader.NumberOfSections << "sections at offset" << off;
-    return reinterpret_cast<const IMAGE_SECTION_HEADER *>(data.data() + off);
+    return off;
 }
 
 static std::optional<QByteArrayView>
@@ -342,8 +342,8 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
     if (!ntHeaders)
         return {};
 
-    auto section = findSectionTable(data, *ntHeaders, error);
-    if (!section)
+    auto sectionTableOffset = findSectionTable(data, *ntHeaders, error);
+    if (!sectionTableOffset)
         return {};
 
     QByteArrayView stringTable;
@@ -353,19 +353,22 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
         return {};
 
     // scan the sections now
-    const auto sectionTableEnd = section + ntHeaders->h.FileHeader.NumberOfSections;
-    for ( ; section < sectionTableEnd; ++section) {
-        QLatin1StringView sectionName = findSectionName(section, stringTable);
-        peDebug << "section" << sectionName << SectionDebug{section};
+    const auto sectionCount = ntHeaders->h.FileHeader.NumberOfSections;
+    for (size_t i = 0 ; i < sectionCount; ++i) {
+        const auto section = qFromUnaligned<IMAGE_SECTION_HEADER>(
+                data.data() + *sectionTableOffset + i * sizeof(IMAGE_SECTION_HEADER));
+        // Note: sectionName is only valid while section is alive.
+        QLatin1StringView sectionName = findSectionName(&section, stringTable);
+        peDebug << "section" << sectionName << SectionDebug{&section};
         if (IncludeValidityChecks && sectionName.isEmpty())
             return error(QLibrary::tr("a section name is empty or extends past the end of the file"));
 
-        size_t offset = section->PointerToRawData;
-        if (size_t end; qAddOverflow<size_t>(offset, section->SizeOfRawData, &end)
+        size_t offset = section.PointerToRawData;
+        if (size_t end; qAddOverflow<size_t>(offset, section.SizeOfRawData, &end)
                 || end > size_t(data.size()))
             return error(QLibrary::tr("section contents extend past the end of the file"));
 
-        DWORD type = section->Characteristics
+        DWORD type = section.Characteristics
                 & (IMAGE_SCN_CNT_CODE | IMAGE_SCN_CNT_INITIALIZED_DATA
                    | IMAGE_SCN_CNT_UNINITIALIZED_DATA);
         if (type != IMAGE_SCN_CNT_INITIALIZED_DATA)
@@ -376,7 +379,7 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
             continue;
         peDebug << "found .qtmetadata section";
 
-        size_t size = qMin(section->SizeOfRawData, section->Misc.VirtualSize);
+        size_t size = qMin(section.SizeOfRawData, section.Misc.VirtualSize);
         if (size < sizeof(QPluginMetaData::MagicHeader))
             return error(QLibrary::tr(".qtmetadata section is too small"));
         if (IncludeValidityChecks) {
@@ -385,9 +388,9 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
             if (expectedMagic != actualMagic)
                 return error(QLibrary::tr(".qtmetadata section has incorrect magic"));
 
-            if (section->Characteristics & IMAGE_SCN_MEM_WRITE)
+            if (section.Characteristics & IMAGE_SCN_MEM_WRITE)
                 return error(QLibrary::tr(".qtmetadata section is writable"));
-            if (section->Characteristics & IMAGE_SCN_MEM_EXECUTE)
+            if (section.Characteristics & IMAGE_SCN_MEM_EXECUTE)
                 return error(QLibrary::tr(".qtmetadata section is executable"));
         }
 
