@@ -653,6 +653,15 @@ void tst_QMimeDatabase::mimeTypeForData_data()
     else
         QTest::newRow("diff_space") << QByteArray("diff ") << "text/x-diff";
     QTest::newRow("bzip2 magic") << QByteArray("BZh91AY&SY") << "application/x-bzip2";
+    if (!m_hasFreedesktopOrg) {
+        QTest::newRow("html")
+                << QByteArray("<!-- generated -->\n<html lang=\"en\">\n") << "text/html";
+        QTest::newRow("HTML") << QByteArray("<HTML>\n<BODY>\n") << "text/html";
+        QTest::newRow("emlx") << QByteArray("1234\nFrom: someone\n") << "message/x-emlx";
+        QTest::newRow("mhtml")
+                << QByteArray("MIME-Version: 1.0\nContent-Type: multipart/related; boundary=x\n")
+                << "multipart/related";
+    }
     QTest::newRow("unknown") << QByteArray("\001abc?}") << "application/octet-stream";
     QTest::newRow("ambigous svg/xml") << QByteArray(R"(<?xml version="1.0"?>
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -812,7 +821,7 @@ void tst_QMimeDatabase::allMimeTypes()
     if (m_hasFreedesktopOrg)
         QCOMPARE(lst.size(), 1038);
     else
-        QCOMPARE(lst.size(), 1653); // interestingly, tika has more mimetypes (but many are empty)
+        QCOMPARE(lst.size(), 1660); // interestingly, tika has more mimetypes (but many are empty)
 
     for (const QMimeType &mime : lst) {
         const QString name = mime.name();

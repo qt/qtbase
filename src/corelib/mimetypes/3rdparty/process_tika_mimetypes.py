@@ -21,7 +21,7 @@ file = "tika-mimetypes.xml"
 
 def wrap_with_comment(line):
     if not '<!--' in line:
-        return "<!-- DISABLED FOR QT: " + line.rstrip('\n') + "-->\n"
+        return ''.join("<!-- DISABLED FOR QT: " + l.rstrip('\n') + "-->\n" for l in line.splitlines())
     return line
 
 def transform_hex_value(line):
@@ -59,6 +59,34 @@ def strip_comments(line, in_comment):
             line = line[start + 4:]
             in_comment = True
     return out, in_comment
+
+
+# A <match> whose submatches were all disabled for being regex or unicodeLE would
+# match on its own, which is far less specific than intended (e.g. the cheap string
+# match that tika puts around a regex). Disable it too.
+def disable_emptied_matches(lines):
+    tag_re = re.compile(r'<match\b[^>]*?(/?)>|</match>')
+    stack = [] # [line index of the opening tag, has an enabled submatch, has a disabled one]
+    in_comment = False
+    for i, full_line in enumerate(lines):
+        line, in_comment = strip_comments(full_line, in_comment)
+        if stack and 'DISABLED FOR QT: ' in full_line and re.search(r'type="(regex|unicodeLE)"', full_line):
+            stack[-1][2] = True
+        for tag in tag_re.finditer(line):
+            if tag.group(0) == '</match>':
+                start, has_enabled, has_disabled = stack.pop()
+                if has_disabled and not has_enabled:
+                    lines[start] = wrap_with_comment(re.sub(r' *<!--.*?-->', '', lines[start]))
+                    lines[i] = wrap_with_comment(lines[i])
+                    if stack:
+                        stack[-1][2] = True
+                    continue
+            elif not tag.group(1):
+                stack.append([i, False, False])
+                continue
+            if stack:
+                stack[-1][1] = True
+    return lines
 
 
 # The spec says a magic rule for a generic type should use a lower priority than
@@ -135,10 +163,19 @@ with open_input_file(inputfile) as f:
         current_mime_type = ''
         skip_until = None
         skip_indent = None
+        pending = ''
         for line in f:
 
             line = line.replace('\t', '  ') # Untabify
             line = re.sub(r' +\n$', '\n', line) # Remove trailing whitespace
+
+            # Process a <match> element spread over several lines as a whole
+            if pending or ('<match' in line and not '>' in line and not '<!--' in line):
+                pending += line
+                if not '>' in line:
+                    continue
+                line = pending
+                pending = ''
 
             match = re.search(r'<mime-type type="([^"]+)">', line)
             if match:
@@ -151,6 +188,16 @@ with open_input_file(inputfile) as f:
 
             if 'be a bit more flexible, but require one from each of these' in line:
               skip_until = '</magic>'
+              # Also disable an enclosing <match>, it would match on its own. This can't be
+              # left to a later pass: skipping until </magic> also disables its </match>.
+              for i in range(len(lines) - 1, -1, -1):
+                  if '<magic' in lines[i]:
+                      break
+                  if '<match' in lines[i] and not lines[i].lstrip().startswith('<!--'):
+                      if not '/>' in lines[i]:
+                          # Drop "added by Qt" comments, wrap_with_comment() skips lines with one
+                          lines[i] = wrap_with_comment(re.sub(r' *<!--.*?-->', '', lines[i]))
+                      break
             if skip_until is None and 'minShouldMatch="' in line:
                 skip_until = '</match>'
                 skip_indent = len(line) - len(line.lstrip())
@@ -275,5 +322,5 @@ with open_input_file(inputfile) as f:
 """
             lines.append(line)
 
-        for line in lower_generic_priorities(lines):
+        for line in lower_generic_priorities(disable_emptied_matches(lines)):
             out.write(line)
