@@ -197,6 +197,10 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
         // is this the __TEXT segment?
         if (strcmp(seg->segname, "__TEXT") == 0) {
             const my_section *sect = reinterpret_cast<const my_section *>(seg + 1);
+            // Verify that seg->nsects sections actually fit into the command.
+            // We already checked that cmdsize is within the file size earlier.
+            if (Q_UNLIKELY(quint64{seg->cmdsize} < sizeof(my_segment_command) + quint64{seg->nsects} * sizeof(my_section)))
+                return notfound(QString(), errorString);
             for (uint j = 0; j < seg->nsects; ++j) {
                 // is this the "qtmetadata" section?
                 if (strcmp(sect[j].sectname, "qtmetadata") != 0)
