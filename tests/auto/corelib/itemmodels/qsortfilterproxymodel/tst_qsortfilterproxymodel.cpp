@@ -4723,6 +4723,53 @@ void tst_QSortFilterProxyModel::rowMoveLeavesValidPersistentIndexes()
     QVERIFY(persistentIndex.parent().isValid());
 }
 
+void tst_QSortFilterProxyModel::rowMoveBelowHiddenAncestorInvalidatesPersistentIndexes()
+{
+    DynamicTreeModel model;
+    Q_SET_OBJECT_NAME(model);
+
+    // model         proxy
+    //  - 1 (hidden)
+    //  - - 2
+    //  - - - 4
+    //  - 3           - 3
+    auto insert = [&model](const QList<int> &ancestors, int row) {
+        ModelInsertCommand insertCommand(&model);
+        insertCommand.setAncestorRowNumbers(ancestors);
+        insertCommand.setStartRow(row);
+        insertCommand.setEndRow(row);
+        insertCommand.doCommand();
+    };
+    insert({}, 0);
+    insert({0}, 0);
+    insert({}, 1);
+    insert({0, 0}, 0); // ModelMoveCommand can't move into a parent without children
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    Q_SET_OBJECT_NAME(proxy);
+    setupFilter(&proxy, QLatin1String("2|3"));
+    QCOMPARE(proxy.rowCount(), 1);
+
+    QPersistentModelIndex persistentIndex = proxy.index(0, 0);
+    QCOMPARE(persistentIndex.data().toString(), QLatin1String("3"));
+
+    // move 3 below 2, which is below the hidden 1
+    ModelMoveCommand moveCommand(&model, nullptr);
+    moveCommand.setAncestorRowNumbers({});
+    moveCommand.setStartRow(1);
+    moveCommand.setEndRow(1);
+    moveCommand.setDestAncestors({0, 0});
+    moveCommand.setDestRow(0);
+    moveCommand.doCommand();
+
+    const QModelIndex item3 = model.index(0, 0, model.index(0, 0, model.index(0, 0)));
+    QCOMPARE(item3.data().toString(), QLatin1String("3"));
+    QCOMPARE(proxy.rowCount(), 0);
+    QVERIFY(!proxy.mapFromSource(item3).isValid());
+    QVERIFY(!persistentIndex.isValid());
+}
+
 void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged_data()
 {
     QTest::addColumn<int>("changedRow");

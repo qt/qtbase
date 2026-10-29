@@ -131,6 +131,7 @@ private slots:
 
     void sourceLayoutChangeLeavesValidPersistentIndexes();
     void rowMoveLeavesValidPersistentIndexes();
+    void rowMoveBelowHiddenAncestorInvalidatesPersistentIndexes();
 
     void emitLayoutChangedOnlyIfSortingChanged_data();
     void emitLayoutChangedOnlyIfSortingChanged();
