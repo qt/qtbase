@@ -33,7 +33,6 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qnumeric_p.h>
 #include <QtCore/private/qohoslogger_p.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qwindow_p.h>
 
 #include <vector>
@@ -118,12 +117,10 @@ QRect calculateResultPixmapWindowFragmentRect(
 }
 
 QPixmap grabWindowFromCapturedScreenPixmap(
-    const QOhosPlatformScreen *platformScreen, const QPixmap &capturedWindowPixmap,
-    const QRect &windowSpaceCaptureRect)
+    const QPixmap &capturedWindowPixmap, const QRect &windowSpaceCaptureRect)
 {
     auto resultSize = calculateResultWindowCapturePixmapSize(
-        QHighDpi::fromNativePixels(capturedWindowPixmap.size(), platformScreen),
-        windowSpaceCaptureRect);
+        capturedWindowPixmap.size(), windowSpaceCaptureRect);
 
     if (resultSize.isEmpty())
         return {};
@@ -139,10 +136,7 @@ QPixmap grabWindowFromCapturedScreenPixmap(
 
     QPixmap result(resultSize);
     QPainter p(&result);
-    p.drawPixmap(
-        QHighDpi::toNativePixels(resultSpaceWindowFragmentRect, platformScreen),
-        capturedWindowPixmap,
-        QHighDpi::toNativePixels(windowFragmentRect, platformScreen));
+    p.drawPixmap(resultSpaceWindowFragmentRect, capturedWindowPixmap, windowFragmentRect);
 
     return result;
 }
@@ -489,8 +483,17 @@ QPixmap QOhosPlatformScreen::grabWindow(WId wId, int x, int y, int width, int he
                 "%s: Cannot find window with the given WId: %lld.", Q_FUNC_INFO, wId);
             return {};
         }
+        auto *platformWindow = QOhosPlatformWindow::fromQWindow(window);
+        auto *view = platformWindow->ownedViewOrNull();
+        if (view == nullptr)
+            return {};
+        const QRect content = view->nodeScreenGeometryPixels();
+        const QRect frame = view->viewGeometry().frameGeometry;
+        if (content.isEmpty() || !frame.contains(content))
+            return {};
+        const QRect contentRect(content.topLeft() - frame.topLeft(), content.size());
         return grabWindowFromCapturedScreenPixmap(
-            this, QOhosPlatformWindow::fromQWindow(window)->makeSnapshot(), captureRect);
+            platformWindow->makeSnapshot().copy(contentRect), captureRect);
     }
 
     auto capturedScreenPixmap = QOhosJsThreadGateway::evalWithPromise<QPixmap>(
