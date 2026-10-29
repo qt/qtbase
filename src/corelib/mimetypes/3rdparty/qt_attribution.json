@@ -16,9 +16,9 @@
                 "The Apache Tika MimeTypes list many known MIME types and how to match files (using globs and/or 'magic' rules for the file contents)",
         "Homepage":
                 "https://github.com/apache/tika/tree/main/tika-core/src/main/resources/org/apache/tika/mime",
-        "Version": "c29724782854bb5a319f4a1940d0828a58ace3f9",
+        "Version": "dc9885ce44e0b97e9fde6ac6c9da46671a50ba6b",
         "DownloadLocation":
-                "https://github.com/apache/tika/blob/c29724782854bb5a319f4a1940d0828a58ace3f9/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
+                "https://github.com/apache/tika/blob/dc9885ce44e0b97e9fde6ac6c9da46671a50ba6b/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
         "PURL": "pkg:github/apache/tika@$<VERSION>#tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
         "CPE": "cpe:2.3:a:apache:tika:*:*:*:*:*:*:*:*",
         "License": "Apache License 2.0",
