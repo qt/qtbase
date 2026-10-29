@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
+#include <QtCore/qcoreapplication_platform.h>
 #include <QTest>
 #include <QMimeData>
 #include <QSignalSpy>
@@ -20,6 +21,11 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QColor>
 #include "../../../shared/platformclipboard.h"
+#ifdef Q_OS_ANDROID
+#  include <QtCore/QThread>
+#  include <QtCore/QJniObject>
+#  include <QtCore/qnativeinterface.h>
+#endif
 
 #ifdef Q_OS_WIN
 #  include <QtGui/private/qguiapplication_p.h>
@@ -31,6 +37,15 @@
 #endif
 
 using namespace Qt::StringLiterals;
+
+#ifdef Q_OS_ANDROID
+QT_BEGIN_NAMESPACE
+Q_DECLARE_JNI_CLASS(Object, "java/lang/Object")
+Q_DECLARE_JNI_CLASS(CharSequence, "java/lang/CharSequence")
+Q_DECLARE_JNI_CLASS(ClipboardManager, "android/content/ClipboardManager")
+Q_DECLARE_JNI_CLASS(ClipData, "android/content/ClipData")
+QT_END_NAMESPACE
+#endif
 
 class tst_QClipboard : public QObject
 {
@@ -52,6 +67,7 @@ private slots:
     void getTextFromHTMLMimeType();
 #ifdef Q_OS_ANDROID
     void mimeDataFormatsAndText();
+    void externalChangeSignalsOnGuiThread();
 #endif
 #  ifdef Q_OS_WIN
     void testWindowsMimeRegisterType();
@@ -535,6 +551,44 @@ void tst_QClipboard::mimeDataFormatsAndText()
     mimeData = clipboard->mimeData();
     QVERIFY(mimeData->hasUrls());
     QCOMPARE(mimeData->urls(), urls);
+}
+
+void tst_QClipboard::externalChangeSignalsOnGuiThread()
+{
+    if (!PlatformClipboard::isAvailable())
+        QSKIP("Native clipboard not working in this setup");
+
+    QClipboard *clipboard = QGuiApplication::clipboard();
+
+    QThread *dataChangedThread = nullptr;
+    QThread *changedThread = nullptr;
+    connect(clipboard, &QClipboard::dataChanged, clipboard, [&] {
+        dataChangedThread = QThread::currentThread();
+    }, Qt::DirectConnection);
+    connect(clipboard, &QClipboard::changed, clipboard, [&](QClipboard::Mode mode) {
+        if (mode == QClipboard::Clipboard)
+            changedThread = QThread::currentThread();
+    }, Qt::DirectConnection);
+
+    auto *iface = qApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    QVERIFY(iface);
+    using namespace QtJniTypes;
+    auto service = iface->context().callMethod<Object>(
+            "getSystemService", QStringLiteral("clipboard"));
+    QVERIFY(service.isValid());
+    auto clipboardManager = ClipboardManager::fromJObject(service.object<jobject>());
+    QVERIFY(clipboardManager.isValid());
+    auto clip = ClipData::callStaticMethod<ClipData>(
+            "newPlainText",
+            CharSequence(QJniObject::fromString("external")),
+            CharSequence(QJniObject::fromString("Qt clipboard test")));
+    QVERIFY(clip.isValid());
+    clipboardManager.callMethod<void>("setPrimaryClip", clip);
+
+    QTRY_VERIFY(dataChangedThread);
+    QTRY_VERIFY(changedThread);
+    QCOMPARE(dataChangedThread, clipboard->thread());
+    QCOMPARE(changedThread, clipboard->thread());
 }
 
 #endif
