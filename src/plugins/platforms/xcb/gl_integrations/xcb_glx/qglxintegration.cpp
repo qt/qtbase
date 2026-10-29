@@ -13,9 +13,6 @@
 #undef register
 #include <GL/glx.h>
 
-#if QT_CONFIG(regularexpression)
-#  include <QtCore/QRegularExpression>
-#endif
 #include <QtGui/qguiapplication.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
@@ -666,37 +663,6 @@ void QGLXContext::queryDummyContext()
                 m_supportsThreading = false;
                 break;
             }
-        }
-    }
-
-    if (glxvendor && m_supportsThreading) {
-        // Blacklist Mesa drivers due to QTCREATORBUG-10875 (crash in creator),
-        // QTBUG-34492 (flickering in fullscreen) and QTBUG-38221
-        const char *mesaVersionStr = nullptr;
-        if (strstr(glxvendor, "Mesa Project") != nullptr) {
-            mesaVersionStr = (const char *) glGetString(GL_VERSION);
-            m_supportsThreading = false;
-        }
-
-        if (mesaVersionStr) {
-            // The issue was fixed in Xcb 1.11, but we can't check for that
-            // at runtime, so instead assume it fixed with recent Mesa versions
-            // released several years after the Xcb fix.
-#if QT_CONFIG(regularexpression)
-            QRegularExpression versionTest(QStringLiteral("Mesa (\\d+)"));
-            QRegularExpressionMatch result = versionTest.match(QString::fromLatin1(mesaVersionStr));
-            int versionNr = 0;
-            if (result.hasMatch())
-                versionNr = result.captured(1).toInt();
-            if (versionNr >= 17) {
-                // White-listed
-                m_supportsThreading = true;
-            }
-#endif
-        }
-        if (!m_supportsThreading) {
-            qCDebug(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
-                                          "blacklisted vendor \"Mesa Project\"";
         }
     }
 
