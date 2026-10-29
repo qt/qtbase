@@ -200,7 +200,7 @@ Q_DECL_UNUSED static QDebug &operator<<(QDebug &d, SectionDebug s)
 
 QT_WARNING_POP
 
-const IMAGE_NT_HEADERS *checkNtHeaders(QByteArrayView data, const ErrorMaker &error)
+static const IMAGE_NT_HEADERS *checkNtHeaders(QByteArrayView data, const ErrorMaker &error)
 {
     if (size_t(data.size()) < qMax(sizeof(IMAGE_DOS_HEADER), sizeof(IMAGE_NT_HEADERS))) {
         peDebug << "file too small:" << size_t(data.size());
@@ -331,7 +331,7 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
         return {};
 
     auto section = findSectionTable(data, ntHeaders, error);
-    if (!ntHeaders)
+    if (!section)
         return {};
 
     QByteArrayView stringTable;
