@@ -1267,7 +1267,6 @@ void QSortFilterProxyModelPrivate::update_persistent_indexes(
     for (const auto &indexPair : source_indexes) {
         const QPersistentModelIndex &source_index = indexPair.second;
         const QModelIndex &old_proxy_index = indexPair.first;
-        create_mapping(source_index.parent());
         QModelIndex proxy_index = q->mapFromSource(source_index);
         from << old_proxy_index;
         to << proxy_index;
