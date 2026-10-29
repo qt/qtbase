@@ -200,11 +200,21 @@ Q_DECL_UNUSED static QDebug &operator<<(QDebug &d, SectionDebug s)
 
 QT_WARNING_POP
 
-static const IMAGE_NT_HEADERS *checkNtHeaders(QByteArrayView data, const ErrorMaker &error)
+namespace {
+
+struct NtHeaders
+{
+    IMAGE_NT_HEADERS h;
+    size_t offset; // offset of h within the file
+};
+
+} // unnamed namespace
+
+static std::optional<NtHeaders> checkNtHeaders(QByteArrayView data, const ErrorMaker &error)
 {
     if (size_t(data.size()) < qMax(sizeof(IMAGE_DOS_HEADER), sizeof(IMAGE_NT_HEADERS))) {
         peDebug << "file too small:" << size_t(data.size());
-        return error.toosmall(), nullptr;
+        return error.toosmall(), std::nullopt;
     }
 
     // check if there's a DOS image header (almost everything does)
@@ -216,46 +226,48 @@ static const IMAGE_NT_HEADERS *checkNtHeaders(QByteArrayView data, const ErrorMa
         if (size_t end; qAddOverflow<sizeof(IMAGE_NT_HEADERS)>(off, &end)
             || end > size_t(data.size())) {
             peDebug << "file too small:" << size_t(data.size());
-            return error.toosmall(), nullptr;
+            return error.toosmall(), std::nullopt;
         }
     }
 
     // now check the NT headers
-    auto ntHeader = reinterpret_cast<const IMAGE_NT_HEADERS *>(data.data() + off);
+    const auto header = qFromUnaligned<IMAGE_NT_HEADERS>(data.data() + off);
+    auto ntHeader = &header;
     peDebug << HeaderDebug{ntHeader};
     if (ntHeader->Signature != IMAGE_NT_SIGNATURE)      // "PE\0\0"
-        return error(QLibrary::tr("invalid signature")), nullptr;
+        return error(QLibrary::tr("invalid signature")), std::nullopt;
     if (ntHeader->FileHeader.Machine != ExpectedMachine)
-        return error(QLibrary::tr("file is for a different processor")), nullptr;
+        return error(QLibrary::tr("file is for a different processor")), std::nullopt;
     if (ntHeader->FileHeader.NumberOfSections == 0)
-        return error(QLibrary::tr("file has no sections")), nullptr;
+        return error(QLibrary::tr("file has no sections")), std::nullopt;
 
     WORD requiredCharacteristics =
             IMAGE_FILE_EXECUTABLE_IMAGE | IMAGE_FILE_DLL;
     if ((ntHeader->FileHeader.Characteristics & requiredCharacteristics) != requiredCharacteristics)
-        return error(QLibrary::tr("wrong characteristics")), nullptr;
+        return error(QLibrary::tr("wrong characteristics")), std::nullopt;
 
     // the optional header is not optional
     if (ntHeader->OptionalHeader.Magic != ExpectedOptionalHeaderSignature)
-        return error(QLibrary::tr("file is for a different word size")), nullptr;
+        return error(QLibrary::tr("file is for a different word size")), std::nullopt;
     if (ntHeader->OptionalHeader.SizeOfCode == 0)
-        return error.notplugin(QLibrary::tr("file has no code")), nullptr;
+        return error.notplugin(QLibrary::tr("file has no code")), std::nullopt;
 
-    return ntHeader;
+    return NtHeaders{header, off};
 }
 
 static const IMAGE_SECTION_HEADER *
-findSectionTable(QByteArrayView data, const IMAGE_NT_HEADERS *ntHeader, const ErrorMaker &error)
+findSectionTable(QByteArrayView data, const NtHeaders &ntHeaders, const ErrorMaker &error)
 {
     // macro IMAGE_FIRST_SECTION can't overflow due to limited range
     // of type, but adding to the offset from the DOS header could
     // overflow on 32-bit
+    auto ntHeader = &ntHeaders.h;
     static_assert(sizeof(ntHeader->FileHeader.SizeOfOptionalHeader) < sizeof(size_t));
     static_assert(sizeof(ntHeader->FileHeader.NumberOfSections) < sizeof(size_t));
 
     size_t off = offsetof(IMAGE_NT_HEADERS, OptionalHeader);
     off += ntHeader->FileHeader.SizeOfOptionalHeader;
-    if (qAddOverflow<size_t>(off, reinterpret_cast<const char *>(ntHeader) - data.data(), &off))
+    if (qAddOverflow<size_t>(off, ntHeaders.offset, &off))
         return error.toosmall(), nullptr;
 
     size_t end = ntHeader->FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER);
@@ -330,18 +342,18 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
     if (!ntHeaders)
         return {};
 
-    auto section = findSectionTable(data, ntHeaders, error);
+    auto section = findSectionTable(data, *ntHeaders, error);
     if (!section)
         return {};
 
     QByteArrayView stringTable;
-    if (auto optional = findStringTable(data, ntHeaders, error))
+    if (auto optional = findStringTable(data, &ntHeaders->h, error))
         stringTable = *optional;
     else
         return {};
 
     // scan the sections now
-    const auto sectionTableEnd = section + ntHeaders->FileHeader.NumberOfSections;
+    const auto sectionTableEnd = section + ntHeaders->h.FileHeader.NumberOfSections;
     for ( ; section < sectionTableEnd; ++section) {
         QLatin1StringView sectionName = findSectionName(section, stringTable);
         peDebug << "section" << sectionName << SectionDebug{section};
