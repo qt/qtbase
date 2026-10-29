@@ -210,7 +210,7 @@
   <mime-type type="application/x-dbf">
     <!-- this looks unique/precise. It isn't. False positives are common. Keep priority low. -->
     <magic priority="40">
-<!-- DISABLED FOR QT:       <match value="(?s)^[\\x02\\x03\\x30\\x31\\x32\\x43\\x63\\x83\\x8B\\xCB\\xF5\\xE5\\xFB].[\\x01-\\x0C][\\x01-\\x1F].{4}(?:.[^\\x00]|[\\x41-\\xFF].)(?:[^\\x00\\x01].|.[^\\x00]).{31}(?&lt;=[\\x00][^\\x00]{0,10})[A-Z@+]" type="regex" offset="0"/>-->
+      <match value="(?s)^[\\x02\\x03\\x30\\x31\\x32\\x43\\x63\\x83\\x8B\\xCB\\xF5\\xE5\\xFB].[\\x01-\\x0C][\\x01-\\x1F].{4}(?:.[^\\x00]|[\\x41-\\xFF].)(?:[^\\x00\\x01].|.[^\\x00]).{31}(?&lt;=[\\x00]|[\\x00][^\\x00]{1}|[\\x00][^\\x00]{2}|[\\x00][^\\x00]{3}|[\\x00][^\\x00]{4}|[\\x00][^\\x00]{5}|[\\x00][^\\x00]{6}|[\\x00][^\\x00]{7}|[\\x00][^\\x00]{8}|[\\x00][^\\x00]{9}|[\\x00][^\\x00]{10})[A-Z@+]" type="regex" offset="0"/>
     </magic>
     <glob pattern="*.dbf"/>
     <glob pattern="*.dbase"/>
@@ -327,9 +327,9 @@
     <magic priority="60">
       <!-- literal gate first: the ranged regex only runs when the marker exists,
            so non-AI files pay a cheap string scan instead of 8K regex attempts -->
-<!-- DISABLED FOR QT:       <match value="%AI5_FileFormat " type="string" offset="0:8192">-->
-<!-- DISABLED FOR QT:         <match value="[\r\n]%AI5_FileFormat [1-4][\r\n]" type="regex" offset="0:8192"/>-->
-<!-- DISABLED FOR QT:       </match>-->
+      <match value="%AI5_FileFormat " type="string" offset="0:8192">
+        <match value="[\r\n]%AI5_FileFormat [1-4][\r\n]" type="regex" offset="0:8192"/>
+      </match>
     </magic>
     <sub-class-of type="application/postscript"/>
   </mime-type>
@@ -555,14 +555,14 @@
   <mime-type type="application/vnd.java.hprof ">
     <comment>Java hprof text file</comment>
     <magic priority="50">
-<!-- DISABLED FOR QT:       <match value="JAVA PROFILE \\d\\.\\d\\.\\d\\u0000" type="regex" offset="0"/>-->
+      <match value="JAVA PROFILE \\d\\.\\d\\.\\d\\x{0000}" type="regex" offset="0"/>
     </magic>
     <glob pattern="*.hprof"/>
   </mime-type>
   <mime-type type="application/vnd.java.hprof.text">
     <comment>Java hprof text file</comment>
     <magic priority="50">
-<!-- DISABLED FOR QT:       <match value="JAVA PROFILE \\d\\.\\d\\.\\d," type="regex" offset="0"/>-->
+      <match value="JAVA PROFILE \\d\\.\\d\\.\\d," type="regex" offset="0"/>
     </magic>
     <glob pattern="*.hprof.txt"/>
     <sub-class-of type="text/plain"/>
@@ -587,6 +587,28 @@
   </mime-type>
 
   <mime-type type="application/macwriteii"/>
+
+  <mime-type type="application/marc">
+    <!-- todo add marc xml <marc:collection> -->
+    <glob pattern="*.mrc"/>
+    <magic priority="50">
+      <!-- built from, e.g. https://www.loc.gov/marc/community/cileader.html -->
+      <match value="[0-9]{5,5}" type="regex" offset="0">
+        <match value="45" type="string" offset="20">
+          <!-- bibliographic -->
+          <match value="[acdnp][acdefgijkmoprt][abcdims]" type="regex" offset="5"/>
+          <!-- authority-->
+          <match value="[acdnosx]z" type="regex" offset="5"/>
+          <!-- holdings -->
+          <match value="[cdn][uvxy]" type="regex" offset="5"/>
+          <!-- classification -->
+          <match value="[acdn]w" type="regex" offset="5"/>
+          <!-- community -->
+          <match value="[cdn]q" type="regex" offset="5"/>
+        </match>
+      </match>
+    </magic>
+  </mime-type>
 
   <mime-type type="application/mathematica">
     <comment>Wolfram Mathematica</comment>
@@ -828,7 +850,7 @@
       so every prefix within those bounds really is reachable.
       Every quantifier is bounded and the group is atomic, so this cannot backtrack: without
       the (?> a hostile CRLF run splits exponentially and hangs detection.  Keep it that way. -->
-<!-- DISABLED FOR QT:       <match value="(?>(?:%%[^\\r\\n]{0,148})?(?:\\r\\n|[\\r\\n])){1,50}%PDF-[12]\\." type="regex" offset="0"/>-->
+      <match value="(?>(?:%%[^\\r\\n]{0,148})?(?:\\r\\n|[\\r\\n])){1,50}%PDF-[12]\\." type="regex" offset="0"/>
     </magic>
     <magic priority="20">
       <!-- Low priority match for %PDF-#.# near the start of the file -->
@@ -2015,8 +2037,8 @@
     <comment>XML User Interface Language</comment>
     <!-- root-XML misses roots whose attributes use DTD entities; above application/xml -->
     <magic priority="51">
-<!-- DISABLED FOR QT:       <match value="&lt;(?:window|dialog|wizard|overlay|prefwindow|page)\\s[^&gt;]*xmlns\\s*=\\s*[&quot;']http://www\\.mozilla\\.org/keymaster/gatekeeper/there\\.is\\.only\\.xul[&quot;']"-->
-<!-- DISABLED FOR QT:              type="regex" offset="0:8192"/>-->
+      <match value="&lt;(?:window|dialog|wizard|overlay|prefwindow|page)\\s[^&gt;]*xmlns\\s*=\\s*[&quot;']http://www\\.mozilla\\.org/keymaster/gatekeeper/there\\.is\\.only\\.xul[&quot;']"
+             type="regex" offset="0:8192"/>
     </magic>
     <root-XML localName="window" namespaceURI="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"/>
     <root-XML localName="dialog" namespaceURI="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"/>
@@ -3495,7 +3517,7 @@
   <mime-type type="application/vnd.isac.fcs">
     <comment>Flow Cytometry Standard File</comment>
     <magic priority="50">
-<!-- DISABLED FOR QT:       <match value="FCS[1-3]\\.[0-9]    " type="regex" offset="0"/>-->
+      <match value="FCS[1-3]\\.[0-9]    " type="regex" offset="0"/>
     </magic>
     <glob pattern="*.fcs"/>
   </mime-type>
@@ -3711,7 +3733,7 @@
     <sub-class-of type="application/x-bzip"/>
     <comment>Bzip 2 UNIX Compressed File</comment>
     <magic priority="40">
-      <match value="BZh" type="string" offset="0"/>
+      <match value="BZh[1-9]" type="regex" offset="0"/>
     </magic>
     <glob pattern="*.bz2"/>
     <glob pattern="*.tbz2"/>
@@ -3855,20 +3877,9 @@
     <magic priority="70">
       <!-- gate: the count line ends within the first 11 bytes; keeps the regex (an 8K
            decode per evaluation) off files that cannot be emlx -->
-<!-- DISABLED FOR QT:       <match value="\n" type="string" offset="1:10">-->
-<!-- DISABLED FOR QT:         <match value="(?i)[0-9]{1,10} {0,9}\n((Authentication-Results|Content-Type|Date|Delivered-To|From|Message-ID|MIME-Version|Received|Received-SPF|Return-Path|Subject|To):|(X|DKIM|ARC)-)" type="regex" offset="0"/>-->
-<!-- DISABLED FOR QT:       </match>-->
-      <!-- string rules kept by Qt instead of the regex, which Qt does not support -->
-      <match value="\nRelay-Version:" type="string" offset="2:9"/>
-      <match value="\n#!\ rnews" type="string" offset="2:9"/>
-      <match value="\nN#!\ rnews" type="string" offset="2:9"/>
-      <match value="\nForward\ to" type="string" offset="2:9"/>
-      <match value="\nPipe\ to" type="string" offset="2:9"/>
-      <match value="\nReturn-Path:" type="string" offset="2:9"/>
-      <match value="\nFrom:" type="string" offset="2:9"/>
-      <match value="\nReceived:" type="string" offset="2:9"/>
-      <match value="\nMessage-ID:" type="string" offset="2:9"/>
-      <match value="\nDate:" type="string" offset="2:9"/>
+      <match value="\n" type="string" offset="1:10">
+        <match value="(?i)[0-9]{1,10} {0,9}\n((Authentication-Results|Content-Type|Date|Delivered-To|From|Message-ID|MIME-Version|Received|Received-SPF|Return-Path|Subject|To):|(X|DKIM|ARC)-)" type="regex" offset="0"/>
+      </match>
     </magic>
     <glob pattern="*.emlx"/>
     <sub-class-of type="text/x-tika-text-based-message"/>
@@ -3901,11 +3912,11 @@
     <comment>fat disk image; extensions: ima, img, dsk</comment>
     <tika:link>https://www.nationalarchives.gov.uk/PRONOM/fmt/1087</tika:link>
     <magic priority="50">
-<!-- DISABLED FOR QT:       <match type="string" value="\xEB" offset="0">-->
-<!-- DISABLED FOR QT:         <match type="string" value="\x90" offset="2">-->
-<!-- DISABLED FOR QT:           <match value="(\x01|\x02|\x04|\x08|\x10|\x20\x40|x80)" type="regex" offset="14"/>-->
-<!-- DISABLED FOR QT:         </match>-->
-<!-- DISABLED FOR QT:       </match>-->
+      <match type="string" value="\xEB" offset="0"> <!-- type added by Qt -->
+        <match type="string" value="\x90" offset="2"> <!-- type added by Qt -->
+          <match value="(\x01|\x02|\x04|\x08|\x10|\x20\x40|x80)" type="regex" offset="14"/>
+        </match>
+      </match>
     </magic>
   </mime-type>
 
@@ -4560,15 +4571,15 @@
     <comment>Based on TIKA-2469, we've added a heuristic/wild guess that the first 10 chars</comment>
     <comment>after the length byte should be \x00 or a non-control character.</comment>
     <magic priority="80">
-<!-- DISABLED FOR QT:       <match value="(?s)^([\\x05-\\x0F])[\\x00\\x20-\\x7E]{10}.{43}\\1\x00" type="regex" offset="0"/>-->
+      <match value="(?s)^([\\x05-\\x0F])[\\x00\\x20-\\x7E]{10}.{43}\\1\x00" type="regex" offset="0"/>
     </magic>
   </mime-type>
   <mime-type type="application/x-ms-nls">
     <comment>Microsoft National Language Support</comment>
     <comment>Should take precedence over x-ms-owner</comment>
     <magic priority="70">
-<!-- DISABLED FOR QT:       <match value="(?s)^\\x0D.{51}\\x0C\\x00\\x0D\\x00\\x0E" type="regex" offset="0"/>-->
-<!-- DISABLED FOR QT:       <match value="(?s)^\\x44\\x43.\\x01" type="regex" offset="0"/>-->
+      <match value="(?s)^\\x0D.{51}\\x0C\\x00\\x0D\\x00\\x0E" type="regex" offset="0"/>
+      <match value="(?s)^\\x44\\x43.\\x01" type="regex" offset="0"/>
     </magic>
   </mime-type>
   <mime-type type="application/x-ms-wmd">
@@ -5273,6 +5284,23 @@
     </magic>
     <glob pattern="*.vf"/>
   </mime-type>
+  <mime-type type="application/x-touhou">
+    <comment>Touhou Project</comment>
+    <tika:link>https://en.wikipedia.org/wiki/Touhou_Project</tika:link>
+    <magic priority="50">
+      <match value="\x74\x31" type="string" offset="0">
+        <match value="[\x72|\x33|\x36|\x35]" type="regex" offset="3">
+          <match type="string" value="\x00\x00\x00\x00\x00\x00\x00" offset="5"/> <!-- type added by Qt -->
+        </match>
+      </match>
+    </magic>
+    <!-- do we want to use this for such a rare format?   <glob pattern="*.rpy"/> -->
+  </mime-type>
+
+  <!-- =================================================================== -->
+  <!-- Microsoft Office binary file formats                                -->
+  <!-- http://www.microsoft.com/interop/docs/OfficeBinaryFormats.mspx      -->
+  <!-- =================================================================== -->
   <mime-type type="application/x-tika-msoffice">
     <magic priority="40">
       <match value="\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" type="string" offset="0:8"/>
@@ -5767,12 +5795,12 @@
            Removed: caused false positives with binary files. -->
       <!-- match value="0xffff" type="string" offset="0"/ -->
       <!-- TIKA-4582: Require MP3 frame sync after ID3 tag to avoid false positives with other ID3-tagged formats -->
-<!-- DISABLED FOR QT:       <match value="ID3" type="string" offset="0">-->
-<!-- DISABLED FOR QT:          <match type="regex" value="\\xFF[\\xE3\\xF2-\\xF7\\xFA-\\xFD\\xFF]" offset="512:8192" />-->
-<!-- DISABLED FOR QT:       </match>-->
+      <match value="ID3" type="string" offset="0">
+         <match type="regex" value="\\xFF[\\xE3\\xF2-\\xF7\\xFA-\\xFD\\xFF]" offset="512:8192" />
+      </match>
       <!-- in the wild, 0D0A or quite a few \x00 may precede the magic -->
-<!-- DISABLED FOR QT:       <match value="(?:\\x0D\\x0A|\\x00{1,1024})(?:\\xff[\\xe3\\xf2\\xf3\\xf4\\xf5\\xf6\\xf7\\xf8\\xf9\\xfa\\xfb\\xfc\\xfd\\xfe\\xff]|ID3)"-->
-<!-- DISABLED FOR QT:              type="regex" offset="0"/>-->
+      <match value="(?:\\x0D\\x0A|\\x00{1,1024})(?:\\xff[\\xe3\\xf2\\xf3\\xf4\\xf5\\xf6\\xf7\\xf8\\xf9\\xfa\\xfb\\xfc\\xfd\\xfe\\xff]|ID3)"
+             type="regex" offset="0"/>
     </magic>
     <!-- TIKA-4582: Low-priority fallback for ID3-only files (truncated or very large ID3 tags) -->
     <magic priority="10">
@@ -5986,13 +6014,13 @@
     <magic priority="30">
       <!-- Without ID3 tags - require two consecutive ADTS frame syncs -->
       <!-- ADTS frames are typically 100-2000 bytes, so look for second sync at that distance -->
-<!-- DISABLED FOR QT:       <match type="regex" value="(?s)\\xFF[\\xF0\\xF1\\xF8\\xF9].{2}.{100,2000}\\xFF[\\xF0\\xF1\\xF8\\xF9]" offset="0" />-->
+      <match type="regex" value="(?s)\\xFF[\\xF0\\xF1\\xF8\\xF9].{2}.{100,2000}\\xFF[\\xF0\\xF1\\xF8\\xF9]" offset="0" />
     </magic>
     <magic priority="40">
       <!-- With ID3 tags at the start - require two consecutive ADTS frame syncs -->
-<!-- DISABLED FOR QT:       <match value="ID3" type="string" offset="0">-->
-<!-- DISABLED FOR QT:          <match type="regex" value="(?s)\\xFF[\\xF0\\xF1\\xF8\\xF9].{2}.{100,2000}\\xFF[\\xF0\\xF1\\xF8\\xF9]" offset="512:8192" />-->
-<!-- DISABLED FOR QT:       </match>-->
+      <match value="ID3" type="string" offset="0">
+         <match type="regex" value="(?s)\\xFF[\\xF0\\xF1\\xF8\\xF9].{2}.{100,2000}\\xFF[\\xF0\\xF1\\xF8\\xF9]" offset="512:8192" />
+      </match>
     </magic>
   </mime-type>
 
@@ -6614,9 +6642,9 @@
     <tika:link>https://en.wikipedia.org/wiki/ICO_(file_format)</tika:link>
     <magic priority="50">
       <!-- reserved 0, type 2, 1 to 255 images; a count of 0 would also match a TGA header -->
-<!-- DISABLED FOR QT:       <match value="\000\000\002\000" type="string" offset="0">-->
-<!-- DISABLED FOR QT:         <match value="[\\x01-\\xff]\\x00" type="regex" offset="4"/>-->
-<!-- DISABLED FOR QT:       </match>-->
+      <match value="\000\000\002\000" type="string" offset="0">
+        <match value="[\\x01-\\xff]\\x00" type="regex" offset="4"/>
+      </match>
     </magic>
     <glob pattern="*.cur"/>
   </mime-type>
@@ -7154,7 +7182,7 @@
       <!-- match X- DKIM- ARC- at start of file and then require at least one
            of the usual: from, received, date...but look farther into the file
            because of the X|DKIM|ARC headers-->
-      <match value="X-" type="string" offset="0">
+      <match value="(X|DKIM|ARC)-" type="regex" offset="0">
         <match value="\nDate:" type="string" offset="0:8192"/>
         <match value="\nDelivered-To:" type="string" offset="0:8192"/>
         <match value="\nFrom:" type="string" offset="0:8192"/>
@@ -7267,7 +7295,7 @@
         <match value="\nServer:" type="string" offset="0:1000"/>
       </match>
       <!-- a capture without the version: "200 OK" then headers (LWP, curl -i on some proxies) -->
-<!-- DISABLED FOR QT:       <match value="[1-5][0-9]{2} [A-Za-z][A-Za-z -]{0,40}\r?\n(Cache-Control|Content-Type|Content-Length|Content-Disposition|Date|Server|Set-Cookie|Client-Date|Last-Modified|Connection):" type="regex" offset="0"/>-->
+      <match value="[1-5][0-9]{2} [A-Za-z][A-Za-z -]{0,40}\r?\n(Cache-Control|Content-Type|Content-Length|Content-Disposition|Date|Server|Set-Cookie|Client-Date|Last-Modified|Connection):" type="regex" offset="0"/>
     </magic>
     <sub-class-of type="text/x-tika-text-based-message"/>
   </mime-type>
@@ -7285,11 +7313,7 @@
       <match value="From: \x22Saved by Internet Explorer 11\x22" type="string" offset="0"/>
       <!-- the message's own Content-Type: non-empty lines only, so the match stops at the
            blank line that ends the header block and never reaches a nested part's header -->
-<!-- DISABLED FOR QT:       <match value="MIME-Version: 1[.]0(?: [^\r\n]{0,100})?\r?\n(?:[^\r\n]+\r?\n)*?Content-Type: multipart/related" type="regex" offset="0"/>-->
-      <!-- string rules kept by Qt instead of the regex, which Qt does not support -->
-      <match value="MIME-Version: 1.0" type="string" offset="0">
-        <match value="\nContent-Type: multipart/related" type="string" offset="16:512"/>
-      </match>
+      <match value="MIME-Version: 1[.]0(?: [^\r\n]{0,100})?\r?\n(?:[^\r\n]+\r?\n)*?Content-Type: multipart/related" type="regex" offset="0"/>
     </magic>
     <glob pattern="*.mht"/>
     <glob pattern="*.mhtml"/>
@@ -7545,8 +7569,8 @@
     <root-XML localName="iframe"/>
     <root-XML localName="IFRAME"/>
     <magic priority="60">
-<!-- DISABLED FOR QT:       <match value="(?i)&lt;(html|head|body|title|div)[ >]" type="regex" offset="0"/>-->
-<!-- DISABLED FOR QT:       <match value="(?i)&lt;h[123][ >]" type="regex" offset="0"/>-->
+      <match value="(?i)&lt;(html|head|body|title|div)[ >]" type="regex" offset="0"/>
+      <match value="(?i)&lt;h[123][ >]" type="regex" offset="0"/>
     </magic>
     <!-- The magic priority needs to be lower than that of -->
     <!--  files which contain HTML within them, eg mime emails -->
@@ -7560,10 +7584,7 @@
       <match value="&lt;TITLE" type="string" offset="0:64"/>
       <match value="&lt;title" type="string" offset="0:64"/>
       <!-- the tag must end: <htmlPath> in an XML file is not HTML -->
-<!-- DISABLED FOR QT:       <match value="(?i)&lt;html[\\s>]" type="regex" offset="0:128"/>-->
-      <!-- string rules kept by Qt instead of the regex, which Qt does not support -->
-      <match value="&lt;HTML" type="string" offset="0:64"/>
-      <match value="&lt;html" type="string" offset="0:128"/>
+      <match value="(?i)&lt;html[\\s>]" type="regex" offset="0:128"/>
     </magic>
     <magic priority="20">
       <!-- Lower priority match for <html anywhere near the top of the file -->
@@ -7573,9 +7594,7 @@
            MimeTypes#getMinLength() bytes. It should also only start after
            the higher priority "start of file" one above
        -->
-<!-- DISABLED FOR QT:       <match value="(?i)&lt;html[\\s>]" type="regex" offset="128:8192"/>-->
-      <!-- string rules kept by Qt instead of the regex, which Qt does not support -->
-      <match value="&lt;html" type="string" offset="128:8192"/>
+      <match value="(?i)&lt;html[\\s>]" type="regex" offset="128:8192"/>
     </magic>
     <glob pattern="*.html"/>
     <glob pattern="*.htm"/>
@@ -7764,9 +7783,9 @@
     <glob pattern="*.gv"/>
     <!-- glob pattern="*.dot" - conflicts with application/msword -->
     <magic priority="50">
-<!-- DISABLED FOR QT:       <match value="(?s)^\\s*(?:strict\\s+)?(?:di)?graph\\b" type="regex" offset="0"/>-->
-<!-- DISABLED FOR QT:       <match value="(?s)^(?:\\s*//[^\\n]*\n){1,10}\\s*(?:strict\\s+)?(?:di)?graph\\b" type="regex" offset="0"/>-->
-<!-- DISABLED FOR QT:       <match value="(?s)^\\s*/\\*.{0,1024}?\\*/\\s*(?:strict\\s+)?(?:di)?graph\\b" type="regex" offset="0"/>-->
+      <match value="(?s)^\\s*(?:strict\\s+)?(?:di)?graph\\b" type="regex" offset="0"/>
+      <match value="(?s)^(?:\\s*//[^\\n]*\n){1,10}\\s*(?:strict\\s+)?(?:di)?graph\\b" type="regex" offset="0"/>
+      <match value="(?s)^\\s*/\\*.{0,1024}?\\*/\\s*(?:strict\\s+)?(?:di)?graph\\b" type="regex" offset="0"/>
     </magic>
     <sub-class-of type="text/plain"/>
   </mime-type>
@@ -8115,12 +8134,12 @@
     </magic>
     <!-- Single-output or no output function definition -->
     <magic priority="40">
-<!-- DISABLED FOR QT:       <match value="function [a-zA-Z][A-Za-z0-9_]{0,62}\\s*=" type="regex" offset="0"/>-->
+      <match value="function [a-zA-Z][A-Za-z0-9_]{0,62}\\s*=" type="regex" offset="0"/>
     </magic>
     <!-- No-output function definition in short form -->
     <!-- Be careful to avoid a false-match on JS functions! -->
     <magic priority="40">
-<!-- DISABLED FOR QT:       <match value="function [a-zA-Z][A-Za-z0-9_]{0,62}[\\r\\n]" type="regex" offset="0"/>-->
+      <match value="function [a-zA-Z][A-Za-z0-9_]{0,62}[\\r\\n]" type="regex" offset="0"/>
     </magic>
     <!-- Two matlab-style comments fairly early in the file -->
     <magic priority="25">

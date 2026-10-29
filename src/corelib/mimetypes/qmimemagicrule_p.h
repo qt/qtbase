@@ -23,13 +23,49 @@ QT_REQUIRE_CONFIG(mimetype);
 #include <QtCore/qbytearray.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
+#if QT_CONFIG(regularexpression)
+#include <QtCore/qregularexpression.h>
+#include <QtCore/qstring.h>
+
+#include <optional>
+#endif
 
 QT_BEGIN_NAMESPACE
+
+// The data that magic rules are matched against
+class QMimeMagicData
+{
+public:
+    explicit QMimeMagicData(const QByteArray &data) : m_data(data) {}
+    QMimeMagicData(QByteArray &&) = delete; // would dangle
+
+    const QByteArray &bytes() const { return m_data; }
+#if QT_CONFIG(regularexpression)
+    // The first \a size bytes, at most bytes().size(), decoded as Latin-1
+    QStringView decodedLatin1(qsizetype size) const
+    {
+        size = qMin(size, m_data.size());
+        // Shared by all the regex rules, and only as long as they need: the data can be huge
+        if (m_latin1.size() < size)
+            m_latin1 = QString::fromLatin1(QByteArrayView(m_data).first(size));
+        return QStringView(m_latin1).first(size);
+    }
+#endif
+
+private:
+    const QByteArray &m_data;
+#if QT_CONFIG(regularexpression)
+    mutable QString m_latin1;
+#endif
+};
 
 class QMimeMagicRule
 {
 public:
-    enum Type { Invalid = 0, String, Host16, Host32, Big16, Big32, Little16, Little32, Byte };
+    // Regex is an extension used by the tika database, not in the shared-mime-info spec
+    enum Type { Invalid = 0, String, Host16, Host32, Big16, Big32, Little16, Little32, Byte, Regex };
+    // Only Qt's own database may use Regex: elsewhere it wouldn't work with a mime.cache
+    enum class RegexRules { Rejected, Allowed };
     // Maximum nesting depth of magic rules that is followed, both for <match>
     // elements in XML and for matchlets in mime.cache. The deepest nesting in
     // the shared-mime-info database is 5, so this leaves ample headroom while
@@ -37,7 +73,7 @@ public:
     static constexpr int MaxRecursionDepth = 50;
 
     QMimeMagicRule(const QString &typeStr, const QByteArray &value, const QString &offsets,
-                   const QByteArray &mask, QString *errorString);
+                   const QByteArray &mask, RegexRules regexRules, QString *errorString);
 
     void swap(QMimeMagicRule &other) noexcept
     {
@@ -49,6 +85,9 @@ public:
         qSwap(m_pattern,       other.m_pattern);
         qSwap(m_number,        other.m_number);
         qSwap(m_numberMask,    other.m_numberMask);
+#if QT_CONFIG(regularexpression)
+        qSwap(m_regExp,        other.m_regExp);
+#endif
         qSwap(m_matchFunction, other.m_matchFunction);
     }
 
@@ -62,7 +101,7 @@ public:
 
     bool isValid() const { return m_matchFunction != nullptr; }
 
-    bool matches(const QByteArray &data, int depth = MaxRecursionDepth) const;
+    bool matches(const QMimeMagicData &data, int depth = MaxRecursionDepth) const;
 
     QList<QMimeMagicRule> m_subMatches;
 
@@ -83,15 +122,19 @@ private:
     QByteArray m_pattern;
     quint32 m_number;
     quint32 m_numberMask;
+#if QT_CONFIG(regularexpression)
+    std::optional<QRegularExpression> m_regExp; // only for Regex rules: it allocates
+#endif
 
-    typedef bool (QMimeMagicRule::*MatchFunction)(const QByteArray &data) const;
+    typedef bool (QMimeMagicRule::*MatchFunction)(const QMimeMagicData &data) const;
     MatchFunction m_matchFunction;
 
 private:
     // match functions
-    bool matchString(const QByteArray &data) const;
+    bool matchString(const QMimeMagicData &magicData) const;
     template <typename T>
-    bool matchNumber(const QByteArray &data) const;
+    bool matchNumber(const QMimeMagicData &magicData) const;
+    bool matchRegExp(const QMimeMagicData &magicData) const;
 };
 Q_DECLARE_SHARED(QMimeMagicRule)
 

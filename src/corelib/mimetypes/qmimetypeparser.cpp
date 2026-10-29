@@ -152,20 +152,23 @@ struct CreateMagicMatchRuleResult
     QString errorMessage; // must be first
     QMimeMagicRule rule;
 
-    CreateMagicMatchRuleResult(QStringView type, QStringView value, QStringView offsets, QStringView mask)
-        : errorMessage(), rule(type.toString(), value.toUtf8(), offsets.toString(), mask.toLatin1(), &errorMessage)
+    CreateMagicMatchRuleResult(QStringView type, QStringView value, QStringView offsets, QStringView mask,
+                               QMimeMagicRule::RegexRules regexRules)
+        : errorMessage(), rule(type.toString(), value.toUtf8(), offsets.toString(), mask.toLatin1(),
+                               regexRules, &errorMessage)
     {
 
     }
 };
 
-static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttributes &atts)
+static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttributes &atts,
+                                                       QMimeMagicRule::RegexRules regexRules)
 {
     const auto type = atts.value(QLatin1StringView(matchTypeAttributeC));
     const auto value = atts.value(QLatin1StringView(matchValueAttributeC));
     const auto offsets = atts.value(QLatin1StringView(matchOffsetAttributeC));
     const auto mask = atts.value(QLatin1StringView(matchMaskAttributeC));
-    return CreateMagicMatchRuleResult(type, value, offsets, mask);
+    return CreateMagicMatchRuleResult(type, value, offsets, mask, regexRules);
 }
 #endif // feature xmlstreamreader
 
@@ -263,7 +266,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                                       + " levels deep"_L1);
                     break;
                 }
-                auto result = createMagicMatchRule(atts);
+                auto result = createMagicMatchRule(atts, m_regexRules);
                 if (Q_UNLIKELY(!result.rule.isValid()))
                     qWarning("QMimeDatabase: Error parsing %ls\n%ls",
                              qUtf16Printable(fileName), qUtf16Printable(result.errorMessage));

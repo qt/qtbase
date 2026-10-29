@@ -61,34 +61,6 @@ def strip_comments(line, in_comment):
     return out, in_comment
 
 
-# A <match> whose submatches were all disabled for being regex or unicodeLE would
-# match on its own, which is far less specific than intended (e.g. the cheap string
-# match that tika puts around a regex). Disable it too.
-def disable_emptied_matches(lines):
-    tag_re = re.compile(r'<match\b[^>]*?(/?)>|</match>')
-    stack = [] # [line index of the opening tag, has an enabled submatch, has a disabled one]
-    in_comment = False
-    for i, full_line in enumerate(lines):
-        line, in_comment = strip_comments(full_line, in_comment)
-        if stack and 'DISABLED FOR QT: ' in full_line and re.search(r'type="(regex|unicodeLE)"', full_line):
-            stack[-1][2] = True
-        for tag in tag_re.finditer(line):
-            if tag.group(0) == '</match>':
-                start, has_enabled, has_disabled = stack.pop()
-                if has_disabled and not has_enabled:
-                    lines[start] = wrap_with_comment(re.sub(r' *<!--.*?-->', '', lines[start]))
-                    lines[i] = wrap_with_comment(lines[i])
-                    if stack:
-                        stack[-1][2] = True
-                    continue
-            elif not tag.group(1):
-                stack.append([i, False, False])
-                continue
-            if stack:
-                stack[-1][1] = True
-    return lines
-
-
 # The spec says a magic rule for a generic type should use a lower priority than
 # the rules of its subtypes, so that the subtype wins. Tika does not do that: many
 # types share the default priority 50 with their sub-class-of children (e.g.
@@ -181,8 +153,8 @@ with open_input_file(inputfile) as f:
             if match:
                 current_mime_type = match.group(1)
 
-            # remove mimetypes with regex matches having submatches, just commenting out the line would break the xml structure
-            if current_mime_type == "application/marc" or current_mime_type == "application/x-touhou" or ';format' in current_mime_type:
+            # remove mimetypes with a ;format parameter
+            if ';format' in current_mime_type:
                 # line = wrap_with_comment(line) # leads to issues with -- inside comments
                 continue
 
@@ -229,8 +201,6 @@ with open_input_file(inputfile) as f:
                 line = line.replace('value="P4" type="regex"', 'value="P4" type="string"') # no need to be a regex (image/x-portable-bitmap)
                 line = line.replace('value="P5" type="regex"', 'value="P5" type="string"') # no need to be a regex (image/x-portable-graymap)
                 line = line.replace('value="P6" type="regex"', 'value="P6" type="string"') # no need to be a regex (image/x-portable-pixmap)
-                line = line.replace('value="(X|DKIM|ARC)-" type="regex"', 'value="X-" type="string"') # simplify message/rfc822 to avoid regex
-                line = line.replace('value="BZh[1-9]" type="regex"', 'value="BZh" type="string"') # simplify application/x-bzip2 to avoid regex
 
                 # No type specified, assumed string
                 if '<match value=' in line and '>' in line and not 'type=' in line:
@@ -242,9 +212,21 @@ with open_input_file(inputfile) as f:
                     line = line.replace('<match ', '<match offset="0" ')
                     line = line.replace('>', '> <!-- offset added by Qt -->')
 
-                # tika extensions, not supported
-                if 'type="unicodeLE"' in line or 'type="regex"' in line or '<match value="(?:\\\\x' in line:
+                # tika extension, not supported
+                if 'type="unicodeLE"' in line:
                     line = wrap_with_comment(line)
+
+                # Java regexps support \uFFFF, PCRE needs \x{FFFF}
+                if 'type="regex"' in line:
+                    line = re.sub(r'\\\\u([0-9a-fA-F]{4})', r'\\\\x{\1}', line)
+                    # PCRE2 < 10.43 needs a fixed length for each branch of a lookbehind.
+                    # Drop this when the minimum system PCRE2 (src/corelib/configure.cmake) is >= 10.43.
+                    line = re.sub(r'\(\?&lt;=(\[[^]]*\])(\[[^]]*\])\{(\d+),(\d+)\}\)',
+                                  lambda m: '(?&lt;=' + '|'.join(m.group(1) + (m.group(2) + '{%d}' % n if n else '')
+                                                                for n in range(int(m.group(3)), int(m.group(4)) + 1)) + ')',
+                                  line)
+                    if re.search(r'\(\?&lt;[=!][^)]*(\{\d+,\d*\}|(?<![\\(])[*+?])', line):
+                        sys.exit(f"Variable-length lookbehind, extend the rewrite above: {line}")
 
                 if '<glob pattern="*.c"/>' in line.lower():
                     line = line.replace('/', ' case-sensitive="true"/')
@@ -322,5 +304,5 @@ with open_input_file(inputfile) as f:
 """
             lines.append(line)
 
-        for line in lower_generic_priorities(disable_emptied_matches(lines)):
+        for line in lower_generic_priorities(lines):
             out.write(line)

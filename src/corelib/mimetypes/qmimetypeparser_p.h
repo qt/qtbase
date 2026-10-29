@@ -20,6 +20,7 @@
 
 QT_REQUIRE_CONFIG(mimetype);
 
+#include "qmimemagicrule_p.h"
 #include "qmimeprovider_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -46,7 +47,7 @@ class QMimeTypeParserBase
     Q_DISABLE_COPY_MOVE(QMimeTypeParserBase)
 
 public:
-    QMimeTypeParserBase() {}
+    explicit QMimeTypeParserBase(QMimeMagicRule::RegexRules regexRules) : m_regexRules(regexRules) {}
     virtual ~QMimeTypeParserBase();
 
     bool parse(QIODevice *dev, const QString &fileName, QString *errorMessage);
@@ -79,13 +80,18 @@ private:
     };
 
     static ParseState nextState(ParseState currentState, QStringView startElement);
+
+    const QMimeMagicRule::RegexRules m_regexRules;
 };
 
 
 class QMimeTypeParser : public QMimeTypeParserBase
 {
 public:
-    explicit QMimeTypeParser(QMimeXMLProvider &provider) : m_provider(provider) {}
+    QMimeTypeParser(QMimeXMLProvider &provider, QMimeMagicRule::RegexRules regexRules)
+        : QMimeTypeParserBase(regexRules), m_provider(provider)
+    {
+    }
     ~QMimeTypeParser() override;
 
 protected:

@@ -44,7 +44,7 @@ public:
     void addRules(const QList<QMimeMagicRule> &rules);
     QList<QMimeMagicRule> magicRules() const;
 
-    bool matches(const QByteArray &data) const;
+    bool matches(const QMimeMagicData &data) const;
 
     unsigned priority() const;
 

@@ -29,12 +29,13 @@ static constexpr auto magicRuleTypes = qOffsetStringArray(
     "big32",
     "little16",
     "little32",
-    "byte"
+    "byte",
+    "regex"
 );
 
 QMimeMagicRule::Type QMimeMagicRule::type(const QByteArray &theTypeName)
 {
-    for (int i = String; i <= Byte; ++i) {
+    for (int i = String; i <= Regex; ++i) {
         if (theTypeName == magicRuleTypes.viewAt(i))
             return Type(i);
     }
@@ -123,15 +124,17 @@ bool QMimeMagicRule::matchSubstring(const char *dataPtr, qsizetype dataSize, qui
     return true;
 }
 
-bool QMimeMagicRule::matchString(const QByteArray &data) const
+bool QMimeMagicRule::matchString(const QMimeMagicData &magicData) const
 {
+    const QByteArray &data = magicData.bytes();
     const int rangeLength = m_endPos - m_startPos + 1;
     return QMimeMagicRule::matchSubstring(data.constData(), data.size(), m_startPos, rangeLength, m_pattern.size(), m_pattern.constData(), m_mask.constData());
 }
 
 template <typename T>
-bool QMimeMagicRule::matchNumber(const QByteArray &data) const
+bool QMimeMagicRule::matchNumber(const QMimeMagicData &magicData) const
 {
+    const QByteArray &data = magicData.bytes();
     const T value(m_number);
     const T mask(m_numberMask);
 
@@ -146,6 +149,41 @@ bool QMimeMagicRule::matchNumber(const QByteArray &data) const
     }
 
     return false;
+}
+
+// The regexp sees the data from the start of the range to this far past its end,
+// decoded as Latin-1, and the match must start within the range.
+// Unlike tika, which tries each offset in turn, this is a single search, so in a
+// ranged rule ^ only matches at the range start, \b or a lookbehind can see
+// the data before the match, and a match starting early in the range can be
+// longer than RegExpLookAhead. No rule in Qt's database depends on that.
+static constexpr qsizetype RegExpLookAhead = 8 * 1024;
+
+bool QMimeMagicRule::matchRegExp(const QMimeMagicData &magicData) const
+{
+#if QT_CONFIG(regularexpression)
+    const qsizetype size = magicData.bytes().size();
+    if (size <= m_startPos)
+        return false;
+    const qsizetype lastStart = m_endPos - m_startPos;
+    const qsizetype available = size - m_startPos;
+    // Same as qMin(available, lastStart + RegExpLookAhead), without overflow
+    const qsizetype length = lastStart + qMin(available - lastStart, RegExpLookAhead);
+    const QStringView subject = magicData.decodedLatin1(m_startPos + length).sliced(m_startPos);
+    // Decoded from Latin-1, so always valid UTF-16
+    constexpr auto options = QRegularExpression::DontCheckSubjectStringMatchOption;
+    if (lastStart == 0) {
+        return m_regExp->matchView(subject, 0, QRegularExpression::NormalMatch,
+                                   options | QRegularExpression::AnchorAtOffsetMatchOption)
+                .hasMatch();
+    }
+    const QRegularExpressionMatch match =
+            m_regExp->matchView(subject, 0, QRegularExpression::NormalMatch, options);
+    return match.hasMatch() && match.capturedStart() <= lastStart;
+#else
+    Q_UNUSED(magicData);
+    return false;
+#endif
 }
 
 static inline QByteArray makePattern(const QByteArray &value)
@@ -201,12 +239,19 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
                                const QByteArray &value,
                                const QString &offsets,
                                const QByteArray &mask,
+                               RegexRules regexRules,
                                QString *errorString)
     : m_type(QMimeMagicRule::type(type.toLatin1())),
       m_value(value),
       m_mask(mask),
       m_matchFunction(nullptr)
 {
+    if (Q_UNLIKELY(m_type == Regex && regexRules == RegexRules::Rejected)) {
+        m_type = Invalid;
+        if (errorString)
+            *errorString = "Type regex is only supported in Qt's internal database"_L1;
+        return;
+    }
     if (Q_UNLIKELY(m_type == Invalid)) {
         if (errorString)
             *errorString = "Type "_L1 + type + " is not supported"_L1;
@@ -307,6 +352,29 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
             m_numberMask = quint32(-1);
         m_matchFunction = &QMimeMagicRule::matchNumber<quint32>;
         break;
+    case Regex: {
+        if (Q_UNLIKELY(!m_mask.isEmpty())) {
+            m_type = Invalid;
+            if (errorString)
+                *errorString = "Invalid magic rule mask \""_L1 + QLatin1StringView(m_mask)
+                        + "\": regex rules have no mask"_L1;
+            return;
+        }
+#if QT_CONFIG(regularexpression)
+        // Unescaped like a string, then interpreted as UTF-8, like tika does
+        m_regExp.emplace(QString::fromUtf8(makePattern(m_value)));
+        if (Q_UNLIKELY(!m_regExp->isValid())) {
+            m_type = Invalid;
+            if (errorString)
+                *errorString = "Invalid regular expression \""_L1 + QString::fromUtf8(m_value)
+                        + "\": "_L1 + m_regExp->errorString();
+            return;
+        }
+#endif
+        // Without regularexpression support the rule never matches
+        m_matchFunction = &QMimeMagicRule::matchRegExp;
+        break;
+    }
     default:
         break;
     }
@@ -322,7 +390,7 @@ QByteArray QMimeMagicRule::mask() const
     return result;
 }
 
-bool QMimeMagicRule::matches(const QByteArray &data, int depth) const
+bool QMimeMagicRule::matches(const QMimeMagicData &data, int depth) const
 {
     const bool ok = m_matchFunction && (this->*m_matchFunction)(data);
     if (!ok)

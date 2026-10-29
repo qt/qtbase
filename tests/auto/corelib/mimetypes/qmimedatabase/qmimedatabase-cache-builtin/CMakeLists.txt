@@ -34,6 +34,7 @@ set(testdata_resource_files
     "../invalid-magic1.xml"
     "../invalid-magic2.xml"
     "../invalid-magic3.xml"
+    "../invalid-magic4.xml"
     "../magic-and-hierarchy.foo"
     "../magic-and-hierarchy.xml"
     "../magic-and-hierarchy2.foo"

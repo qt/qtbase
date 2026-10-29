@@ -50,6 +50,7 @@ static const std::array additionalLocalMimeFiles = {
     "invalid-magic1.xml",
     "invalid-magic2.xml",
     "invalid-magic3.xml",
+    "invalid-magic4.xml",
     "magic-and-hierarchy.xml",
     "circular-inheritance.xml",
     "webm-glob-deleteall.xml",
@@ -661,6 +662,29 @@ void tst_QMimeDatabase::mimeTypeForData_data()
         QTest::newRow("mhtml")
                 << QByteArray("MIME-Version: 1.0\nContent-Type: multipart/related; boundary=x\n")
                 << "multipart/related";
+        // regex magic rules
+        QTest::newRow("not bzip2, regex at a single offset")
+                << QByteArray("BZh\x00\x01", 5) << "application/octet-stream";
+        QTest::newRow("illustrator, regex over a range")
+                << QByteArray("%!PS-Adobe-3.0\n%%Creator: Adobe Illustrator\n%AI5_FileFormat 3\n")
+                << "application/illustrator+ps";
+        QTest::newRow("xul, regex with entities")
+                << QByteArray("<?xml version=\"1.0\"?>\n<window id=\"main\" "
+                              "xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\">"
+                              "\n</window>\n")
+                << "application/vnd.mozilla.xul+xml";
+        QTest::newRow("html, case-insensitive regex over a range")
+                << QByteArray("<!-- generated -->\n<HTML lang=\"en\">\n") << "text/html";
+        QTest::newRow("xml with an html-like tag")
+                << QByteArray("<?xml version=\"1.0\"?>\n<htmlPath/>\n") << "application/xml";
+        QTest::newRow("not bzip2, regex anchored at its offset")
+                << QByteArray("xBZh91AY&SY") << "text/plain";
+        QTest::newRow("html, regex match starting in the range")
+                << QByteArray(8000, ' ') + "<html>\n" << "text/html";
+        QTest::newRow("not html, regex match starting past the range")
+                << QByteArray(8200, ' ') + "<html>\n" << "text/plain";
+        QTest::newRow("data ending before the regex offset")
+                << QByteArray("\0\0\2\0", 4) << "application/octet-stream";
     }
     QTest::newRow("unknown") << QByteArray("\001abc?}") << "application/octet-stream";
     QTest::newRow("ambigous svg/xml") << QByteArray(R"(<?xml version="1.0"?>
@@ -821,7 +845,7 @@ void tst_QMimeDatabase::allMimeTypes()
     if (m_hasFreedesktopOrg)
         QCOMPARE(lst.size(), 1038);
     else
-        QCOMPARE(lst.size(), 1660); // interestingly, tika has more mimetypes (but many are empty)
+        QCOMPARE(lst.size(), 1662); // interestingly, tika has more mimetypes (but many are empty)
 
     for (const QMimeType &mime : lst) {
         const QString name = mime.name();
@@ -1186,6 +1210,7 @@ static void ignoreInvalidMimetypeWarnings(const QString &mimeDir)
     QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic1.xml\nInvalid magic rule value \"foo\"").constData());
     QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic2.xml\nInvalid magic rule mask \"ffff\"").constData());
     QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic3.xml\nInvalid magic rule mask size \"0xffff\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic4.xml\nType regex is only supported in Qt's internal database").constData());
 }
 
 void copyFiles(const QSpan<const char *const> &additionalMimeFiles, const QString &destDir)
@@ -1363,6 +1388,8 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QVERIFY(db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid());
     QVERIFY(db.mimeTypeForName(QLatin1String("text/invalid-magic2")).isValid());
     QVERIFY(db.mimeTypeForName(QLatin1String("text/invalid-magic3")).isValid());
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/invalid-magic4")).isValid());
+    QCOMPARE(db.mimeTypeForData(QByteArray("regexmagic")).name(), u"text/plain");
 
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("text/x-SuSE-ymu"));
@@ -1432,7 +1459,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
         return;
 
     // Now test removing local mimetypes
-    for (int i = 1 ; i <= 3 ; ++i)
+    for (int i = 1 ; i <= 4 ; ++i)
         QFile::remove(destDir + QStringLiteral("invalid-magic%1.xml").arg(i));
     if (useLocalBinaryCache && !waitAndRunUpdateMimeDatabase(m_localMimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");

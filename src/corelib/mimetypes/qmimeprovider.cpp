@@ -1003,8 +1003,9 @@ void QMimeXMLProvider::addFileNameMatches(const QString &fileName, QMimeGlobMatc
 
 void QMimeXMLProvider::findByMagic(const QByteArray &data, QMimeMagicResult &result)
 {
+    const QMimeMagicData magicData(data);
     for (const QMimeMagicRuleMatcher &matcher : std::as_const(m_magicMatchers)) {
-        if (matcher.matches(data)) {
+        if (matcher.matches(magicData)) {
             const int priority = matcher.priority();
             if (priority > result.accuracy) {
                 result.accuracy = priority;
@@ -1018,11 +1019,12 @@ QMimeMagicCheckResult
 QMimeXMLProvider::checkMagicRules(const QString &mime, const QByteArray &data) const
 {
     QMimeMagicCheckResult result;
+    const QMimeMagicData magicData(data);
     for (const QMimeMagicRuleMatcher &matcher : m_magicMatchers) {
         if (matcher.mimetype() != mime)
             continue;
         result.hasRules = true;
-        if (matcher.matches(data)) {
+        if (matcher.matches(magicData)) {
             result.matched = true;
             break;
         }
@@ -1111,7 +1113,7 @@ bool QMimeXMLProvider::load(const QString &fileName, QString *errorMessage)
     if (errorMessage)
         errorMessage->clear();
 
-    QMimeTypeParser parser(*this);
+    QMimeTypeParser parser(*this, QMimeMagicRule::RegexRules::Rejected);
     return parser.parse(&file, fileName, errorMessage);
 }
 
@@ -1122,7 +1124,7 @@ void QMimeXMLProvider::load(const char *data, qsizetype len)
     buffer.setData(QByteArray::fromRawData(data, len));
     buffer.open(QIODevice::ReadOnly);
     QString errorMessage;
-    QMimeTypeParser parser(*this);
+    QMimeTypeParser parser(*this, QMimeMagicRule::RegexRules::Allowed);
     if (!parser.parse(&buffer, internalMimeFileName(), &errorMessage))
         qWarning("QMimeDatabase: Error loading internal MIME data\n%s", qPrintable(errorMessage));
 }
