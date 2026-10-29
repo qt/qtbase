@@ -228,9 +228,6 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                 return { pos, qsizetype(sect[j].size - sizeof(QPluginMetaData::MagicString)), *binaryIsEncrypted };
             }
         }
-
-        // other type of segment
-        seg = reinterpret_cast<const my_segment_command *>(reinterpret_cast<const char *>(seg) + seg->cmdsize);
     }
 
     // No .qtmetadata section was found
