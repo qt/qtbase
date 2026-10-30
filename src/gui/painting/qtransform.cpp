@@ -195,6 +195,13 @@ void QTransform::do_map(qreal x, qreal y, qreal &nx, qreal &ny) const
     applied is implicitly multiplied on the left with the transform
     to its right.
 
+    The convenience functions translate(), scale(), rotate(), and shear()
+    work the other way around: each applies its operation to a point before
+    the transformation the matrix already represents. For example,
+    \c {QTransform().translate(10, 0).scale(2, 2)} scales a point first and
+    then translates it, the same as
+    \c {QTransform::fromScale(2, 2) * QTransform::fromTranslate(10, 0)}.
+
     \section2 Relation to Matrix Notation
     The matrix notation in QTransform is the transpose of a commonly-taught
     convention which represents transforms and points as matrices and vectors.
@@ -348,6 +355,11 @@ QTransform QTransform::inverted(bool *invertible) const
     Moves the coordinate system \a dx along the x axis and \a dy along
     the y axis, and returns a reference to the matrix.
 
+//! [transform-order-note]
+    This operation is applied to a point before the transformation the
+    matrix already represents. See \l {Combining Transforms}.
+//! [transform-order-note]
+
     \sa setMatrix()
 */
 QTransform &QTransform::translate(qreal dx, qreal dy)
@@ -416,6 +428,8 @@ QTransform QTransform::fromTranslate(qreal dx, qreal dy)
     Scales the coordinate system by \a sx horizontally and \a sy
     vertically, and returns a reference to the matrix.
 
+    \include qtransform.cpp transform-order-note
+
     \sa setMatrix()
 */
 QTransform & QTransform::scale(qreal sx, qreal sy)
@@ -482,6 +496,8 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
     Shears the coordinate system by \a sh horizontally and \a sv
     vertically, and returns a reference to the matrix.
 
+    \include qtransform.cpp transform-order-note
+
     \sa setMatrix()
 */
 QTransform & QTransform::shear(qreal sh, qreal sv)
@@ -543,6 +559,9 @@ QTransform & QTransform::shear(qreal sh, qreal sv)
     because the y-axis points downwards.
 
     The angle is specified in degrees.
+
+    This operation is applied to a point before the transformation the
+    matrix already represents. See \l {Combining Transforms}.
 //! [transform-rotate-note]
 
     If \a distanceToPlane is zero, it will be ignored. This is suitable
@@ -668,6 +687,9 @@ QTransform &QTransform::rotate(qreal a, Qt::Axis axis)
     because the y-axis points downwards.
 
     The angle is specified in radians.
+
+    This operation is applied to a point before the transformation the
+    matrix already represents. See \l {Combining Transforms}.
 //! [transform-rotate-radians-note]
 
     If \a distanceToPlane is zero, it will be ignored. This is suitable
@@ -817,8 +839,9 @@ bool QTransform::operator!=(const QTransform &o) const
     \fn QTransform & QTransform::operator*=(const QTransform &matrix)
     \overload
 
-    Returns the result of multiplying this matrix by the given \a
-    matrix.
+    Multiplies this matrix by the given \a matrix and returns a reference
+    to this matrix. The resulting matrix applies \a matrix to a point after
+    the transformation this matrix represented before the call.
 */
 QTransform & QTransform::operator*=(const QTransform &o)
 {
@@ -900,7 +923,8 @@ QTransform & QTransform::operator*=(const QTransform &o)
 /*!
     \fn QTransform QTransform::operator*(const QTransform &matrix) const
     Returns the result of multiplying this matrix by the given \a
-    matrix.
+    matrix. The result applies this matrix to a point first, followed by
+    \a matrix.
 
     Note that matrix multiplication is not commutative, i.e. a*b !=
     b*a.
