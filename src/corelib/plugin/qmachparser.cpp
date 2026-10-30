@@ -187,12 +187,21 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
         // so check it against fdlen anyway
         // (these are unsigned operations, with overflow behavior specified in the standard)
         minsize += seg->cmdsize;
+        // The command should at least contain its header...
+        if (Q_UNLIKELY(seg->cmdsize < sizeof(load_command)))
+            return notfound(QString(), errorString);
+        // ... and also must not exceed the file length
         if (Q_UNLIKELY(fdlen < minsize) || Q_UNLIKELY(fdlen < seg->cmdsize))
             return notfound(QString(), errorString);
 
         const uint32_t MyLoadCommand = sizeof(void *) > 4 ? LC_SEGMENT_64 : LC_SEGMENT;
         if (seg->cmd != MyLoadCommand)
             continue;
+
+        // Similarly, for segment command, check that it at least contains its
+        // header.
+        if (Q_UNLIKELY(seg->cmdsize < sizeof(my_segment_command)))
+            return notfound(QString(), errorString);
 
         // is this the __TEXT segment?
         if (strcmp(seg->segname, "__TEXT") == 0) {
