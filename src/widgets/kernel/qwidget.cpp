@@ -10350,9 +10350,12 @@ QLayout *QWidget::takeLayout()
     \property QWidget::sizePolicy
     \brief the default layout behavior of the widget
 
-    If there is a QLayout that manages this widget's children, the
-    size policy specified by that layout is used. If there is no such
-    QLayout, the result of this function is used.
+    The layout that contains this widget uses this size policy, even
+    if the widget has its own layout that manages its children. That
+    layout affects the widget in two ways: it provides the default
+    sizeHint() and minimumSizeHint(), and if the size policy allows the
+    widget to grow in a direction in which the layout expands, the
+    widget is also treated as expanding in that direction.
 
     The default policy is Preferred/Preferred, which means that the
     widget can be freely resized, but prefers to be the size
