@@ -337,8 +337,9 @@
     Resources embedded in C++ executable or library code are automatically
     registered to the Qt resource system in a constructor of an internal
     global variable. Since the global variables are initialized before
-    main() runs, the resources are available when the program starts to
-    run.
+    main() runs, the resources are available from the start of main().
+    Don't rely on them in the constructors of other global variables, which
+    might run before the resources are registered.
 
     When embedding resources in \e{static} libraries, the C++ linker might
     remove the static variables that register the resources. If you
