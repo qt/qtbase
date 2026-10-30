@@ -515,11 +515,14 @@
     \endtable
 
     \value MiterJoin  The outer edges of the lines are extended to
-           meet at an angle, and this area is filled.
+           meet at an angle, and this area is filled. If the join would
+           extend beyond the pen's miter limit, it's cut off at the limit.
     \value BevelJoin  The triangular notch between the two lines is filled.
     \value RoundJoin  A circular arc between the two lines is filled.
     \value SvgMiterJoin A miter join corresponding to the definition of
            a miter join in the \l{http://www.w3.org/TR/SVGMobile12/}{SVG 1.2 Tiny} specification.
+           PDF uses the same definition. If the join would exceed the pen's
+           miter limit, a bevel join is drawn instead.
     \omitvalue MPenJoinStyle
 
     \sa QPen

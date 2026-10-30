@@ -155,22 +155,27 @@ QT_BEGIN_NAMESPACE
     The Qt::BevelJoin style fills the triangular notch between the two
     lines. The Qt::MiterJoin style extends the lines to meet at an
     angle. And the Qt::RoundJoin style fills a circular arc between
-    the two lines.
+    the two lines. The Qt::SvgMiterJoin style is a miter join as defined
+    by SVG and PDF, and differs from Qt::MiterJoin in how it applies the
+    miter limit.
 
     The default is Qt::BevelJoin.
 
     \image qpen-miterlimit.png {Illustration showing how miterLimit controls
            the length of the sharp corner for miterJoin}
 
-    When the Qt::MiterJoin style is applied, it is possible to use the
-    setMiterLimit() function to specify how far the miter join can
-    extend from the join point. The miterLimit() is used to reduce
-    artifacts between line joins where the lines are close to
+    When the Qt::MiterJoin or Qt::SvgMiterJoin style is applied, it is
+    possible to use the setMiterLimit() function to specify how far the
+    miter join can extend from the join point. The miterLimit() is used
+    to reduce artifacts between line joins where the lines are close to
     parallel.
 
-    The miterLimit() must be specified in units of the pens width,
-    e.g. a miter limit of 5 in width 10 is 50 pixels long. The
-    default miter limit is 2, i.e. twice the pen width in pixels.
+    The miterLimit() must be specified in units of the pen's width.
+    With Qt::MiterJoin, a miter limit of 5 in width 10 is 50 pixels long,
+    and a longer miter is cut off at that length. With Qt::SvgMiterJoin,
+    the miter limit is the largest allowed ratio of the miter's length to
+    the pen's width, and a join that exceeds it is drawn as a bevel join
+    instead. The default miter limit is 2.
 
     \table 100%
     \row
@@ -557,7 +562,8 @@ void QPen::setDashOffset(qreal offset)
 
 /*!
     Returns the miter limit of the pen. The miter limit is only
-    relevant when the join style is set to Qt::MiterJoin.
+    relevant when the join style is set to Qt::MiterJoin or
+    Qt::SvgMiterJoin.
 
     \sa setMiterLimit(), {QPen#Join Style}{Join Style}
 */
@@ -575,10 +581,10 @@ qreal QPen::miterLimit() const
     join point. This is used to reduce artifacts between line joins
     where the lines are close to parallel.
 
-    This value does only have effect when the pen style is set to
-    Qt::MiterJoin. The value is specified in units of the pen's width,
-    e.g. a miter limit of 5 in width 10 is 50 pixels long. The default
-    miter limit is 2, i.e. twice the pen width in pixels.
+    This value only has an effect when the join style is set to
+    Qt::MiterJoin or Qt::SvgMiterJoin, which apply it differently. The
+    value is specified in units of the pen's width. The default miter
+    limit is 2. See \l {QPen#Join Style}{Join Style} for details.
 
     \sa miterLimit(), setJoinStyle(), {QPen#Join Style}{Join Style}
 */
