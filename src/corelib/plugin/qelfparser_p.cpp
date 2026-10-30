@@ -620,12 +620,12 @@ static QLibraryScanResult scanProgramHeadersForNotes(QByteArrayView data, const 
             // overflow check: calculate where the next note will be, if it exists
             T::Off next_offset = offset;
             next_offset += sizeof(T::Nhdr);          // can't overflow (we checked above)
-            next_offset += NoteAlignment - 3;        // offset is aligned, this can't overflow
+            next_offset += NoteAlignment - 1;        // offset is aligned, this can't overflow
             if (qAddOverflow<T::Off>(next_offset, n_namesz, &next_offset))
                 break;
             next_offset &= -NoteAlignment;
 
-            next_offset += NoteAlignment - 3;        // offset is aligned, this can't overflow
+            next_offset += NoteAlignment - 1;        // offset is aligned, this can't overflow
             if (qAddOverflow<T::Off>(next_offset, n_descsz, &next_offset))
                 break;
             next_offset &= -NoteAlignment;
