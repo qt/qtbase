@@ -9,6 +9,7 @@
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qtextboundaryfinder.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qguiapplication.h>
@@ -89,6 +90,30 @@ QNapi::Promise callWithStatusBarManagerThrottlingRetry(
 std::string applyWorkaroundForEmptyHoverTips(const std::string &hoverTips)
 {
     return !hoverTips.empty() ? hoverTips : " ";
+}
+
+QString elideText(const QString &text, qsizetype maxLength)
+{
+    constexpr QChar ellipsis = u'\u2026';
+
+    if (text.size() <= maxLength)
+        return text;
+
+    QTextBoundaryFinder graphemeFinder(QTextBoundaryFinder::Grapheme, text);
+    graphemeFinder.setPosition(maxLength - 1);
+    const auto keptLength =
+        graphemeFinder.isAtBoundary()
+            ? graphemeFinder.position()
+            : graphemeFinder.toPreviousBoundary();
+
+    return text.first(keptLength) + ellipsis;
+}
+
+std::string makeHoverTipsFromToolTip(const QString &toolTip)
+{
+    constexpr qsizetype maxHoverTipsLength = 128;
+
+    return elideText(toolTip, maxHoverTipsLength).toStdString();
 }
 
 std::function<QNapi::Array(QOhosJsState &)> makeEmptyJsArrayFactory()
@@ -373,10 +398,7 @@ void QOhosSystemTrayIcon::init()
                     auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, icon);
                     auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
                     auto optHoverTipsString = qTransform(
-                        optToolTip,
-                        [](const auto &toolTip) {
-                            return toolTip.toStdString();
-                        });
+                        optToolTip, makeHoverTipsFromToolTip);
                     auto jsStatusBarItem = makeJsStatusBarItem(
                         jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus,
                         optHoverTipsString);
@@ -452,7 +474,8 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
                 callWithStatusBarManagerThrottlingRetry(
                     jsState,
                     [tooltip](QOhosJsState &jsState) {
-                        return updateOhosStatusBarHoverTips(jsState, tooltip.toStdString());
+                        return updateOhosStatusBarHoverTips(
+                            jsState, makeHoverTipsFromToolTip(tooltip));
                     })
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
