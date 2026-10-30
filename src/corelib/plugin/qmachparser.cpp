@@ -133,7 +133,7 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                 uint32_t size = qFromBigEndian(arch[i].size);
                 uint32_t offset = qFromBigEndian(arch[i].offset);
                 if (Q_UNLIKELY(size > fdlen) || Q_UNLIKELY(offset > fdlen)
-                        || Q_UNLIKELY(size + offset > fdlen) || Q_UNLIKELY(size < MinFileSize))
+                        || Q_UNLIKELY(size > fdlen - offset) || Q_UNLIKELY(size < MinFileSize))
                     return notfound(QString(), errorString);
 
                 header = reinterpret_cast<const my_mach_header *>(m_s + offset);
