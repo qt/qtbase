@@ -652,6 +652,10 @@ Projects should not set this property manually.
 This property can be set to provide a path to Qt libraries on the target device,
 when those libraries are installed outside app's native (JNI) library directory.
 
+\note Set this only to a directory that untrusted code cannot write to. Qt
+loads native libraries and plugins from this directory without verifying them,
+so any code placed there runs with the application's permissions.
+
 \sa {Setting CMake variables and properties}
 */
 
