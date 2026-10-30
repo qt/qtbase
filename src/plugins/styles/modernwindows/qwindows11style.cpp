@@ -877,7 +877,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         const QRect &r = option->rect;
         if (r.width() <= 1 || r.height() <= 1)
             break;
-        QPainterStateGuard psg(painter);
         if (option->state.testFlag(State_Sunken)) {
             const auto bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget);
             const auto bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget);
@@ -913,7 +912,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_FrameTabWidget:
 #if QT_CONFIG(tabwidget)
         if (const QStyleOptionTabWidgetFrame *frame = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
-            QPainterStateGuard psg(painter);
             const auto clipRegion = painter->clipRegion();
 
             painter->setPen(highContrastTheme ? frame->palette.buttonText().color()
@@ -954,7 +952,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const auto indicator = header->sortIndicator;
             if (indicator != QStyleOptionHeader::None) {
-                QPainterStateGuard psg(painter);
                 QFont f(d->assetFont);
                 f.setPointSize(option->rect.height());
                 painter->setFont(f);
@@ -1140,7 +1137,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_PanelItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             if (vopt->backgroundBrush.style() != Qt::NoBrush) {
-                QPainterStateGuard psg(painter);
                 painter->setBrushOrigin(vopt->rect.topLeft());
                 painter->fillRect(vopt->rect, vopt->backgroundBrush);
             }
@@ -1196,12 +1192,10 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setBrush(view->alternatingRowColors() && state & State_Selected ? calculateAccentColor(option) : WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                 painter->setPen(Qt::NoPen);
                 if (isFirst) {
-                    QPainterStateGuard psg(painter);
                     painter->setClipRect(rect);
                     painter->drawRoundedRect(rect.marginsRemoved(QMargins(2, 2, -secondLevelRoundingRadius, 2)),
                                              secondLevelRoundingRadius, secondLevelRoundingRadius);
                 } else if (isLast) {
-                    QPainterStateGuard psg(painter);
                     painter->setClipRect(rect);
                     painter->drawRoundedRect(rect.marginsRemoved(QMargins(-secondLevelRoundingRadius, 2, 2, 2)),
                                              secondLevelRoundingRadius, secondLevelRoundingRadius);
@@ -1276,7 +1270,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 #if QT_CONFIG(tabbar)
     case PE_FrameTabBarBase:
         if (const auto *tab = qstyleoption_cast<const QStyleOptionTabBarBase *>(option)) {
-            QPainterStateGuard psg(painter, QPainterStateGuard::InitialState::NoSave);
             const auto clipRegion = painter->clipRegion();
 
             painter->setPen(highContrastTheme ? tab->palette.buttonText().color()
@@ -1326,7 +1319,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 #if QT_CONFIG(tabbar)
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-            QPainterStateGuard psg(painter, QPainterStateGuard::InitialState::NoSave);
             const bool isSelected = tab->state.testFlag(State_Selected);
             const auto clipRegion = painter->clipRegion();
             const bool onlyOne = tab->position == QStyleOptionTab::OnlyOneTab
@@ -1373,9 +1365,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             if (!proxy()->styleHint(SH_UnderlineShortcut, option, widget))
                 alignment |= Qt::TextHideMnemonic;
 
-            QPainterStateGuard psg(painter, QPainterStateGuard::InitialState::NoSave);
             if (verticalTabs) {
-                psg.save();
                 int newX, newY, newRot;
                 if (tab->shape == QTabBar::RoundedEast || tab->shape == QTabBar::TriangularEast) {
                     newX = tr.width() + tr.x();
@@ -1541,7 +1531,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case CE_ProgressBarContents:
         if (const auto baropt = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-            QPainterStateGuard psg(painter);
             QRectF rect = option->rect;
             painter->translate(rect.topLeft());
             rect.translate(-rect.topLeft());
@@ -1637,7 +1626,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))  {
             using namespace StyleOptionHelper;
-            QPainterStateGuard psg(painter);
 
             const auto rect = QRectF(btn->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
             if (btn->features.testFlag(QStyleOptionButton::Flat)) {
