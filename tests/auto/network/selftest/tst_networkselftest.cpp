@@ -5,6 +5,7 @@
 #include <QTest>
 
 #include "../../network-settings.h"
+#include "../../../shared/cidetect.h"
 
 class tst_NetworkSelftest : public QObject
 {
@@ -16,7 +17,7 @@ private slots:
 
 void tst_NetworkSelftest::testServerIsAvailableInCI()
 {
-    if (!qEnvironmentVariable("QTEST_ENVIRONMENT").split(' ').contains("ci"))
+    if (!QTestCiDetect::ciInTestEnvironment())
         QSKIP("Not running in the CI");
 
     if (qEnvironmentVariable("QT_QPA_PLATFORM").contains("offscreen")

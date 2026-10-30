@@ -34,6 +34,8 @@
 #  include <iphlpapi.h>
 #endif
 
+#include "../../../../shared/cidetect.h"
+
 using namespace Qt::StringLiterals;
 static const int Timeout = 15000; // 15s
 
@@ -260,7 +262,7 @@ static QList<QHostAddress> globalPublicNameservers(QDnsLookup::Protocol proto)
 
 void tst_QDnsLookup::initTestCase()
 {
-    if (qgetenv("QTEST_ENVIRONMENT") == "ci")
+    if (QTestCiDetect::ciInTestEnvironment())
         dnsServersMustWork = true;
 
 #if QT_CONFIG(networkproxy)

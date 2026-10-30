@@ -1295,7 +1295,7 @@ class DeviceRunTests(unittest.TestCase):
         self.assertIn("BEGIN logcat dump", combined,
                       "--show-logcat did not emit the logcat dump wrapper")
         self.assertIn("END logcat dump", combined)
-        # Lines can be ANSI-coloured (`logcat -v color`) unless QTEST_ENVIRONMENT=ci;
+        # Lines can be ANSI-coloured (`logcat -v color`) unless ci is in QTEST_ENVIRONMENT;
         # Android 9 emits 256-color escapes like \x1b[38;5;40m, so allow ';'.
         self.assertRegex(combined,
                          r"(?m)^(?:\x1b\[[\d;]+m)?[VDIWEF]/\S+\s*\(\s*\d+\)\s*:",

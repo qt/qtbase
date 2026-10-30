@@ -85,6 +85,7 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 #include <time.h>
 
 #include "../../../network-settings.h"
+#include "../../../../shared/cidetect.h"
 
 #include <QtTest/private/qtesthelpers_p.h>
 
@@ -10460,7 +10461,7 @@ void tst_QNetworkReply::moreActivitySignals_data()
     QTest::addColumn<bool>("postWithData");
     QTest::addRow("local4") << QUrl("http://127.0.0.1") << false << false;
     QTest::addRow("local6") << QUrl("http://[::1]") << true << false;
-    if (qEnvironmentVariable("QTEST_ENVIRONMENT").split(' ').contains("ci")) {
+    if (QTestCiDetect::ciInTestEnvironment()) {
         // On CI server
         QTest::addRow("localDns") << QUrl("http://localhost") << false << false; // will find v6
     } else {

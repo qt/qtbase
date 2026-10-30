@@ -19,6 +19,8 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QTemporaryFile>
 
+#include "../../../tests/shared/cidetect.h"
+
 #include <atomic>
 #include <chrono>
 #include <csignal>
@@ -1001,7 +1003,7 @@ static QByteArray fetchLogcat(const QString &timeStamp, bool waitForDiagnostics)
         logcatArgs << "-t"_L1 << "'%1'"_L1.arg(timeStamp);
     else
         logcatArgs << "-t"_L1 << "5000"_L1;
-    const bool useColor = qEnvironmentVariable("QTEST_ENVIRONMENT") != "ci"_L1;
+    const bool useColor = !QTestCiDetect::ciInTestEnvironment();
     if (useColor)
         logcatArgs << "-v"_L1 << "color"_L1;
 
