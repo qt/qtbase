@@ -161,6 +161,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     const QString helpText = tr("Press <kbd>%1</kbd> over a widget to see Documentation")
                                      .arg(helpKeySequence.toString(QKeySequence::NativeText));
     auto *helpLabel = createWidget1<QLabel>(helpText, "helpLabel");
+    helpLabel->setTextFormat(Qt::RichText);
 
     auto *disableWidgetsCheckBox = createWidget1<QCheckBox>(tr("&Disable widgets"), "disableWidgetsCheckBox");
 

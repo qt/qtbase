@@ -18,6 +18,9 @@ QString emailRegExp = QStringLiteral(".+@.+");
 LicenseWizard::LicenseWizard(QWidget *parent)
     : QWizard(parent)
 {
+    setTitleFormat(Qt::RichText);
+    setSubTitleFormat(Qt::RichText);
+
 //! [0]
     setPage(Page_Intro, new IntroPage);
     setPage(Page_Evaluate, new EvaluatePage);
@@ -107,6 +110,7 @@ IntroPage::IntroPage(QWidget *parent)
     topLabel = new QLabel(tr("This wizard will help you register your copy of "
                              "<i>Super Product One</i>&trade; or start "
                              "evaluating the product."));
+    topLabel->setTextFormat(Qt::RichText);
     topLabel->setWordWrap(true);
 
     registerRadioButton = new QRadioButton(tr("&Register your copy"));
@@ -259,6 +263,7 @@ ConclusionPage::ConclusionPage(QWidget *parent)
     setPixmap(QWizard::WatermarkPixmap, QPixmap(":/images/watermark.png"));
 
     bottomLabel = new QLabel;
+    bottomLabel->setTextFormat(Qt::RichText);
     bottomLabel->setWordWrap(true);
 
     agreeCheckBox = new QCheckBox(tr("I agree to the terms of the license"));

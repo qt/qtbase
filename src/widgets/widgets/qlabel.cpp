@@ -23,6 +23,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_STATIC_LOGGING_CATEGORY(lcWidgetLabel, "qt.widgets.label")
+
 using namespace Qt::StringLiterals;
 
 QLabelPrivate::QLabelPrivate()
@@ -33,6 +35,7 @@ QLabelPrivate::QLabelPrivate()
       textDirty(false),
       isTextLabel(false),
       hasShortcut(false),
+      textFormatWarningDisplayed(false),
 #ifndef QT_NO_CURSOR
       validCursor(false),
       onAnchor(false),
@@ -251,13 +254,12 @@ void QLabel::setText(const QString &text)
     d->text = text;
     d->isTextLabel = true;
     d->textDirty = true;
-    if (d->textformat == Qt::AutoText) {
+    d->effectiveTextFormat = d->textformat.value_or(Qt::AutoText);
+    if (d->effectiveTextFormat == Qt::AutoText) {
         if (Qt::mightBeRichText(d->text))
             d->effectiveTextFormat = Qt::RichText;
         else
             d->effectiveTextFormat = Qt::PlainText;
-    } else {
-        d->effectiveTextFormat = d->textformat;
     }
 
     d->control = oldControl;
@@ -1366,13 +1368,13 @@ QMovie *QLabel::movie() const
 Qt::TextFormat QLabel::textFormat() const
 {
     Q_D(const QLabel);
-    return d->textformat;
+    return d->textformat.value_or(Qt::AutoText);
 }
 
 void QLabel::setTextFormat(Qt::TextFormat format)
 {
     Q_D(QLabel);
-    if (format != d->textformat) {
+    if (!d->textformat || format != d->textformat.value()) {
         d->textformat = format;
         QString t = d->text;
         if (!t.isNull()) {
@@ -1491,6 +1493,7 @@ QRect QLabelPrivate::documentRect() const
 
 void QLabelPrivate::ensureTextPopulated() const
 {
+    Q_Q(const QLabel);
     if (!textDirty)
         return;
     if (control) {
@@ -1500,6 +1503,17 @@ void QLabelPrivate::ensureTextPopulated() const
                 doc->setPlainText(text);
 #if QT_CONFIG(texthtmlparser)
             } else if (effectiveTextFormat == Qt::RichText) {
+                if (!textformat && !textFormatWarningDisplayed) {
+                    qCWarning(lcWidgetLabel)
+                        << "QLabel: Rich text support has implicitly been enabled on a label with the "
+                           "default text format of Qt::AutoText. To protect against unexpected rich "
+                           "text support, the default text format will change to Qt::PlainText in a "
+                           "future version of Qt. Please explicitly choose the appropriate text format "
+                           "in your components to avoid errors in a future upgrade. "
+                           "Affected component:" << q;
+                    textFormatWarningDisplayed = true;
+                }
+
                 doc->setHtml(text);
 #endif
 #if QT_CONFIG(textmarkdownreader)

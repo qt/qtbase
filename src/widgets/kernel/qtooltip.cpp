@@ -45,6 +45,10 @@ using namespace Qt::StringLiterals;
     position in a distinctive black-on-yellow color combination. The
     tip can be any \l{QTextEdit}{rich text} formatted string.
 
+    \note Since QToolTip is rich-text enabled, any content that originates outside the trust
+    boundary of the application should be preprocessed through a function such as
+    QString::toHtmlEscaped().
+
     Rich text displayed in a tool tip is implicitly word-wrapped unless
     specified differently with \c{<p style='white-space:pre'>}.
 
@@ -101,6 +105,8 @@ QTipLabel::QTipLabel(const QString &text, QPoint pos, QWidget *w,
     , widget(nullptr)
     , fadingOut(false)
 {
+    setTextFormat(Qt::AutoText);
+
     delete instance;
     instance = this;
     setForegroundRole(QPalette::ToolTipText);

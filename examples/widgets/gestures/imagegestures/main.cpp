@@ -16,6 +16,7 @@ static void showHelp(QCommandLineParser &parser, const QString errorMessage = QS
     QMessageBox box(errorMessage.isEmpty() ? QMessageBox::Information : QMessageBox::Warning,
                     QGuiApplication::applicationDisplayName(), text,
                     QMessageBox::Ok);
+    box.setTextFormat(Qt::RichText);
     box.setTextInteractionFlags(Qt::TextBrowserInteraction);
     box.exec();
 }

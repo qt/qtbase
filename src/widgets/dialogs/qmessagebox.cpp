@@ -1764,6 +1764,7 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
     }
 
     QMessageBox msgBox(icon, title, text, QMessageBox::NoButton, parent);
+    msgBox.setTextFormat(Qt::AutoText);
     QDialogButtonBox *buttonBox = msgBox.findChild<QDialogButtonBox*>();
     Q_ASSERT(buttonBox != nullptr);
 
@@ -1789,6 +1790,10 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
 /*!
     Opens an information message box with the given \a title and
     \a text in front of the specified \a parent widget.
+
+    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
+    outside the trust boundary of the application should be pre-processed through a function
+    such as QString::toHtmlEscaped().
 
     The standard \a buttons are added to the message box.
     \a defaultButton specifies the button used when \uicontrol Enter is pressed.
@@ -1822,6 +1827,10 @@ QMessageBox::StandardButton QMessageBox::information(QWidget *parent, const QStr
     Opens a question message box with the given \a title and \a
     text in front of the specified \a parent widget.
 
+    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
+    outside the trust boundary of the application should be pre-processed through a function
+    such as QString::toHtmlEscaped().
+
     The standard \a buttons are added to the message box. \a
     defaultButton specifies the button used when \uicontrol Enter is
     pressed. \a defaultButton must refer to a button that was given in \a buttons.
@@ -1851,6 +1860,10 @@ QMessageBox::StandardButton QMessageBox::question(QWidget *parent, const QString
 /*!
     Opens a warning message box with the given \a title and \a
     text in front of the specified \a parent widget.
+
+    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
+    outside the trust boundary of the application should be pre-processed through a function
+    such as QString::toHtmlEscaped().
 
     The standard \a buttons are added to the message box. \a
     defaultButton specifies the button used when \uicontrol Enter is
@@ -1882,6 +1895,10 @@ QMessageBox::StandardButton QMessageBox::warning(QWidget *parent, const QString 
     Opens a critical message box with the given \a title and \a
     text in front of the specified \a parent widget.
 
+    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
+    outside the trust boundary of the application should be pre-processed through a function
+    such as QString::toHtmlEscaped().
+
     The standard \a buttons are added to the message box. \a
     defaultButton specifies the button used when \uicontrol Enter is
     pressed. \a defaultButton must refer to a button that was given in \a buttons.
@@ -1911,6 +1928,10 @@ QMessageBox::StandardButton QMessageBox::critical(QWidget *parent, const QString
 /*!
     Displays a simple about box with title \a title and text \a
     text. The about box's parent is \a parent.
+
+    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
+    outside the trust boundary of the application should be pre-processed through a function
+    such as QString::toHtmlEscaped().
 
     about() looks for a suitable icon in four locations:
 
@@ -1950,6 +1971,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     QIcon icon = msgBox->windowIcon();
     msgBox->setIconPixmap(icon.pixmap(QSize(64, 64), msgBox->devicePixelRatio()));
+    msgBox->setTextFormat(Qt::AutoText);
 
     // should perhaps be a style hint
 #ifdef Q_OS_MACOS
@@ -2027,6 +2049,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         ).arg(QStringLiteral("qt.io/licensing"),
               QStringLiteral("qt.io"));
     QMessageBox *msgBox = new QMessageBox(parent);
+    msgBox->setTextFormat(Qt::RichText);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);
     msgBox->setText(translatedTextAboutQtCaption);
@@ -2118,6 +2141,7 @@ int QMessageBoxPrivate::showOldMessageBox(QWidget *parent, QMessageBox::Icon ico
                                           int button0, int button1, int button2)
 {
     QMessageBox messageBox(icon, title, text, QMessageBox::NoButton, parent);
+    messageBox.setTextFormat(Qt::AutoText);
     messageBox.d_func()->addOldButtons(button0, button1, button2);
     return messageBox.exec();
 }
@@ -2131,6 +2155,7 @@ int QMessageBoxPrivate::showOldMessageBox(QWidget *parent, QMessageBox::Icon ico
                                             int escapeButtonNumber)
 {
     QMessageBox messageBox(icon, title, text, QMessageBox::NoButton, parent);
+    messageBox.setTextFormat(Qt::AutoText);
     QString myButton0Text = button0Text;
     if (myButton0Text.isEmpty())
         myButton0Text = QDialogButtonBox::tr("OK");

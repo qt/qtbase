@@ -17,9 +17,9 @@ MainWindow::MainWindow()
     topFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     infoLabel = new QLabel(tr("<i>Choose a menu option, or right-click to "
-                              "invoke a context menu</i>"));
-    infoLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+                              "invoke a context menu</i>"));    infoLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     infoLabel->setAlignment(Qt::AlignCenter);
+    infoLabel->setTextFormat(Qt::RichText);
 
     QWidget *bottomFiller = new QWidget;
     bottomFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

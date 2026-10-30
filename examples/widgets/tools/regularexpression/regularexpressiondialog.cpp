@@ -361,6 +361,7 @@ QWidget *RegularExpressionDialog::setupTextUi()
     layout->setContentsMargins(QMargins());
 
     QLabel *regexpAndSubjectLabel = new QLabel(tr("<h3>Regular expression and text input</h3>"));
+    regexpAndSubjectLabel->setTextFormat(Qt::RichText);
     layout->addRow(regexpAndSubjectLabel);
 
     patternLineEdit = new PatternLineEdit;
@@ -378,6 +379,7 @@ QWidget *RegularExpressionDialog::setupTextUi()
     layout->addRow(createHorizontalSeparator());
 
     QLabel *replaceLabel = new QLabel(tr("<h3>Replacement"));
+    replaceLabel->setTextFormat(Qt::RichText);
     layout->addRow(replaceLabel);
 
     replacementLineEdit = new QLineEdit;
@@ -402,7 +404,9 @@ QWidget *RegularExpressionDialog::setupOptionsUi()
     layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     layout->setContentsMargins(QMargins());
 
-    layout->addRow(new QLabel(tr("<h3>Options</h3>")));
+    QLabel *optionsLabel = new QLabel(tr("<h3>Options</h3>"));
+    optionsLabel->setTextFormat(Qt::RichText);
+    layout->addRow(optionsLabel);
 
     caseInsensitiveOptionCheckBox = new QCheckBox(tr("Case insensitive (/i)"));
     dotMatchesEverythingOptionCheckBox = new QCheckBox(tr("Dot matches everything (/s)"));
@@ -457,6 +461,7 @@ QWidget *RegularExpressionDialog::setupInfoUi()
     layout->setContentsMargins(QMargins());
 
     QLabel *matchInfoLabel = new QLabel(tr("<h3>Match information</h3>"));
+    matchInfoLabel->setTextFormat(Qt::RichText);
     layout->addRow(matchInfoLabel);
 
     matchDetailsTreeWidget = new QTreeWidget;
@@ -467,6 +472,7 @@ QWidget *RegularExpressionDialog::setupInfoUi()
     layout->addRow(createHorizontalSeparator());
 
     QLabel *regexpInfoLabel = new QLabel(tr("<h3>Regular expression information</h3>"));
+    regexpInfoLabel->setTextFormat(Qt::RichText);
     layout->addRow(regexpInfoLabel);
 
     regexpStatusLabel = new QLabel(tr("Valid"));

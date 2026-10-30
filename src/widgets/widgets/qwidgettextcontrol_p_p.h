@@ -144,7 +144,7 @@ public:
     void commitPreedit();
 
     void insertParagraphSeparator();
-    void append(const QString &text, Qt::TextFormat format = Qt::AutoText);
+    void append(const QString &text, Qt::TextFormat format);
 
     QTextDocument *doc;
     bool cursorOn;

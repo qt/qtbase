@@ -260,7 +260,8 @@ public:
 
     void setup(const QWizardLayoutInfo &info, const QString &title,
                const QString &subTitle, const QPixmap &logo, const QPixmap &banner,
-               Qt::TextFormat titleFormat, Qt::TextFormat subTitleFormat,
+               std::optional<Qt::TextFormat> titleFormat,
+               std::optional<Qt::TextFormat> subTitleFormat,
                QWizard::WizardOptions wizardOptions);
 
 protected:
@@ -330,7 +331,8 @@ bool QWizardHeader::vistaDisabled() const
 
 void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
                           const QString &subTitle, const QPixmap &logo, const QPixmap &banner,
-                          Qt::TextFormat titleFormat, Qt::TextFormat subTitleFormat,
+                          std::optional<Qt::TextFormat> titleFormat,
+                          std::optional<Qt::TextFormat> subTitleFormat,
                           QWizard::WizardOptions options)
 {
     bool modern = ((info.wizStyle == QWizard::ModernStyle)
@@ -349,11 +351,13 @@ void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
     layout->setColumnMinimumWidth(0, minColumnWidth0);
     layout->setColumnMinimumWidth(1, minColumnWidth1);
 
-    titleLabel->setTextFormat(titleFormat);
+    if (titleFormat)
+        titleLabel->setTextFormat(titleFormat.value());
     titleLabel->setText(title);
     logoLabel->setPixmap(logo);
 
-    subTitleLabel->setTextFormat(subTitleFormat);
+    if (subTitleFormat)
+        subTitleLabel->setTextFormat(subTitleFormat.value());
     subTitleLabel->setText("Pq\nPq"_L1);
     int desiredSubTitleHeight = subTitleLabel->sizeHint().height();
     subTitleLabel->setText(subTitle);
@@ -588,8 +592,8 @@ public:
     QMap<int, QString> buttonCustomTexts;
     bool buttonsHaveCustomLayout = false;
     QList<QWizard::WizardButton> buttonsCustomLayout;
-    Qt::TextFormat titleFmt = Qt::AutoText;
-    Qt::TextFormat subTitleFmt = Qt::AutoText;
+    std::optional<Qt::TextFormat> titleFmt;
+    std::optional<Qt::TextFormat> subTitleFmt;
     mutable QPixmap defaultPixmaps[QWizard::NPixmaps];
 
     union {
@@ -1270,12 +1274,14 @@ void QWizardPrivate::updateLayout()
 
     if (info.title) {
         Q_ASSERT(page);
-        titleLabel->setTextFormat(titleFmt);
+        if (titleFmt)
+            titleLabel->setTextFormat(titleFmt.value());
         titleLabel->setText(page->title());
     }
     if (info.subTitle) {
         Q_ASSERT(page);
-        subTitleLabel->setTextFormat(subTitleFmt);
+        if (subTitleFmt)
+            subTitleLabel->setTextFormat(subTitleFmt.value());
         subTitleLabel->setText(page->subTitle());
     }
 
@@ -2784,7 +2790,7 @@ void QWizard::setTitleFormat(Qt::TextFormat format)
 Qt::TextFormat QWizard::titleFormat() const
 {
     Q_D(const QWizard);
-    return d->titleFmt;
+    return d->titleFmt.value_or(Qt::AutoText);
 }
 
 /*!
@@ -2805,7 +2811,7 @@ void QWizard::setSubTitleFormat(Qt::TextFormat format)
 Qt::TextFormat QWizard::subTitleFormat() const
 {
     Q_D(const QWizard);
-    return d->subTitleFmt;
+    return d->subTitleFmt.value_or(Qt::AutoText);
 }
 
 /*!

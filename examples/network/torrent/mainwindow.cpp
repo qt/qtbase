@@ -582,6 +582,7 @@ void MainWindow::about()
 
     QLabel *text = new QLabel;
     text->setWordWrap(true);
+    text->setTextFormat(Qt::RichText);
     text->setText("<p>The <b>Torrent Client</b> example demonstrates how to"
                   " write a complete peer-to-peer file sharing"
                   " application using Qt's network and thread classes.</p>"

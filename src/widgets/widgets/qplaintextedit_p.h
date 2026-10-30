@@ -140,7 +140,7 @@ public:
 
     QPointer<QPlainTextDocumentLayout> documentLayoutPtr;
 
-    void append(const QString &text, Qt::TextFormat format = Qt::AutoText);
+    void append(const QString &text, Qt::TextFormat format);
 
     void cursorPositionChanged();
     void modificationChanged(bool);

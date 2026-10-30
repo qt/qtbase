@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *centralWidget = new QWidget;
 
     QLabel *modelLabel = new QLabel;
+    modelLabel->setTextFormat(Qt::RichText);
     modelLabel->setText(tr("Tree Model<br>(Double click items to edit)"));
 
     QLabel *modeLabel = new QLabel;

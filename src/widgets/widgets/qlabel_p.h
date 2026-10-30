@@ -104,7 +104,7 @@ public:
     QPointer<QWidget> buddy;
     int shortcutId = 0;
 #endif
-    Qt::TextFormat textformat = Qt::AutoText;
+    std::optional<Qt::TextFormat> textformat;
     Qt::TextFormat effectiveTextFormat = Qt::PlainText;
     Qt::TextInteractionFlags textInteractionFlags = Qt::LinksAccessibleByMouse;
     mutable QSizePolicy sizePolicy;
@@ -117,6 +117,7 @@ public:
     mutable uint textDirty : 1;
     mutable uint isTextLabel : 1;
     mutable uint hasShortcut : 1;
+    mutable uint textFormatWarningDisplayed : 1;
 #ifndef QT_NO_CURSOR
     uint validCursor : 1;
     uint onAnchor : 1;
