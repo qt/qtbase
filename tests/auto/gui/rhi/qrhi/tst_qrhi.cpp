@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QSpan>
 #include <QRegularExpression>
+#include <QScopeGuard>
 #include <QOperatingSystemVersion>
 #include <qrgbafloat.h>
 #include <qrgba64.h>
@@ -268,6 +269,10 @@ private slots:
     void storageBufferRuntimeSizeCompute();
     void storageBufferRuntimeSizeGraphics_data();
     void storageBufferRuntimeSizeGraphics();
+    void storageBufferWritesInRenderPass_data();
+    void storageBufferWritesInRenderPass();
+    void storageBufferWritesInSwapchainPass_data();
+    void storageBufferWritesInSwapchainPass();
 
     void halfPrecisionAttributes_data();
     void halfPrecisionAttributes();
@@ -320,6 +325,8 @@ private:
 
 #ifdef TST_VK
     QVulkanInstance vulkanInstance;
+    // When set, Vulkan validation errors are collected here
+    QStringList *vkValidationErrors = nullptr;
 #endif
     QOffscreenSurface *fallbackSurface = nullptr;
 
@@ -350,6 +357,16 @@ void tst_QRhi::initTestCase()
     vulkanInstance.setLayers({ "VK_LAYER_KHRONOS_validation" });
     vulkanInstance.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
     vulkanInstance.create();
+    vulkanInstance.installDebugOutputFilter([this](QVulkanInstance::DebugMessageSeverityFlags severity,
+                                                   QVulkanInstance::DebugMessageTypeFlags type,
+                                                   const void *message) {
+        if (vkValidationErrors && severity.testFlag(QVulkanInstance::ErrorSeverity)
+                && type.testFlag(QVulkanInstance::ValidationMessage)) {
+            const auto *data = static_cast<const VkDebugUtilsMessengerCallbackDataEXT *>(message);
+            vkValidationErrors->append(QString::fromUtf8(data->pMessage));
+        }
+        return false;
+    });
     initParams.vk.inst = &vulkanInstance;
 #endif
 
@@ -14595,6 +14612,191 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics()
         return;
 
     QCOMPARE(result.pixel(32, 32), qRgb(red, green, blue));
+}
+
+static QRhiGraphicsPipeline *createFragmentStoragePipeline(QRhi *rhi, QRhiShaderResourceBindings *srb, QRhiRenderPassDescriptor *rpDesc)
+{
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/fragmentstorage.vert.qsb");
+    if (!vs.isValid())
+        return nullptr;
+    QShader fs = loadShader(":/data/fragmentstorage.frag.qsb");
+    if (!fs.isValid())
+        return nullptr;
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setShaderResourceBindings(srb);
+    pipeline->setRenderPassDescriptor(rpDesc);
+    return pipeline->create() ? pipeline.release() : nullptr;
+}
+
+// Two draws with the same srb, the fragment shader writing a storage buffer.
+// The second setShaderResources() needs a barrier inside the render pass for
+// the writes made by the first draw. Leaves the pass open.
+static void beginPassWithFragmentStorageWrites(QRhiCommandBuffer *cb, QRhiRenderTarget *rt,
+                                               QRhiGraphicsPipeline *pipeline,
+                                               QRhiShaderResourceBindings *srb,
+                                               QRhiResourceUpdateBatch *updates,
+                                               bool externalContent)
+{
+    cb->beginPass(rt, Qt::black, { 1.0f, 0 }, updates,
+                  externalContent ? QRhiCommandBuffer::ExternalContent : QRhiCommandBuffer::BeginPassFlags());
+    cb->setGraphicsPipeline(pipeline);
+    const QSize size = rt->pixelSize();
+    cb->setViewport({ 0, 0, float(size.width()), float(size.height()) });
+    for (int i = 0; i < 2; ++i) {
+        cb->setShaderResources(srb);
+        cb->draw(3);
+    }
+}
+
+void tst_QRhi::storageBufferWritesInRenderPass_data()
+{
+    bool externalContentModes[] = { false, true };
+    rhiTestDataWithParam("externalContent", QSpan(externalContentModes), [](bool externalContent) {
+        return externalContent ? QStringLiteral("external") : QStringLiteral("inline");
+    });
+}
+
+void tst_QRhi::storageBufferWritesInRenderPass()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+    QFETCH(bool, externalContent);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::Compute)) // also indicates storage buffers and image load/store
+        QSKIP("Storage buffers are not supported with this graphics API, skipping test");
+    if (rhi->resourceLimit(QRhi::MaxFragmentStorageBuffers) < 1)
+        QSKIP("Storage buffers are not supported in fragment shaders, skipping test");
+
+#ifdef TST_VK
+    QStringList validationErrors;
+    vkValidationErrors = &validationErrors;
+    const auto errorCollectionGuard = qScopeGuard([this] { vkValidationErrors = nullptr; });
+#endif
+
+    const QSize size(64, 64);
+    std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, size, 1, QRhiTexture::RenderTarget));
+    QVERIFY(texture->create());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.get() }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    std::unique_ptr<QRhiBuffer> counterBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, sizeof(quint32)));
+    QVERIFY(counterBuf->create());
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    const quint32 zero = 0;
+    u->uploadStaticBuffer(counterBuf.get(), &zero);
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({ QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::FragmentStage, counterBuf.get()) });
+    QVERIFY(srb->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(createFragmentStoragePipeline(rhi, srb.get(), rpDesc.get()));
+    QVERIFY(pipeline);
+
+    QRhiCommandBuffer *cb = nullptr;
+    QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    beginPassWithFragmentStorageWrites(cb, rt.get(), pipeline.get(), srb.get(), u, externalContent);
+
+    QRhiReadbackResult readResult;
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackBuffer(counterBuf.get(), 0, sizeof(quint32), &readResult);
+    cb->endPass(readbackBatch);
+
+    frameGuard.endFrame();
+
+#ifdef TST_VK
+    QVERIFY2(validationErrors.isEmpty(), qPrintable(validationErrors.join(u'\n')));
+#endif
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(readResult.data.size(), qsizetype(sizeof(quint32)));
+    quint32 counter = 0;
+    memcpy(&counter, readResult.data.constData(), sizeof(quint32));
+    QCOMPARE(counter, quint32(2 * size.width() * size.height()));
+}
+
+void tst_QRhi::storageBufferWritesInSwapchainPass_data()
+{
+    bool externalContentModes[] = { false, true };
+    rhiTestDataWithParam("externalContent", QSpan(externalContentModes), [](bool externalContent) {
+        return externalContent ? QStringLiteral("external") : QStringLiteral("inline");
+    });
+}
+
+void tst_QRhi::storageBufferWritesInSwapchainPass()
+{
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen: This fails.");
+
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+    QFETCH(bool, externalContent);
+
+    std::unique_ptr<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::Compute)) // also indicates storage buffers and image load/store
+        QSKIP("Storage buffers are not supported with this graphics API, skipping test");
+    if (rhi->resourceLimit(QRhi::MaxFragmentStorageBuffers) < 1)
+        QSKIP("Storage buffers are not supported in fragment shaders, skipping test");
+
+#ifdef TST_VK
+    QStringList validationErrors;
+    vkValidationErrors = &validationErrors;
+    const auto errorCollectionGuard = qScopeGuard([this] { vkValidationErrors = nullptr; });
+#endif
+
+    std::unique_ptr<QWindow> window(new QWindow);
+    setWindowType(window.get(), impl);
+    window->setGeometry(0, 0, 640, 480);
+    window->show();
+    QVERIFY(QTest::qWaitForWindowExposed(window.get()));
+
+    std::unique_ptr<QRhiSwapChain> swapChain(rhi->newSwapChain());
+    swapChain->setWindow(window.get());
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(swapChain->newCompatibleRenderPassDescriptor());
+    swapChain->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(swapChain->createOrResize());
+
+    std::unique_ptr<QRhiBuffer> counterBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, sizeof(quint32)));
+    QVERIFY(counterBuf->create());
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    const quint32 zero = 0;
+    u->uploadStaticBuffer(counterBuf.get(), &zero);
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({ QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::FragmentStage, counterBuf.get()) });
+    QVERIFY(srb->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(createFragmentStoragePipeline(rhi.get(), srb.get(), rpDesc.get()));
+    QVERIFY(pipeline);
+
+    QCOMPARE(rhi->beginFrame(swapChain.get()), QRhi::FrameOpSuccess);
+    QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+    QRhiRenderTarget *rt = swapChain->currentFrameRenderTarget();
+    beginPassWithFragmentStorageWrites(cb, rt, pipeline.get(), srb.get(), u, externalContent);
+    cb->endPass();
+    QCOMPARE(rhi->endFrame(swapChain.get()), QRhi::FrameOpSuccess);
+
+    // The counter value is not checked: fragment shader invocations for
+    // obscured window pixels are allowed to be skipped.
+
+#ifdef TST_VK
+    QVERIFY2(validationErrors.isEmpty(), qPrintable(validationErrors.join(u'\n')));
+#endif
 }
 
 void tst_QRhi::halfPrecisionAttributes_data()

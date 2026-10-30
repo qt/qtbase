@@ -60,3 +60,5 @@ qsb --glsl "150,120,100 es" --msl 12 --hlsl 50 -o pushconstants.vert.qsb pushcon
 qsb --glsl "150,120,100 es" --msl 12 --hlsl 50 -o pushconstants.frag.qsb pushconstants.frag
 qsb --glsl "310 es,430" --msl 12 --hlsl 50 -o pushconstants.comp.qsb pushconstants.comp
 qsb --glsl "310 es,430" --msl 12 -o pushconstants_std430.comp.qsb pushconstants_std430.comp
+qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o fragmentstorage.vert.qsb fullscreenquad.vert
+qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o fragmentstorage.frag.qsb fragmentstorage.frag

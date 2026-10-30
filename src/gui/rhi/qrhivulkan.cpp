@@ -2033,6 +2033,29 @@ static void fillRenderPassCreateInfo(VkRenderPassCreateInfo *rpInfo,
     rpInfo->pDependencies = !rpD->subpassDeps.isEmpty() ? rpD->subpassDeps.constData() : nullptr;
 }
 
+// Add self-dependency to be able to add memory barriers for writes in graphics stages.
+static void addSelfDependency(QVkRenderPassDescriptor *rpD)
+{
+    VkSubpassDependency selfDependency = {};
+    VkPipelineStageFlags stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                                   | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+                                   | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
+                                   | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    selfDependency.srcSubpass      = 0;
+    selfDependency.dstSubpass      = 0;
+    selfDependency.srcStageMask    = stageMask;
+    selfDependency.dstStageMask    = stageMask;
+    selfDependency.srcAccessMask   = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    selfDependency.dstAccessMask   = selfDependency.srcAccessMask;
+    VkDependencyFlags depFlags = VK_DEPENDENCY_BY_REGION_BIT;
+#ifdef VK_VERSION_1_1
+    if (rpD->multiViewCount >= 2)
+        depFlags |= VK_DEPENDENCY_VIEW_LOCAL_BIT;
+#endif
+    selfDependency.dependencyFlags = depFlags;
+    rpD->subpassDeps.append(selfDependency);
+}
+
 bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD,
                                          bool hasDepthStencil,
                                          VkSampleCountFlagBits samples,
@@ -2135,6 +2158,8 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD,
             | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         rpD->subpassDeps.append(subpassDep);
     }
+
+    addSelfDependency(rpD);
 
     VkRenderPassCreateInfo rpInfo;
     VkSubpassDescription subpassDesc;
@@ -2330,25 +2355,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     }
 #endif
 
-    // Add self-dependency to be able to add memory barriers for writes in graphics stages.
-    VkSubpassDependency selfDependency = {};
-    VkPipelineStageFlags stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-                                   | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-                                   | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
-                                   | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    selfDependency.srcSubpass      = 0;
-    selfDependency.dstSubpass      = 0;
-    selfDependency.srcStageMask    = stageMask;
-    selfDependency.dstStageMask    = stageMask;
-    selfDependency.srcAccessMask   = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-    selfDependency.dstAccessMask   = selfDependency.srcAccessMask;
-    VkDependencyFlags depFlags = VK_DEPENDENCY_BY_REGION_BIT;
-#ifdef VK_VERSION_1_1
-    if (rpD->multiViewCount >= 2)
-        depFlags |= VK_DEPENDENCY_VIEW_LOCAL_BIT;
-#endif
-    selfDependency.dependencyFlags = depFlags;
-    rpD->subpassDeps.append(selfDependency);
+    addSelfDependency(rpD);
 
     // rpD->subpassDeps stays empty: don't yet know the correct initial/final
     // access and stage stuff for the implicit deps at this point, so leave it
