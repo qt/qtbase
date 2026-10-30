@@ -3986,7 +3986,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
 
                     const int locationIdx = it->location();
                     quint32 ofs = it->offset() + cmd.args.bindVertexBuffer.offset;
-                    if (type == GL_UNSIGNED_INT || type == GL_INT) {
+                    if (type == GL_UNSIGNED_INT || type == GL_INT || type == GL_UNSIGNED_SHORT || type == GL_SHORT) {
                         if (caps.intAttributes) {
                             f->glVertexAttribIPointer(GLuint(locationIdx), size, type, stride,
                                                       reinterpret_cast<const GLvoid *>(quintptr(ofs)));
