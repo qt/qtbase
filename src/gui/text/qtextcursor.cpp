@@ -931,7 +931,10 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     \endlist
 
     Actions can be grouped (i.e. treated as a single action for
-    undo/redo) using beginEditBlock() and endEditBlock().
+    undo/redo) using beginEditBlock() and endEditBlock(). Grouping also
+    improves performance when making many changes, because the document
+    updates its layout once at the end of the group instead of after every
+    change.
 
     Cursor movements are limited to valid cursor positions. In Latin
     writing this is between any two consecutive characters in the
@@ -2502,6 +2505,13 @@ bool QTextCursor::operator>(const QTextCursor &rhs) const
 
     It is possible to nest calls to beginEditBlock and endEditBlock. The
     top-most pair will determine the scope of the undo/redo operation.
+
+    While an edit block is open, the document postpones updating its layout
+    and emitting QTextDocument::contentsChange() until the outermost
+    endEditBlock() call. When you make many changes, such as inserting text
+    in a loop or filling a table cell by cell, group them in an edit block.
+    Otherwise, the document is laid out again after every change, which can
+    be very slow, even for small documents.
 
     \sa endEditBlock()
  */
