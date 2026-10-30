@@ -143,20 +143,38 @@ QStringList nameFilterExtensions(const QString nameFilters)
     return ret;
 }
 
+static QStringList mimeTypeNames(const QMimeType &type)
+{
+    return QStringList(type.name()) + type.aliases();
+}
+
 void QAndroidPlatformFileDialogHelper::setMimeTypes()
 {
-    QStringList mimeTypes = options()->mimeTypeFilters();
+    QMimeDatabase db;
+    const QStringList mimeTypeFilters = options()->mimeTypeFilters();
     const QStringList nameFilters = options()->nameFilters();
+    QStringList mimeTypes;
+    mimeTypes.reserve(mimeTypeFilters.size() + nameFilters.size());
+    for (const QString &filter : mimeTypeFilters) {
+        const QMimeType type = db.mimeTypeForName(filter);
+        if (type.isValid())
+            mimeTypes.append(mimeTypeNames(type));
+        else
+            mimeTypes.append(filter);
+    }
 
     if (!nameFilters.isEmpty()) {
-        QMimeDatabase db;
         for (auto filter : nameFilters) {
             if (!filter.isEmpty()) {
-                for (const QString &filter : nameFilterExtensions(filter))
-                    mimeTypes.append(db.mimeTypeForFile(filter, QMimeDatabase::MatchExtension).name());
+                for (const QString &filter : nameFilterExtensions(filter)) {
+                    const QMimeType type =
+                            db.mimeTypeForFile(filter, QMimeDatabase::MatchExtension);
+                    mimeTypes.append(mimeTypeNames(type));
+                }
             }
         }
     }
+    mimeTypes.removeDuplicates();
 
     const QString initialType = mimeTypes.size() == 1 ? mimeTypes.at(0) : "*/*"_L1;
     m_intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
