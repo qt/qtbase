@@ -10361,13 +10361,12 @@ QLayout *QWidget::takeLayout()
     vertically. The same applies to lineedit controls (such as
     QLineEdit, QSpinBox or an editable QComboBox) and other
     horizontally orientated widgets (such as QProgressBar).
-    QToolButton's are normally square, so they allow growth in both
-    directions. Widgets that support different directions (such as
-    QSlider, QScrollBar or QHeader) specify stretching in the
-    respective direction only. Widgets that can provide scroll bars
-    (usually subclasses of QScrollArea) tend to specify that they can
-    use additional space, and that they can make do with less than
-    sizeHint().
+    QToolButton is fixed in both directions. Widgets that support
+    different directions (such as QSlider or QScrollBar) specify
+    stretching in the respective direction only. Widgets that can
+    provide scroll bars (usually subclasses of QAbstractScrollArea)
+    tend to specify that they can use additional space, and that they
+    can make do with less than sizeHint().
 
     \sa sizeHint(), QLayout, QSizePolicy, updateGeometry()
 */
