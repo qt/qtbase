@@ -24,6 +24,10 @@
 #endif
 #include "qcocoawindowmanager.h"
 
+#if defined(Q_PROCESSOR_X86_64)
+#  include "../../../../tests/shared/cidetect.h"
+#endif
+
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatformaccessibility.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
@@ -271,7 +275,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 #if defined(Q_PROCESSOR_X86_64)
         // ScreenCaptureKit brings down WindowServer on macOS 14 x86_64 VMs in CI
         if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::MacOSSonoma
-            && qEnvironmentVariable("QTEST_ENVIRONMENT") == "ci") {
+            && QTestCiDetect::ciInTestEnvironment()) {
                 return false;
         }
 #endif

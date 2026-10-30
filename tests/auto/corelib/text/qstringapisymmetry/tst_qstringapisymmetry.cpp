@@ -17,6 +17,7 @@
 #include <QTest>
 #include <QVarLengthArray>
 
+#include "../../../../shared/cidetect.h"
 #include "../../../../shared/localechange.h"
 
 #include <locale.h>
@@ -2030,7 +2031,7 @@ void tst_QStringApiSymmetry::localeAwareCompare_data()
         countGroups++;
     }
     // Tell developers how to get all the results (bot don't spam Coin logs):
-    if (countGroups < 5 && !qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci")) {
+    if (countGroups < 5 && !QTestCiDetect::ciInTestEnvironment()) {
         qDebug(R"(On platforms where this test cannot control the locale used by
 QString::localeAwareCompare(), it only runs test-cases for the locale in use.
 To test thoroughly, it is necessary to run this test repeatedly with each of

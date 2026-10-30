@@ -6,6 +6,9 @@
 #include <QTest>
 #include <QScopeGuard>
 #include <QCryptographicHash>
+#if QT_POINTER_SIZE > 4
+#  include "../../../../shared/cidetect.h"
+#endif
 
 #include <thread>
 
@@ -55,7 +58,7 @@ void tst_QCryptographicHashBigData::moreThan4GiBOfData_data()
     // these are reasonably fast (O(secs))
     row(QCryptographicHash::Md4);
     row(QCryptographicHash::Md5);
-    const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
+    const bool runsOnCI = QTestCiDetect::ciInTestEnvironment();
     const bool runsUnderASan =
         #ifdef QT_ASAN_ENABLED
             true
