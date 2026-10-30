@@ -75,6 +75,8 @@
 
 #define SIMD_ARCHITECTURE  @SIMD_ARCHITECTURE@
 
+#cmakedefine WITH_SIMDE 0
+
 #endif
 
 #cmakedefine WITH_PROFILE
