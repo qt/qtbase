@@ -37,6 +37,11 @@ QInputMethod::~QInputMethod()
 
     Qt Quick also provides access to QInputMethod in QML through \l{QmlGlobalQtObject}{Qt global object}
     as \c Qt.inputMethod property.
+
+    Text editors receive input from the input method through QInputMethodEvent,
+    and the input method queries their state through QInputMethodQueryEvent.
+    For information about supporting input methods in a custom text editor, see
+    QInputMethodEvent.
 */
 
 /*!
@@ -381,7 +386,14 @@ bool QInputMethodPrivate::objectAcceptsInputMethod(QObject *object)
 }
 
 /*!
-  Send \a query to the current focus object with parameters \a argument and return the result.
+  Sends \a query to the current focus object with parameters \a argument and
+  returns the result.
+
+  If the focus object has an invokable method with the signature
+  \c{inputMethodQuery(Qt::InputMethodQuery, QVariant)}, that method is called
+  with \a query and \a argument. If the focus object has no such method, or
+  the method returns an invalid QVariant, a QInputMethodQueryEvent for \a query
+  is sent to the focus object instead, and \a argument is ignored.
  */
 QVariant QInputMethod::queryFocusObject(Qt::InputMethodQuery query, const QVariant &argument)
 {
