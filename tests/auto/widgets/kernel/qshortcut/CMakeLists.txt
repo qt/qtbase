@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qshortcut
+    RUN_SERIAL
     SOURCES
         tst_qshortcut.cpp
     INCLUDE_DIRECTORIES
@@ -21,12 +22,6 @@ qt_internal_add_test(tst_qshortcut
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qshortcut
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
 
 qt_internal_add_test(tst_qguishortcut_with_qapplication

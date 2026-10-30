@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qwindow
+    RUN_SERIAL
     SOURCES
         tst_qwindow.cpp
     LIBRARIES
@@ -21,14 +22,9 @@ qt_internal_add_test(tst_qwindow
         Qt::TestPrivate
 )
 
-set_tests_properties(
-    tst_qwindow
-    PROPERTIES
-        RUN_SERIAL TRUE
-)
-
 if(APPLE OR WIN32 OR QT_FEATURE_xcb)
     qt_internal_add_test(tst_foreignwindow
+    RUN_SERIAL
         LOWDPI
         SOURCES
             tst_foreignwindow.cpp
@@ -37,12 +33,6 @@ if(APPLE OR WIN32 OR QT_FEATURE_xcb)
             Qt::Gui
             Qt::GuiPrivate
     )
-
-set_tests_properties(
-    tst_foreignwindow
-    PROPERTIES
-        RUN_SERIAL TRUE
-)
 
     include(../../../../shared/nativewindow.cmake)
     target_link_libraries(tst_foreignwindow PRIVATE nativewindow)

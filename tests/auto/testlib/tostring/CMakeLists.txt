@@ -8,12 +8,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_tostring
+    RUN_SERIAL
     SOURCES
         tst_tostring.cpp
-)
-
-set_tests_properties(
-    tst_tostring
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

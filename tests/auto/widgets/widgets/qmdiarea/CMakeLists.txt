@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qmdiarea
+    RUN_SERIAL
     SOURCES
         tst_qmdiarea.cpp
     DEFINES
@@ -35,10 +36,4 @@ qt_internal_extend_target(tst_qmdiarea CONDITION TARGET Qt::OpenGL
 qt_internal_extend_target(tst_qmdiarea CONDITION APPLE
     LIBRARIES
         ${FWSecurity}
-)
-
-set_tests_properties(
-    tst_qmdiarea
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

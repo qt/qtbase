@@ -8,16 +8,11 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qrestaccessmanager
+    RUN_SERIAL
     SOURCES
         tst_qrestaccessmanager.cpp
         httptestserver.cpp httptestserver_p.h
     LIBRARIES
         Qt::Network
         Qt::CorePrivate
-)
-
-set_tests_properties(
-    tst_qrestaccessmanager
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

@@ -12,12 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qparallelanimationgroup
+    RUN_SERIAL
     SOURCES
         tst_qparallelanimationgroup.cpp
-)
-
-set_tests_properties(
-    tst_qparallelanimationgroup
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

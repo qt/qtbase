@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qabstractbutton
+    RUN_SERIAL
     SOURCES
         tst_qabstractbutton.cpp
     LIBRARIES
@@ -19,10 +20,4 @@ qt_internal_add_test(tst_qabstractbutton
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qabstractbutton
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

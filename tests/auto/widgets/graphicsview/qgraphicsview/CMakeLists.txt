@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qgraphicsview
+    RUN_SERIAL
     SOURCES
         tst_qgraphicsview.cpp tst_qgraphicsview.h
     DEFINES
@@ -32,10 +33,4 @@ qt_internal_extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl
     LIBRARIES
         Qt::OpenGL
         Qt::OpenGLWidgets
-)
-
-set_tests_properties(
-    tst_qgraphicsview
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

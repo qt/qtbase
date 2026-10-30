@@ -16,6 +16,7 @@ endif()
 #####################################################################
 
 qt_internal_add_test(tst_qaccessibility
+    RUN_SERIAL
     SOURCES
         accessiblewidgets.h
         tst_qaccessibility.cpp
@@ -41,10 +42,4 @@ qt_internal_extend_target(tst_qaccessibility CONDITION WIN32
         oleacc
         oleaut32
         uuid
-)
-
-set_tests_properties(
-    tst_qaccessibility
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

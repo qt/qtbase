@@ -13,6 +13,7 @@ endif()
 
 function(addChronoTimerTest test)
     qt_internal_add_test(${test}
+        RUN_SERIAL
         SOURCES
             tst_qchronotimer.cpp
         LIBRARIES
@@ -23,23 +24,11 @@ endfunction()
 
 addChronoTimerTest(tst_qchronotimer)
 
-set_tests_properties(
-    tst_qchronotimer
-    PROPERTIES
-        RUN_SERIAL TRUE
-)
-
 if(QT_FEATURE_glib AND UNIX)
     addChronoTimerTest(tst_qchronotimer_no_glib)
     qt_internal_extend_target(tst_qchronotimer_no_glib
         DEFINES
             DISABLE_GLIB
             tst_QChronoTimer=tst_QChronoTimer_no_glib # Class name in the unittest
-    )
-
-    set_tests_properties(
-        tst_qchronotimer_no_glib
-        PROPERTIES
-            RUN_SERIAL TRUE
     )
 endif()

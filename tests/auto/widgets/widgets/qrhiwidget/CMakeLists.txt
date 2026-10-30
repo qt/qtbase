@@ -13,6 +13,7 @@ file(GLOB_RECURSE qrhiwidget_resource_files
 )
 
 qt_internal_add_test(tst_qrhiwidget
+    RUN_SERIAL
     SOURCES
         tst_qrhiwidget.cpp
     LIBRARIES
@@ -22,10 +23,4 @@ qt_internal_add_test(tst_qrhiwidget
         Qt::Widgets
     TESTDATA ${qrhiwidget_resource_files}
     BUILTIN_TESTDATA
-)
-
-set_tests_properties(
-    tst_qrhiwidget
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

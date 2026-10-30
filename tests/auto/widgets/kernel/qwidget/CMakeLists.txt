@@ -20,6 +20,7 @@ set(qwidget_resource_files
 )
 
 qt_internal_add_test(tst_qwidget
+    RUN_SERIAL
     SOURCES
         tst_qwidget.cpp
     LIBRARIES
@@ -31,12 +32,6 @@ qt_internal_add_test(tst_qwidget
         Qt::WidgetsPrivate
     TESTDATA ${qwidget_resource_files}
     BUILTIN_TESTDATA
-)
-
-set_tests_properties(
-    tst_qwidget
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
 
 ## Scopes:

@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qcompleter
+    RUN_SERIAL
     SOURCES
         tst_qcompleter.cpp
     LIBRARIES
@@ -19,10 +20,4 @@ qt_internal_add_test(tst_qcompleter
         Qt::TestPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qcompleter
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

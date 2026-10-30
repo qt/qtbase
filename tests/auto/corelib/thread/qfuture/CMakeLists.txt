@@ -12,17 +12,12 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qfuture
+    RUN_SERIAL
     SOURCES
         tst_qfuture.cpp
     LIBRARIES
         Qt::CorePrivate
         Qt::TestPrivate
-)
-
-set_tests_properties(
-  tst_qfuture
-  PROPERTIES
-    RUN_SERIAL TRUE
 )
 
 qt_internal_extend_target(tst_qfuture CONDITION MSVC

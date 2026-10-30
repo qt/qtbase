@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qlistview
+    RUN_SERIAL
     SOURCES
         tst_qlistview.cpp
     LIBRARIES
@@ -29,10 +30,4 @@ qt_internal_add_test(tst_qlistview
 qt_internal_extend_target(tst_qlistview CONDITION WIN32
     LIBRARIES
         user32
-)
-
-set_tests_properties(
-    tst_qlistview
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

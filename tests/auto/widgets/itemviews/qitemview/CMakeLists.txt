@@ -12,15 +12,10 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qitemview
+    RUN_SERIAL
     SOURCES
         tst_qitemview.cpp
     LIBRARIES
         Qt::Gui
         Qt::Widgets
-)
-
-set_tests_properties(
-    tst_qitemview
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

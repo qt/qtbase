@@ -18,6 +18,7 @@ file(GLOB_RECURSE qrhi_resource_files
 )
 
 qt_internal_add_test(tst_qrhi
+    RUN_SERIAL
     SOURCES
         tst_qrhi.cpp
     LIBRARIES
@@ -32,10 +33,4 @@ qt_internal_extend_target(tst_qrhi CONDITION QT_FEATURE_metal
         tst_qrhi_metal.mm
     LIBRARIES
         ${FWMetal}
-)
-
-set_tests_properties(
-    tst_qrhi
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

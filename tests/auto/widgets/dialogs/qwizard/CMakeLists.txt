@@ -20,6 +20,7 @@ set(qwizard_resource_files
 )
 
 qt_internal_add_test(tst_qwizard
+    RUN_SERIAL
     SOURCES
         tst_qwizard.cpp
         tst_qwizard_2.cpp
@@ -29,10 +30,4 @@ qt_internal_add_test(tst_qwizard
         Qt::WidgetsPrivate
     TESTDATA ${qwizard_resource_files}
     BUILTIN_TESTDATA
-)
-
-set_tests_properties(
-    tst_qwizard
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

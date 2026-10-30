@@ -16,6 +16,7 @@ list(APPEND test_data "qtlogo.png")
 list(APPEND test_data "qtlogoinverted.png")
 
 qt_internal_add_test(tst_qcombobox
+    RUN_SERIAL
     SOURCES
         tst_qcombobox.cpp
     DEFINES
@@ -28,10 +29,4 @@ qt_internal_add_test(tst_qcombobox
         Qt::Widgets
         Qt::WidgetsPrivate
     TESTDATA ${test_data}
-)
-
-set_tests_properties(
-    tst_qcombobox
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

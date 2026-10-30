@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qplaintextedit
+    RUN_SERIAL
     SOURCES
         tst_qplaintextedit.cpp
     INCLUDE_DIRECTORIES
@@ -29,10 +30,4 @@ qt_internal_add_test(tst_qplaintextedit
 qt_internal_extend_target(tst_qplaintextedit CONDITION MACOS
     LIBRARIES
         ${FWAppKit}
-)
-
-set_tests_properties(
-    tst_qplaintextedit
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

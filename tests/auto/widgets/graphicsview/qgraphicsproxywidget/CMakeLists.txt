@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qgraphicsproxywidget
+    RUN_SERIAL
     SOURCES
         tst_qgraphicsproxywidget.cpp
     DEFINES
@@ -23,10 +24,4 @@ qt_internal_add_test(tst_qgraphicsproxywidget
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qgraphicsproxywidget
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

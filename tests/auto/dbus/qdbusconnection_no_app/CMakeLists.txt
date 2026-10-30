@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qdbusconnection_no_app
+    RUN_SERIAL
     SOURCES
         ../qdbusconnection/tst_qdbusconnection.h
         tst_qdbusconnection_no_app.cpp
@@ -19,10 +20,4 @@ qt_internal_add_test(tst_qdbusconnection_no_app
         tst_QDBusConnection=tst_QDBusConnection_NoApplication
     LIBRARIES
         Qt::DBus
-)
-
-set_tests_properties(
-    tst_qdbusconnection_no_app
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

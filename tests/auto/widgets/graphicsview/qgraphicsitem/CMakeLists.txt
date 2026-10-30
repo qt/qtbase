@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qgraphicsitem
+    RUN_SERIAL
     SOURCES
         tst_qgraphicsitem.cpp
     DEFINES
@@ -31,10 +32,4 @@ qt_internal_add_test(tst_qgraphicsitem
 qt_internal_extend_target(tst_qgraphicsitem CONDITION WIN32
     LIBRARIES
         user32
-)
-
-set_tests_properties(
-    tst_qgraphicsitem
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

@@ -21,6 +21,7 @@ file(GLOB_RECURSE tokenError
         tokenError/*)
 
 qt_internal_add_test(tst_qxmlstream
+    RUN_SERIAL
     SOURCES
         tst_qxmlstream.cpp
     LIBRARIES
@@ -30,10 +31,4 @@ qt_internal_add_test(tst_qxmlstream
     TESTDATA
         ${test_data}
         ${tokenError}
-)
-
-set_tests_properties(
-    tst_qxmlstream
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
