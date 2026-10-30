@@ -2705,9 +2705,12 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
             // exist for version 1, so we can only guess in that case
             const bool isRootCertificateAuthority = isCertificateAuthority(extensions)
                     || certificate.version() == "1";
+            const bool trustedSelfSigned = caCertificates.contains(certificate);
 
             // Root certificate tends to be signed by themselves, so ignore self-signed status.
-            if (!isRootCertificateAuthority) {
+            // Similarly it is common in testing environments to create and trust a self-signed
+            // certificate: ignore this as well.
+            if (!isRootCertificateAuthority && !trustedSelfSigned) {
                 auto error = QSslError(QSslError::SelfSignedCertificate, certificate);
                 sslErrors += error;
                 emit q->peerVerifyError(error);
