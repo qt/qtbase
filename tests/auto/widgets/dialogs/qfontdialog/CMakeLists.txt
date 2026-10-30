@@ -24,6 +24,7 @@ set(testfonts_resource_files
 )
 
 qt_internal_add_test(tst_qfontdialog
+    RUN_SERIAL
     SOURCES
         tst_qfontdialog.cpp
     LIBRARIES
@@ -34,12 +35,6 @@ qt_internal_add_test(tst_qfontdialog
         Qt::WidgetsPrivate
     TESTDATA ${testfonts_resource_files}
     BUILTIN_TESTDATA
-)
-
-set_tests_properties(
-    tst_qfontdialog
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
 
 ## Scopes:

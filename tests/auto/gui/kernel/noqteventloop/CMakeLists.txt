@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_noqteventloop
+    RUN_SERIAL
     SOURCES
         tst_noqteventloop.cpp
     LIBRARIES
@@ -19,12 +20,6 @@ qt_internal_add_test(tst_noqteventloop
         Qt::Gui
         Qt::GuiPrivate
         Qt::Network
-)
-
-set_tests_properties(
-    tst_noqteventloop
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
 
 ## Scopes:

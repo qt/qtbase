@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qtreeview
+    RUN_SERIAL
     SOURCES
         ../../../../shared/fakedirmodel.h
         tst_qtreeview.cpp
@@ -22,10 +23,4 @@ qt_internal_add_test(tst_qtreeview
         Qt::TestPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qtreeview
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

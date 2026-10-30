@@ -13,6 +13,7 @@ endif()
 
 function(addGuiTimerTest test)
     qt_internal_add_test(${test}
+        RUN_SERIAL
         SOURCES
             ../../../corelib/kernel/qtimer/tst_qtimer.cpp
         LIBRARIES
@@ -28,23 +29,11 @@ qt_internal_extend_target(tst_qguitimer
         tst_QTimer=tst_QGuiTimer
 )
 
-set_tests_properties(
-    tst_qguitimer
-    PROPERTIES
-        RUN_SERIAL TRUE
-)
-
 if(QT_FEATURE_glib AND UNIX)
     addGuiTimerTest(tst_qguitimer_no_glib)
     qt_internal_extend_target(tst_qguitimer_no_glib
         DEFINES
             DISABLE_GLIB
             tst_QTimer=tst_QGuiTimer_no_glib # Class name in the unittest
-    )
-
-    set_tests_properties(
-        tst_qguitimer_no_glib
-        PROPERTIES
-            RUN_SERIAL TRUE
     )
 endif()

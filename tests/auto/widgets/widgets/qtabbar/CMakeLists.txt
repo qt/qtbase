@@ -12,16 +12,11 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qtabbar
+    RUN_SERIAL
     SOURCES
         tst_qtabbar.cpp
     LIBRARIES
         Qt::Gui
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qtabbar
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

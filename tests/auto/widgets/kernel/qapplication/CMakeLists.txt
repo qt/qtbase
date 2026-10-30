@@ -51,16 +51,11 @@ if(QT_FEATURE_process)
 endif()
 
 qt_internal_add_test(tst_static_qapplication
+    RUN_SERIAL
     SOURCES
         ../../../corelib/kernel/qcoreapplication/tst_static_qcoreapplication.cpp
         ../../../corelib/kernel/qcoreapplication/maybeshow.h
     LIBRARIES
         Qt::CorePrivate
         Qt::Widgets
-)
-
-set_tests_properties(
-    tst_static_qapplication
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

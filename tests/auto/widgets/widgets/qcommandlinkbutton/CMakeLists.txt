@@ -12,16 +12,11 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qcommandlinkbutton
+    RUN_SERIAL
     SOURCES
         tst_qcommandlinkbutton.cpp
     LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
-)
-
-set_tests_properties(
-    tst_qcommandlinkbutton
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

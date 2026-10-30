@@ -18,6 +18,7 @@ file(GLOB_RECURSE qrhi_resource_files
 )
 
 qt_internal_add_test(tst_qrhi
+    RUN_SERIAL
     SOURCES
         tst_qrhi.cpp
     LIBRARIES
@@ -25,10 +26,4 @@ qt_internal_add_test(tst_qrhi
         Qt::GuiPrivate
     TESTDATA ${qrhi_resource_files}
     BUILTIN_TESTDATA
-)
-
-set_tests_properties(
-    tst_qrhi
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

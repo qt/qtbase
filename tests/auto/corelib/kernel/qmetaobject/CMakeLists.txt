@@ -19,16 +19,11 @@ set(tst_qmetaobject_SOURCES
 #####################################################################
 
 qt_internal_add_test(tst_qmetaobject
+    RUN_SERIAL
     SOURCES
         ${tst_qmetaobject_SOURCES}
     LIBRARIES
         Qt::CorePrivate
-)
-
-set_tests_properties(
-    tst_qmetaobject
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
 
 qt_internal_add_test(tst_qmetaobject_compat

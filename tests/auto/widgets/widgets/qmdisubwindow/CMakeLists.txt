@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qmdisubwindow
+    RUN_SERIAL
     SOURCES
         tst_qmdisubwindow.cpp
     DEFINES
@@ -21,10 +22,4 @@ qt_internal_add_test(tst_qmdisubwindow
         Qt::Gui
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qmdisubwindow
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

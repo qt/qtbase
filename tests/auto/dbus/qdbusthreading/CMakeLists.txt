@@ -12,14 +12,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qdbusthreading
+    RUN_SERIAL
     SOURCES
         tst_qdbusthreading.cpp
     LIBRARIES
         Qt::DBus
-)
-
-set_tests_properties(
-    tst_qdbusthreading
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

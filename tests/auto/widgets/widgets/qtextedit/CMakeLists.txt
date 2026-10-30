@@ -15,6 +15,7 @@ endif()
 list(APPEND test_data "fullWidthSelection")
 
 qt_internal_add_test(tst_qtextedit
+    RUN_SERIAL
     SOURCES
         tst_qtextedit.cpp
     LIBRARIES
@@ -33,10 +34,4 @@ qt_internal_add_test(tst_qtextedit
 qt_internal_extend_target(tst_qtextedit CONDITION MACOS
     LIBRARIES
         ${FWAppKit}
-)
-
-set_tests_properties(
-    tst_qtextedit
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

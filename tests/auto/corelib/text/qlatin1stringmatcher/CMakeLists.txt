@@ -12,15 +12,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qlatin1stringmatcher
+    RUN_SERIAL
     SOURCES
         tst_qlatin1stringmatcher.cpp
-)
-
-
-set_tests_properties(
-    tst_qlatin1stringmatcher
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
 
 ## Scopes:

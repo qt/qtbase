@@ -10,6 +10,7 @@ list(APPEND test_data "../tmp/README")
 list(APPEND test_data "../modal")
 
 qt_internal_add_test(tst_qapplication
+    RUN_SERIAL
     SOURCES
         ../tst_qapplication.cpp
     LIBRARIES
@@ -20,12 +21,6 @@ qt_internal_add_test(tst_qapplication
         Qt::WidgetsPrivate
     TESTDATA ${test_data}
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.."
-)
-
-set_tests_properties(
-    tst_qapplication
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
 
 ## Scopes:

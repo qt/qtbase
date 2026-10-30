@@ -12,16 +12,11 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qscrollbar
+    RUN_SERIAL
     SOURCES
         tst_qscrollbar.cpp
     LIBRARIES
         Qt::Gui
         Qt::TestPrivate
         Qt::Widgets
-)
-
-set_tests_properties(
-    tst_qscrollbar
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

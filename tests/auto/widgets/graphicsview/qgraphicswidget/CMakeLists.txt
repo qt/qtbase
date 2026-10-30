@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qgraphicswidget
+    RUN_SERIAL
     SOURCES
         tst_qgraphicswidget.cpp
     LIBRARIES
@@ -20,10 +21,4 @@ qt_internal_add_test(tst_qgraphicswidget
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qgraphicswidget
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

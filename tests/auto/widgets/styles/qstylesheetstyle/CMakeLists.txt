@@ -18,6 +18,7 @@ set(resources_resource_files
 )
 
 qt_internal_add_test(tst_qstylesheetstyle
+    RUN_SERIAL
     SOURCES
         tst_qstylesheetstyle.cpp
     LIBRARIES
@@ -31,9 +32,3 @@ qt_internal_add_test(tst_qstylesheetstyle
 )
 
 # _REQUIREMENTS = "qtConfig(private_tests)"
-
-set_tests_properties(
-    tst_qstylesheetstyle
-    PROPERTIES
-        RUN_SERIAL TRUE
-)

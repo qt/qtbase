@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qfiledialog
+    RUN_SERIAL
     SOURCES
         tst_qfiledialog.cpp
     LIBRARIES
@@ -20,10 +21,4 @@ qt_internal_add_test(tst_qfiledialog
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
-)
-
-set_tests_properties(
-    tst_qfiledialog
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qmenubar
+    RUN_SERIAL
     SOURCES
         tst_qmenubar.cpp
     LIBRARIES
@@ -29,10 +30,4 @@ qt_internal_extend_target(tst_qmenubar CONDITION MACOS
         tst_qmenubar_mac.mm
     LIBRARIES
         ${FWAppKit}
-)
-
-set_tests_properties(
-    tst_qmenubar
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

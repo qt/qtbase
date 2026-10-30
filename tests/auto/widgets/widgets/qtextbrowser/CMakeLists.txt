@@ -27,6 +27,7 @@ file(GLOB_RECURSE test_data_glob
 list(APPEND test_data ${test_data_glob})
 
 qt_internal_add_test(tst_qtextbrowser
+    RUN_SERIAL
     SOURCES
         tst_qtextbrowser.cpp
     LIBRARIES
@@ -42,10 +43,4 @@ qt_internal_add_test(tst_qtextbrowser
 qt_internal_extend_target(tst_qtextbrowser CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
-)
-
-set_tests_properties(
-    tst_qtextbrowser
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

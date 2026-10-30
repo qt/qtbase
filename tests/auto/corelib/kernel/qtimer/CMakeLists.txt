@@ -13,6 +13,7 @@ endif()
 
 function(addTimerTest test)
     qt_internal_add_test(${test}
+        RUN_SERIAL
         SOURCES
             tst_qtimer.cpp
         DEFINES
@@ -25,12 +26,6 @@ endfunction()
 
 addTimerTest(tst_qtimer)
 
-set_tests_properties(
-    tst_qtimer
-    PROPERTIES
-        RUN_SERIAL TRUE
-)
-
 if(QT_FEATURE_glib AND UNIX)
     addTimerTest(tst_qtimer_no_glib)
     qt_internal_extend_target(tst_qtimer_no_glib
@@ -38,11 +33,4 @@ if(QT_FEATURE_glib AND UNIX)
             DISABLE_GLIB
             tst_QTimer=tst_QTimer_no_glib # Class name in the unittest
     )
-
-set_tests_properties(
-    tst_qtimer_no_glib
-    PROPERTIES
-        RUN_SERIAL TRUE
-)
 endif()
-

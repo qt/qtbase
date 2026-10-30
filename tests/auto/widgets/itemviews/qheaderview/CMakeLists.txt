@@ -20,6 +20,7 @@ set(testfonts_resource_files
 )
 
 qt_internal_add_test(tst_qheaderview
+    RUN_SERIAL
     SOURCES
         tst_qheaderview.cpp
     LIBRARIES
@@ -30,10 +31,4 @@ qt_internal_add_test(tst_qheaderview
         Qt::WidgetsPrivate
     TESTDATA ${testfonts_resource_files}
     BUILTIN_TESTDATA
-)
-
-set_tests_properties(
-    tst_qheaderview
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

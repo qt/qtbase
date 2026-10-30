@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qopenglwindow
+    RUN_SERIAL
     SOURCES
         tst_qopenglwindow.cpp
     LIBRARIES
@@ -19,10 +20,4 @@ qt_internal_add_test(tst_qopenglwindow
         Qt::Gui
         Qt::GuiPrivate
         Qt::OpenGL
-)
-
-set_tests_properties(
-    tst_qopenglwindow
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

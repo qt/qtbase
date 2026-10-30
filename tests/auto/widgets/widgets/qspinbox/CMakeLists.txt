@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qspinbox
+    RUN_SERIAL
     SOURCES
         tst_qspinbox.cpp
     LIBRARIES
@@ -19,10 +20,4 @@ qt_internal_add_test(tst_qspinbox
         Qt::Widgets
         Qt::WidgetsPrivate
         Qt::TestPrivate
-)
-
-set_tests_properties(
-    tst_qspinbox
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

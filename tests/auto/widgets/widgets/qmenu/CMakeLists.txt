@@ -12,6 +12,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 qt_internal_add_test(tst_qmenu
+    RUN_SERIAL
     SOURCES
         tst_qmenu.cpp
     LIBRARIES
@@ -35,10 +36,4 @@ qt_internal_extend_target(tst_qmenu CONDITION MACOS
 qt_internal_extend_target(tst_qmenu CONDITION NOT MACOS
     DEFINES
         QTEST_QPA_MOUSE_HANDLING
-)
-
-set_tests_properties(
-    tst_qmenu
-    PROPERTIES
-        RUN_SERIAL TRUE
 )

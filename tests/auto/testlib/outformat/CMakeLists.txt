@@ -10,10 +10,5 @@ endif()
 qt_internal_add_test(tst_outformat
     SOURCES
         tst_outformat.cpp
-)
-
-set_tests_properties(
-    tst_outformat
-    PROPERTIES
-        RUN_SERIAL TRUE
+    RUN_SERIAL
 )

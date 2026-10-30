@@ -16,16 +16,11 @@ list(APPEND test_data "extradata.txt")
 list(APPEND test_data "setSizes3.dat")
 
 qt_internal_add_test(tst_qsplitter
+    RUN_SERIAL
     SOURCES
         tst_qsplitter.cpp
     LIBRARIES
         Qt::Gui
         Qt::Widgets
     TESTDATA ${test_data}
-)
-
-set_tests_properties(
-    tst_qsplitter
-    PROPERTIES
-        RUN_SERIAL TRUE
 )
