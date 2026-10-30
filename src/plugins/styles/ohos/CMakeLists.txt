@@ -16,18 +16,5 @@ qt_internal_add_plugin(QOhosStylePlugin
         Qt::WidgetsPrivate
 )
 
-# Resources:
-set(ohos_resource_files
-    "resources/ic_gallery_material_select_checkbo.svg"
-)
-
-qt_internal_add_resource(QOhosStylePlugin "ohos"
-    PREFIX
-        "/"
-    FILES
-        ${ohos_resource_files}
-)
-
-
 #### Keys ignored in scope 1:.:.:ohos.pro:<TRUE>:
 # DISTFILES = "ohosstyle.json"
