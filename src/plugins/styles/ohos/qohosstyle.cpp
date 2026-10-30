@@ -55,6 +55,9 @@ constexpr int checkBoxOrRadioButtonFocusStrokeWidth = 2;
 constexpr int checkBoxOrRadioButtonSize =
     checkBoxOrRadioButtonIndicatorSize + (2 * checkBoxOrRadioButtonIndicatorGap)
     + (2 * checkBoxOrRadioButtonFocusStrokeWidth);
+constexpr int checkBoxCheckMarkStrokeWidth = 2;
+constexpr int checkBoxCheckMarkShadowWidth = 1;
+constexpr double checkBoxCheckMarkShadowOpacity = 0.05;
 constexpr int radioButtonIndicatorStrokeWidth = 6;
 
 constexpr int textCursorWidth = 1;
@@ -334,6 +337,32 @@ void drawPolyline(
     });
 }
 
+void drawCheckMark(QPainter &painter, const QRectF &rect, const QColor &color)
+{
+    constexpr QPointF startFraction(0.25, 0.49);
+    constexpr QPointF middleFraction(0.44, 0.68);
+    constexpr QPointF endFraction(0.76, 0.33);
+    const auto pointInRect = [&rect](const QPointF &fraction) {
+        return QPointF(
+            rect.x() + rect.width() * fraction.x(), rect.y() + rect.height() * fraction.y());
+    };
+    const std::vector<QPointF> checkMarkPoints = {
+        pointInRect(startFraction), pointInRect(middleFraction), pointInRect(endFraction)};
+    const auto makeCheckMarkPen = [](const QColor &penColor, int width) {
+        return QPen(penColor, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    };
+    QColor shadowColor(Qt::black);
+    shadowColor.setAlphaF(checkBoxCheckMarkShadowOpacity);
+    drawPolyline(
+        painter,
+        makeCheckMarkPen(
+            shadowColor, checkBoxCheckMarkStrokeWidth + 2 * checkBoxCheckMarkShadowWidth),
+        Qt::NoBrush, checkMarkPoints);
+    drawPolyline(
+        painter, makeCheckMarkPen(color, checkBoxCheckMarkStrokeWidth), Qt::NoBrush,
+        checkMarkPoints);
+}
+
 enum class ArrowDirection { Up, Down, Left, Right };
 
 void drawArrow(
@@ -399,11 +428,10 @@ void drawCheckBoxOrRadioButtonIndicator(QPainter &painter, const QStyleOption &o
     if (isOn) {
         if (isCheckBox) {
             drawEllipse(painter, Qt::NoPen, activeColor, indicatorRect);
-
-            QPixmap svgPixmap(indicatorRect.size());
-            if (svgPixmap.load(QString::fromStdString(":/resources/ic_gallery_material_select_checkbo.svg"))) {
-                painter.drawPixmap(indicatorRect.topLeft(), svgPixmap);
-            }
+            painter.setOpacity(1.0);
+            drawCheckMark(
+                painter, indicatorRect,
+                option.palette.color(QPalette::Active, QPalette::BrightText));
         } else {
             drawEllipse(
                 painter, QPen(activeColor, radioButtonIndicatorStrokeWidth), Qt::NoBrush,
