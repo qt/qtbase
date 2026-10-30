@@ -26,7 +26,7 @@ instructions:
       disable_if:
         condition: property
         property: target.osVersion
-        in_values: [VxWorks, Android_ANY, QNX_800, QNX_710]
+        in_values: [VxWorks, Android_ANY, QNX_800, QNX_710, HarmonyOS_ANY]
 
     - !include "{{qt/qtbase}}/coin_module_test_template_v3.yaml"
     - !include "{{qt/qtbase}}/coin_qtbase_test_docs.yaml"
