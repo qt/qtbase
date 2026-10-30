@@ -260,7 +260,9 @@ static void qt_fusion_draw_mdibutton(QPainter *painter, const QStyleOptionTitleB
 */
 QFusionStylePrivate::QFusionStylePrivate()
 {
+#if QT_CONFIG(animation)
     animationFps = 60;
+#endif
 }
 
 /*!

@@ -7,7 +7,7 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include "qhash.h"
+#include <QtCore/private/qflatmap_p.h>
 #include "qcommonstyle.h"
 #include "qstyle_p.h"
 #if QT_CONFIG(animation)
@@ -35,17 +35,14 @@ class Q_WIDGETS_EXPORT QCommonStylePrivate : public QStylePrivate
 {
     Q_DECLARE_PUBLIC(QCommonStyle)
 public:
-    inline QCommonStylePrivate() :
-#if QT_CONFIG(itemviews)
-    cachedOption(nullptr),
-#endif
-    animationFps(30)
-    { }
+    inline QCommonStylePrivate() = default;
 
     ~QCommonStylePrivate()
     {
 #if QT_CONFIG(animation)
-        qDeleteAll(animations);
+        for (auto it = animations.cbegin(); it != animations.cend(); ++it)
+            delete it.value();
+        animations.clear();
 #endif
 #if QT_CONFIG(itemviews)
         delete cachedOption;
@@ -63,7 +60,7 @@ public:
     QSize viewItemSize(const QStyleOptionViewItem *option, int role) const;
 
     mutable QRect decorationRect, displayRect, checkRect;
-    mutable QStyleOptionViewItem *cachedOption;
+    mutable QStyleOptionViewItem *cachedOption = nullptr;
     bool isViewItemCached(const QStyleOptionViewItem &option) const {
         return cachedOption && (option.widget == cachedOption->widget
                && option.index == cachedOption->index
@@ -92,8 +89,8 @@ public:
     virtual void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
 #endif
 
-    int animationFps;
 #if QT_CONFIG(animation)
+    int animationFps = 30;
     QStyleAnimation* animation(const QObject *target) const;
     void startAnimation(QStyleAnimation *animation) const;
     void stopAnimation(const QObject *target) const;
@@ -120,7 +117,7 @@ public:
     static QStyle::PrimitiveElement arrowToPrimitiveElement(Qt::ArrowType arrowType);
 #if QT_CONFIG(animation)
 private:
-    mutable QHash<const QObject*, QStyleAnimation*> animations;
+    mutable QVarLengthFlatMap<const QObject *, QStyleAnimation *, 8> animations;
 #endif // animation
 };
 
