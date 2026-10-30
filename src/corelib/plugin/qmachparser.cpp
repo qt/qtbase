@@ -123,11 +123,11 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
             return notfound(QLibrary::tr("file too small"), errorString);
         }
 
-        int count = qFromBigEndian(fat->nfat_arch);
-        if (Q_UNLIKELY(fdlen < sizeof(*fat) + sizeof(*arch) * count))
+        uint32_t count = qFromBigEndian(fat->nfat_arch);
+        if (Q_UNLIKELY(fdlen < sizeof(*fat) + sizeof(*arch) * quint64{count}))
             return notfound(QString(), errorString);
 
-        for (int i = 0; i < count; ++i) {
+        for (uint32_t i = 0; i < count; ++i) {
             if (arch[i].cputype == qToBigEndian(my_cputype)) {
                 // ### should we check the CPU subtype? Maybe on ARM?
                 uint32_t size = qFromBigEndian(arch[i].size);
