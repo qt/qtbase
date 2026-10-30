@@ -5048,6 +5048,70 @@
             to be linked in.
     \endtable
 
+    The \c output, \c commands, \c depends, and \c depend_command members can
+    use placeholders, written as \c{${NAME}}, which qmake replaces when it
+    generates the build rules. Placeholders that refer to files are quoted
+    for the shell where needed, and unknown placeholders are left unchanged.
+    The examples in the following table use the input file
+    \c{sub/foo.tar.gz}:
+
+    \table
+    \header
+        \li Placeholder
+        \li Description
+    \row
+        \li QMAKE_FILE_IN, QMAKE_FILE_NAME
+        \li The path of the input file, such as \c{sub/foo.tar.gz}.
+    \row
+        \li QMAKE_FILE_IN_BASE, QMAKE_FILE_BASE
+        \li The input file name without its directory and last extension,
+            such as \c{foo.tar}.
+    \row
+        \li QMAKE_FILE_IN_EXT, QMAKE_FILE_EXT
+        \li The last extension of the input file name, including the dot,
+            such as \c{.gz}.
+    \row
+        \li QMAKE_FILE_IN_NAME
+        \li The input file name without its directory, such as
+            \c{foo.tar.gz}.
+    \row
+        \li QMAKE_FILE_IN_PATH, QMAKE_FILE_PATH
+        \li The directory of the input file, such as \c{sub}.
+    \row
+        \li QMAKE_FILE_OUT
+        \li The path of the output file.
+    \row
+        \li QMAKE_FILE_OUT_BASE
+        \li The output file name without its directory and last extension.
+    \row
+        \li QMAKE_FILE_OUT_PATH
+        \li The directory of the output file.
+    \row
+        \li QMAKE_VAR_<name>
+        \li The values of the qmake variable \e{name}, separated by spaces.
+    \row
+        \li QMAKE_VAR_FIRST_<name>
+        \li The first value of the qmake variable \e{name}.
+    \row
+        \li QMAKE_FUNC_FILE_IN_<function>
+        \li The result of calling the replace function \e{function} with the
+            input files as its argument.
+    \row
+        \li QMAKE_FUNC_FILE_OUT_<function>
+        \li The result of calling the replace function \e{function} with the
+            output files as its argument.
+    \row
+        \li QMAKE_FUNC_<function>
+        \li The result of calling the replace function \e{function} with the
+            input files as its first argument and the output files as its
+            second argument.
+    \endtable
+
+    The \c output member can't use the output file placeholders, because it
+    defines the output file. When \c CONFIG contains \c combine, the input file
+    placeholders expand to all input files, separated by spaces, and \c output
+    should be a fixed file name.
+
     \section1 Library Dependencies
 
     Often when linking against a library, qmake
