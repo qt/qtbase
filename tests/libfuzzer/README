@@ -50,6 +50,11 @@ Some of these tests are continuously being run on oss-fuzz, a service by Google 
 software. It is documented at:
 https://google.github.io/oss-fuzz/
 
+You can add a fuzzer to that set by editing qtqa/fuzzing/oss-fuzz/build.sh - you
+need to add a build_fuzzer command in the block at the end and may need to add a
+zip command earlier if you want qtqa/ to keep your test's corpus of past issues
+separate from others. See the script for details.
+
 You can find:
  - The build logs for Qt at
    https://oss-fuzz-build-logs.storage.googleapis.com/index.html#qt
