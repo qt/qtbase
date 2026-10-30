@@ -1021,6 +1021,16 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \row \li \l CE_ToolBoxTab \li \l QStyleOptionToolBox
          \li \l State_Selected \li The tab is the currently selected tab.
+    \row \li \l CE_RubberBand \li \l QStyleOptionRubberBand \li \li
+    \row \li \l CE_ProgressBar \li \l QStyleOptionProgressBar \li \li
+    \row \li \l CE_ToolBoxTabShape, \l CE_ToolBoxTabLabel \li \l QStyleOptionToolBox \li \li
+    \row \li \l CE_ComboBoxLabel \li \l QStyleOptionComboBox \li \li
+    \row \li \l CE_DockWidgetTitle \li \l QStyleOptionDockWidget \li \li
+    \row \li \l CE_ShapedFrame \li \l QStyleOptionFrame \li \li
+    \row \li \l CE_ToolBar \li \l QStyleOptionToolBar \li \li
+    \row \li \l CE_ItemViewItem \li \l QStyleOptionViewItem \li \li
+    \row \li \l CE_SizeGrip \li \l QStyleOptionSizeGrip \li
+         \li Optional. Without it, the corner is chosen from the layout direction.
     \row \li{1,3} \l CE_HeaderSection \li{1,3} \l QStyleOptionHeader
          \li \l State_Sunken \li Indicates that the section is pressed.
     \row \li \l State_UpArrow \li Indicates that the sort indicator should be pointing up.
