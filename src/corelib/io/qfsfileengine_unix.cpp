@@ -291,7 +291,7 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
             QFileSystemEngine::fillMetaData(fileEntry, metaData, metaData.missingFlags(flags));
     }
 
-    return metaData.exists();
+    return metaData.hasFlags(QFileSystemMetaData::ExistsAttribute) && metaData.exists();
 }
 
 bool QFSFileEnginePrivate::isSymlink() const

@@ -468,10 +468,12 @@ void tst_QTemporaryFile::removeAndReOpen()
         QTemporaryFile file;
         QVERIFY(file.open());
         fileName = file.fileName();     // materializes any unnamed file
+        QVERIFY(file.exists());
         QVERIFY(QFile::exists(fileName));
 
         QVERIFY(file.remove());
         QVERIFY(file.fileName().isEmpty());
+        QVERIFY(!file.exists());
         QVERIFY(!QFile::exists(fileName));
         QVERIFY(!file.remove());
 

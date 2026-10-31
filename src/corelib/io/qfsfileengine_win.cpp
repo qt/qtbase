@@ -489,7 +489,7 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
             QFileSystemEngine::fillMetaData(fileEntry, metaData, metaData.missingFlags(flags));
     }
 
-    return metaData.exists();
+    return metaData.hasFlags(QFileSystemMetaData::ExistsAttribute) && metaData.exists();
 }
 
 // ### assume that they add .lnk to newName
@@ -542,6 +542,11 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         exists = d->doStat(queryFlags);
     }
 
+    // if we succeeded in querying, then the file exists: a file on
+    // Windows cannot be deleted if we have an open handle to it
+    if (!exists)
+        return ret;
+
     if (exists && (type & PermsMask))
         ret |= FileFlags::fromInt(d->metaData.permissions().toInt());
 
@@ -556,8 +561,6 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     }
     if (type & FlagsMask) {
         if (d->metaData.exists()) {
-            // if we succeeded in querying, then the file exists: a file on
-            // Windows cannot be deleted if we have an open handle to it
             ret |= ExistsFlag;
             if (d->fileEntry.isRoot())
                 ret |= RootFlag;
