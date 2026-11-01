@@ -100,12 +100,12 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
     if (dirtyRegion.isEmpty() && !resized)
         return m_texture.get();
 
-    if (needsConversion)
-        image = image.convertToFormat(QImage::Format_RGBA8888);
-    else
-        image.detach(); // if it was just wrapping data, that's no good, we need ownership, so detach
-
     if (resized) {
+        if (needsConversion)
+            image = image.convertToFormat(QImage::Format_RGBA8888);
+        else
+            image.detach(); // if it was just wrapping data, that's no good, we need ownership, so detach
+
         if (!m_texture)
             m_texture.reset(rhi->newTexture(QRhiTexture::RGBA8, image.size()));
         else
@@ -118,11 +118,14 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
         }
         resourceUpdates->uploadTexture(m_texture.get(), image);
     } else {
-        QRect imageRect = image.rect();
-        QRect rect = dirtyRegion.boundingRect() & imageRect;
-        QRhiTextureSubresourceUploadDescription subresDesc(image);
-        subresDesc.setSourceTopLeft(rect.topLeft());
-        subresDesc.setSourceSize(rect.size());
+        const QRect rect = dirtyRegion.boundingRect() & image.rect();
+        if (rect.isEmpty())
+            return m_texture.get();
+        // The upload is deferred, so take ownership, but only of the dirty part
+        QImage dirtyImage = image.copy(rect);
+        if (needsConversion)
+            dirtyImage.convertTo(QImage::Format_RGBA8888);
+        QRhiTextureSubresourceUploadDescription subresDesc(dirtyImage);
         subresDesc.setDestinationTopLeft(rect.topLeft());
         QRhiTextureUploadDescription uploadDesc(QRhiTextureUploadEntry(0, 0, subresDesc));
         resourceUpdates->uploadTexture(m_texture.get(), uploadDesc);
