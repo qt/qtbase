@@ -53,6 +53,7 @@ int main(int argc, char **argv)
         //! [3]
         QCoreApplication app(argc, argv);
         QCommandLineParser parser;
+        parser.addHelpOption();
 
         parser.addPositionalArgument("command", "The command to execute.");
 
@@ -65,27 +66,34 @@ int main(int argc, char **argv)
             parser.clearPositionalArguments();
             parser.addPositionalArgument("resize", "Resize the object to a new size.", "resize [resize_options]");
             parser.addOption(QCommandLineOption("size", "New size.", "new_size"));
-            parser.process(app);
-            // ...
         }
+
+        // Call process() to handle --help and to check the options.
+        parser.process(app);
 
         /*
         This code results in context-dependent help:
 
         $ tool --help
-        Usage: tool command
-
-        Arguments:
-          command  The command to execute.
-
-        $ tool resize --help
-        Usage: tool resize [resize_options]
+        Usage: tool [options] command
 
         Options:
-          --size <size>  New size.
+          -h, --help  Displays help on commandline options.
+          --help-all  Displays help, including generic Qt options.
 
         Arguments:
-          resize         Resize the object to a new size.
+          command     The command to execute.
+
+        $ tool resize --help
+        Usage: tool [options] resize [resize_options]
+
+        Options:
+          -h, --help         Displays help on commandline options.
+          --help-all         Displays help, including generic Qt options.
+          --size <new_size>  New size.
+
+        Arguments:
+          resize             Resize the object to a new size.
         */
         //! [3]
     }
