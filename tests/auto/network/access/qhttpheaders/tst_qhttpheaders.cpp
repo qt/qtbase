@@ -558,6 +558,10 @@ void tst_QHttpHeaders::replaceOrAppend()
 void tst_QHttpHeaders::intValues()
 {
     QHttpHeaders h1;
+    QVERIFY(!h1.intValue(QHttpHeaders::WellKnownHeader::ContentLength).has_value());
+    QVERIFY(!h1.intValues(QHttpHeaders::WellKnownHeader::ContentLength).has_value());
+    QVERIFY(!h1.intValue("content-length").has_value());
+    QVERIFY(!h1.intValues("content-length").has_value());
     h1.append("Content-Length", "12345");
     h1.append(QHttpHeaders::WellKnownHeader::ContentLength, "67890");
 
@@ -596,6 +600,10 @@ void tst_QHttpHeaders::intValues()
 void tst_QHttpHeaders::dateTimeValues()
 {
     QHttpHeaders h1;
+    QVERIFY(!h1.dateTimeValue(QHttpHeaders::WellKnownHeader::Date).has_value());
+    QVERIFY(!h1.dateTimeValues(QHttpHeaders::WellKnownHeader::Date).has_value());
+    QVERIFY(!h1.dateTimeValue("date").has_value());
+    QVERIFY(!h1.dateTimeValues("date").has_value());
     h1.append("Date", "Tue, 25 Feb 2025 10:10:10 GMT");
     h1.append(QHttpHeaders::WellKnownHeader::Date, "Mon, 24 Feb 2025 11:11:11 GMT");
 

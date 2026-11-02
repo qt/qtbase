@@ -1859,6 +1859,9 @@ QByteArray QHttpHeaders::combinedValue(WellKnownHeader name) const
 */
 std::optional<qint64> QHttpHeaders::intValue(QAnyStringView name) const noexcept
 {
+    if (isEmpty())
+        return std::nullopt;
+
     std::optional<QByteArrayView> v = d->findValue(HeaderName{name});
     if (!v)
         return std::nullopt;
@@ -1889,6 +1892,9 @@ std::optional<qint64> QHttpHeaders::intValue(WellKnownHeader name) const noexcep
 */
 std::optional<QList<qint64>> QHttpHeaders::intValues(QAnyStringView name) const
 {
+    if (isEmpty())
+        return std::nullopt;
+
     QList<qint64> results;
     d->forEachHeader(name, [&](QByteArrayView value) {
         bool ok = false;
@@ -1940,6 +1946,9 @@ std::optional<qint64> QHttpHeaders::intValueAt(qsizetype i) const noexcept
 */
 std::optional<QDateTime> QHttpHeaders::dateTimeValue(QAnyStringView name) const
 {
+    if (isEmpty())
+        return std::nullopt;
+
     std::optional<QByteArrayView> v = d->findValue(HeaderName{name});
     if (!v)
         return std::nullopt;
@@ -1997,6 +2006,9 @@ void QHttpHeaders::setDateTimeValue(WellKnownHeader name, const QDateTime &dateT
 */
 std::optional<QList<QDateTime>> QHttpHeaders::dateTimeValues(QAnyStringView name) const
 {
+    if (isEmpty())
+        return std::nullopt;
+
     QList<QDateTime> results;
     d->forEachHeader(name, [&](QByteArrayView value) {
         QDateTime dt = QNetworkHeadersPrivate::fromHttpDate(value);
