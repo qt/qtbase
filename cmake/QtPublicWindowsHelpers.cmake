@@ -128,7 +128,14 @@ function(_qt_internal_finalize_windows_app target)
         # /MANIFEST:NO alone is not sufficient. On the non-incremental MSVC link path, CMake appends
         # /MANIFEST:EMBED,ID=1 /MANIFESTINPUT:<manifest> after our flags, which re-enables manifest
         # generation, so /MANIFESTUAC:NO is needed to suppress the linker's own trustInfo block.
-        target_link_options(${target} PRIVATE "/MANIFEST:NO" "/MANIFESTUAC:NO")
+        #
+        # Don't pass /MANIFEST:NO with Visual Studio generators. CMake maps it to
+        # <GenerateManifest>false</GenerateManifest> in the generated project file, which disables
+        # the MSBuild manifest embedding step.
+        if(NOT CMAKE_GENERATOR MATCHES "^Visual Studio")
+            target_link_options(${target} PRIVATE "/MANIFEST:NO")
+        endif()
+        target_link_options(${target} PRIVATE "/MANIFESTUAC:NO")
     endif()
 endfunction()
 
