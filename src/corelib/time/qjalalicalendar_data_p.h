@@ -24,8 +24,8 @@ namespace QtPrivate::Jalali {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2025-11-13 from the
-    Common Locale Data Repository v48
+    This part of the file was generated on 2026-11-04 from the
+    Common Locale Data & Rules v49
 
     http://www.unicode.org/cldr/
 
@@ -385,7 +385,7 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    97,    66,   183,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Guarani/Latin/Paraguay
       {    98,    40,   110, 2283, 2283, 2283, 2283,  153,  153, 85, 85, 85, 85, 26, 26 },// Gujarati/Gujarati/India
       {    99,    66,   124,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Gusii/Latin/Kenya
-      {   100,    66,   104, 1638, 1638, 1719, 1719,  153,  153, 81, 81, 57, 57, 26, 26 },// Haitian/Latin/Haiti
+      {   100,    66,   104,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Haitian/Latin/Haiti
       {   101,    66,   169,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Hausa/Latin/Nigeria
       {   101,     4,   169,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Hausa/Arabic/Nigeria
       {   101,     4,   222,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Hausa/Arabic/Sudan

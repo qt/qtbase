@@ -25,12 +25,13 @@
 },
 {
     "Id": "unicode-cldr",
-    "Name": "Unicode Common Locale Data Repository (CLDR)",
+    "Name": "Unicode Common Locale Data & Rules (CLDR)",
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QTimeZone, QLocale).",
     "SecurityCritical": false,
     "Comment": {
         "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py",
+        "License": "LDML copyright conditions are tighter, but we don't republish it",
         "General": "no relevant CPE and PURL found"
     },
     "Files": [ "qlocale_data_p.h",
@@ -43,7 +44,7 @@
  world's languages, with the largest and most extensive standard repository of locale data
  available.",
     "Homepage": "https://cldr.unicode.org/",
-    "Version": "v48.2",
+    "Version": "v49",
     "License": "Unicode License v3",
     "LicenseId": "Unicode-3.0",
     "Copyright": "Copyright (C) 2004-2025 Unicode, Inc."

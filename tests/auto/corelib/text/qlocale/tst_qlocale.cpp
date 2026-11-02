@@ -4053,7 +4053,7 @@ void tst_QLocale::territoryToString_data()
         << QLocale::SouthGeorgiaAndSouthSandwichIslands
         << u"South Georgia & South Sandwich Islands"_s;
     QTest::newRow("GW") << QLocale::GuineaBissau << u"Guinea-Bissau"_s;
-    QTest::newRow("HM") << QLocale::HeardAndMcDonaldIslands << u"Heard & McDonald Islands"_s;
+    QTest::newRow("HM") << QLocale::HeardAndMcDonaldIslands << u"Heard Island & McDonald Islands"_s;
     QTest::newRow("IM") << QLocale::IsleOfMan << u"Isle of Man"_s;
     QTest::newRow("KN") << QLocale::SaintKittsAndNevis << u"St. Kitts & Nevis"_s;
     QTest::newRow("LC") << QLocale::SaintLucia << u"St. Lucia"_s;
@@ -4064,7 +4064,7 @@ void tst_QLocale::territoryToString_data()
     QTest::newRow("PM") << QLocale::SaintPierreAndMiquelon << u"St. Pierre & Miquelon"_s;
     QTest::newRow("PN") << QLocale::Pitcairn << u"Pitcairn Islands"_s;
     QTest::newRow("RE") << QLocale::Reunion << u"R\u00e9" "union"_s;
-    QTest::newRow("SH") << QLocale::SaintHelena << u"St. Helena"_s;
+    QTest::newRow("SH") << QLocale::SaintHelena << u"St. Helena, Ascension & Tristan da Cunha"_s;
     QTest::newRow("SJ") << QLocale::SvalbardAndJanMayen << u"Svalbard & Jan Mayen"_s;
     QTest::newRow("ST")
         << QLocale::SaoTomeAndPrincipe << u"S\u00e3" "o Tom\u00e9" " & Pr\u00ed" "ncipe"_s;
