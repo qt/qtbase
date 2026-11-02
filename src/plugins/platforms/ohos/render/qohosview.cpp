@@ -446,7 +446,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
             firstViewWithWindow = targetWindowToBeSubWindowOfView;
             break;
         case ViewType::EmbeddedWindow:
-            firstViewWithWindow = ancestorViewWithWindowOrNull();
+            firstViewWithWindow = targetWindowToBeSubWindowOfView->ancestorViewWithWindowOrNull();
             break;
         }
 
