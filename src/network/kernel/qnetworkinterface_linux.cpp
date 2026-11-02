@@ -353,7 +353,7 @@ static void getAddresses(int sock, char *buf, QList<QNetworkInterfacePrivate *> 
                     auto toDeadline = [](quint32 lifetime) -> QDeadlineTimer {
                         if (lifetime == quint32(-1))
                             return QDeadlineTimer::Forever;
-                        return QDeadlineTimer(lifetime * 1000);
+                        return QDeadlineTimer(std::chrono::seconds(lifetime));
                     };
                     entry.setAddressLifetime(toDeadline(cacheinfo->ifa_prefered), toDeadline(cacheinfo->ifa_valid));
                 }

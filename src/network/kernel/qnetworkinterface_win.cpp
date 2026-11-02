@@ -193,7 +193,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             auto toDeadline = [](ULONG lifetime) -> QDeadlineTimer {
                 if (lifetime == 0xffffffffUL)
                     return QDeadlineTimer::Forever;
-                return QDeadlineTimer(lifetime * 1000);
+                return QDeadlineTimer(std::chrono::seconds(lifetime));
             };
             entry.setAddressLifetime(toDeadline(addr->ValidLifetime), toDeadline(addr->PreferredLifetime));
             entry.setDnsEligibility(addr->Flags & IP_ADAPTER_ADDRESS_DNS_ELIGIBLE ?
