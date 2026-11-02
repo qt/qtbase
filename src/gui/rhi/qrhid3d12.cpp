@@ -1427,6 +1427,15 @@ void QRhiD3D12::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
 
         if (cbD->hasCustomScissorSet && !psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
             setDefaultScissor(cbD);
+
+        if (psD->m_stencilTest) {
+            const quint32 ref = psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesStencilRef)
+                    ? cbD->currentStencilRef : 0;
+            if (cbD->appliedStencilRef != ref) {
+                cbD->cmdList->OMSetStencilRef(ref);
+                cbD->appliedStencilRef = ref;
+            }
+        }
     }
 }
 
@@ -2038,6 +2047,8 @@ void QRhiD3D12::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::RenderPass);
     cbD->cmdList->OMSetStencilRef(refValue);
+    cbD->currentStencilRef = refValue;
+    cbD->appliedStencilRef = refValue;
 }
 
 void QRhiD3D12::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)

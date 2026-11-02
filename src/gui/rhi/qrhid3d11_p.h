@@ -504,6 +504,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 D3D11_PRIMITIVE_TOPOLOGY topology;
                 ID3D11InputLayout *inputLayout;
                 ID3D11DepthStencilState *dsState;
+                quint32 stencilRef;
                 ID3D11BlendState *blendState;
                 ID3D11RasterizerState *rastState;
                 ID3D11VertexShader *vs;
@@ -630,6 +631,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     DXGI_FORMAT currentIndexFormat;
     ID3D11Buffer *currentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
     quint32 currentVertexOffsets[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+    quint32 currentStencilRef;
     QD3D11RenderTargetData::Views currentRenderTargetViews;
     QVarLengthArray<char, 128> pushConstantData;
 
@@ -692,6 +694,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         pushConstantData.clear();
         memset(currentVertexBuffers, 0, sizeof(currentVertexBuffers));
         memset(currentVertexOffsets, 0, sizeof(currentVertexOffsets));
+        currentStencilRef = 0;
     }
 };
 

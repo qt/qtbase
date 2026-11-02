@@ -1033,6 +1033,8 @@ void QRhiD3D11::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
         cmd.args.bindGraphicsPipeline.topology = psD->d3dTopology;
         cmd.args.bindGraphicsPipeline.inputLayout = psD->inputLayout; // may be null, that's ok
         cmd.args.bindGraphicsPipeline.dsState = psD->dsState;
+        cmd.args.bindGraphicsPipeline.stencilRef = psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesStencilRef)
+                ? cbD->currentStencilRef : 0;
         cmd.args.bindGraphicsPipeline.blendState = psD->blendState;
         cmd.args.bindGraphicsPipeline.rastState = psD->rastState;
         cmd.args.bindGraphicsPipeline.vs = psD->vs.shader;
@@ -1392,6 +1394,7 @@ void QRhiD3D11::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     cmd.cmd = QD3D11CommandBuffer::Command::StencilRef;
     cmd.args.stencilRef.dsState = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentGraphicsPipeline)->dsState;
     cmd.args.stencilRef.ref = refValue;
+    cbD->currentStencilRef = refValue;
 }
 
 void QRhiD3D11::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
@@ -3252,7 +3255,6 @@ void QRhiD3D11::resetShaderResources(QD3D11CommandBuffer *cbD,
 
 void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
 {
-    quint32 stencilRef = 0;
     float blendConstants[] = { 1, 1, 1, 1 };
     enum ActiveShaderMask {
         VSMaskBit = 0x01,
@@ -3369,7 +3371,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
             SETSHADER(fs, PS)
             context->IASetPrimitiveTopology(cmd.args.bindGraphicsPipeline.topology);
             context->IASetInputLayout(cmd.args.bindGraphicsPipeline.inputLayout);
-            context->OMSetDepthStencilState(cmd.args.bindGraphicsPipeline.dsState, stencilRef);
+            context->OMSetDepthStencilState(cmd.args.bindGraphicsPipeline.dsState, cmd.args.bindGraphicsPipeline.stencilRef);
             context->OMSetBlendState(cmd.args.bindGraphicsPipeline.blendState, blendConstants, 0xffffffff);
             context->RSSetState(cmd.args.bindGraphicsPipeline.rastState);
         }
@@ -3419,8 +3421,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
         }
             break;
         case QD3D11CommandBuffer::Command::StencilRef:
-            stencilRef = cmd.args.stencilRef.ref;
-            context->OMSetDepthStencilState(cmd.args.stencilRef.dsState, stencilRef);
+            context->OMSetDepthStencilState(cmd.args.stencilRef.dsState, cmd.args.stencilRef.ref);
             break;
         case QD3D11CommandBuffer::Command::BlendConstants:
             memcpy(blendConstants, cmd.args.blendConstants.c, 4 * sizeof(float));

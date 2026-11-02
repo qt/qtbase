@@ -6426,6 +6426,17 @@ void QRhiVulkan::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline
 
         if (cbD->hasCustomScissorSet && !psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
             setDefaultScissor(cbD);
+
+        // Binding a pipeline with a static stencil reference value (0)
+        // invalidates the dynamic state, so the value needs to be set again
+        // for the next pipeline with UsesStencilRef. This also gives such
+        // pipelines a well-defined value of 0 at the start of a pass.
+        if (psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesStencilRef)) {
+            if (!cbD->stencilRefValid)
+                recordStencilRef(cbD, cbD->currentStencilRef);
+        } else {
+            cbD->stencilRefValid = false;
+        }
     }
 
     psD->lastActiveFrameSlot = currentFrameSlot;
@@ -6916,11 +6927,8 @@ void QRhiVulkan::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
     }
 }
 
-void QRhiVulkan::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
+void QRhiVulkan::recordStencilRef(QVkCommandBuffer *cbD, quint32 refValue)
 {
-    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
-    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
-
     if (cbD->passUsesSecondaryCb) {
         df->vkCmdSetStencilReference(cbD->activeSecondaryCbStack.last(), VK_STENCIL_FRONT_AND_BACK, refValue);
     } else {
@@ -6928,6 +6936,16 @@ void QRhiVulkan::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
         cmd.cmd = QVkCommandBuffer::Command::SetStencilRef;
         cmd.args.setStencilRef.ref = refValue;
     }
+    cbD->stencilRefValid = true;
+}
+
+void QRhiVulkan::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
+{
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
+
+    recordStencilRef(cbD, refValue);
+    cbD->currentStencilRef = refValue;
 }
 
 void QRhiVulkan::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)

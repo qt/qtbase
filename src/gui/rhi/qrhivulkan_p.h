@@ -374,6 +374,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         hasShadingRateSet = false;
         hasCustomScissorSet = false;
         currentViewport = {};
+        currentStencilRef = 0;
+        stencilRefValid = false;
     }
 
     PassType recordingPass;
@@ -398,6 +400,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     bool hasShadingRateSet;
     bool hasCustomScissorSet;
     QRhiViewport currentViewport;
+    quint32 currentStencilRef;
+    bool stencilRefValid;
 
     struct ComputePassState {
         struct AccessFlagsAndIsNew {
@@ -987,6 +991,7 @@ public:
     Q_DECL_COLD_FUNCTION
     void printDeviceLossErrorInfo() const;
     void setDefaultScissor(QVkCommandBuffer *cbD);
+    void recordStencilRef(QVkCommandBuffer *cbD, quint32 refValue);
 
     QVulkanInstance *inst = nullptr;
     QWindow *maybeWindow = nullptr;

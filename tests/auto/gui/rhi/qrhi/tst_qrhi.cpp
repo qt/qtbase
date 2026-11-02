@@ -165,6 +165,8 @@ private slots:
     void renderToTextureSameSrbDifferentShaders();
     void renderToTextureScissorChange_data();
     void renderToTextureScissorChange();
+    void renderToTextureStencilRef_data();
+    void renderToTextureStencilRef();
     void renderToTextureAllUniformTypes_data();
     void renderToTextureAllUniformTypes();
     void renderToWindowSimple_data();
@@ -5662,6 +5664,190 @@ void tst_QRhi::renderToTextureScissorChange()
     }
 
     rhi->endOffscreenFrame();
+}
+
+void tst_QRhi::renderToTextureStencilRef_data()
+{
+    rhiTestData();
+}
+
+// Pipelines without UsesStencilRef use a stencil reference value of 0. The
+// value set via setStencilRef() persists across pipeline changes within a
+// pass, but each pass starts with 0, even if an earlier pass or frame set
+// something else. This must work the same way with all backends.
+void tst_QRhi::renderToTextureStencilRef()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    std::unique_ptr<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+#ifdef TST_GL
+    if (impl == QRhi::OpenGLES2) {
+        rhi->makeThreadLocalNativeContextCurrent();
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        // because of gl_VertexId in the shader, which is added in GLSL 130 and GLSL ES 300
+        if (!ctx || ctx->format().majorVersion() < 3)
+            QSKIP("This test needs at least OpenGL 3.0 or OpenGL ES 3.0, skipping on OpenGL");
+    }
+#endif
+
+    const QSize outputSize(64, 64);
+    std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    std::unique_ptr<QRhiRenderBuffer> ds(rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, outputSize));
+    QVERIFY(ds->create());
+
+    QRhiTextureRenderTargetDescription rtDesc(texture.get());
+    rtDesc.setDepthStencilBuffer(ds.get());
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    std::unique_ptr<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 16));
+    QVERIFY(ubuf->create());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::FragmentStage, ubuf.get()),
+    });
+    QVERIFY(srb->create());
+
+    // Fullscreen quad in red, but only where the stencil value equals the
+    // reference value.
+    const QShader vs = loadShader(":/data/fullscreenquad.vert.qsb");
+    QVERIFY(vs.isValid());
+    const QShader fs = loadShader(":/data/fullscreenquad_color.frag.qsb");
+    QVERIFY(fs.isValid());
+    auto createPipeline = [&](QRhiGraphicsPipeline::Flags flags) {
+        std::unique_ptr<QRhiGraphicsPipeline> ps(rhi->newGraphicsPipeline());
+        ps->setFlags(flags);
+        ps->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        ps->setStencilTest(true);
+        QRhiGraphicsPipeline::StencilOpState stencilOp;
+        stencilOp.compareOp = QRhiGraphicsPipeline::Equal;
+        ps->setStencilFront(stencilOp);
+        ps->setStencilBack(stencilOp);
+        ps->setShaderResourceBindings(srb.get());
+        ps->setRenderPassDescriptor(rpDesc.get());
+        return ps;
+    };
+    std::unique_ptr<QRhiGraphicsPipeline> refPs = createPipeline(QRhiGraphicsPipeline::UsesStencilRef);
+    QVERIFY(refPs->create());
+    std::unique_ptr<QRhiGraphicsPipeline> noRefPs = createPipeline({});
+    QVERIFY(noRefPs->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    const QRhiViewport viewport(0, 0, float(outputSize.width()), float(outputSize.height()));
+    auto bind = [&](QRhiGraphicsPipeline *ps) {
+        cb->setGraphicsPipeline(ps);
+        cb->setViewport(viewport);
+        cb->setShaderResources();
+    };
+
+    static const int PassCount = 5;
+    QRhiReadbackResult readResults[PassCount];
+    QImage results[PassCount];
+    auto endPassWithReadback = [&](int i) {
+        readResults[i].completed = [&readResults, &results, i] {
+            results[i] = QImage(reinterpret_cast<const uchar *>(readResults[i].data.constData()),
+                                readResults[i].pixelSize.width(), readResults[i].pixelSize.height(),
+                                QImage::Format_RGBA8888_Premultiplied);
+        };
+        QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+        readbackBatch->readBackTexture({ texture.get() }, &readResults[i]);
+        cb->endPass(readbackBatch);
+    };
+
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+    const QVector4D color = { 1.0f, 0.0f, 0.0f, 1.0f };
+    updates->updateDynamicBuffer(ubuf.get(), 0, 16, &color);
+
+    // A pipeline without UsesStencilRef uses 0, not the value set while the
+    // previous pipeline was bound. Expected: red.
+    cb->beginPass(rt.get(), Qt::white, { 1.0f, 0 }, updates);
+    bind(refPs.get());
+    cb->setStencilRef(1);
+    cb->draw(3);
+    bind(noRefPs.get());
+    cb->draw(3);
+    endPassWithReadback(0);
+
+    // The value persists across binding a pipeline without UsesStencilRef
+    // in-between. Expected: red.
+    cb->beginPass(rt.get(), Qt::white, { 1.0f, 1 });
+    bind(refPs.get());
+    cb->setStencilRef(1);
+    bind(noRefPs.get());
+    cb->draw(3);
+    bind(refPs.get());
+    cb->draw(3);
+    endPassWithReadback(1);
+
+    // A new pass starts with 0. Expected: red.
+    cb->beginPass(rt.get(), Qt::white, { 1.0f, 0 });
+    bind(refPs.get());
+    cb->draw(3);
+    // leave 1 set at the end of the frame
+    cb->setStencilRef(1);
+    cb->draw(3);
+    endPassWithReadback(2);
+
+    rhi->endOffscreenFrame();
+
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    // A pass in a new frame starts with 0 as well. Expected: red.
+    cb->beginPass(rt.get(), Qt::white, { 1.0f, 0 });
+    bind(refPs.get());
+    cb->draw(3);
+    endPassWithReadback(3);
+
+    // Verify that the stencil test is effective: the stencil value does not
+    // match the reference value. Expected: white.
+    cb->beginPass(rt.get(), Qt::white, { 1.0f, 0 });
+    bind(refPs.get());
+    cb->setStencilRef(1);
+    cb->draw(3);
+    endPassWithReadback(4);
+
+    rhi->endOffscreenFrame();
+
+    if (rhi->backend() == QRhi::Null)
+        return;
+
+    auto countPixels = [](const QImage &image, QRgb expected) {
+        int count = 0;
+        for (int y = 0; y < image.height(); ++y) {
+            for (int x = 0; x < image.width(); ++x) {
+                const QRgb c = image.pixel(x, y);
+                if (qAbs(qRed(c) - qRed(expected)) <= 1
+                        && qAbs(qGreen(c) - qGreen(expected)) <= 1
+                        && qAbs(qBlue(c) - qBlue(expected)) <= 1)
+                {
+                    ++count;
+                }
+            }
+        }
+        return count;
+    };
+
+    const int pixelCount = outputSize.width() * outputSize.height();
+    for (int i = 0; i < PassCount - 1; ++i) {
+        QCOMPARE(results[i].size(), outputSize);
+        QCOMPARE(countPixels(results[i], qRgb(255, 0, 0)), pixelCount);
+    }
+    QCOMPARE(results[PassCount - 1].size(), outputSize);
+    QCOMPARE(countPixels(results[PassCount - 1], qRgb(255, 255, 255)), pixelCount);
 }
 
 void tst_QRhi::renderToTextureAllUniformTypes_data()
