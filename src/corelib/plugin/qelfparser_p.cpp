@@ -527,7 +527,9 @@ template <typename F>
 static bool scanProgramHeaders(QByteArrayView data, const ErrorMaker &error, F f)
 {
     auto header = reinterpret_cast<const T::Ehdr *>(data.data());
-    Q_UNUSED(error);
+
+    if (header->e_phoff % alignof(T::Phdr) != 0) // misaligned
+        return error(QLibrary::tr("program header table is misaligned")), false;
 
     auto phdr = reinterpret_cast<const T::Phdr *>(data.data() + header->e_phoff);
     auto phdr_end = phdr + header->e_phnum;
@@ -669,6 +671,9 @@ static QLibraryScanResult scanSections(QByteArrayView data, const ErrorMaker &er
 
     // b) find the section entry for the section header string table (shstrab)
     //    it's a section whose entry is pointed by e_shstrndx
+    if (header->e_shoff % alignof(T::Shdr) != 0)
+        return error(QLibrary::tr("section header table is misaligned"));
+
     auto sections = reinterpret_cast<const T::Shdr *>(data.data() + header->e_shoff);
     auto sections_end = sections + e_shnum;
     auto shdr = sections + header->e_shstrndx;

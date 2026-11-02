@@ -591,6 +591,10 @@ static void loadCorruptElfCommonRows()
            [](H h, QFile *f) {
         h->e_phoff = f->size() + 1- h->e_phentsize * h->e_phnum;
     });
+    newRow("program-table-misaligned", "program header table is misaligned",
+           [](H h) {
+        h->e_phoff += 1;
+    });
 
     newRow("segment-starts-past-eof", "a program header entry extends past the end of the file",
            [](H h, QFile *f) {
@@ -792,6 +796,10 @@ void tst_QPluginLoader::loadCorruptElfOldPlugin_data()
     newRow("section-table-ends-past-eof", "section table extends past the end of the file",
            [](H h, QFile *f) {
         h->e_shoff = f->size() + 1 - h->e_shentsize * h->e_shnum;
+    });
+    newRow("section-table-misaligned", "section header table is misaligned",
+           [](H h) {
+        h->e_shoff -= 1;
     });
 
     static auto getSection = +[](H h, int index) {
