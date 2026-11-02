@@ -431,9 +431,6 @@ bool QWaylandGLContext::makeCurrent(QPlatformSurface *surface)
 
     m_currentWindow = static_cast<QWaylandEglWindow *>(surface);
 
-    if (!checkGraphicsReset())
-        return false;
-
     QMutexLocker lock(m_currentWindow->eglSurfaceLock());
 
     EGLSurface eglSurface = m_currentWindow->eglSurface();
@@ -448,6 +445,9 @@ bool QWaylandGLContext::makeCurrent(QPlatformSurface *surface)
         qWarning("QWaylandGLContext::makeCurrent: eglError: %#x, this: %p \n", eglGetError(), this);
         return false;
     }
+    if (!checkGraphicsReset())
+        return false;
+
     // Nvidia requires that the surface is current and on the render thread at the time of doing the actual resizing
     m_currentWindow->updateSurfaceSize(size);
 
