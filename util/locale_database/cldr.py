@@ -728,7 +728,7 @@ enumdata.py (keeping the old name as an alias):
                         raise ValueError
                     # else: fromisoformat reads it as start of day
                 else:
-                    assert len(text) == 16, text
+                    assert len(text) in (16, 19), text
 
                 # If it's given with HH:mm as 24:00, this throws:
                 diff: timedelta = datetime.fromisoformat(text) - epoch
@@ -738,7 +738,11 @@ enumdata.py (keeping the old name as an alias):
 
             assert diff.days >= 0 and diff.seconds >= 0, (diff, text)
             mins, secs = divmod(diff.seconds, 60)
-            assert secs == 0, (diff, text)
+            if secs == 30:
+                # Africa/Monrovia, 1919 to 1972, "1972-01-07 00:44:30"
+                mins += 1 # to 45; close enough, and tidy.
+            else:
+                assert secs == 0, (diff, text)
             return diff.days * 1440 + mins
 
         def mapTimes(triple: tuple[str|None, str|None, str],
