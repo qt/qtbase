@@ -37,6 +37,8 @@ private slots:
     void autoRt();
     void reparent_data();
     void reparent();
+    void reparentWithoutPaint_data();
+    void reparentWithoutPaint();
     void grabFramebufferWhileStillInvisible_data();
     void grabFramebufferWhileStillInvisible();
     void grabViaQWidgetGrab_data();
@@ -687,6 +689,81 @@ void tst_QRhiWidget::reparent()
 
     QTRY_VERIFY(frameSpy.count() > 0);
     QCOMPARE(errorSpy.count(), 0);
+}
+
+void tst_QRhiWidget::reparentWithoutPaint_data()
+{
+    testData();
+}
+
+void tst_QRhiWidget::reparentWithoutPaint()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows))
+        QSKIP("MultipleWindows capability is reported as unsupported, skipping reparenting test.");
+
+    QFETCH(QRhiWidget::Api, api);
+
+    struct WindowChangeCounter : QObject
+    {
+        int count = 0;
+        bool eventFilter(QObject *, QEvent *e) override
+        {
+            if (e->type() == QEvent::WindowAboutToChangeInternal)
+                ++count;
+            return false;
+        }
+    };
+
+    for (bool deleteWidget : { false, true }) {
+        auto windowOne = std::make_unique<QWidget>();
+        windowOne->resize(320, 240);
+        auto *rhiWidget = new SimpleRhiWidget(1, windowOne.get());
+        rhiWidget->setApi(api);
+        rhiWidget->resize(320, 240);
+        WindowChangeCounter windowChanges;
+        rhiWidget->installEventFilter(&windowChanges);
+        QSignalSpy frameSpy(rhiWidget, &QRhiWidget::frameSubmitted);
+        QSignalSpy errorSpy(rhiWidget, &QRhiWidget::renderFailed);
+        windowOne->show();
+        QVERIFY(QTest::qWaitForWindowExposed(windowOne.get()));
+        QTRY_VERIFY(frameSpy.count() > 0);
+        QRhi *oldRhi = rhiWidget->rhi();
+        QVERIFY(oldRhi);
+        bool oldRhiDestroyed = false;
+        oldRhi->addCleanupCallback([&oldRhiDestroyed](QRhi *) { oldRhiDestroyed = true; });
+
+        // windowTwo must be shown, otherwise moving the widget out of it does
+        // not send WindowAboutToChangeInternal. The reparented widget is
+        // hidden, so it does not paint.
+        QWidget windowTwo;
+        windowTwo.resize(320, 240);
+        windowTwo.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&windowTwo));
+        rhiWidget->setParent(&windowTwo);
+        QCOMPARE(windowChanges.count, 1);
+
+        // This destroys the QRhi the widget last rendered with.
+        windowOne.reset();
+        QVERIFY(oldRhiDestroyed);
+        QVERIFY(rhiWidget->rhi() != oldRhi);
+
+        // No event processing from here on, so the widget cannot paint and
+        // ensureRhi() cannot run before it is moved again or destroyed.
+        if (deleteWidget) {
+            delete rhiWidget;
+        } else {
+            QWidget windowThree;
+            windowThree.resize(320, 240);
+            rhiWidget->setParent(&windowThree);
+            QCOMPARE(windowChanges.count, 2);
+            frameSpy.clear();
+            windowThree.show();
+            QVERIFY(QTest::qWaitForWindowExposed(&windowThree));
+            QTRY_VERIFY(frameSpy.count() > 0);
+            QCOMPARE(errorSpy.count(), 0);
+            QVERIFY(rhiWidget->rhi());
+        }
+    }
 }
 
 void tst_QRhiWidget::grabFramebufferWhileStillInvisible_data()

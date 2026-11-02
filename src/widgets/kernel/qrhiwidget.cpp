@@ -304,7 +304,10 @@ bool QRhiWidget::event(QEvent *e)
             d->rhi->removeCleanupCallback(this);
             releaseResources(); // notify the user code about the early-release
             d->releaseResources();
-            // must _not_ null out d->rhi here, for proper interaction with ensureRhi()
+            // The old QRhi may be destroyed before the next paint, reparent,
+            // or widget destruction. ensureRhi() will register a new callback
+            // even if we end up using the same QRhi again.
+            d->rhi = nullptr;
         }
 
         break;
@@ -497,9 +500,9 @@ void QRhiWidgetPrivate::ensureRhi()
         return;
     }
 
-    // NB the rhi member may be an invalid object, the pointer can be used, but no deref
     if (currentRhi && rhi != currentRhi) {
         if (rhi) {
+            rhi->removeCleanupCallback(q);
             // if previously we created our own but now get a QRhi from the
             // top-level, then drop what we have and start using the top-level's
             if (rhi == offscreenRenderer.rhi()) {
