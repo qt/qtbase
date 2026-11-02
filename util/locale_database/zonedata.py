@@ -86,6 +86,7 @@ utcIdList = (
 windowsIdList = (
     ('Afghanistan Standard Time',        16200),
     ('Alaskan Standard Time',           -32400),
+    ('Alberta Standard Time',           -21600),
     ('Aleutian Standard Time',          -36000),
     ('Altai Standard Time',              25200),
     ('Arab Standard Time',               10800),
@@ -102,6 +103,7 @@ windowsIdList = (
     ('Bahia Standard Time',             -10800),
     ('Bangladesh Standard Time',         21600),
     ('Belarus Standard Time',            10800),
+    ('British Columbia Standard Time',  -25200),
     ('Bougainville Standard Time',       39600),
     ('Canada Central Standard Time',    -21600),
     ('Cape Verde Standard Time',         -3600),
@@ -148,6 +150,7 @@ windowsIdList = (
     ('Lord Howe Standard Time',          37800),
     ('Magadan Standard Time',            36000),
     ('Magallanes Standard Time',        -10800), # permanent DST
+    ('Manitoba Standard Time',          -18000),
     ('Marquesas Standard Time',         -34200),
     ('Mauritius Standard Time',          14400),
     ('Middle East Standard Time',         7200),
