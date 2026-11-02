@@ -182,7 +182,7 @@ class LocaleSourceEditor (SourceFileEditor):
         self.writer.write(f"""
 /*
     This part of the file was generated on {datetime.date.today()} from the
-    Common Locale Data Repository v{self.version}
+    Common Locale Data & Rules v{self.version}
 
     http://www.unicode.org/cldr/
 
@@ -1081,7 +1081,7 @@ def main(argv: list[str], out: TextIO, err: TextIO) -> int:
     # qlocale.qdoc
     try:
         with Transcriber(qtsrcdir.joinpath('src/corelib/text/qlocale.qdoc'), qtsrcdir) as qdoc:
-            DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
+            DOCSTRING = "    QLocale's data is based on Common Locale Data & Rules "
             for line in qdoc.reader:
                 if DOCSTRING in line:
                     qdoc.writer.write(f'{DOCSTRING}v{reader.cldrVersion}.\n')

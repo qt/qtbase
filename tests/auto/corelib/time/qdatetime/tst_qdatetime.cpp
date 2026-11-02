@@ -3910,7 +3910,7 @@ void tst_QDateTime::zoneAtTime_data()
         ADDROW("epoch:UTC", "UTC", epoch, 0);
         // Paris and Berlin skipped DST around 1970; but Rome used it.
         ADDROW("epoch:CET", "Europe/Rome", epoch, 3600);
-        ADDROW("epoch:PST", "America/Vancouver", epoch, -8 * 3600);
+        ADDROW("epoch:PST", "America/Los_Angeles", epoch, -8 * 3600);
         ADDROW("epoch:EST", "America/New_York", epoch, -5 * 3600);
     }
     {
@@ -3918,7 +3918,7 @@ void tst_QDateTime::zoneAtTime_data()
         QDate summer69(1969, 8, 15); // Woodstock started
         ADDROW("summer69:UTC", "UTC", summer69, 0);
         ADDROW("summer69:CET", "Europe/Rome", summer69, 2 * 3600);
-        ADDROW("summer69:PST", "America/Vancouver", summer69, -7 * 3600);
+        ADDROW("summer69:PST", "America/Los_Angeles", summer69, -7 * 3600);
         ADDROW("summer69:EST", "America/New_York", summer69, -4 * 3600);
     }
     {
@@ -3926,7 +3926,7 @@ void tst_QDateTime::zoneAtTime_data()
         QDate summer70(1970, 8, 26); // Isle of Wight festival
         ADDROW("summer70:UTC", "UTC", summer70, 0);
         ADDROW("summer70:CET", "Europe/Rome", summer70, 2 * 3600);
-        ADDROW("summer70:PST", "America/Vancouver", summer70, -7 * 3600);
+        ADDROW("summer70:PST", "America/Los_Angeles", summer70, -7 * 3600);
         ADDROW("summer70:EST", "America/New_York", summer70, -4 * 3600);
     }
 

@@ -19,8 +19,8 @@ struct LocaleListItem
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2025-11-13 from the
-    Common Locale Data Repository v48
+    This part of the file was generated on 2026-11-04 from the
+    Common Locale Data & Rules v49
 
     http://www.unicode.org/cldr/
 
