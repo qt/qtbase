@@ -135,10 +135,10 @@ public:
     // keep in sync with QPagedPaintDevice::PdfVersion and QPdfEnginePrivate::writeHeader()::mapping!
     enum PdfVersion
     {
-        Version_1_4,
-        Version_A1b,
-        Version_1_6,
-        Version_X4,
+        PdfVersion_1_4,
+        PdfVersion_A1b,
+        PdfVersion_1_6,
+        PdfVersion_X4,
     };
 
     QPdfEngine();

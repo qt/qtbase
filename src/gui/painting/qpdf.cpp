@@ -923,7 +923,7 @@ void QPdfEngine::drawPixmap (const QRectF &rectangle, const QPixmap &pixmap, con
 
     *d->currentPage << "q\n";
 
-    if ((d->pdfVersion != QPdfEngine::Version_A1b) && (d->opacity != 1.0)) {
+    if ((d->pdfVersion != QPdfEngine::PdfVersion::PdfVersion_A1b) && (d->opacity != 1.0)) {
         int stateObject = d->addConstantAlphaObject(qRound(255 * d->opacity), qRound(255 * d->opacity));
         if (stateObject)
             *d->currentPage << "/GState" << stateObject << "gs\n";
@@ -963,7 +963,7 @@ void QPdfEngine::drawImage(const QRectF &rectangle, const QImage &image, const Q
 
     *d->currentPage << "q\n";
 
-    if ((d->pdfVersion != QPdfEngine::Version_A1b) && (d->opacity != 1.0)) {
+    if ((d->pdfVersion != QPdfEngine::PdfVersion::PdfVersion_A1b) && (d->opacity != 1.0)) {
         int stateObject = d->addConstantAlphaObject(qRound(255 * d->opacity), qRound(255 * d->opacity));
         if (stateObject)
             *d->currentPage << "/GState" << stateObject << "gs\n";
@@ -1049,7 +1049,7 @@ void QPdfEngine::drawHyperlink(const QRectF &r, const QUrl &url)
     // PDF/X-4 (§ 6.17) does not allow annotations that don't lie
     // outside the BleedBox/TrimBox, so don't emit an hyperlink
     // annotation at all.
-    if (d->pdfVersion == QPdfEngine::Version_X4)
+    if (d->pdfVersion == QPdfEngine::PdfVersion::PdfVersion_X4)
         return;
 
     const uint annot = d->addXrefEntry(-1);
@@ -1068,7 +1068,7 @@ void QPdfEngine::drawHyperlink(const QRectF &r, const QUrl &url)
     const QRectF rr = d->pageMatrix().mapRect(r);
     d->xprintf("<<\n/Type /Annot\n/Subtype /Link\n");
 
-    if (d->pdfVersion == QPdfEngine::Version_A1b)
+    if (d->pdfVersion == QPdfEngine::PdfVersion::PdfVersion_A1b)
         d->xprintf("/F 4\n"); // enable print flag, disable all other
 
     d->xprintf("/Rect [");
@@ -1096,7 +1096,7 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
         d->stroker.matrix = state.transform();
 
     if (flags & DirtyPen) {
-        if (d->pdfVersion == QPdfEngine::Version_A1b) {
+        if (d->pdfVersion == QPdfEngine::PdfVersion::PdfVersion_A1b) {
             QPen pen = state.pen();
 
             QColor penColor = pen.color();
@@ -1124,7 +1124,7 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
         d->stroker.setPen(d->pen, state.renderHints());
     }
     if (flags & DirtyBrush) {
-        if (d->pdfVersion == QPdfEngine::Version_A1b) {
+        if (d->pdfVersion == QPdfEngine::PdfVersion::PdfVersion_A1b) {
             QBrush brush = state.brush();
             removeTransparencyFromBrush(brush);
             d->brush = brush;
@@ -1441,7 +1441,7 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 
 QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
-      needsTransform(false), pdfVersion(QPdfEngine::Version_1_4),
+      needsTransform(false), pdfVersion(QPdfEngine::PdfVersion::PdfVersion_1_4),
       colorModel(QPdfEngine::ColorModel::Auto),
       outDevice(nullptr), ownsDevice(false),
       embedFonts(true),
@@ -1582,11 +1582,11 @@ void QPdfEnginePrivate::writeHeader()
     const int metaDataObj = writeXmpDocumentMetaData(now);
     const int outputIntentObj = [&]() {
         switch (pdfVersion) {
-        case QPdfEngine::Version_1_4:
-        case QPdfEngine::Version_1_6:
+        case QPdfEngine::PdfVersion::PdfVersion_1_4:
+        case QPdfEngine::PdfVersion::PdfVersion_1_6:
             break;
-        case QPdfEngine::Version_A1b:
-        case QPdfEngine::Version_X4:
+        case QPdfEngine::PdfVersion::PdfVersion_A1b:
+        case QPdfEngine::PdfVersion::PdfVersion_X4:
             return writeOutputIntent();
         }
 
@@ -1883,18 +1883,18 @@ int QPdfEnginePrivate::writeXmpDocumentMetaData(const QDateTime &date)
 
         // Version-specific
         switch (pdfVersion) {
-        case QPdfEngine::Version_1_4:
+        case QPdfEngine::PdfVersion::PdfVersion_1_4:
             break;
-        case QPdfEngine::Version_A1b:
+        case QPdfEngine::PdfVersion::PdfVersion_A1b:
             w.writeStartElement(rdfNS, "Description");
             w.writeAttribute(rdfNS, "about", "");
             w.writeAttribute(pdfaidNS, "part", "1");
             w.writeAttribute(pdfaidNS, "conformance", "B");
             w.writeEndElement();
             break;
-        case QPdfEngine::Version_1_6:
+        case QPdfEngine::PdfVersion::PdfVersion_1_6:
             break;
-        case QPdfEngine::Version_X4:
+        case QPdfEngine::PdfVersion::PdfVersion_X4:
             w.writeStartElement(rdfNS, "Description");
             w.writeAttribute(rdfNS, "about", "");
             w.writeAttribute(pdfxidNS, "GTS_PDFXVersion", "PDF/X-4");
@@ -1972,14 +1972,14 @@ int QPdfEnginePrivate::writeOutputIntent()
         write("/Type /OutputIntent\n");
 
         switch (pdfVersion) {
-        case QPdfEngine::Version_1_4:
-        case QPdfEngine::Version_1_6:
+        case QPdfEngine::PdfVersion::PdfVersion_1_4:
+        case QPdfEngine::PdfVersion::PdfVersion_1_6:
             Q_UNREACHABLE(); // no output intent for these versions
             break;
-        case QPdfEngine::Version_A1b:
+        case QPdfEngine::PdfVersion::PdfVersion_A1b:
             write("/S/GTS_PDFA1\n");
             break;
-        case QPdfEngine::Version_X4:
+        case QPdfEngine::PdfVersion::PdfVersion_X4:
             write("/S/GTS_PDFX\n");
             break;
         }
@@ -2268,7 +2268,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
 qreal QPdfEnginePrivate::calcUserUnit() const
 {
     // PDF standards < 1.6 support max 200x200in pages (no UserUnit)
-    if (pdfVersion < QPdfEngine::Version_1_6)
+    if (pdfVersion < QPdfEngine::PdfVersion::PdfVersion_1_6)
         return 1.0;
 
     const int maxLen = qMax(currentPage->pageSize.width(), currentPage->pageSize.height());
@@ -2322,7 +2322,7 @@ void QPdfEnginePrivate::writePage()
             formattedPageWidth.constData(),
             formattedPageHeight.constData());
 
-    if (pdfVersion >= QPdfEngine::Version_1_6)
+    if (pdfVersion >= QPdfEngine::PdfVersion::PdfVersion_1_6)
         xprintf("/UserUnit %s\n", QByteArray::number(userUnit, 'f').constData());
 
     xprintf(">>\n"
@@ -3209,7 +3209,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
     QImage::Format format = image.format();
     const bool grayscale = (colorModel == QPdfEngine::ColorModel::Grayscale);
 
-    if (pdfVersion == QPdfEngine::Version_A1b) {
+    if (pdfVersion == QPdfEngine::PdfVersion::PdfVersion_A1b) {
         if (image.hasAlphaChannel()) {
             // transparent images are not allowed in PDF/A-1b, so we convert it to
             // a format without alpha channel first
@@ -3379,7 +3379,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
     // PDF/X-4 (§ 6.17) does not allow annotations that don't lie
     // outside the BleedBox/TrimBox, so don't emit an hyperlink
     // annotation at all.
-    const bool isX4 = pdfVersion == QPdfEngine::Version_X4;
+    const bool isX4 = pdfVersion == QPdfEngine::PdfVersion::PdfVersion_X4;
     if ((isLink && !isX4) || isAnchor) {
         qreal size = ti.fontEngine->fontDef.pixelSize;
         int synthesized = ti.fontEngine->synthesized();
@@ -3410,7 +3410,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
             QByteArray rectData = x1s + ' ' + y1s + ' ' + x2s + ' ' + y2s;
             xprintf("<<\n/Type /Annot\n/Subtype /Link\n");
 
-            if (pdfVersion == QPdfEngine::Version_A1b)
+            if (pdfVersion == QPdfEngine::PdfVersion::PdfVersion_A1b)
                 xprintf("/F 4\n"); // enable print flag, disable all other
 
             xprintf("/Rect [");

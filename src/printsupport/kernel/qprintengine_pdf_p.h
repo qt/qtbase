@@ -46,7 +46,7 @@ class Q_PRINTSUPPORT_EXPORT QPdfPrintEngine : public QPdfEngine, public QPrintEn
 {
     Q_DECLARE_PRIVATE(QPdfPrintEngine)
 public:
-    QPdfPrintEngine(QPrinter::PrinterMode m, QPdfEngine::PdfVersion version = QPdfEngine::Version_1_4);
+    QPdfPrintEngine(QPrinter::PrinterMode m, QPdfEngine::PdfVersion version = QPdfEngine::PdfVersion::PdfVersion_1_4);
     virtual ~QPdfPrintEngine();
 
     // reimplementations QPaintEngine

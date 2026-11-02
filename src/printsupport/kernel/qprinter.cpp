@@ -74,12 +74,12 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
         paintEngine = ps->createPaintEngine(printEngine, printerMode);
     } else {
         static const QHash<QPrinter::PdfVersion, QPdfEngine::PdfVersion> engineMapping {
-            {QPrinter::PdfVersion_1_4, QPdfEngine::Version_1_4},
-            {QPrinter::PdfVersion_A1b, QPdfEngine::Version_A1b},
-            {QPrinter::PdfVersion_X4,  QPdfEngine::Version_X4 },
-            {QPrinter::PdfVersion_1_6, QPdfEngine::Version_1_6}
+            {QPrinter::PdfVersion_1_4, QPdfEngine::PdfVersion::PdfVersion_1_4},
+            {QPrinter::PdfVersion_A1b, QPdfEngine::PdfVersion::PdfVersion_A1b},
+            {QPrinter::PdfVersion_1_6, QPdfEngine::PdfVersion::PdfVersion_1_6},
+            {QPrinter::PdfVersion_X4,  QPdfEngine::PdfVersion::PdfVersion_X4 },
         };
-        const auto pdfEngineVersion = engineMapping.value(pdfVersion, QPdfEngine::Version_1_4);
+        const auto pdfEngineVersion = engineMapping.value(pdfVersion, QPdfEngine::PdfVersion::PdfVersion_1_4);
         QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode, pdfEngineVersion);
         paintEngine = pdfEngine;
         printEngine = pdfEngine;
