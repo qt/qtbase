@@ -57,7 +57,6 @@ static const std::array additionalLocalMimeFiles = {
 };
 
 static const auto s_additionalFilesResourcePrefix = ":/tst_qmimedatabase/qmime/"_L1;
-static const auto s_resourcePrefix = ":/qt-project.org/qmime/"_L1;
 static const auto s_inodeMimetype = "inode/directory"_L1;
 
 void initializeLang()
@@ -154,9 +153,9 @@ void tst_QMimeDatabase::initTestCase()
     qDebug() << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
     if (m_isUsingCacheProvider) {
-        const QString xmlFileName = m_hasFreedesktopOrg
-                ? (s_additionalFilesResourcePrefix + "/freedesktop.org.xml"_L1)
-                : (s_resourcePrefix + "/tika/packages/tika-mimetypes.xml"_L1);
+        // The internal database can't be used: it isn't in the shared-mime-info namespace
+        QVERIFY(m_hasFreedesktopOrg);
+        const QString xmlFileName = s_additionalFilesResourcePrefix + "/freedesktop.org.xml"_L1;
         QVERIFY2(QFileInfo::exists(xmlFileName), qPrintable(xmlFileName));
         const QString xmlTargetFileName =
                 globalPackageDir + '/' + QFileInfo(xmlFileName).fileName();
