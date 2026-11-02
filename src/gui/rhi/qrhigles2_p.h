@@ -685,6 +685,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         bool stencilTest;
         GLuint stencilReadMask;
         GLuint stencilWriteMask;
+        GLint stencilRef; // value currently applied in GL; may differ from dynamic.stencilRef
         struct StencilFace {
             GLenum func;
             GLenum failOp;

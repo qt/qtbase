@@ -3824,6 +3824,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 f->glStencilFuncSeparate(GL_FRONT, toGlCompareOp(psD->m_stencilFront.compareOp), ref, psD->m_stencilReadMask);
                 f->glStencilFuncSeparate(GL_BACK, toGlCompareOp(psD->m_stencilBack.compareOp), ref, psD->m_stencilReadMask);
                 cbD->graphicsPassState.dynamic.stencilRef = ref;
+                cbD->graphicsPassState.stencilRef = ref;
             } else {
                 qWarning("No graphics pipeline active for setStencilRef; ignored");
             }
@@ -4245,6 +4246,9 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             break;
         case QGles2CommandBuffer::Command::BindFramebuffer:
         {
+            // Like with the other backends, each pass starts with a stencil
+            // reference value of 0, regardless of what earlier passes set.
+            cbD->graphicsPassState.dynamic.stencilRef = 0;
             QVarLengthArray<GLenum, 8> bufs;
             GLuint fbo = cmd.args.bindFramebuffer.fbo;
             if (!fbo)
@@ -4927,6 +4931,10 @@ void QRhiGles2::executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2Grap
     const bool stencilTest = psD->m_stencilTest;
     const GLuint stencilReadMask = psD->m_stencilReadMask;
     const GLuint stencilWriteMask = psD->m_stencilWriteMask;
+    // The stencil reference value is global state in OpenGL, but in QRhi it is
+    // only dynamic for pipelines with UsesStencilRef.
+    const GLint stencilRef = psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesStencilRef)
+            ? state.dynamic.stencilRef : 0;
     const QGles2CommandBuffer::GraphicsPassState::StencilFace stencilFront = {
         toGlCompareOp(psD->m_stencilFront.compareOp),
         toGlStencilOp(psD->m_stencilFront.failOp),
@@ -4942,22 +4950,24 @@ void QRhiGles2::executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2Grap
     if (forceUpdate || stencilTest != state.stencilTest
             || (stencilTest
                 && (stencilReadMask != state.stencilReadMask || stencilWriteMask != state.stencilWriteMask
+                    || stencilRef != state.stencilRef
                     || stencilFront != state.stencil[0] || stencilBack != state.stencil[1])))
     {
         state.stencilTest = stencilTest;
         if (stencilTest) {
             state.stencilReadMask = stencilReadMask;
             state.stencilWriteMask = stencilWriteMask;
+            state.stencilRef = stencilRef;
             state.stencil[0] = stencilFront;
             state.stencil[1] = stencilBack;
 
             f->glEnable(GL_STENCIL_TEST);
 
-            f->glStencilFuncSeparate(GL_FRONT, stencilFront.func, state.dynamic.stencilRef, stencilReadMask);
+            f->glStencilFuncSeparate(GL_FRONT, stencilFront.func, stencilRef, stencilReadMask);
             f->glStencilOpSeparate(GL_FRONT, stencilFront.failOp, stencilFront.zfailOp, stencilFront.zpassOp);
             f->glStencilMaskSeparate(GL_FRONT, stencilWriteMask);
 
-            f->glStencilFuncSeparate(GL_BACK, stencilBack.func, state.dynamic.stencilRef, stencilReadMask);
+            f->glStencilFuncSeparate(GL_BACK, stencilBack.func, stencilRef, stencilReadMask);
             f->glStencilOpSeparate(GL_BACK, stencilBack.failOp, stencilBack.zfailOp, stencilBack.zpassOp);
             f->glStencilMaskSeparate(GL_BACK, stencilWriteMask);
         } else {
