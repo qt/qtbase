@@ -10,6 +10,27 @@ endif()
 
 set(WrapOpenGL_FOUND OFF)
 
+# FindOpenGL sets OPENGL_USE_<COMPONENT> as normal variables in the calling scope so a project's
+# find_package(OpenGL COMPONENTS ...) changes what Qt's find_package(OpenGL) lookup requires.
+# Hide the normal variables during Qt's lookup and restore them afterwards.
+# Cache values (e.g. from the command line) are treated as intentional and remain set.
+set(__qt_wrap_opengl_components "")
+if(NOT QT_NO_OVERRIDE_OPENGL_USE_VARIABLES)
+    set(__qt_wrap_opengl_components OPENGL GLX EGL GLES2 GLES3)
+endif()
+foreach(__qt_wrap_opengl_component IN LISTS __qt_wrap_opengl_components)
+    set(__qt_wrap_opengl_var OPENGL_USE_${__qt_wrap_opengl_component})
+    if(DEFINED ${__qt_wrap_opengl_var}
+            AND (NOT DEFINED CACHE{${__qt_wrap_opengl_var}}
+                 OR NOT "${${__qt_wrap_opengl_var}}" STREQUAL "$CACHE{${__qt_wrap_opengl_var}}"))
+        set(__qt_wrap_opengl_saved_${__qt_wrap_opengl_component} "${${__qt_wrap_opengl_var}}")
+        set(__qt_wrap_opengl_had_${__qt_wrap_opengl_component} TRUE)
+    else()
+        set(__qt_wrap_opengl_had_${__qt_wrap_opengl_component} FALSE)
+    endif()
+    unset(${__qt_wrap_opengl_var})
+endforeach()
+
 find_package(OpenGL ${WrapOpenGL_FIND_VERSION})
 
 if (OpenGL_FOUND)
@@ -52,6 +73,20 @@ elseif(UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "Integrity")
         target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE OpenGL::OpenGL)
     endif()
 endif()
+
+foreach(__qt_wrap_opengl_component IN LISTS __qt_wrap_opengl_components)
+    set(__qt_wrap_opengl_var OPENGL_USE_${__qt_wrap_opengl_component})
+    if(__qt_wrap_opengl_had_${__qt_wrap_opengl_component})
+        set(${__qt_wrap_opengl_var} "${__qt_wrap_opengl_saved_${__qt_wrap_opengl_component}}")
+    else()
+        unset(${__qt_wrap_opengl_var})
+    endif()
+    unset(__qt_wrap_opengl_saved_${__qt_wrap_opengl_component})
+    unset(__qt_wrap_opengl_had_${__qt_wrap_opengl_component})
+endforeach()
+unset(__qt_wrap_opengl_component)
+unset(__qt_wrap_opengl_components)
+unset(__qt_wrap_opengl_var)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(WrapOpenGL DEFAULT_MSG WrapOpenGL_FOUND)
