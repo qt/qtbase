@@ -504,19 +504,19 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
 
-    if (!checkGraphicsReset())
-        return false;
-
     // shortcut: on some GPUs, eglMakeCurrent is not a cheap operation
     if (eglGetCurrentContext() == m_eglContext &&
         eglGetCurrentDisplay() == m_eglDisplay &&
         eglGetCurrentSurface(EGL_READ) == eglSurface &&
         eglGetCurrentSurface(EGL_DRAW) == eglSurface) {
-        return true;
+        return checkGraphicsReset();
     }
 
     const bool ok = eglMakeCurrent(m_eglDisplay, eglSurface, eglSurface, m_eglContext);
     if (ok) {
+        if (!checkGraphicsReset())
+            return false;
+
         if (!m_swapIntervalEnvChecked) {
             m_swapIntervalEnvChecked = true;
             if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_SWAPINTERVAL")) {
