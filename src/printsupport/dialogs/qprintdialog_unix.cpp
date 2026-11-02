@@ -497,8 +497,10 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                                     PDPK_PpdCustomOption, params);
                             if (hasCustomOption) {
                                 auto *customValueEdit = new QLineEdit;
+#if QT_CONFIG(accessibility)
                                 customValueEdit->setAccessibleName(
                                         tr("Custom value for %1").arg(optionText));
+#endif
                                 choicesCbWithLabelLayout->addWidget(customValueEdit);
                                 choicesCb->setProperty(customValueLineEditProperty,
                                                        QVariant::fromValue(customValueEdit));
