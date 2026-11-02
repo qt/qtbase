@@ -33,6 +33,11 @@ if(APPLE AND TARGET Qt::Gui)
     qt_internal_add_RunCMake_test(AppleFrameworkDeduplication)
 endif()
 
+if(TARGET Qt::OpenGL AND QT_FEATURE_opengl_desktop AND CMAKE_SYSTEM_NAME STREQUAL "Linux"
+        AND NOT CMAKE_CROSSCOMPILING)
+    qt_internal_add_RunCMake_test(FindWrapOpenGL)
+endif()
+
 if(APPLE)
     qt_internal_add_RunCMake_test(ApplePlistI18n)
 endif()
