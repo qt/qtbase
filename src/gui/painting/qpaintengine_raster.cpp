@@ -3568,15 +3568,6 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     rasterize(outline, callback, (void *)spanData, rasterBuffer);
 }
 
-extern "C" {
-int QT_MANGLE_NAMESPACE(q_gray_rendered_spans)(QT_FT_Raster raster);
-}
-
-static inline uchar *alignAddress(uchar *address, quintptr alignmentMask)
-{
-    return (uchar *)(((quintptr)address + alignmentMask) & ~alignmentMask);
-}
-
 void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
                                           ProcessSpans callback,
                                           void *userData, QRasterBuffer *)
@@ -3600,19 +3591,6 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         return;
     }
 
-    // Initial size for raster pool is MINIMUM_POOL_SIZE so as to
-    // minimize memory reallocations. However if initial size for
-    // raster pool is changed for lower value, reallocations will
-    // occur normally.
-    unsigned int rasterPoolSize = MINIMUM_POOL_SIZE;
-    Q_DECL_UNINITIALIZED uchar rasterPoolOnStack[MINIMUM_POOL_SIZE + 0xf];
-    uchar *rasterPoolBase = alignAddress(rasterPoolOnStack, 0xf);
-    uchar *rasterPoolOnHeap = nullptr;
-
-    QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
-
-    void *data = userData;
-
     QT_FT_BBox clip_box = { deviceRect.x(),
                             deviceRect.y(),
                             deviceRect.x() + deviceRect.width(),
@@ -3621,52 +3599,16 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     QT_FT_Raster_Params rasterParams;
     rasterParams.target = nullptr;
     rasterParams.source = outline;
-    rasterParams.flags = QT_FT_RASTER_FLAG_CLIP;
-    rasterParams.gray_spans = nullptr;
+    rasterParams.flags = QT_FT_RASTER_FLAG_AA | QT_FT_RASTER_FLAG_DIRECT | QT_FT_RASTER_FLAG_CLIP;
+    rasterParams.gray_spans = callback;
     rasterParams.black_spans = nullptr;
     rasterParams.bit_test = nullptr;
     rasterParams.bit_set = nullptr;
-    rasterParams.user = data;
+    rasterParams.user = userData;
     rasterParams.clip_box = clip_box;
 
-    bool done = false;
-    int error;
-
-    int rendered_spans = 0;
-
-    while (!done) {
-
-        rasterParams.flags |= (QT_FT_RASTER_FLAG_AA | QT_FT_RASTER_FLAG_DIRECT);
-        rasterParams.gray_spans = callback;
-        rasterParams.skip_spans = rendered_spans;
-        error = QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_render(*grayRaster.data(), &rasterParams);
-
-        // Out of memory, reallocate some more and try again...
-        if (error == -6) { // ErrRaster_OutOfMemory from qgrayraster.c
-            rasterPoolSize *= 2;
-            if (rasterPoolSize > 1024 * 1024) {
-                qWarning("QPainter: Rasterization of primitive failed");
-                break;
-            }
-
-            rendered_spans += QT_MANGLE_NAMESPACE(q_gray_rendered_spans)(*grayRaster.data());
-
-            free(rasterPoolOnHeap);
-            rasterPoolOnHeap = (uchar *)malloc(rasterPoolSize + 0xf);
-
-            Q_CHECK_PTR(rasterPoolOnHeap); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
-
-            rasterPoolBase = alignAddress(rasterPoolOnHeap, 0xf);
-
-            QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_done(*grayRaster.data());
-            QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_new(grayRaster.data());
-            QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
-        } else {
-            done = true;
-        }
-    }
-
-    free(rasterPoolOnHeap);
+    if (QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_render(*grayRaster.data(), &rasterParams))
+        qWarning("QPainter: Rasterization of primitive failed");
 }
 
 void QRasterPaintEnginePrivate::updateClipping()

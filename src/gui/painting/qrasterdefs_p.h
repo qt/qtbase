@@ -499,7 +499,7 @@ QT_FT_BEGIN_HEADER
   /*    Error code.  0 means success.                                      */
   /*                                                                       */
   typedef int
-  (*QT_FT_Outline_MoveToFunc)( QT_FT_Vector*  to,
+  (*QT_FT_Outline_MoveToFunc)( const QT_FT_Vector*  to,
                             void*       user );
 
 #define QT_FT_Outline_MoveTo_Func  QT_FT_Outline_MoveToFunc
@@ -525,7 +525,7 @@ QT_FT_BEGIN_HEADER
   /*    Error code.  0 means success.                                      */
   /*                                                                       */
   typedef int
-  (*QT_FT_Outline_LineToFunc)( QT_FT_Vector*  to,
+  (*QT_FT_Outline_LineToFunc)( const QT_FT_Vector*  to,
                             void*       user );
 
 #define  QT_FT_Outline_LineTo_Func  QT_FT_Outline_LineToFunc
@@ -555,8 +555,8 @@ QT_FT_BEGIN_HEADER
   /*    Error code.  0 means success.                                      */
   /*                                                                       */
   typedef int
-  (*QT_FT_Outline_ConicToFunc)( QT_FT_Vector*  control,
-                             QT_FT_Vector*  to,
+  (*QT_FT_Outline_ConicToFunc)( const QT_FT_Vector*  control,
+                             const QT_FT_Vector*  to,
                              void*       user );
 
 #define  QT_FT_Outline_ConicTo_Func  QT_FT_Outline_ConicToFunc
@@ -586,9 +586,9 @@ QT_FT_BEGIN_HEADER
   /*    Error code.  0 means success.                                      */
   /*                                                                       */
   typedef int
-  (*QT_FT_Outline_CubicToFunc)( QT_FT_Vector*  control1,
-                             QT_FT_Vector*  control2,
-                             QT_FT_Vector*  to,
+  (*QT_FT_Outline_CubicToFunc)( const QT_FT_Vector*  control1,
+                             const QT_FT_Vector*  control2,
+                             const QT_FT_Vector*  to,
                              void*       user );
 
 #define  QT_FT_Outline_CubicTo_Func  QT_FT_Outline_CubicToFunc
@@ -1051,7 +1051,6 @@ QT_FT_BEGIN_HEADER
     QT_FT_Raster_BitSet_Func   bit_set;      /* doesn't work! */
     void*                   user;
     QT_FT_BBox                 clip_box;
-    int                     skip_spans;
 
   } QT_FT_Raster_Params;
 
@@ -1196,7 +1195,7 @@ QT_FT_BEGIN_HEADER
   /*                                                                       */
   typedef int
   (*QT_FT_Raster_RenderFunc)( QT_FT_Raster          raster,
-                           QT_FT_Raster_Params*  params );
+                           const QT_FT_Raster_Params*  params );
 
 #define  QT_FT_Raster_Render_Func    QT_FT_Raster_RenderFunc
 
