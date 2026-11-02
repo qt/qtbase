@@ -57,7 +57,7 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
     return tmp;
 }
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_DARWIN) || defined(Q_OS_HARMONY)
 static const qreal qstyleBaseDpi = 72;
 #else
 static const qreal qstyleBaseDpi = 96;
@@ -65,9 +65,10 @@ static const qreal qstyleBaseDpi = 96;
 
 Q_WIDGETS_EXPORT qreal dpi(const QStyleOption *option)
 {
-#ifndef Q_OS_DARWIN
+#if !defined(Q_OS_DARWIN) && !defined(Q_OS_HARMONY)
     // Prioritize the application override, except for on macOS where
-    // we have historically not supported the AA_Use96Dpi flag.
+    // we have historically not supported the AA_Use96Dpi flag, and on
+    // HarmonyOS, where 96 against the 72 DPI base would enlarge every metric.
     if (QCoreApplication::testAttribute(Qt::AA_Use96Dpi))
         return 96;
 #endif
@@ -76,9 +77,9 @@ Q_WIDGETS_EXPORT qreal dpi(const QStyleOption *option)
     if (option)
         return option->fontMetrics.fontDpi();
 
-    // Fall back to historical Qt behavior: hardocded 72 DPI on mac,
-    // primary screen DPI on other platforms.
-#ifdef Q_OS_DARWIN
+    // Fall back to historical Qt behavior: hardcoded 72 DPI on mac and
+    // HarmonyOS, primary screen DPI on other platforms.
+#if defined(Q_OS_DARWIN) || defined(Q_OS_HARMONY)
     return qstyleBaseDpi;
 #else
     return qt_defaultDpiX();
