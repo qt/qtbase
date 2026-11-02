@@ -1572,6 +1572,15 @@ void QMetalGraphicsPipeline::makeActiveForCurrentRenderPassEncoder(QMetalCommand
                                                         clamp: 0.0f];
         cbD->currentDepthBiasValues = { d->depthBias, d->slopeScaledDepthBias };
     }
+
+    if (m_stencilTest) {
+        const quint32 ref = m_flags.testFlag(QRhiGraphicsPipeline::UsesStencilRef)
+                ? cbD->currentStencilRef : 0;
+        if (cbD->appliedStencilRef != ref) {
+            [cbD->d->currentRenderPassEncoder setStencilReferenceValue: ref];
+            cbD->appliedStencilRef = ref;
+        }
+    }
 }
 
 void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline *ps)
@@ -2067,8 +2076,8 @@ void QRhiMetal::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 
     [cbD->d->currentRenderPassEncoder setStencilReferenceValue: refValue];
 
-    cbD->hasStencilRefSet = true;
     cbD->currentStencilRef = refValue;
+    cbD->appliedStencilRef = refValue;
 }
 
 void QRhiMetal::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
@@ -2183,7 +2192,6 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
     const QRhiScissor prevScissor = cbD->currentScissor;
     const bool prevHasBlendConstants = cbD->hasBlendConstantsSet;
     const QColor prevBlendConstants = cbD->currentBlendConstants;
-    const bool prevHasStencilRef = cbD->hasStencilRefSet;
     const quint32 prevStencilRef = cbD->currentStencilRef;
     // Whether the pipeline was relying on the viewport-derived default scissor,
     // which setViewport() below cannot reapply on its own: it only does so when
@@ -2205,8 +2213,7 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
         rhiD->setDefaultScissor(cbD);
     if (prevHasBlendConstants)
         rhiD->setBlendConstants(cbD, prevBlendConstants);
-    if (prevHasStencilRef)
-        rhiD->setStencilRef(cbD, prevStencilRef);
+    cbD->currentStencilRef = prevStencilRef;
 
     for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
         cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = oldColorLoad[i];
@@ -6729,8 +6736,8 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentViewport = {};
     hasBlendConstantsSet = false;
     currentBlendConstants = {};
-    hasStencilRefSet = false;
     currentStencilRef = 0;
+    appliedStencilRef.reset();
 
     d->currentShaderResourceBindingState = {};
     d->currentDepthStencilState = nil;

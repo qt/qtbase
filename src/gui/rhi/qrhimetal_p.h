@@ -19,6 +19,8 @@
 #include "qrhi_p.h"
 #include <QWindow>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 static const int QMTL_FRAMES_IN_FLIGHT = 2;
@@ -308,8 +310,8 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QRhiViewport currentViewport;
     bool hasBlendConstantsSet;
     QColor currentBlendConstants;
-    bool hasStencilRefSet;
     quint32 currentStencilRef;
+    std::optional<quint32> appliedStencilRef;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState(double lastGpuTime = 0);

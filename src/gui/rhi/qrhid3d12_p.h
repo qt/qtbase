@@ -1147,6 +1147,8 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
         hasShadingRateMapSet = false;
         hasCustomScissorSet = false;
         currentViewport = {};
+        currentStencilRef = 0;
+        appliedStencilRef.reset();
     }
 
     // per-frame
@@ -1169,6 +1171,8 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
     bool hasShadingRateMapSet;
     bool hasCustomScissorSet;
     QRhiViewport currentViewport;
+    quint32 currentStencilRef;
+    std::optional<quint32> appliedStencilRef;
 
     // global
     double lastGpuTime = 0;

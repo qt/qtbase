@@ -6908,7 +6908,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     via QRhiCommandBuffer::setBlendConstants()
 
     \value UsesStencilRef Indicates that a stencil reference value will be set
-    via QRhiCommandBuffer::setStencilRef()
+    via QRhiCommandBuffer::setStencilRef(). Pipelines without this flag use a
+    stencil reference value of 0.
 
     \value UsesScissor Indicates that a scissor rectangle will be set via
     QRhiCommandBuffer::setScissor()
@@ -10592,6 +10593,12 @@ void QRhiCommandBuffer::setBlendConstants(const QColor &c)
 
     This can only be called when the bound pipeline has
     QRhiGraphicsPipeline::UsesStencilRef set.
+
+    The value stays in effect for the rest of the render pass, also when other
+    pipelines are bound, but it is only used by pipelines with
+    QRhiGraphicsPipeline::UsesStencilRef set. Pipelines without the flag always
+    use a stencil reference value of 0. Each render pass starts with a stencil
+    reference value of 0, regardless of what was set in earlier passes.
 
     \note This function can only be called inside a render pass, meaning between
     a beginPass() and endPass() call.
