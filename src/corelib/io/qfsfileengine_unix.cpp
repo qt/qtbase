@@ -310,7 +310,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     Q_D(const QFSFileEngine);
 
     if (type & Refresh)
-        d->metaData.clear();
+        d->metaData = {};
 
     QAbstractFileEngine::FileFlags ret = { };
 
