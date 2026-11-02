@@ -120,13 +120,21 @@ class CldrReader (object):
         metamap, zones, territorial = self.root.readMetaZoneMap(alias)
 
         from zonedata import windowsIdList
-        winUnused: set[str] = set(n for n, o in windowsIdList).difference(
-            set(defaults).union(w for w, t, ids in winIds))
+        known: set[str] = set(n for n, o in windowsIdList)
+        found: set[str] = set(defaults).union(w for w, t, ids in winIds)
+        winUnused: set[str] = known.difference(found)
         if winUnused:
             joined = "\n\t".join(winUnused)
             self.whitter.write(
                 f'No Windows ID in\n\t{joined}\nis still in use.\n'
                 'They could be removed at the next major version.\n')
+        winMissing: set[str] = found.difference(known)
+        if winMissing:
+            joined = '\n\t'.join(winMissing)
+            self.grumble(
+                f'Need Windows ID data for\n\t{joined}\n'
+                'found in CLDR, but not in zonedata.windowsIdList -\n'
+                'add before running qlocalexml2cpp.py\n')
 
         # Check for duplicate entries in winIds:
         last: tuple[str, str, str] = ('', '', '')
