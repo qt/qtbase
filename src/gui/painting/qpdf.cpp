@@ -24,6 +24,7 @@
 #include <qtimezone.h>
 #include <quuid.h>
 #include <qxmlstream.h>
+#include <QtCore/private/qenumindexedarray_p.h>
 
 #include <cstdio>
 #include <map>
@@ -1558,15 +1559,18 @@ void QPdfEnginePrivate::writeHeader()
 {
     addXrefEntry(0,false);
 
-    // Keep in sync with QPdfEngine::PdfVersion!
-    static const char mapping[][4] = {
-        "1.4", // Version_1_4
-        "1.4", // Version_A1b
-        "1.6", // Version_1_6
-        "1.6", // Version_X4
+    struct VersionString { // small wrapper around char[4]
+        char data[4];
+        Q_IMPLICIT constexpr VersionString(const char (&s)[4]) // clazy:exclude=function-args-by-value
+            : data{s[0], s[1], s[2], s[3]} {}
     };
-    static const size_t numMappings = sizeof mapping / sizeof *mapping;
-    const char *verStr = mapping[size_t(pdfVersion) < numMappings ? pdfVersion : 0];
+    constexpr QEnumIndexedArray<VersionString, QPdfEngine::PdfVersion, QPdfEngine::NumPdfVersions> mapping = {{{
+        { QPdfEngine::PdfVersion::PdfVersion_1_4, "1.4" },
+        { QPdfEngine::PdfVersion::PdfVersion_A1b, "1.4" },
+        { QPdfEngine::PdfVersion::PdfVersion_1_6, "1.6" },
+        { QPdfEngine::PdfVersion::PdfVersion_X4,  "1.6" },
+    }}};
+    const char *verStr = mapping[pdfVersion].data;
 
     xprintf("%%PDF-%s\n", verStr);
     xprintf("%%\303\242\303\243\n");
