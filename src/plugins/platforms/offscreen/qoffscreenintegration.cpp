@@ -26,6 +26,7 @@
 #include <QtCore/qjsonvalue.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qwindowsysteminterface_p.h>
 #if QT_CONFIG(draganddrop)
 #include <QtGui/private/qsimpledrag_p.h>
 #endif
@@ -65,6 +66,13 @@ public:
 
 QOffscreenIntegration::QOffscreenIntegration(const QStringList& paramList)
 {
+#if QT_CONFIG(tabletevent)
+    // The offscreen platform never synthesizes mouse events for tablet events, so let
+    // QGuiApplication do it for tablet events that nobody handles (like the other
+    // platform plugins that deliver tablet events do).
+    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+#endif
+
 #if defined(Q_OS_UNIX)
 #if defined(Q_OS_APPLE)
     m_fontDatabase.reset(new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>);
