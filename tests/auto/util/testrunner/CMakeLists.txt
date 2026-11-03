@@ -11,4 +11,11 @@ if(DEFINED ENV{COIN_UNIQUE_JOB_ID} AND NOT IOS)
         OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/tst_qt_testrunner_Wrapper$<CONFIG>.cmake"
         ENVIRONMENT "TESTRUNNER" ""
     )
+    qt_internal_create_test_script(
+        NAME tst_qt_modified_testfunctions
+        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/tst_qt_modified_testfunctions.py" ARGS -v
+        WORKING_DIRECTORY "${test_working_dir}"
+        OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/tst_qt_modified_testfunctions_Wrapper$<CONFIG>.cmake"
+        ENVIRONMENT "TESTRUNNER" ""
+    )
 endif()

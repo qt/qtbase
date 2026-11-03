@@ -10,6 +10,20 @@ Commit selection can be specified
   --range BASE..HEAD   analyze commits in range
   --last N             analyze last N commits on HEAD
 
+A commit can exempt functions it modifies from being reported, by adding one
+footer per function to its commit message:
+
+  Flaky-test-function: tst_Class::function
+
+This is meant for commits that improve a test function, which remains flaky,
+either because the improvement is partial, or because the CI infrastructure
+is flaky. An exempted function is subject to the regular handling of flaky
+tests in qt-testrunner.py, instead of having to pass repeatedly.
+The exemption only applies to modifications made by the commit carrying the
+footer. A function also modified by another commit, without such a footer,
+is still reported. Text after the function name (e.g. a task number) is
+ignored.
+
 """
 
 import argparse
@@ -289,6 +303,41 @@ def list_modified_files(commit: str) -> Iterator[Tuple[str, str, Optional[str]]]
             yield (parts[2], status, parts[1])
         # Other statuses ignored
 
+# Commit message footers exempting modified test functions
+FLAKY_FOOTER_RE = re.compile(r"^\s*Flaky-test-function\s*:\s*(\S+)", re.IGNORECASE | re.MULTILINE)
+
+
+def _normalize_function(name: str) -> str:
+    """Strip a trailing '()' and '_data', so a data function shares its test function's footer."""
+    name = name.strip()
+    if name.endswith("()"):
+        name = name[:-2]
+    if name.endswith("_data"):
+        name = name[:-len("_data")]
+    return name
+
+
+def exempted_functions_for_commit(commit: str) -> Set[str]:
+    """Normalized names of the functions exempted by Flaky-test-function footers of *commit*."""
+    proc = run(["git", "log", "-1", "--format=%B", commit])
+    if proc.returncode != 0:
+        return set()
+    return {_normalize_function(m.group(1)) for m in FLAKY_FOOTER_RE.finditer(proc.stdout)}
+
+
+def drop_exempted(commit: str, funcs: Set[str], exempted: Set[str]) -> Set[str]:
+    """Return *funcs* without the ones exempted; log exempted and unmatched footers."""
+    if not exempted:
+        return funcs
+    kept = {fn for fn in funcs if _normalize_function(fn) not in exempted}
+    for fn in sorted(funcs - kept):
+        print(f"Commit {commit[:12]} exempts flaky test function {fn}")
+    matched = {_normalize_function(fn) for fn in funcs - kept}
+    for fn in sorted(exempted - matched):
+        print(f"Warning: commit {commit[:12]} exempts {fn}, which it doesn't modify",
+              file=sys.stderr)
+    return kept
+
 # -------------------------
 # Main Interface
 # -------------------------
@@ -335,6 +384,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     functions: Set[str] = set()
     for commit in commits:
+        commit_functions: Set[str] = set()
         for path, _, old_path in list_modified_files(commit):
             if not is_test_file(path):
                 continue
@@ -345,7 +395,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             except Exception:
                 print("This must be run from the top-level directory of a qt module.")
                 return 1
-            functions.update(funcs)
+            commit_functions.update(funcs)
+        functions.update(drop_exempted(commit, commit_functions,
+                                       exempted_functions_for_commit(commit)))
 
     if functions:
         filename: Optional[Path] = args.output
