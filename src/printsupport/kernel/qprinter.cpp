@@ -34,12 +34,6 @@ using namespace Qt::StringLiterals;
         return; \
     }
 
-#define ABORT_IF_ACTIVE_RETURN(location, retValue) \
-    if (d->printEngine->printerState() == QPrinter::Active) { \
-        qWarning("%s: Cannot be changed while printer is active", location); \
-        return retValue; \
-    }
-
 Q_GUI_EXPORT extern qreal qt_pixelMultiplier(int resolution);
 extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
 
