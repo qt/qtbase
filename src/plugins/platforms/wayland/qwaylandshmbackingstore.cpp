@@ -368,16 +368,23 @@ QWaylandShmBuffer *QWaylandShmBackingStore::getBuffer(const QSize &size, bool &b
     // pixels, and the requested pixel size carries no information about the scale (a surface
     // whose physical size is pinned requests the same pixel size at every scale, so the scale
     // cancels out of the size calculation).
+    //
+    // Buffers still held by the compositor are only stripped of their front/back buffer
+    // role and are destroyed once released. Destroying a wl_buffer before it has been
+    // released will make some compositors display nothing until the next commit, causing
+    // flickering.
     const qreal scale = waylandWindow()->scale();
     for (auto i = mBuffers.size() - 1; i >= 0; --i) {
         QWaylandShmBuffer *buffer = mBuffers[i];
         if (buffer->size() != size
             || !qFuzzyCompare(buffer->image()->devicePixelRatio(), scale)) {
-            mBuffers.removeAt(i);
             if (mBackBuffer == buffer)
                 mBackBuffer = nullptr;
             if (mFrontBuffer == buffer)
                 mFrontBuffer = nullptr;
+            if (buffer->busy())
+                continue;
+            mBuffers.removeAt(i);
             delete buffer;
         }
     }
