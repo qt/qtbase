@@ -76,6 +76,11 @@ static std::optional<bool> isEncrypted(const my_mach_header *header, ulong fdlen
         load_command *loadCommand = reinterpret_cast<load_command *>(commandCursor);
         const uint32_t cmdsize = loadCommand->cmdsize;
 
+        // Each command should be aligned
+        constexpr size_t expectedAlignment = alignof(void *);
+        if (Q_UNLIKELY(cmdsize % expectedAlignment != 0))
+            return std::nullopt;
+
         // A load command must at least contain its own header
         if (Q_UNLIKELY(cmdsize < sizeof(load_command)))
             return std::nullopt;
@@ -187,6 +192,12 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
         // so check it against fdlen anyway
         // (these are unsigned operations, with overflow behavior specified in the standard)
         minsize += seg->cmdsize;
+
+        // Each command should be aligned
+        constexpr size_t expectedAlignment = alignof(void *);
+        if (Q_UNLIKELY(seg->cmdsize % expectedAlignment != 0))
+            return notfound(QString(), errorString);
+
         // The command should at least contain its header...
         if (Q_UNLIKELY(seg->cmdsize < sizeof(load_command)))
             return notfound(QString(), errorString);
