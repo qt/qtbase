@@ -11018,6 +11018,18 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
     adjustFlags(f, q);
     data.window_flags = f;
+
+    // A top level respects the safe area by default (see QWidget::create()). A child is
+    // placed by its parent's layout, which takes care of that, so a former top level drops
+    // the default again, unless it was set explicitly. Otherwise, e.g., a dock widget that
+    // has been floating would map its window's safe area into its own geometry (far off
+    // when it's behind a tab), and the dock area layout would grow its minimum size by that.
+    if ((oldFlags & Qt::Window) && !(f & Qt::Window)) {
+        const QTLWExtra *topExtra = maybeTopData();
+        if (!topExtra || !topExtra->explicitContentsMarginsRespectsSafeArea)
+            setAttribute_internal(Qt::WA_ContentsMarginsRespectsSafeArea, false, &data, this);
+    }
+
     q->setAttribute(Qt::WA_WState_Created, false);
     q->setAttribute(Qt::WA_WState_Visible, false);
     q->setAttribute(Qt::WA_WState_Hidden, false);

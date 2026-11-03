@@ -338,6 +338,7 @@ private slots:
     void render_worldTransform();
 
     void setContentsMargins();
+    void contentsMarginsRespectsSafeAreaAfterReparent();
 
     void moveWindowInShowEvent_data();
     void moveWindowInShowEvent();
@@ -9155,6 +9156,37 @@ void tst_QWidget::setContentsMargins()
     QLabel label3("why does it always rain on me?");
     label3.setFrameStyle(QFrame::Sunken | QFrame::Box);
     QCOMPARE(newSize, label3.sizeHint());
+}
+
+void tst_QWidget::contentsMarginsRespectsSafeAreaAfterReparent()
+{
+    // Top levels respect the safe area by default; a former top level that becomes a
+    // child is laid out by its parent, and drops that default again (unless it was set
+    // explicitly), as a QDockWidget does when docked after floating.
+    QWidget parent;
+    parent.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    parent.resize(m_testWidgetSize);
+
+    QWidget child(&parent);
+    QVERIFY(!child.testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea));
+    child.setWindowFlag(Qt::Window);
+    child.winId(); // creates it as a top level
+    QVERIFY(child.testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea));
+    child.setWindowFlag(Qt::Window, false);
+    QVERIFY(!child.testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea));
+
+    QWidget explicitChild(&parent);
+    explicitChild.setWindowFlag(Qt::Window);
+    explicitChild.setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea, true);
+    explicitChild.winId();
+    explicitChild.setWindowFlag(Qt::Window, false);
+    QVERIFY(explicitChild.testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea));
+
+    QWidget topLevel;
+    topLevel.winId();
+    QVERIFY(topLevel.testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea));
+    topLevel.setParent(&parent);
+    QVERIFY(!topLevel.testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea));
 }
 
 void tst_QWidget::moveWindowInShowEvent_data()
