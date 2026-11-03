@@ -27,6 +27,8 @@
 #include <qt_windows.h>
 #endif
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(printer)
 typedef QSharedPointer<QPrinter> PrinterPtr;
 
@@ -65,6 +67,8 @@ private slots:
     void testCurrentPage();
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
     void testPdfTitle();
+    void pdfVersion_data();
+    void pdfVersion();
 
     // Test QPrintEngine keys and their QPrinter setters/getters
     void testMultipleKeys();
@@ -655,6 +659,50 @@ void tst_QPrinter::testPdfTitle()
         0x29, 0x00, 0x66, 0x00, 0xf8, 0x30, 0x4a, 0x29};
     const char *expected = reinterpret_cast<const char*>(expectedBuf);
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
+}
+
+void tst_QPrinter::pdfVersion_data()
+{
+    QTest::addColumn<QPrinter::PdfVersion>("version");
+    QTest::addColumn<QByteArray>("header");
+    QTest::addColumn<QByteArray>("needle");
+
+    // an empty needle means: no version-specific marker to look for
+    QTest::newRow("1.4") << QPrinter::PdfVersion_1_4 << "%PDF-1.4"_ba << ""_ba;
+    QTest::newRow("A-1b") << QPrinter::PdfVersion_A1b << "%PDF-1.4"_ba << "pdfaid:conformance"_ba;
+    QTest::newRow("1.6") << QPrinter::PdfVersion_1_6 << "%PDF-1.6"_ba << ""_ba;
+    // GTS_PDFXVersion in the XMP metadata
+    QTest::newRow("X-4") << QPrinter::PdfVersion_X4 << "%PDF-1.6"_ba << "PDF/X-4"_ba;
+}
+
+void tst_QPrinter::pdfVersion()
+{
+    QFETCH(const QPrinter::PdfVersion, version);
+    QFETCH(const QByteArray, header);
+    QFETCH(const QByteArray, needle);
+
+    const QString fileName = testPdfFileName("version-"_L1 + QLatin1StringView(QTest::currentDataTag()));
+
+    {
+        QPrinter printer;
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setPdfVersion(version);
+        printer.setOutputFileName(fileName);
+        QCOMPARE(printer.pdfVersion(), version);
+
+        QPainter painter;
+        QVERIFY(painter.begin(&printer));
+        painter.drawRect(10, 10, 100, 100);
+        QVERIFY(painter.end());
+    }
+
+    QFile file(fileName);
+    QVERIFY2(file.open(QIODevice::ReadOnly), qPrintable(file.errorString()));
+    const QByteArray pdf = file.readAll();
+    QEXPECT_FAIL("X-4", "QTBUG-151995", Abort);
+    QVERIFY(pdf.startsWith(header));
+    if (!needle.isEmpty())
+        QVERIFY(pdf.contains(needle));
 }
 
 void tst_QPrinter::customPaperNameSettingBySize()
