@@ -24,6 +24,8 @@
 #include <private/qpaintengine_preview_p.h>
 #endif
 
+#include <QtCore/private/qenumindexedarray_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -73,13 +75,18 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
         printEngine = ps->createNativePrintEngine(printerMode, printerName);
         paintEngine = ps->createPaintEngine(printEngine, printerMode);
     } else {
-        static const QHash<QPrinter::PdfVersion, QPdfEngine::PdfVersion> engineMapping {
+        using EngineMapping = QEnumIndexedArray<
+                QPdfEngine::PdfVersion,
+                QPrinter::PdfVersion,
+                QPrinter::NumPdfVersions
+            >;
+        constexpr EngineMapping engineMapping = {{{
             {QPrinter::PdfVersion_1_4, QPdfEngine::PdfVersion::PdfVersion_1_4},
             {QPrinter::PdfVersion_A1b, QPdfEngine::PdfVersion::PdfVersion_A1b},
             {QPrinter::PdfVersion_1_6, QPdfEngine::PdfVersion::PdfVersion_1_6},
             {QPrinter::PdfVersion_X4,  QPdfEngine::PdfVersion::PdfVersion_X4 },
-        };
-        const auto pdfEngineVersion = engineMapping.value(pdfVersion, QPdfEngine::PdfVersion::PdfVersion_1_4);
+        }}};
+        const auto pdfEngineVersion = engineMapping[pdfVersion];
         QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode, pdfEngineVersion);
         paintEngine = pdfEngine;
         printEngine = pdfEngine;
