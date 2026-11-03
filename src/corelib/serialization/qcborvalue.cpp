@@ -1922,7 +1922,12 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     if (status == QCborStreamReader::EndOfString && e.flags & Element::HasByteData) {
         Q_ASSERT(data.isDetached());
         const char *ptr = data.constData() + e.value;
+QT_WARNING_PUSH
+#if Q_CC_GNU >= 1600 && Q_CC_GNU < 1700
+        QT_WARNING_DISABLE_GCC("-Warray-bounds")
+#endif
         auto b = new (const_cast<char *>(ptr)) ByteData;
+QT_WARNING_POP
         b->len = data.size() - e.value - int(sizeof(*b));
         usedData += b->len;
 
