@@ -699,7 +699,6 @@ void tst_QPrinter::pdfVersion()
     QFile file(fileName);
     QVERIFY2(file.open(QIODevice::ReadOnly), qPrintable(file.errorString()));
     const QByteArray pdf = file.readAll();
-    QEXPECT_FAIL("X-4", "QTBUG-151995", Abort);
     QVERIFY(pdf.startsWith(header));
     if (!needle.isEmpty())
         QVERIFY(pdf.contains(needle));
