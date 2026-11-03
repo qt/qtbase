@@ -307,7 +307,7 @@ private:
     void checkWaylandError();
     void reconnect();
     void setupConnection();
-    void handleWaylandSync();
+    void handleFocusWindowChanged();
     void requestWaylandSync();
 
     void checkTextInputProtocol();

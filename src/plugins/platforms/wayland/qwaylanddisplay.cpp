@@ -1006,7 +1006,7 @@ void QWaylandDisplay::handleWindowActivated(QWaylandWindow *window)
 
     mActiveWindows.append(window);
     mActiveSubSurface.clear();
-    requestWaylandSync();
+    handleFocusWindowChanged();
 
     if (auto *decoration = window->decoration())
         decoration->update();
@@ -1068,11 +1068,8 @@ QWaylandWindow *QWaylandDisplay::activeSubSurface() const
     return mActiveSubSurface;
 }
 
-void QWaylandDisplay::handleWaylandSync()
+void QWaylandDisplay::handleFocusWindowChanged()
 {
-    // This callback is used to set the window activation because we may get an activate/deactivate
-    // pair, and the latter one would be lost in the QWindowSystemInterface queue, if we issue the
-    // handleWindowActivated() calls immediately.
     QWindow *activeWindow = mActiveWindows.empty() ? nullptr : mActiveWindows.last()->window();
     if (mActiveSubSurface)
         activeWindow = mActiveSubSurface->window();
@@ -1086,7 +1083,7 @@ const wl_callback_listener QWaylandDisplay::syncCallbackListener = {
         wl_callback_destroy(callback);
         QWaylandDisplay *display = static_cast<QWaylandDisplay *>(data);
         display->mSyncCallback = nullptr;
-        display->handleWaylandSync();
+        display->handleFocusWindowChanged();
     }
 };
 
@@ -1095,6 +1092,8 @@ void QWaylandDisplay::requestWaylandSync()
     if (mSyncCallback)
         return;
 
+    // Don't send deactivation immediately so we don't briefly end up with no window
+    // and cause the app to think it's inactive before another window gets activated.
     mSyncCallback = wl_display_sync(mDisplay);
     wl_callback_add_listener(mSyncCallback, &syncCallbackListener, this);
 }
