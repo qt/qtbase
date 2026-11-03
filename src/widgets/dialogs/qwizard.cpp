@@ -37,7 +37,9 @@
 #endif
 
 #include "private/qdialog_p.h"
+
 #include <qdebug.h>
+#include <QtCore/private/qenumindexedarray_p.h>
 
 #include <string.h>     // for memset()
 #include <algorithm>
@@ -474,7 +476,7 @@ public:
     QWizard *wizard = nullptr;
     QString title;
     QString subTitle;
-    QPixmap pixmaps[QWizard::NPixmaps];
+    QEnumIndexedArrayFor<QPixmap, QWizard::NPixmaps> pixmaps;
     QList<QWizardField> pendingFields;
     mutable TriState completeState = Tri_Unknown;
     bool explicitlyFinal = false;
