@@ -7,6 +7,7 @@
 
 QT_BEGIN_NAMESPACE
 
+constexpr size_t QPagedPaintDevice::NumPdfVersions;
 
 QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate() = default;
 

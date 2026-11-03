@@ -31,7 +31,9 @@ public:
         PdfVersion_A1b,
         PdfVersion_1_6,
         PdfVersion_X4,
+        // bump NumPdfVersions when adding new enumerators
     };
+    static inline constexpr size_t NumPdfVersions = 4;
 
     virtual bool setPageLayout(const QPageLayout &pageLayout);
     virtual bool setPageSize(const QPageSize &pageSize);
