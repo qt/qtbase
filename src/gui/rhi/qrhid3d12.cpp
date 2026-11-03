@@ -934,6 +934,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Compute:
         return true;
+    case QRhi::FragmentStoresAndAtomics:
+        return true;
     case QRhi::WideLines:
         return false;
     case QRhi::VertexShaderPointSize:

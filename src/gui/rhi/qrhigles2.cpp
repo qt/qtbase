@@ -1865,6 +1865,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.elementIndexUint;
     case QRhi::Compute:
         return caps.compute;
+    case QRhi::FragmentStoresAndAtomics:
+        return caps.compute && caps.maxFragmentStorageBuffers > 0;
     case QRhi::WideLines:
         return !caps.coreProfile;
     case QRhi::VertexShaderPointSize:

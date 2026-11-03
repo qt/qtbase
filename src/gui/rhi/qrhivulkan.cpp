@@ -6036,6 +6036,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Compute:
         return caps.compute;
+    case QRhi::FragmentStoresAndAtomics:
+        return physDevFeatures.fragmentStoresAndAtomics;
     case QRhi::WideLines:
         return caps.wideLines;
     case QRhi::VertexShaderPointSize:

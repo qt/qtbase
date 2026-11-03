@@ -651,6 +651,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         // Not a real restriction since all shaders need to be shader model 5.0
         // anyway, but for example typed UAVs are only guaranteed with 11_0.
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
+    case QRhi::FragmentStoresAndAtomics:
+        return featureLevel >= D3D_FEATURE_LEVEL_11_0;
     case QRhi::WideLines:
         return false;
     case QRhi::VertexShaderPointSize:

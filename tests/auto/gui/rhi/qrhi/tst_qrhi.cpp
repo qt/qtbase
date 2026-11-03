@@ -640,6 +640,7 @@ void tst_QRhi::create()
             QRhi::RedOrAlpha8IsRed,
             QRhi::ElementIndexUint,
             QRhi::Compute,
+            QRhi::FragmentStoresAndAtomics,
             QRhi::WideLines,
             QRhi::VertexShaderPointSize,
             QRhi::BaseVertex,
@@ -14671,6 +14672,8 @@ void tst_QRhi::storageBufferWritesInRenderPass()
         QSKIP("Storage buffers are not supported with this graphics API, skipping test");
     if (rhi->resourceLimit(QRhi::MaxFragmentStorageBuffers) < 1)
         QSKIP("Storage buffers are not supported in fragment shaders, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::FragmentStoresAndAtomics))
+        QSKIP("Fragment shader storage writes and atomics are not supported, skipping test");
 
 #ifdef TST_VK
     QStringList validationErrors;
@@ -14752,6 +14755,8 @@ void tst_QRhi::storageBufferWritesInSwapchainPass()
         QSKIP("Storage buffers are not supported with this graphics API, skipping test");
     if (rhi->resourceLimit(QRhi::MaxFragmentStorageBuffers) < 1)
         QSKIP("Storage buffers are not supported in fragment shaders, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::FragmentStoresAndAtomics))
+        QSKIP("Fragment shader storage writes and atomics are not supported, skipping test");
 
 #ifdef TST_VK
     QStringList validationErrors;

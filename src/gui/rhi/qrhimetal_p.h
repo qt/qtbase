@@ -620,6 +620,7 @@ public:
         bool indirectCommandBuffers = false;
         bool shadingRateMap = false;
         bool depthClamp = true;
+        bool fragmentStoresAndAtomics = false;
     } caps;
 
     QRhiMetalData *d = nullptr;

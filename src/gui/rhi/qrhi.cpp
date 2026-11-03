@@ -814,7 +814,16 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
 
     \value Compute Indicates that compute shaders, image load/store, and
     storage buffers are supported. OpenGL older than 4.3 and OpenGL ES older
-    than 3.1 have no compute support.
+    than 3.1 have no compute support. This does not imply support for writing
+    storage buffers in fragment shaders; see FragmentStoresAndAtomics.
+
+    \value [since 6.13] FragmentStoresAndAtomics Indicates that fragment
+    shaders support storage buffer writes and 32-bit integer atomic operations
+    on storage buffers. This does not imply support for texture atomics,
+    floating-point atomics, or 64-bit atomics. Applications must also respect
+    the MaxFragmentStorageBuffers resource limit and any resource binding
+    limits imposed by the graphics API. In particular, Direct3D 11 shares
+    unordered access view slots with render target outputs.
 
     \value WideLines Indicates that lines with a width other than 1 are
     supported. When reported as not supported, the line width set on the
@@ -1358,7 +1367,8 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     legitimate value. The write access and Metal argument table notes
     from MaxVertexStorageBuffers apply here as well; with Direct 3D 11
     the value reflects the unordered access view slots, which are shared
-    with render target outputs.
+    with render target outputs. Writing storage buffers in fragment shaders
+    additionally requires the FragmentStoresAndAtomics feature.
 
     \value [since 6.13] MaxPushConstantsSize The maximum size in bytes of the
     push constant block a shader can declare. 0 when the

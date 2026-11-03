@@ -763,6 +763,12 @@ bool QRhiMetal::create(QRhi::Flags flags)
     // QTBUG-144444: setDepthClipMode is not available on the Simulator
     caps.depthClamp = [d->dev supportsFamily:MTLGPUFamilyApple3];
 
+#if defined(Q_OS_MACOS) || defined(Q_OS_VISIONOS)
+    caps.fragmentStoresAndAtomics = true;
+#else
+    caps.fragmentStoresAndAtomics = [d->dev supportsFamily:MTLGPUFamilyApple3];
+#endif
+
     if (rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
         d->setupBinaryArchive();
 
@@ -952,6 +958,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Compute:
         return true;
+    case QRhi::FragmentStoresAndAtomics:
+        return caps.fragmentStoresAndAtomics;
     case QRhi::WideLines:
         return false;
     case QRhi::VertexShaderPointSize:
