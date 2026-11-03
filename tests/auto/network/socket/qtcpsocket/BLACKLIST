@@ -70,6 +70,8 @@ windows-10 gcc developer-build
 windows-10 gcc developer-build
 [bind]
 macos arm
+[readNotificationsAfterBind]
+macos-27 # QTBUG-151669
 # QTBUG-101274
 [bindThenResolveHost:WithoutProxy:first-fail]
 qnx ci
