@@ -139,7 +139,9 @@ public:
         PdfVersion_A1b,
         PdfVersion_1_6,
         PdfVersion_X4,
+        // bump NumPdfVersions when adding new enumerators
     };
+    enum : size_t { NumPdfVersions = 4 };
 
     QPdfEngine();
     explicit QPdfEngine(QPdfEnginePrivate &d);
