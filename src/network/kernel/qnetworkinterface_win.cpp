@@ -190,10 +190,12 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             entry.setIp(addressFromSockaddr(addr->Address.lpSockaddr));
             entry.setPrefixLength(addr->OnLinkPrefixLength);
 
-            auto toDeadline = [](ULONG lifetime) -> QDeadlineTimer {
+            // Capture the "now" so we have the same basis for both deadline timers:
+            const auto now = std::chrono::steady_clock::now();
+            auto toDeadline = [now](ULONG lifetime) -> QDeadlineTimer {
                 if (lifetime == 0xffffffffUL)
                     return QDeadlineTimer::Forever;
-                return QDeadlineTimer(std::chrono::seconds(lifetime));
+                return QDeadlineTimer(now + std::chrono::seconds(lifetime));
             };
             entry.setAddressLifetime(toDeadline(addr->ValidLifetime), toDeadline(addr->PreferredLifetime));
             entry.setDnsEligibility(addr->Flags & IP_ADAPTER_ADDRESS_DNS_ELIGIBLE ?
