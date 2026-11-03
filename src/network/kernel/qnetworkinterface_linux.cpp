@@ -350,10 +350,13 @@ static void getAddresses(int sock, char *buf, QList<QNetworkInterfacePrivate *> 
             case IFA_CACHEINFO:
                 if (size_t(payloadLen) >= sizeof(ifa_cacheinfo)) {
                     auto cacheinfo = reinterpret_cast<ifa_cacheinfo *>(payloadPtr);
-                    auto toDeadline = [](quint32 lifetime) -> QDeadlineTimer {
+
+                    // Capture the "now" so we have the same basis for both deadline timers:
+                    const auto now = std::chrono::steady_clock::now();
+                    auto toDeadline = [now](quint32 lifetime) -> QDeadlineTimer {
                         if (lifetime == quint32(-1))
                             return QDeadlineTimer::Forever;
-                        return QDeadlineTimer(std::chrono::seconds(lifetime));
+                        return QDeadlineTimer(now + std::chrono::seconds(lifetime));
                     };
                     entry.setAddressLifetime(toDeadline(cacheinfo->ifa_prefered), toDeadline(cacheinfo->ifa_valid));
                 }
