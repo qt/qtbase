@@ -84,6 +84,7 @@ if(using_entrypoint_library)
     qt_handle_multi_config_output_dirs(EntryPointImplementation)
     qt_internal_add_target_aliases(EntryPointImplementation)
     qt_set_common_target_properties(EntryPointImplementation)
+    qt_internal_add_sync_header_dependencies(EntryPointImplementation Core)
 endif()
 
 # ---- Now we're ready to set up the platform specifics ----
@@ -111,8 +112,6 @@ if(WIN32)
         target_compile_definitions(EntryPointPrivate INTERFACE QT_NEEDS_QMAIN)
         qt_internal_extend_target(EntryPointImplementation DEFINES QT_NEEDS_QMAIN)
     endif()
-
-    qt_internal_add_sync_header_dependencies(EntryPointImplementation Core)
 endif()
 
 if(UIKIT)
