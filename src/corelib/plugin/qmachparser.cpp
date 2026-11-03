@@ -137,8 +137,10 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                 // ### should we check the CPU subtype? Maybe on ARM?
                 uint32_t size = qFromBigEndian(arch[i].size);
                 uint32_t offset = qFromBigEndian(arch[i].offset);
+                uint32_t align = qFromBigEndian(arch[i].align);
                 if (Q_UNLIKELY(size > fdlen) || Q_UNLIKELY(offset > fdlen)
-                        || Q_UNLIKELY(size > fdlen - offset) || Q_UNLIKELY(size < MinFileSize))
+                        || Q_UNLIKELY(size > fdlen - offset) || Q_UNLIKELY(size < MinFileSize)
+                        || Q_UNLIKELY(align >= 32) || Q_UNLIKELY(offset % (1u << align) != 0))
                     return notfound(QString(), errorString);
 
                 header = reinterpret_cast<const my_mach_header *>(m_s + offset);
