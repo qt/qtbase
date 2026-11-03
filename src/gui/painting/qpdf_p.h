@@ -27,6 +27,7 @@
 #include "private/qfontsubset_p.h"
 #include "private/qpaintengine_p.h"
 #include "private/qstroker_p.h"
+#include <QtGui/qpagedpaintdevice.h>
 #include "qpagelayout.h"
 #include "qpdfoutputintent.h"
 
@@ -132,16 +133,8 @@ class Q_GUI_EXPORT QPdfEngine : public QPaintEngine
     Q_DECLARE_PRIVATE(QPdfEngine)
     friend class QPdfWriter;
 public:
-    // keep in sync with QPagedPaintDevice::PdfVersion and QPdfEnginePrivate::writeHeader()::mapping!
-    enum PdfVersion
-    {
-        PdfVersion_1_4,
-        PdfVersion_A1b,
-        PdfVersion_1_6,
-        PdfVersion_X4,
-        // bump NumPdfVersions when adding new enumerators
-    };
-    enum : size_t { NumPdfVersions = 4 };
+    using PdfVersion = QPagedPaintDevice::PdfVersion;
+    enum : size_t { NumPdfVersions = QPagedPaintDevice::NumPdfVersions };
 
     QPdfEngine();
     explicit QPdfEngine(QPdfEnginePrivate &d);

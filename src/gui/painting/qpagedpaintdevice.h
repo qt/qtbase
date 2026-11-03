@@ -25,7 +25,6 @@ public:
 
     virtual bool newPage() = 0;
 
-    // keep in sync with QPdfEngine::PdfVersion!
     enum PdfVersion {
         PdfVersion_1_4,
         PdfVersion_A1b,
