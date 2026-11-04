@@ -1596,6 +1596,8 @@ QPrinter::PrintRange QPrinter::printRange() const
     Returns the current state of the printer being used by the print engine.
 */
 
+#undef ABORT_IF_ACTIVE
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_PRINTER
