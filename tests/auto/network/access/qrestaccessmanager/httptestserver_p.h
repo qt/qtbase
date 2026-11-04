@@ -6,6 +6,7 @@
 
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qhttpheaders.h>
+#include <QtNetwork/qnetworkrequest.h>
 
 #include <QtCore/qmap.h>
 #include <QtCore/qurl.h>
@@ -42,6 +43,10 @@ public:
 
     // Returns this server's URL for the testcase to send requests to
     QUrl url();
+
+    // Returns a request to this server. The server handles one connection at a time, so the
+    // request is limited to a single connection per host.
+    QNetworkRequest request();
 
     enum class State {
         ReadingMethod,
