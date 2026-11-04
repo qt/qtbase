@@ -29,6 +29,7 @@
 #include <render/qnativenode.h>
 #include <render/qohossurface.h>
 #include <render/qohoswindowproxy.h>
+#include <atomic>
 #include <functional>
 #include <vector>
 
@@ -311,6 +312,7 @@ private:
     std::shared_ptr<void> m_windowPropertiesProviderCallbacksHandle;
     std::function<void()> m_optPostSurfaceDrawTask;
     int m_pendingSelfMinimizeEchoes = 0;
+    std::atomic<bool> m_surfaceHasContent = false;
 };
 
 template <typename T, QOhosRuntimeDeviceTypeAndMode SupportedModes>
