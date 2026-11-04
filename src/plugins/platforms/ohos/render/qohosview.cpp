@@ -382,6 +382,7 @@ std::optional<QColor> tryGetBackgroundColorFromWindow(QWindow *window)
 
 void QOhosView::handleSurfaceContentsUpdated()
 {
+    m_surfaceHasContent.store(true, std::memory_order_relaxed);
     auto optPostSurfaceDrawTask = std::exchange(m_optPostSurfaceDrawTask, {});
     if (optPostSurfaceDrawTask)
         optPostSurfaceDrawTask();
@@ -586,6 +587,7 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
     connect(
         m_nativeNode.get(), &QNativeNode::surfaceStatusChanged,
         this, [this](const std::optional<QSize> &optSurfaceSize) {
+            m_surfaceHasContent.store(false, std::memory_order_relaxed);
             Q_EMIT surfaceStatusChanged(optSurfaceSize);
         });
 
@@ -1049,7 +1051,9 @@ void QOhosView::showImmediate()
     auto *surface = surfaceOrNull();
     const bool isVulkanWindow =
         m_ownerWindow && m_ownerWindow->surfaceType() == QSurface::VulkanSurface;
-    if (surface != nullptr && !isVulkanWindow)
+
+    if (surface != nullptr && !isVulkanWindow
+            && !m_surfaceHasContent.load(std::memory_order_relaxed))
         surface->clearNativeWindowSurface();
 
     m_nativeNode->setVisibility(true);
