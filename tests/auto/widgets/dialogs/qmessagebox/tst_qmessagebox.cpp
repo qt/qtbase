@@ -499,6 +499,10 @@ void tst_QMessageBox::about()
     QFETCH(const int, keyToSend);
     QFETCH(const bool, withParent);
 
+#ifdef Q_OS_MACOS
+    QSKIP("about() and aboutQt() dialogs don't reliably close on macOS -- QTBUG-152036");
+#endif
+
     ExecCloseHelper closeHelper;
 
     QAutoPointer parent(withParent ? new QDialog : nullptr);
