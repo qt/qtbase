@@ -318,7 +318,10 @@ void QWasmInputContext::updateInputElement()
 
     QInputMethodQueryEvent query((Qt::InputMethodQueries(Qt::ImHints)));
     QCoreApplication::sendEvent(m_focusObject, &query);
-    if (Qt::InputMethodHints(query.value(Qt::ImHints).toInt()).testFlag(Qt::ImhHiddenText))
+    // Use "password" to prevent spell checking and auto-complete. Qt Quick drops
+    // ImhHiddenText for Password echo mode, but still sets ImhSensitiveData.
+    if (Qt::InputMethodHints(query.value(Qt::ImHints).toInt())
+            .testAnyFlags(Qt::ImhHiddenText | Qt::ImhSensitiveData))
         m_inputElement.set("type", "password");
     else
         m_inputElement.set("type", "text");
