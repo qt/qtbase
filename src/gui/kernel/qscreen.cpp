@@ -771,6 +771,10 @@ void *QScreen::resolveInterface(const char *name, int revision) const
     QT_NATIVE_INTERFACE_RETURN_IF(QAndroidScreen, platformScreen);
 #endif
 
+#if defined(Q_OS_HARMONY)
+    QT_NATIVE_INTERFACE_RETURN_IF(QHarmonyScreen, platformScreen);
+#endif
+
 #if QT_CONFIG(wayland)
     QT_NATIVE_INTERFACE_RETURN_IF(QWaylandScreen, platformScreen);
 #endif

@@ -59,6 +59,14 @@ struct Q_GUI_EXPORT QAndroidScreen
 };
 #endif
 
+#if defined(Q_OS_HARMONY) || defined(Q_QDOC)
+struct Q_GUI_EXPORT QHarmonyScreen
+{
+    QT_DECLARE_NATIVE_INTERFACE(QHarmonyScreen, 1, QScreen)
+    virtual qint64 displayId() const = 0;
+};
+#endif
+
 #if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaScreen
 {

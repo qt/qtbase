@@ -31,6 +31,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <QtCore/private/qnapi_p.h>
+#include <QtCore/private/qnumeric_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qwindow_p.h>
@@ -415,9 +416,13 @@ const QOhosDisplayInfo &QOhosPlatformScreen::displayInfo() const
     return m_displayInfo;
 }
 
-double QOhosPlatformScreen::displayId() const
+qint64 QOhosPlatformScreen::displayId() const
 {
-    return m_displayInfo.id.value();
+    const auto jsDisplayId = m_displayInfo.id.value();
+    qint64 displayId = 0;
+    if (!convertDoubleTo(jsDisplayId, &displayId))
+        qOhosReportFatalErrorAndAbort("%s: display ID %g is out of the qint64 range", Q_FUNC_INFO, jsDisplayId);
+    return displayId;
 }
 
 QRect QOhosPlatformScreen::geometry() const
