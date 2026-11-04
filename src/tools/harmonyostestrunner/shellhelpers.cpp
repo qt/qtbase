@@ -3,6 +3,9 @@
 
 #include "shellhelpers.h"
 
+#include <QtCore/qfile.h>
+#include <QtCore/qregularexpression.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -17,33 +20,39 @@ bool isProcessAlive(const Hdc &hdc, const QString &bundleName)
     return !hdc.shell({u"pidof"_s, bundleName}).trimmed().isEmpty();
 }
 
-// wc -c + tail -c +N runs device-side; both use plain read() syscalls (SELinux
-// permits, unlike inotify), and one persistent hdc connection avoids per-poll
-// reconnect overhead.
-std::unique_ptr<QProcess> streamDeviceFileWhileAppRuns(
-    const Hdc &hdc, const QString &devicePath, const QString &bundleName)
+q23::expected<QByteArray, QString> copyDeviceFile(
+        const Hdc &hdc, const QString &devicePath, const QString &localPath)
 {
-    static constexpr int startTimeoutMs = 5000;
+    static const QRegularExpression transferFinishedPattern(u"FileTransfer finish, Size:(\\d+),"_s);
 
-    const QString followFileFromStart = u"sz=0; f='"_s + devicePath + u"';"_s;
-    const QString definePrintNewBytes =
-        u" dump() { new=$(wc -c < \"$f\" 2>/dev/null);"
-         " if [ \"${new:-0}\" -gt \"$sz\" ]; then"
-         " tail -c +$((sz+1)) \"$f\" 2>/dev/null | head -c $((new-sz)); sz=$new; fi; };"_s;
-    const QString printNewBytesUntilAppExits =
-        u" while true; do dump;"
-         " pidof "_s + bundleName + u" >/dev/null 2>&1 || { dump; break; };"
-         " sleep 0.1; done"_s;
-    const QString streamUntilAppExits =
-        followFileFromStart + definePrintNewBytes + printNewBytesUntilAppExits;
+    const QString hdcAnswer = hdc.receiveFile(devicePath, localPath);
+    const QRegularExpressionMatch sizeMatch = transferFinishedPattern.match(hdcAnswer);
+    if (!sizeMatch.hasMatch())
+        return q23::unexpected(u"hdc file recv answered \"%1\""_s.arg(hdcAnswer.trimmed()));
+    QFile localCopy(localPath);
+    if (!localCopy.open(QIODevice::ReadOnly))
+        return q23::unexpected(localCopy.errorString());
+    QByteArray contents = localCopy.readAll();
+    const qint64 reportedSize = sizeMatch.captured(1).toLongLong();
+    if (contents.size() != reportedSize) {
+        return q23::unexpected(u"hdc reported %1 bytes, the local copy holds %2"_s
+                                            .arg(reportedSize).arg(contents.size()));
+    }
+    return contents;
+}
 
-    auto process = std::make_unique<QProcess>();
-    // SeparateChannels so we can scan stdout for PASS/FAIL while forwarding it.
-    process->setProcessChannelMode(QProcess::SeparateChannels);
-    process->start(hdc.program(), hdc.shellArguments({streamUntilAppExits}));
-    if (!process->waitForStarted(startTimeoutMs))
-        return {};
-    return process;
+DeviceFileState queryDeviceFileState(const Hdc &hdc, const QString &devicePath)
+{
+    const QString presentMarker = u"HARMONYOSTESTRUNNER_FILE_PRESENT"_s;
+    const QString absentMarker = u"HARMONYOSTESTRUNNER_FILE_ABSENT"_s;
+
+    const QString output = hdc.shell({ u"test"_s, u"-e"_s, devicePath, u"&&"_s, u"echo"_s,
+                                       presentMarker, u"||"_s, u"echo"_s, absentMarker }).trimmed();
+    if (output == presentMarker)
+        return DeviceFileState::Present;
+    if (output == absentMarker)
+        return DeviceFileState::Absent;
+    return DeviceFileState::Unknown;
 }
 
 QString readDeviceFile(const Hdc &hdc, const QString &devicePath)

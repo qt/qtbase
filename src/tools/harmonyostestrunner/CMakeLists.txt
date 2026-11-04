@@ -13,12 +13,14 @@ qt_internal_add_tool(${target_name}
         blockingtestdialogs.cpp blockingtestdialogs.h
         hdc.cpp hdc.h
         shellhelpers.cpp shellhelpers.h
+        testoutputforwarder.cpp testoutputforwarder.h
         main.cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
     LIBRARIES
         Qt::Core
+        Qt::CorePrivate
 )
 qt_internal_return_unless_building_tools()
 set_target_properties(${target_name} PROPERTIES

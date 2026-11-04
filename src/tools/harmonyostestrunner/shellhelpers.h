@@ -6,18 +6,20 @@
 
 #include "hdc.h"
 
-#include <QtCore/qprocess.h>
+#include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
-
-#include <memory>
+#include <QtCore/private/qexpected_p.h>
 
 QT_BEGIN_NAMESPACE
+
+enum class DeviceFileState { Present, Absent, Unknown };
 
 void forceStopBundle(const Hdc &hdc, const QString &bundleName);
 bool isProcessAlive(const Hdc &hdc, const QString &bundleName);
 QString readDeviceFile(const Hdc &hdc, const QString &devicePath);
-std::unique_ptr<QProcess> streamDeviceFileWhileAppRuns(
-    const Hdc &hdc, const QString &devicePath, const QString &bundleName);
+q23::expected<QByteArray, QString> copyDeviceFile(
+        const Hdc &hdc, const QString &devicePath, const QString &localPath);
+DeviceFileState queryDeviceFileState(const Hdc &hdc, const QString &devicePath);
 
 QT_END_NAMESPACE
 

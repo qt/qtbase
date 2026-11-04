@@ -21,11 +21,6 @@ Hdc::Hdc(QString hdcPath, QString connectKey)
 {
 }
 
-QString Hdc::program() const
-{
-    return m_hdcPath;
-}
-
 QString Hdc::connectKey() const
 {
     return m_connectKey;
@@ -70,9 +65,9 @@ QString Hdc::shell(const QStringList &command, bool printOnFailure) const
     return run(shellCommandArgs(command), printOnFailure);
 }
 
-QStringList Hdc::shellArguments(const QStringList &command) const
+QString Hdc::receiveFile(const QString &devicePath, const QString &localPath) const
 {
-    return arguments(shellCommandArgs(command));
+    return run({ u"file"_s, u"recv"_s, devicePath, localPath }, true);
 }
 
 QT_END_NAMESPACE

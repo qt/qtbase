@@ -4,17 +4,18 @@
 #include "blockingtestdialogs.h"
 #include "hdc.h"
 #include "shellhelpers.h"
+#include "testoutputforwarder.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcommandlineparser.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qfileinfo.h>
-#include <QtCore/qprocess.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
+#include <QtCore/qtemporarydir.h>
 #if QT_CONFIG(systemsemaphore)
 #  include <QtCore/qsystemsemaphore.h>
 #  include <QtCore/qtipccommon.h>
@@ -24,7 +25,6 @@
 #include <chrono>
 #include <csignal>
 #include <cstdio>
-#include <memory>
 
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
@@ -32,8 +32,8 @@ using namespace std::chrono_literals;
 // HarmonyOS sandbox: the app's writable /data/storage/el2/base/files/ maps to
 // /data/app/el2/100/base/<bundleName>/files/ in the hdc shell namespace, which
 // shell can read but not write (SELinux). "tail -f" / inotify are blocked on
-// that path too, so stdout is streamed via a device-side wc/tail polling loop
-// that uses only plain read() syscalls.
+// that path too, so the stdout file is copied to the host with hdc file recv on
+// every poll.
 
 // QTest normal exit code range is 0-127; use 251-254 for runner-level failures.
 static constexpr int EXIT_ERROR = 254;
@@ -301,6 +301,15 @@ int main(int argc, char *argv[])
     const QString shellStdoutPath   = shellBase + u"/qt_stdout_"_s   + runId + u".txt"_s;
     const QString shellExitCodePath = shellBase + u"/qt_exitcode_"_s + runId + u".txt"_s;
 
+    const QTemporaryDir localCopyDir;
+    if (!localCopyDir.isValid()) {
+        fprintf(stderr, "harmonyostestrunner: cannot create a local directory for the test "
+                "output: %s\n", qPrintable(localCopyDir.errorString()));
+        return EXIT_ERROR;
+    }
+    TestOutputForwarder outputForwarder(
+            hdc, shellStdoutPath, localCopyDir.filePath(u"stdout.txt"_s));
+
     const QString bundleCheckOutput =
         hdc.shell({u"bm"_s, u"dump"_s, u"-n"_s, bundleName});
     if (bundleCheckOutput.contains(u"error"_s, Qt::CaseInsensitive)
@@ -379,13 +388,6 @@ int main(int argc, char *argv[])
 
     waitForStdoutFile(hdc, shellStdoutPath);
 
-    const std::unique_ptr<QProcess> stdoutLogger =
-        streamDeviceFileWhileAppRuns(hdc, shellStdoutPath, bundleName);
-    if (!stdoutLogger) {
-        fprintf(stderr, "harmonyostestrunner: warning: failed to start stdout logger, "
-                "output may be delayed\n");
-    }
-
     // hdc shell always returns 0; can't use `test -f`. Cat the file and check
     // whether the contents parse as int.
     const int pollIntervalMs = 500;
@@ -396,6 +398,7 @@ int main(int argc, char *argv[])
     bool completed = false;
     int aliveCheckCounter = 0;
     qint64 lastTestProgressAt = -1;
+    qint64 lastSuccessfulCopyAt = -1;
     qint64 lastHeartbeatSecs = 0;
     BlockingTestDialogs blockingTestDialogs(parser.value(testConfigOpt), hdc);
     std::chrono::nanoseconds lastOutputAt {};
@@ -403,17 +406,21 @@ int main(int argc, char *argv[])
     while (!g_interrupted.load()
            && elapsed.elapsed() < qint64(timeoutSecs) * 1000)
     {
-        if (stdoutLogger) {
-            const QByteArray chunk = stdoutLogger->readAllStandardOutput();
-            if (!chunk.isEmpty()) {
-                fwrite(chunk.constData(), 1, static_cast<size_t>(chunk.size()), stdout);
-                fflush(stdout);
+        {
+            const q23::expected<QByteArray, QString> chunk = outputForwarder.forwardAvailable();
+            if (chunk) {
+                lastSuccessfulCopyAt = elapsed.elapsed();
+            } else {
+                fprintf(stderr, "harmonyostestrunner: warning: could not copy the test output "
+                        "(%s)\n", qPrintable(chunk.error()));
+            }
+            if (chunk && !chunk->isEmpty()) {
                 // Markers match QPlainTestLogger output in qtestlog.cpp. If
                 // QTest's format ever changes, the no-progress watchdog silently
                 // stops firing — hung tests only trip the overall timeout.
                 lastOutputAt = elapsed.durationElapsed();
-                if (chunk.contains("PASS   :") || chunk.contains("FAIL!  :")
-                    || chunk.contains("Totals:"))
+                if (chunk->contains("PASS   :") || chunk->contains("FAIL!  :")
+                    || chunk->contains("Totals:"))
                     lastTestProgressAt = elapsed.elapsed();
             }
         }
@@ -454,7 +461,7 @@ int main(int argc, char *argv[])
         }
 
         if (noProgressTimeoutSecs > 0 && lastTestProgressAt >= 0
-            && elapsed.elapsed() - lastTestProgressAt
+            && lastSuccessfulCopyAt - lastTestProgressAt
                > qint64(noProgressTimeoutSecs) * 1000)
         {
             fprintf(stderr,
@@ -474,10 +481,7 @@ int main(int argc, char *argv[])
             lastHeartbeatSecs = elapsedSecs;
         }
 
-        if (stdoutLogger)
-            stdoutLogger->waitForReadyRead(pollIntervalMs);
-        else
-            QThread::msleep(pollIntervalMs);
+        QThread::msleep(pollIntervalMs);
     }
 
     const bool interrupted = g_interrupted.load();
@@ -491,29 +495,18 @@ int main(int argc, char *argv[])
         forceStopBundle(hdc, bundleName);
     }
 
-    if (stdoutLogger) {
-        if (stdoutLogger->state() != QProcess::NotRunning) {
-            // Drain bytes still in flight after the test finished — the 100 ms
-            // device-side loop and hdc transport both add latency.
-            while (stdoutLogger->waitForReadyRead(200)) {
-                const QByteArray chunk = stdoutLogger->readAllStandardOutput();
-                if (chunk.isEmpty())
-                    break;
-                fwrite(chunk.constData(), 1, static_cast<size_t>(chunk.size()), stdout);
-                fflush(stdout);
-            }
-        }
-        const QByteArray finalChunk = stdoutLogger->readAllStandardOutput();
-        if (!finalChunk.isEmpty()) {
-            fwrite(finalChunk.constData(), 1, static_cast<size_t>(finalChunk.size()), stdout);
-            fflush(stdout);
-        }
-    }
+    const bool outputComplete = outputForwarder.forwardRemaining(
+            []() {
+                return g_interrupted.load();
+            });
 
 #if QT_CONFIG(systemsemaphore)
     runnerLock.release();
 #endif
 
-    return completed ? testExitCode
-        : interrupted ? EXIT_ERROR : EXIT_TIMEOUT;
+    if (!completed)
+        return interrupted ? EXIT_ERROR : EXIT_TIMEOUT;
+    if (testExitCode == 0 && !outputComplete)
+        return EXIT_ERROR;
+    return testExitCode;
 }
