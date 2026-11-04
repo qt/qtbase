@@ -71,8 +71,6 @@ using String = Napi::String;
 
 using Symbol = Napi::Symbol;
 
-using ArrayBuffer = Napi::ArrayBuffer;
-
 using TypedArray = Napi::TypedArray;
 
 using Function = Napi::Function;
@@ -151,6 +149,20 @@ public:
     // rely on napi_get_property_names(), which has been seen to return non-enumerable and symbol
     // keys as well on HarmonyOS devices.
     std::vector<std::string> getFilteredStringKeys(napi_key_collection_mode keyMode, napi_key_filter keyFilter) const;
+};
+
+class ArrayBuffer : public Napi::ArrayBuffer
+{
+public:
+    using Napi::ArrayBuffer::ArrayBuffer;
+
+    static ArrayBuffer New(napi_env env, std::size_t byteLength);
+
+    ArrayBuffer(const Napi::ArrayBuffer &other);
+    ArrayBuffer &operator=(const Napi::ArrayBuffer &other);
+
+    // Hides Napi::ArrayBuffer::Data(), which doesn't work on HarmonyOS.
+    void *Data() const;
 };
 
 template<typename Context>
@@ -407,6 +419,11 @@ struct ValueTypeTraits<Napi::ArrayBuffer>
 {
     static constexpr auto typeCheckMemFun = &Napi::Value::IsArrayBuffer;
     static constexpr const char *typeName = "ArrayBuffer";
+};
+
+template<>
+struct ValueTypeTraits<ArrayBuffer> : public ValueTypeTraits<Napi::ArrayBuffer>
+{
 };
 
 template<>
@@ -908,6 +925,35 @@ inline Object &Object::operator=(const Napi::Object &other)
 {
     Napi::Object::operator=(other);
     return *this;
+}
+
+inline ArrayBuffer ArrayBuffer::New(napi_env env, std::size_t byteLength)
+{
+    return Napi::ArrayBuffer::New(env, byteLength);
+}
+
+inline ArrayBuffer::ArrayBuffer(const Napi::ArrayBuffer &other)
+    : Napi::ArrayBuffer(other)
+{
+}
+
+inline ArrayBuffer &ArrayBuffer::operator=(const Napi::ArrayBuffer &other)
+{
+    Napi::ArrayBuffer::operator=(other);
+    return *this;
+}
+
+inline void *ArrayBuffer::Data() const
+{
+    void *data = nullptr;
+    std::size_t byteLength = 0;
+    const auto status = napi_get_arraybuffer_info(Env(), *this, &data, &byteLength);
+    if (status != napi_ok) {
+        throw makeLoggedException(
+            Env(),
+            "napi_get_arraybuffer_info() failed (status: " + std::to_string(static_cast<int>(status)) + ")");
+    }
+    return data;
 }
 
 template<typename T>
