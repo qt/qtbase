@@ -4,6 +4,9 @@
 #include "httptestserver_p.h"
 
 #include <QtNetwork/qtcpsocket.h>
+#if QT_CONFIG(http)
+#include <QtNetwork/qhttp1configuration.h>
+#endif
 
 #include <QtCore/qcoreapplication.h>
 
@@ -29,6 +32,17 @@ HttpTestServer::~HttpTestServer()
 QUrl HttpTestServer::url()
 {
     return QUrl(u"http://127.0.0.1:%1"_s.arg(serverPort()));
+}
+
+QNetworkRequest HttpTestServer::request()
+{
+    QNetworkRequest request(url());
+#if QT_CONFIG(http)
+    QHttp1Configuration http1Configuration;
+    http1Configuration.setNumberOfConnectionsPerHost(1);
+    request.setHttp1Configuration(http1Configuration);
+#endif
+    return request;
 }
 
 void HttpTestServer::handleConnected()

@@ -102,7 +102,7 @@ void tst_QRestAccessManager::requests()
     QRestAccessManager manager(&qnam);
     HttpTestServer server;
     QTRY_VERIFY(server.isListening());
-    QNetworkRequest request(server.url());
+    QNetworkRequest request = server.request();
     request.setRawHeader("Content-Type"_ba, "text/plain"); // To silence missing content-type warn
     QNetworkReply *networkReply = nullptr;
     std::unique_ptr<QHttpMultiPart> multiPart;
@@ -477,7 +477,7 @@ void tst_QRestAccessManager::errors()
     QRestAccessManager manager(&qnam);
     HttpTestServer server;
     QTRY_VERIFY(server.isListening());
-    QNetworkRequest request(server.url());
+    QNetworkRequest request = server.request();
 
     HttpData serverSideResponse; // The response data the server responds with
     server.setHandler([&](const HttpData &, HttpData &response, ResponseControl &) {
@@ -542,7 +542,7 @@ void tst_QRestAccessManager::body()
     QRestAccessManager manager(&qnam);
     HttpTestServer server;
     QTRY_VERIFY(server.isListening());
-    QNetworkRequest request(server.url());
+    QNetworkRequest request = server.request();
     QNetworkReply *networkReply = nullptr;
 
     HttpData serverSideRequest;  // The request data the server received
@@ -599,7 +599,7 @@ void tst_QRestAccessManager::json()
     QRestAccessManager manager(&qnam);
     HttpTestServer server;
     QTRY_VERIFY(server.isListening());
-    QNetworkRequest request(server.url());
+    QNetworkRequest request = server.request();
     QNetworkReply *networkReply = nullptr;
     QJsonDocument responseJsonDocument;
     std::optional<QJsonDocument> json;
@@ -704,7 +704,7 @@ void tst_QRestAccessManager::text()
     QRestAccessManager manager(&qnam);
     HttpTestServer server;
     QTRY_VERIFY(server.isListening());
-    QNetworkRequest request(server.url());
+    QNetworkRequest request = server.request();
     QNetworkReply *networkReply = nullptr;
     QJsonObject responseJsonObject;
 
@@ -819,7 +819,7 @@ void tst_QRestAccessManager::textStreaming()
     QRestAccessManager manager(&qnam);
     HttpTestServer server;
     QTRY_VERIFY(server.isListening());
-    QNetworkRequest request(server.url());
+    QNetworkRequest request = server.request();
 
     // Create long text data
     const QString expectedData = u"사랑abcd€fghiklmnΩpqrstuvwx愛사랑A사랑BCD€FGHIJKLMNΩPQRsTUVWXYZ愛"_s;
