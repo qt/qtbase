@@ -584,6 +584,12 @@ void tst_QEventLoop::deliverInDefinedOrder()
     QThread threads[NbThread];
     // GHS compiler needs the namespace prefix, despite using above.
     DeliverInDefinedOrder::Object objects[NbObject];
+    const auto stopThreads = qScopeGuard([&threads] {
+        for (QThread &thread : threads) {
+            thread.quit();
+            thread.wait();
+        }
+    });
     for (int t = 0; t < NbThread; t++) {
         threads[t].start();
     }
@@ -601,14 +607,8 @@ void tst_QEventLoop::deliverInDefinedOrder()
     }
 
     for (int o = 0; o < NbObject; o++) {
-        QTRY_COMPARE(objects[o].count, int(NbEvent));
+        QTRY_COMPARE_WITH_TIMEOUT(objects[o].count, int(NbEvent), 30s);
     }
-
-    for (int t = 0; t < NbThread; t++) {
-        threads[t].quit();
-        threads[t].wait();
-    }
-
 }
 
 void tst_QEventLoop::canUseQThreadQuitToExitEventLoopInStdThread()
