@@ -158,9 +158,7 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
             if (i != languageCodeList.end())
                 return QLocale::Language(std::distance(languageCodeList.begin(), i));
         }
-    }
-
-    if (codeTypes.testFlag(QLocale::LegacyLanguageCode) && uc3 == 0) {
+    } else if (codeTypes.testFlag(QLocale::LegacyLanguageCode)) {
         constexpr struct LegacyCodes {
             AlphaCode code;
             QLocale::Language language;
