@@ -203,6 +203,14 @@ namespace QRangeModelDetails
     static auto pos(C &&c, int i)
     { return std::next(QRangeModelDetails::adl_begin(std::forward<C>(c)), i); }
 
+    // Assigning from a brace-init-list doesn't work for e.g. QString if
+    // QT_NO_CAST_FROM_ASCII is set, as the deleted operator=(const char *) gets
+    // precedence over assigning from a (default-constructed) QString. So use a
+    // helper that explicitly assigns a default-constructed value.
+    template <typename Value>
+    decltype(auto) clearItem(Value &&value) { return value = q20::remove_cvref_t<Value>(); }
+
+
     // Test if a type is a range, and whether we can modify it using the
     // standard C++ container member functions insert, erase, and resize.
     // For the sake of QAIM, we cannot modify a range if it holds const data
@@ -2161,7 +2169,7 @@ public:
                         return resetProperty(column, QRangeModelDetails::pointerTo(target));
                     }
                 } else { // normal structs, values, associative containers
-                    target = {};
+                    QRangeModelDetails::clearItem(target);
                     return true;
                 }
                 return false;
@@ -3575,7 +3583,7 @@ protected:
                 for (int p = mo.propertyOffset(); p < mo.propertyCount(); ++p)
                     success = writeProperty(mo.property(p), object, {}) && success;
             } else { // reset a gadget by assigning a default-constructed
-                *object = {};
+                QRangeModelDetails::clearItem(*object);
             }
         } else {
             success = writeProperty(mo.property(property + mo.propertyOffset()), object, {});
