@@ -128,6 +128,28 @@ Q_STATIC_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcDebugLibrary, "QT_DEBUG_PLUGINS", 
 
     \snippet code/src_corelib_plugin_qlibrary.cpp 1
 
+    \section1 Security considerations
+
+    Qt treats libraries loaded with QLibrary as trusted content: loading a
+    library executes its code with the privileges of the application. It is
+    therefore the responsibility of the application developer, and of whoever
+    deploys the application, to ensure that no malicious library can be placed
+    in a location from which it may be loaded.
+
+    Whenever possible, specify the absolute path to the library. This avoids
+    searching the system-specific library locations, so that the library can
+    only be loaded from the intended location. Note that QLibrary may still try
+    the platform-specific prefixes and suffixes described above in that
+    location.
+
+    Libraries that the loaded library depends on are resolved by the operating
+    system's dynamic loader, and are subject to the platform's library search
+    rules even if the library itself is loaded using an absolute path.
+
+    Make sure that library files, and the directories that contain them, can
+    only be modified by trusted accounts, and that they are not changed while
+    the application is running.
+
     \sa QPluginLoader
 */
 
