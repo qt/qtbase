@@ -68,14 +68,6 @@ struct Q_GUI_EXPORT QWebOSScreen
     virtual void addFlipListener(void (*callback)()) = 0;
 };
 #endif
-
-#if defined(Q_OS_HARMONY)
-struct Q_GUI_EXPORT QOhosScreen
-{
-    QT_DECLARE_NATIVE_INTERFACE(QOhosScreen, 1, QScreen)
-    virtual double displayId() const = 0;
-};
-#endif
 } // QNativeInterface::Private
 
 QT_END_NAMESPACE

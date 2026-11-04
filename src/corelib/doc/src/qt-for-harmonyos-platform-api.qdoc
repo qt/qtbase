@@ -36,6 +36,8 @@
         object only on the JS thread.
     \li QNativeInterface::QHarmonyWindow provides the ability that shows a
         QWindow, and the \c window.Window that the QWindow is shown in.
+    \li QNativeInterface::QHarmonyScreen provides the ID of the display
+        that a QScreen represents.
     \li The QtHarmony namespace contains free functions for code that runs
         on the JS thread, such as conversions between QJsonObject and JS
         objects.

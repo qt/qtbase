@@ -9,7 +9,6 @@
 #include <QtGui/qwindow.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qohoswindowhints_p.h>
-#include <QtGui/qpa/qplatformscreen_p.h>
 #include <QtGui/qpa/qplatformwindow_p.h>
 #include <QtWidgets/qwidget.h>
 
@@ -217,18 +216,11 @@ std::optional<qint64> tryGetNativeWindowId(QWindow *window)
 
 std::optional<qint64> tryGetScreenDisplayId(QScreen *screen)
 {
-    auto *ohosScreen = screen->nativeInterface<QNativeInterface::Private::QOhosScreen>();
-    if (!ohosScreen)
+    auto *harmonyScreen = screen->nativeInterface<QNativeInterface::QHarmonyScreen>();
+    if (!harmonyScreen)
         return {};
 
-    const double ohosDisplayId = ohosScreen->displayId();
-    qint64 displayId = 0;
-    if (!convertDoubleTo(ohosDisplayId, &displayId)) {
-        qWarning("tryGetScreenDisplayId: display id %g out of qint64 range", ohosDisplayId);
-        return {};
-    }
-
-    return displayId;
+    return harmonyScreen->displayId();
 }
 
 }
