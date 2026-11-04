@@ -34,6 +34,8 @@ CoreCompositor::~CoreCompositor()
     m_running = false;
     m_dispatchThread.join();
     wl_display_destroy_clients(m_display);
+    qDeleteAll(m_globals);
+    m_globals.clear();
     wl_display_destroy(m_display);
     qDebug() << "cleanup";
 }
