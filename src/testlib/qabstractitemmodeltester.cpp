@@ -382,7 +382,7 @@ void QAbstractItemModelTesterPrivate::nonDestructiveBasicTest()
     const bool hasRow = model->hasIndex(0, 0);
     QVariant cache;
     if (hasRow)
-        model->match(model->index(0, 0), -1, cache);
+        model->match(model->index(0, 0), Qt::DisplayRole, cache);
     model->mimeTypes();
     MODELTESTER_VERIFY(!model->parent(QModelIndex()).isValid());
     MODELTESTER_VERIFY(model->rowCount() >= 0);
