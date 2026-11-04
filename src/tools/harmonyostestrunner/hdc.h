@@ -7,7 +7,11 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
+
+inline constexpr std::chrono::minutes hdcOutageTolerance{ 3 };
 
 class Hdc
 {
@@ -15,9 +19,7 @@ public:
     Hdc(QString hdcPath, QString connectKey);
 
     QString shell(const QStringList &command, bool printOnFailure = false) const;
-
-    QString program() const;
-    QStringList shellArguments(const QStringList &command) const;
+    QString receiveFile(const QString &devicePath, const QString &localPath) const;
 
     QString connectKey() const;
 
