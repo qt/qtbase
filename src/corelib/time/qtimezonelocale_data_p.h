@@ -15909,7 +15909,7 @@ static inline constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
     {  305, 6956,    1028,  6, }, // Pacific/Noumea
     {  305, 3058,    1050,  7, }, // Pacific/Pohnpei
     {  305, 7252,    1068, 15, }, // Pacific/Wallis
-    {  306,   14,       0,  6, }, // Africa/Asmara Fulah/Latin/Senegal
+    {  306,   14,       0,  6, }, // Africa/Asmara Fula/Latin/Senegal
     {  306, 7309,       6,  8, }, // Africa/El_Aaiun
     {  306, 6724,      14,  4, }, // Africa/Lome
     {  306, 5242,      18,  9, }, // Africa/Ndjamena
@@ -15981,7 +15981,7 @@ static inline constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
     {  306, 6956,    1028,  6, }, // Pacific/Noumea
     {  306, 3058,    1050,  7, }, // Pacific/Pohnpei
     {  306, 7252,    1068, 15, }, // Pacific/Wallis
-    {  312, 6643,   70868, 12, }, // Africa/Abidjan Fulah/Adlam/Guinea
+    {  312, 6643,   70868, 12, }, // Africa/Abidjan Fula/Adlam/Guinea
     {  312, 6615,   70880, 10, }, // Africa/Accra
     {  312, 5046,   70890, 18, }, // Africa/Addis_Ababa
     {  312, 7267,   70908, 14, }, // Africa/Algiers
@@ -25961,7 +25961,7 @@ static inline constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
     {  402, 6956,    1028,  6, }, // Pacific/Noumea
     {  402, 3058,    1050,  7, }, // Pacific/Pohnpei
     {  402, 7252,    1068, 15, }, // Pacific/Wallis
-    {  404, 7267,  122741,  7, }, // Africa/Algiers Kurdish/Latin/Turkey
+    {  404, 7267,  122741,  7, }, // Africa/Algiers Kurdish/Latin/Turkiye
     {  404,   14,       0,  6, }, // Africa/Asmara
     {  404, 2298,  122748,  6, }, // Africa/Cairo
     {  404, 4104,   35451, 10, }, // Africa/Casablanca
@@ -39568,7 +39568,7 @@ static inline constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
     {  530, 6956,    1028,  6, }, // Pacific/Noumea
     {  530, 3058,    1050,  7, }, // Pacific/Pohnpei
     {  530, 7252,    1068, 15, }, // Pacific/Wallis
-    {  531,   14,       0,  6, }, // Africa/Asmara Sakha/Cyrillic/Russia
+    {  531,   14,       0,  6, }, // Africa/Asmara Yakut/Cyrillic/Russia
     {  531, 7309,       6,  8, }, // Africa/El_Aaiun
     {  531, 6724,      14,  4, }, // Africa/Lome
     {  531, 5242,      18,  9, }, // Africa/Ndjamena
@@ -50069,7 +50069,7 @@ static inline constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
     {  640, 6956,    1028,  6, }, // Pacific/Noumea
     {  640, 3058,    1050,  7, }, // Pacific/Pohnpei
     {  640, 7252,    1068, 15, }, // Pacific/Wallis
-    {  642, 6615,    5322,  4, }, // Africa/Accra Turkish/Latin/Turkey
+    {  642, 6615,    5322,  4, }, // Africa/Accra Turkish/Latin/Turkiye
     {  642, 7267,  200238,  7, }, // Africa/Algiers
     {  642,   14,       0,  6, }, // Africa/Asmara
     {  642, 5258,   21993,  9, }, // Africa/Brazzaville
@@ -60416,8 +60416,8 @@ static inline constexpr LocaleZoneNames localeZoneNameTable[] = {
     {  259, 2408,       0,    1074,       0,    0,   49,    0,  0, 25,  0,  0,  2,  0, }, // Etc/UTC French/Latin/France
     {  266, 2408,       0,    1074,       0,    0,    0,    0,  0, 25,  0,  0,  3,  0, }, // Etc/UTC French/Latin/Canada
     {  305, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Friulian/Latin/Italy
-    {  306, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Fulah/Latin/Senegal
-    {  312, 2408,       0,    1099,       0,    0,   51,    0,  0, 56,  0,  0,  6,  0, }, // Etc/UTC Fulah/Adlam/Guinea
+    {  306, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Fula/Latin/Senegal
+    {  312, 2408,       0,    1099,       0,    0,   51,    0,  0, 56,  0,  0,  6,  0, }, // Etc/UTC Fula/Adlam/Guinea
     {  330, 2408,       0,    1155,       0,    0,    0,    0,  0, 34,  0,  0,  3,  0, }, // Etc/UTC Gaelic/Latin/United Kingdom
     {  330, 2316,       0,       0,       0,    0,    0,   57,  0,  0,  0,  0,  0, 12, }, // Europe/Dublin
     {  330, 2454,       0,       0,       0,    0,    0,   69,  0,  0,  0,  0,  0,  3, }, // Europe/London
@@ -60478,7 +60478,7 @@ static inline constexpr LocaleZoneNames localeZoneNameTable[] = {
     {  400, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Koyraboro Senni/Latin/Mali
     {  401, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Koyra Chiini/Latin/Mali
     {  402, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Kpelle/Latin/Liberia
-    {  404, 2408,       0,    1911,       0,    0,  110,    0,  0, 24,  0,  0,  3,  0, }, // Etc/UTC Kurdish/Latin/Turkey
+    {  404, 2408,       0,    1911,       0,    0,  110,    0,  0, 24,  0,  0,  3,  0, }, // Etc/UTC Kurdish/Latin/Turkiye
     {  406, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Kurdish/Arabic/Iraq
     {  409, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Kwasio/Latin/Cameroon
     {  410, 2408,       0,    1935,       0,    0,    0,    0,  0, 25,  0,  0,  3,  0, }, // Etc/UTC Kyrgyz/Cyrillic/Kyrgyzstan
@@ -60576,7 +60576,7 @@ static inline constexpr LocaleZoneNames localeZoneNameTable[] = {
     {  523, 2408,       0,    2780,       0,    0,    0,    0,  0, 32,  0,  0,  3,  0, }, // Etc/UTC Russian/Cyrillic/Russia
     {  529, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Rwa/Latin/Tanzania
     {  530, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Saho/Latin/Eritrea
-    {  531, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Sakha/Cyrillic/Russia
+    {  531, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Yakut/Cyrillic/Russia
     {  532, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Samburu/Latin/Kenya
     {  533, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Sango/Latin/Central African Republic
     {  534, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Sangu/Latin/Tanzania
@@ -60659,7 +60659,7 @@ static inline constexpr LocaleZoneNames localeZoneNameTable[] = {
     {  638, 2408,       0,    3389,       0,    0,  149,    0,  0, 17,  0,  0,  3,  0, }, // Etc/UTC Tongan/Latin/Tonga
     {  639, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Tsonga/Latin/South Africa
     {  640, 2408,       0,    3406,       0,    0,    0,    0,  0, 42,  0,  0,  3,  0, }, // Etc/UTC Tswana/Latin/South Africa
-    {  642, 2408,       0,    3448,       0,    0,    0,    0,  0, 25,  0,  0,  3,  0, }, // Etc/UTC Turkish/Latin/Turkey
+    {  642, 2408,       0,    3448,       0,    0,    0,    0,  0, 25,  0,  0,  3,  0, }, // Etc/UTC Turkish/Latin/Turkiye
     {  644, 2408,       0,    3473,       0,    0,    0,    0,  0, 28,  0,  0,  3,  0, }, // Etc/UTC Turkmen/Latin/Turkmenistan
     {  645, 2408,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Tyap/Latin/Nigeria
     {  646, 2408,       0,    3501,       0,    0,    0,    0,  0, 33,  0,  0,  3,  0, }, // Etc/UTC Ukrainian/Cyrillic/Ukraine
@@ -69065,7 +69065,7 @@ static inline constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = 
     {  305,  512,  273981,  274003,  274034, 22, 31, 29, }, // Europe_Eastern
     {  305,  550,  274063,  274086,  274118, 23, 32, 30, }, // Europe_Western
     {  305, 1077,  274148,  274161,  274183, 13, 22, 20, }, // Moscow
-    {  312,    0,  274203,  274228,  274272, 25, 44, 36, }, // Acre Fulah/Adlam/Guinea
+    {  312,    0,  274203,  274228,  274272, 25, 44, 36, }, // Acre Fula/Adlam/Guinea
     {  312,    5,       0,  274308,       0,  0, 37,  0, }, // Afghanistan
     {  312,   17,       0,  274345,       0,  0, 46,  0, }, // Africa_Central
     {  312,   32,       0,  274391,       0,  0, 48,  0, }, // Africa_Eastern
@@ -73477,7 +73477,7 @@ static inline constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = 
     {  397, 1557,  453529,  453539,  453550, 10, 11, 14, }, // Yekaterinburg
     {  397, 1571,       0,  453564,       0,  0,  5,  0, }, // Yukon
     {  399,  925,  453569,  453574,  453580,  5,  6,  9, }, // Korea Korean/Korean/North Korea
-    {  404,    0,  453589,  453601,  453625, 12, 24, 22, }, // Acre Kurdish/Latin/Turkey
+    {  404,    0,  453589,  453601,  453625, 12, 24, 22, }, // Acre Kurdish/Latin/Turkiye
     {  404,    5,       0,  453647,       0,  0, 17,  0, }, // Afghanistan
     {  404,   17,       0,  453664,       0,  0, 20,  0, }, // Africa_Central
     {  404,   32,       0,  453684,       0,  0, 23,  0, }, // Africa_Eastern
@@ -80238,7 +80238,7 @@ static inline constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = 
     {  523, 1549,   83771,  666527,  666552,  6, 25, 20, }, // Yakutsk
     {  523, 1557,   12305,  666572,  666603, 12, 31, 26, }, // Yekaterinburg
     {  523, 1571,       0,   83897,       0,  0,  4,  0, }, // Yukon
-    {  531,  169,  666629,  666639,  666655, 10, 16, 18, }, // Arabian Sakha/Cyrillic/Russia
+    {  531,  169,  666629,  666639,  666655, 10, 16, 18, }, // Arabian Yakut/Cyrillic/Russia
     {  531,  205,  666673,  666684,  666701, 11, 17, 19, }, // Armenia
     {  531,  222,  666720,  666739,  666764, 19, 25, 27, }, // Australia_Central
     {  531,  265,  666791,  666810,  666835, 19, 25, 27, }, // Australia_Eastern
@@ -84653,7 +84653,7 @@ static inline constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = 
     {  638, 1557,  820019,  820049,  820092, 30, 43, 42, }, // Yekaterinburg
     {  638, 1571,       0,  820134,       0,  0, 15,  0, }, // Yukon
     {  640,  651,       0,  820149,       0,  0, 49,  0, }, // GMT Tswana/Latin/South Africa
-    {  642,    0,  820198,  820208,  820227, 10, 19, 14, }, // Acre Turkish/Latin/Turkey
+    {  642,    0,  820198,  820208,  820227, 10, 19, 14, }, // Acre Turkish/Latin/Turkiye
     {  642,    5,       0,  820241,       0,  0, 16,  0, }, // Afghanistan
     {  642,   17,       0,  820257,       0,  0, 17,  0, }, // Africa_Central
     {  642,   32,       0,  820274,       0,  0, 17,  0, }, // Africa_Eastern
@@ -91115,7 +91115,7 @@ static inline constexpr LocaleMetaZoneShortNames localeMetaZoneShortNameTable[] 
     {  623, 1346,    0,  114,    0,  0,  3,  0, }, // Singapore
     {  625,  651,    0,  704,    0,  0,  3,  0, }, // GMT Taroko/Latin/Taiwan
     {  628,  751,    0,  108,    0,  0,  3,  0, }, // India Telugu/Telugu/India
-    {  642, 1437,  707,  707,  710,  3,  3,  7, }, // Turkey Turkish/Latin/Turkey
+    {  642, 1437,  707,  707,  710,  3,  3,  7, }, // Turkey Turkish/Latin/Turkiye
     {  644, 1444,   26,   26,   28,  3,  3,  4, }, // Turkmenistan Turkmen/Latin/Turkmenistan
     {  647,  497,  308,  308,  311,  3,  3,  4, }, // Europe_Central Upper Sorbian/Latin/Germany
     {  647,  512,  315,  315,  318,  3,  3,  4, }, // Europe_Eastern
@@ -91195,7 +91195,7 @@ static inline constexpr LocaleZoneData localeZoneData[] = {
     { LOCALE_TAGS( 25, 66, 17)  3470,  1541,    18,    16,    0,    6,    0,    0,  400,  408,  425,  6,  6,  5,  7,  8, 17, 12, }, // Azerbaijani/Latin/Azerbaijan
     { LOCALE_TAGS( 25,  4,112)  3789,  1694,    18,    17,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Azerbaijani/Arabic/Iran
     { LOCALE_TAGS( 25,  4,113)  3854,  1694,    18,    18,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Azerbaijani/Arabic/Iraq
-    { LOCALE_TAGS( 25,  4,239)  3854,  1694,    18,    18,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Azerbaijani/Arabic/Turkey
+    { LOCALE_TAGS( 25,  4,239)  3854,  1694,    18,    18,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Azerbaijani/Arabic/Turkiye
     { LOCALE_TAGS( 25, 27, 17)  3854,  1694,    18,    18,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Azerbaijani/Cyrillic/Azerbaijan
     { LOCALE_TAGS( 26, 66, 40)  3919,  1694,    18,    19,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Bafia/Latin/Cameroon
     { LOCALE_TAGS( 28, 66,145)  3991,  1694,    18,    20,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Bambara/Latin/Mali
@@ -91450,30 +91450,30 @@ static inline constexpr LocaleZoneData localeZoneData[] = {
     { LOCALE_TAGS( 85, 66,252) 15754,  8339,  1252,    77,    0,   57,   38,    0, 1741, 1751, 1770,  6,  6,  5,  7, 10, 19, 16, }, // French/Latin/Vanuatu
     { LOCALE_TAGS( 85, 66,256) 15754,  8339,  1252,    77,    0,   57,   38,    0, 1741, 1751, 1770,  6,  6,  5,  7, 10, 19, 16, }, // French/Latin/Wallis and Futuna
     { LOCALE_TAGS( 86, 66,117) 15754,  8339,  1252,    77,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Friulian/Latin/Italy
-    { LOCALE_TAGS( 87, 66,206) 15837,  8343,  1256,    78,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Senegal
-    { LOCALE_TAGS( 87,  1, 37) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Burkina Faso
-    { LOCALE_TAGS( 87,  1, 40) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Cameroon
-    { LOCALE_TAGS( 87,  1, 89) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Gambia
-    { LOCALE_TAGS( 87,  1, 92) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Ghana
-    { LOCALE_TAGS( 87,  1,101) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Guinea-Bissau
-    { LOCALE_TAGS( 87,  1,102) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Guinea
-    { LOCALE_TAGS( 87,  1,134) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Liberia
-    { LOCALE_TAGS( 87,  1,149) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Mauritania
-    { LOCALE_TAGS( 87,  1,169) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Nigeria
-    { LOCALE_TAGS( 87,  1,170) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Niger
-    { LOCALE_TAGS( 87,  1,206) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Senegal
-    { LOCALE_TAGS( 87,  1,209) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fulah/Adlam/Sierra Leone
-    { LOCALE_TAGS( 87, 66, 37) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Burkina Faso
-    { LOCALE_TAGS( 87, 66, 40) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Cameroon
-    { LOCALE_TAGS( 87, 66, 89) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Gambia
-    { LOCALE_TAGS( 87, 66, 92) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Ghana
-    { LOCALE_TAGS( 87, 66,101) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Guinea-Bissau
-    { LOCALE_TAGS( 87, 66,102) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Guinea
-    { LOCALE_TAGS( 87, 66,134) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Liberia
-    { LOCALE_TAGS( 87, 66,149) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Mauritania
-    { LOCALE_TAGS( 87, 66,169) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Nigeria
-    { LOCALE_TAGS( 87, 66,170) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Niger
-    { LOCALE_TAGS( 87, 66,209) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fulah/Latin/Sierra Leone
+    { LOCALE_TAGS( 87, 66,206) 15837,  8343,  1256,    78,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Senegal
+    { LOCALE_TAGS( 87,  1, 37) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Burkina Faso
+    { LOCALE_TAGS( 87,  1, 40) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Cameroon
+    { LOCALE_TAGS( 87,  1, 89) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Gambia
+    { LOCALE_TAGS( 87,  1, 92) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Ghana
+    { LOCALE_TAGS( 87,  1,101) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Guinea-Bissau
+    { LOCALE_TAGS( 87,  1,102) 15909,  8343,  1256,    79,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Guinea
+    { LOCALE_TAGS( 87,  1,134) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Liberia
+    { LOCALE_TAGS( 87,  1,149) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Mauritania
+    { LOCALE_TAGS( 87,  1,169) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Nigeria
+    { LOCALE_TAGS( 87,  1,170) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Niger
+    { LOCALE_TAGS( 87,  1,206) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Senegal
+    { LOCALE_TAGS( 87,  1,209) 16324,  8491,  1256,    80,    0,    6,   97,    0, 1822, 1839, 1875,  6,  6,  8,  7, 17, 36, 28, }, // Fula/Adlam/Sierra Leone
+    { LOCALE_TAGS( 87, 66, 37) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Burkina Faso
+    { LOCALE_TAGS( 87, 66, 40) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Cameroon
+    { LOCALE_TAGS( 87, 66, 89) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Gambia
+    { LOCALE_TAGS( 87, 66, 92) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Ghana
+    { LOCALE_TAGS( 87, 66,101) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Guinea-Bissau
+    { LOCALE_TAGS( 87, 66,102) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Guinea
+    { LOCALE_TAGS( 87, 66,134) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Liberia
+    { LOCALE_TAGS( 87, 66,149) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Mauritania
+    { LOCALE_TAGS( 87, 66,169) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Nigeria
+    { LOCALE_TAGS( 87, 66,170) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Niger
+    { LOCALE_TAGS( 87, 66,209) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Fula/Latin/Sierra Leone
     { LOCALE_TAGS( 88, 66,246) 16324,  8491,  1256,    80,    0,    6,    0,    0,    0, 1903, 1913,  6,  6,  5,  7,  2, 10, 18, }, // Gaelic/Latin/United Kingdom
     { LOCALE_TAGS( 89, 66, 92) 16483,  8646,  1260,    83,    0,    6,    0,    0, 1931, 1936, 1954,  6,  6,  5,  7,  5, 18, 20, }, // Ga/Latin/Ghana
     { LOCALE_TAGS( 90, 66,220) 16619,  8674,  1260,    84,    0,    6,    0,    0, 1974, 1985, 2005,  6,  6,  5,  7, 11, 20, 20, }, // Galician/Latin/Spain
@@ -91548,7 +91548,7 @@ static inline constexpr LocaleZoneData localeZoneData[] = {
     { LOCALE_TAGS(145, 66,145) 25745, 12755,  1308,   138,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Koyra Chiini/Latin/Mali
     { LOCALE_TAGS(146, 66,134) 25817, 12755,  1308,   139,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Kpelle/Latin/Liberia
     { LOCALE_TAGS(146, 66,102) 25889, 12755,  1308,   140,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Kpelle/Latin/Guinea
-    { LOCALE_TAGS(148, 66,239) 25889, 12755,  1308,   140,    0,    6,    0,    0, 3030, 3042, 3066,  6,  6,  5,  7, 12, 24, 22, }, // Kurdish/Latin/Turkey
+    { LOCALE_TAGS(148, 66,239) 25889, 12755,  1308,   140,    0,    6,    0,    0, 3030, 3042, 3066,  6,  6,  5,  7, 12, 24, 22, }, // Kurdish/Latin/Turkiye
     { LOCALE_TAGS(148,  4,112) 26079, 12908,  1308,   141,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Kurdish/Arabic/Iran
     { LOCALE_TAGS(148,  4,113) 26079, 12908,  1308,   141,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Kurdish/Arabic/Iraq
     { LOCALE_TAGS(148, 66,113) 26097, 12908,  1308,   142,    0,    6,    0,    0, 3030, 3042, 3066,  6,  6,  5,  7, 12, 24, 22, }, // Kurdish/Latin/Iraq
@@ -91675,7 +91675,7 @@ static inline constexpr LocaleZoneData localeZoneData[] = {
     { LOCALE_TAGS(239, 27,244) 39352, 19516,  1442,   236,    0,    6,    0,    0,    0, 4449, 4470,  6,  6,  5,  7,  2, 21, 16, }, // Russian/Cyrillic/Ukraine
     { LOCALE_TAGS(240, 66,230) 39352, 19516,  1442,   236,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Rwa/Latin/Tanzania
     { LOCALE_TAGS(241, 66, 74) 39424, 19516,  1442,   237,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Saho/Latin/Eritrea
-    { LOCALE_TAGS(242, 27,193) 39496, 19516,  1442,   238,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Sakha/Cyrillic/Russia
+    { LOCALE_TAGS(242, 27,193) 39496, 19516,  1442,   238,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Yakut/Cyrillic/Russia
     { LOCALE_TAGS(243, 66,124) 39600, 19544,  1442,   239,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Samburu/Latin/Kenya
     { LOCALE_TAGS(245, 66, 46) 39672, 19544,  1442,   240,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Sango/Latin/Central African Republic
     { LOCALE_TAGS(246, 66,230) 39744, 19544,  1442,   241,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Sangu/Latin/Tanzania
@@ -91786,7 +91786,7 @@ static inline constexpr LocaleZoneData localeZoneData[] = {
     { LOCALE_TAGS(296, 66,216) 49853, 23930,  1600,   319,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Tsonga/Latin/South Africa
     { LOCALE_TAGS(297, 66,216) 49925, 23930,  1600,   320,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Tswana/Latin/South Africa
     { LOCALE_TAGS(297, 66, 30) 49997, 23931,  1600,   321,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Tswana/Latin/Botswana
-    { LOCALE_TAGS(298, 66,239) 49997, 23931,  1600,   321,    0,    6,    0,    0, 5526, 5534, 5551,  6,  6,  5,  7,  8, 17, 12, }, // Turkish/Latin/Turkey
+    { LOCALE_TAGS(298, 66,239) 49997, 23931,  1600,   321,    0,    6,    0,    0, 5526, 5534, 5551,  6,  6,  5,  7,  8, 17, 12, }, // Turkish/Latin/Turkiye
     { LOCALE_TAGS(298, 66, 63) 50166, 24086,  1601,   322,    0,    6,    0,    0, 5526, 5534, 5551,  6,  6,  5,  7,  8, 17, 12, }, // Turkish/Latin/Cyprus
     { LOCALE_TAGS(299, 66,240) 50166, 24086,  1601,   322,    0,    6,    0,    0, 5563, 5571, 5588,  6,  6,  5,  7,  8, 17, 16, }, // Turkmen/Latin/Turkmenistan
     { LOCALE_TAGS(301, 66,169) 50485, 24240,  1602,   323,    0,    6,    0,    0,    0,   83,   90,  6,  6,  5,  7,  2,  7,  7, }, // Tyap/Latin/Nigeria
