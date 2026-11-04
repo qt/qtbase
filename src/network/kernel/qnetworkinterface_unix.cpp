@@ -515,10 +515,17 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
     }
     qt_safe_close(s6);
 
-    auto toDeadline = [](time_t when) {
+# if defined(Q_OS_DARWIN)
+    constexpr clockid_t LifetimeClock = CLOCK_REALTIME;
+# else
+    constexpr clockid_t LifetimeClock = CLOCK_UPTIME;
+# endif
+    timespec now;
+    clock_gettime(LifetimeClock, &now);
+    auto toDeadline = [now](time_t when) {
         QDeadlineTimer deadline = QDeadlineTimer::Forever;
         if (when) {
-            deadline.setPreciseDeadline(when);
+            deadline.setPreciseRemainingTime(when - now.tv_sec);
         }
         return deadline;
     };
