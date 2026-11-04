@@ -81,7 +81,7 @@ const LocaleListItem g_locale_list[] = {
     {     25,    17 }, // Azerbaijani/Azerbaijan
     {     25,   112 }, // Azerbaijani/Iran
     {     25,   113 }, // Azerbaijani/Iraq
-    {     25,   239 }, // Azerbaijani/Turkey
+    {     25,   239 }, // Azerbaijani/Turkiye
     {     26,    40 }, // Bafia/Cameroon
     {     28,   145 }, // Bambara/Mali
     {     30,    20 }, // Bangla/Bangladesh
@@ -326,18 +326,18 @@ const LocaleListItem g_locale_list[] = {
     {     85,   252 }, // French/Vanuatu
     {     85,   256 }, // French/Wallis and Futuna
     {     86,   117 }, // Friulian/Italy
-    {     87,   206 }, // Fulah/Senegal
-    {     87,    37 }, // Fulah/Burkina Faso
-    {     87,    40 }, // Fulah/Cameroon
-    {     87,    89 }, // Fulah/Gambia
-    {     87,    92 }, // Fulah/Ghana
-    {     87,   101 }, // Fulah/Guinea-Bissau
-    {     87,   102 }, // Fulah/Guinea
-    {     87,   134 }, // Fulah/Liberia
-    {     87,   149 }, // Fulah/Mauritania
-    {     87,   169 }, // Fulah/Nigeria
-    {     87,   170 }, // Fulah/Niger
-    {     87,   209 }, // Fulah/Sierra Leone
+    {     87,   206 }, // Fula/Senegal
+    {     87,    37 }, // Fula/Burkina Faso
+    {     87,    40 }, // Fula/Cameroon
+    {     87,    89 }, // Fula/Gambia
+    {     87,    92 }, // Fula/Ghana
+    {     87,   101 }, // Fula/Guinea-Bissau
+    {     87,   102 }, // Fula/Guinea
+    {     87,   134 }, // Fula/Liberia
+    {     87,   149 }, // Fula/Mauritania
+    {     87,   169 }, // Fula/Nigeria
+    {     87,   170 }, // Fula/Niger
+    {     87,   209 }, // Fula/Sierra Leone
     {     88,   246 }, // Gaelic/United Kingdom
     {     89,    92 }, // Ga/Ghana
     {     90,   220 }, // Galician/Spain
@@ -407,7 +407,7 @@ const LocaleListItem g_locale_list[] = {
     {    145,   145 }, // Koyra Chiini/Mali
     {    146,   134 }, // Kpelle/Liberia
     {    146,   102 }, // Kpelle/Guinea
-    {    148,   239 }, // Kurdish/Turkey
+    {    148,   239 }, // Kurdish/Turkiye
     {    148,   112 }, // Kurdish/Iran
     {    148,   113 }, // Kurdish/Iraq
     {    148,   227 }, // Kurdish/Syria
@@ -529,7 +529,7 @@ const LocaleListItem g_locale_list[] = {
     {    239,   244 }, // Russian/Ukraine
     {    240,   230 }, // Rwa/Tanzania
     {    241,    74 }, // Saho/Eritrea
-    {    242,   193 }, // Sakha/Russia
+    {    242,   193 }, // Yakut/Russia
     {    243,   124 }, // Samburu/Kenya
     {    245,    46 }, // Sango/Central African Republic
     {    246,   230 }, // Sangu/Tanzania
@@ -634,7 +634,7 @@ const LocaleListItem g_locale_list[] = {
     {    296,   216 }, // Tsonga/South Africa
     {    297,   216 }, // Tswana/South Africa
     {    297,    30 }, // Tswana/Botswana
-    {    298,   239 }, // Turkish/Turkey
+    {    298,   239 }, // Turkish/Turkiye
     {    298,    63 }, // Turkish/Cyprus
     {    299,   240 }, // Turkmen/Turkmenistan
     {    301,   169 }, // Tyap/Nigeria

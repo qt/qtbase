@@ -202,7 +202,8 @@
     \value French
     \value Frisian same as WesternFrisian
     \value Friulian
-    \value Fulah
+    \value [since 6.13] Fula
+    \value Fulah Obsolete, please use \c Fula
     \value Ga
     \value Gaelic
     \value Galician
@@ -379,7 +380,7 @@
     \value Russian
     \value Rwa
     \value Saho
-    \value Sakha
+    \value Sakha Obsolete, please use \c Yakut
     \value Samburu
     \value Samoan
     \value Sango
@@ -387,7 +388,7 @@
     \value Sanskrit
     \value [since 5.1] Santali
     \value Sardinian
-    \value [since 5.1] Saurashtra
+    \value [since 5.1] Saurashtra Obsolete, please use \c Sourashtra
     \value Sena
     \value Serbian
     \value Shambala
@@ -404,6 +405,7 @@
     \value Slovenian
     \value Soga
     \value Somali
+    \value [since 6.13] Sourashtra
     \value [since 5.12] SouthernKurdish
     \value [since 5.5] SouthernSami
     \value SouthernSotho
@@ -468,6 +470,7 @@
     \value Wolof
     \value Xhosa
     \value Yangben
+    \value [since 6.13] Yakut
     \value Yiddish
     \value Yoruba
     \value Zarma
@@ -593,7 +596,8 @@
     \value France
     \value FrenchGuiana
     \value FrenchPolynesia
-    \value FrenchSouthernTerritories
+    \value [since 6.13] FrenchSouthernAndAntarcticLands
+    \value FrenchSouthernTerritories Obsolete, please use \c FrenchSouthernAndAntarcticLands
     \value Gabon
     \value Gambia
     \value Georgia
@@ -611,7 +615,8 @@
     \value GuineaBissau
     \value Guyana
     \value Haiti
-    \value HeardAndMcDonaldIslands
+    \value HeardAndMcDonaldIslands Obsolete, please use \c HeardIslandAndMcDonaldIslands
+    \value [since 6.13] HeardIslandAndMcDonaldIslands
     \value Honduras
     \value HongKong
     \value Hungary
@@ -757,7 +762,8 @@
     \value TrinidadAndTobago
     \value TristanDaCunha
     \value Tunisia
-    \value Turkey
+    \value Turkey Obsolete, please use \c Turkiye
+    \value [since 6.13] Turkiye
     \value Turkmenistan
     \value TurksAndCaicosIslands
     \value TuvaluCountry Osbolete alias for \c TuvaluTerritory
@@ -917,7 +923,7 @@
     \value [since 5.1] RejangScript
     \value [since 5.1] RunicScript
     \value [since 5.1] SamaritanScript
-    \value [since 5.1] SaurashtraScript
+    \value [since 5.1] SaurashtraScript Obsolete, please use \c SourashtraScript
     \value [since 5.1] SharadaScript
     \value [since 5.1] ShavianScript
     \value [since 5.5] SiddhamScript
@@ -926,6 +932,7 @@
     \value SimplifiedHanScript same as SimplifiedChineseScript
     \value SinhalaScript
     \value [since 5.1] SoraSompengScript
+    \value [since 6.13] SourashtraScript
     \value [since 5.1] SundaneseScript
     \value [since 5.1] SylotiNagriScript
     \value SyriacScript

@@ -570,7 +570,7 @@ static inline constexpr ZoneData zoneDataTable[] = {
     {    116,   193,  5621 }, // Tomsk Standard Time / Russia
     {    117,   235,  5632 }, // Tonga Standard Time / Tonga
     {    118,   193,  5650 }, // Transbaikal Standard Time / Russia
-    {    119,   239,  5661 }, // Turkey Standard Time / Turkey
+    {    119,   239,  5661 }, // Turkey Standard Time / Turkiye
     {    120,   241,  5677 }, // Turks And Caicos Standard Time / Turks and Caicos Islands
     {    121,   156,  5696 }, // Ulaanbaatar Standard Time / Mongolia
     {    122,   248,  5713 }, // US Eastern Standard Time / United States
@@ -637,7 +637,7 @@ static inline constexpr ZoneData zoneDataTable[] = {
     {    137,   156,  6772 }, // W. Mongolia Standard Time / Mongolia
     {    138,     0,  6782 }, // West Asia Standard Time / AnyTerritory
     {    138,     9,  6792 }, // West Asia Standard Time / Antarctica
-    {    138,    87,  6810 }, // West Asia Standard Time / French Southern Territories
+    {    138,    87,  6810 }, // West Asia Standard Time / French Southern and Antarctic Lands
     {    138,   123,  6827 }, // West Asia Standard Time / Kazakhstan
     {    138,   144,  6898 }, // West Asia Standard Time / Maldives
     {    138,   229,  6914 }, // West Asia Standard Time / Tajikistan

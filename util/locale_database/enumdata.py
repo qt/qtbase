@@ -33,20 +33,30 @@ the forms:
 
 (The latter use digested forms of names, the former the raw forms.)
 Order doesn't mattter among aliases: prefer alphabetic (on alias)
-within each logical group within each mapping.
+within each logical group within each mapping. When adding an alias,
+it's OK to change the name (but not the number) of the *_map entry so
+that the modern canonical name is definitive and the old name is the
+alias.
 
-TODO: add support for marking entries as deprecated from a specified
-version. For aliases that merely deprecates the name. Where we have a
-name for which CLDR offers no data, we may also want to deprecate
-entries in the map - although they may be worth keeping for the
-benefit of QLocaleSelector (see QTBUG-112765), if other
-locale-specific resources might have use of them.
+If an ISO code changes, extend QLocalePrivate::codeToLanguage()'s
+handling of legacy codes to map the displaced ISO code to its
+replacement's enum member.
+
+TODO (QTBUG-146609): add support for marking entries as deprecated
+from a specified version. For aliases that merely deprecates the
+name. Where we have a name for which CLDR offers no data, we may also
+want to deprecate entries in the map - although they may be worth
+keeping for the benefit of QLocaleSelector (see QTBUG-112765), if
+other locale-specific resources might have use of them. Also bear in
+mind that some other systems may care about these enums - for example,
+scripts matter to fonts.
 
 For a new major version (and only then), we can change the numbering,
-so re-sort each list into alphabetic order (e.g. using sort -k2); but
-keep the Any and C entries first. That's why those are offset with a
-blank line, below. After doing that, regenerate locale data as usual;
-this will cause a binary-incompatible change.
+so re-sort each list (ideally after flipping any aliases, as above)
+into alphabetic order (e.g. using sort -k2); but keep the Any and C
+entries first. That's why those are offset with a blank line,
+below. After doing that, regenerate locale data as usual; this will
+cause a binary-incompatible change.
 
 Note on 'macrolanguage' comments: see QTBUG-107781 and 'ISO 639
 macrolanguage' on Wikipedia. A 'macrolanguage' is (loosely-speaking) a
@@ -57,8 +67,8 @@ data) may describe itself as pertaining to the macrolanguage, implying
 its suitability for use in any of the languages within the
 macrolanguage. For example, no_NO might be used for a generic
 Norwegian resource, embracing both nb_NO and nn_NO.
-
 """
+
 
 language_map = {
       0: ("AnyLanguage",                 "  "),
@@ -149,7 +159,7 @@ language_map = {
      84: ("Finnish",                     "fi"),
      85: ("French",                      "fr"),
      86: ("Friulian",                    "fur"),
-     87: ("Fulah",                       "ff"), # macrolanguage
+     87: ("Fula",                        "ff"), # macrolanguage
      88: ("Gaelic",                      "gd"),
      89: ("Ga",                          "gaa"),
      90: ("Galician",                    "gl"),
@@ -304,7 +314,7 @@ language_map = {
     239: ("Russian",                     "ru"),
     240: ("Rwa",                         "rwk"),
     241: ("Saho",                        "ssy"),
-    242: ("Sakha",                       "sah"),
+    242: ("Yakut",                       "sah"),
     243: ("Samburu",                     "saq"),
     244: ("Samoan",                      "sm"),
     245: ("Sango",                       "sg"),
@@ -312,7 +322,7 @@ language_map = {
     247: ("Sanskrit",                    "sa"),
     248: ("Santali",                     "sat"),
     249: ("Sardinian",                   "sc"), # macrolanguage
-    250: ("Saurashtra",                  "saz"),
+    250: ("Sourashtra",                  "saz"),
     251: ("Sena",                        "seh"),
     252: ("Serbian",                     "sr"),
     253: ("Shambala",                    "ksb"),
@@ -472,15 +482,19 @@ language_aliases = {
     # Renamings:
     'Bengali': 'Bangla',
     'CentralMoroccoTamazight': 'CentralAtlasTamazight',
+    'Fulah': 'Fula',
     'Greenlandic': 'Kalaallisut',
     'Inupiak': 'Inupiaq',
     'Kirghiz': 'Kyrgyz',
     'Kwanyama': 'Kuanyama',
     'Navaho': 'Navajo',
     'Oriya': 'Odia',
+    'Sakha': 'Yakut',
+    'Saurashtra': 'Sourashtra',
     'Uighur': 'Uyghur',
     'Walamo': 'Wolaytta',
 }
+
 
 territory_map = {
       0: ("AnyTerritory",                                 "ZZ"),
@@ -571,7 +585,7 @@ territory_map = {
      84: ("France",                                       "FR"),
      85: ("French Guiana",                                "GF"),
      86: ("French Polynesia",                             "PF"),
-     87: ("French Southern Territories",                  "TF"),
+     87: ("French Southern and Antarctic Lands",          "TF"),
      88: ("Gabon",                                        "GA"),
      89: ("Gambia",                                       "GM"),
      90: ("Georgia",                                      "GE"),
@@ -589,7 +603,7 @@ territory_map = {
     102: ("Guinea",                                       "GN"),
     103: ("Guyana",                                       "GY"),
     104: ("Haiti",                                        "HT"),
-    105: ("Heard and McDonald Islands",                   "HM"),
+    105: ("Heard Island and McDonald Islands",            "HM"),
     106: ("Honduras",                                     "HN"),
     107: ("Hong Kong",                                    "HK"),
     108: ("Hungary",                                      "HU"),
@@ -726,7 +740,7 @@ territory_map = {
     236: ("Trinidad and Tobago",                          "TT"),
     237: ("Tristan da Cunha",                             "TA"),
     238: ("Tunisia",                                      "TN"),
-    239: ("Turkey",                                       "TR"),
+    239: ("Turkiye",                                      "TR"),
     240: ("Turkmenistan",                                 "TM"),
     241: ("Turks and Caicos Islands",                     "TC"),
     242: ("Tuvalu",                                       "TV"),
@@ -765,14 +779,18 @@ territory_aliases = {
     # Renamings:
     'Bonaire': 'CaribbeanNetherlands',
     'BosniaAndHerzegowina': 'BosniaAndHerzegovina',
+    # "Côte d’Ivoire": see comment above, on "Ivory Coast"
     'CuraSao': 'Curacao',
     'CzechRepublic': 'Czechia',
     'EastTimor': 'TimorLeste',
+    'FrenchSouthernTerritories': 'FrenchSouthernAndAntarcticLands',
+    'HeardAndMcDonaldIslands': 'HeardIslandAndMcDonaldIslands',
     'Macau': 'Macao',
     'SaintVincentAndTheGrenadines': 'SaintVincentAndGrenadines',
     'SouthGeorgiaAndTheSouthSandwichIslands': 'SouthGeorgiaAndSouthSandwichIslands',
     'SvalbardAndJanMayenIslands': 'SvalbardAndJanMayen',
     'Swaziland': 'Eswatini',
+    'Turkey': 'Turkiye',
     'UnitedStatesMinorOutlyingIslands': 'UnitedStatesOutlyingIslands',
     'VaticanCityState': 'VaticanCity',
     'WallisAndFutunaIslands': 'WallisAndFutuna',
@@ -783,6 +801,7 @@ territory_aliases = {
     'TokelauCountry': 'TokelauTerritory',
     'TuvaluCountry': 'TuvaluTerritory',
 }
+
 
 script_map = {
       0: ("AnyScript",              "Zzzz"),
@@ -899,7 +918,7 @@ script_map = {
     110: ("Rejang",                 "Rjng"),
     111: ("Runic",                  "Runr"),
     112: ("Samaritan",              "Samr"),
-    113: ("Saurashtra",             "Saur"),
+    113: ("Sourashtra",             "Saur"),
     114: ("Sharada",                "Shrd"),
     115: ("Shavian",                "Shaw"),
     116: ("Siddham",                "Sidd"),
@@ -935,7 +954,6 @@ script_map = {
 # ("Nyiakeng Puachue Hmong", "Hmnp"),
 # ("Sunuwar",                "Sunu"),
 
-
 script_aliases = {
     # Renamings prior to Qt 6.0 (CLDR v37):
     'SimplifiedChineseScript': 'SimplifiedHanScript',
@@ -944,4 +962,5 @@ script_aliases = {
     'BengaliScript': 'BanglaScript',
     'OriyaScript': 'OdiaScript',
     'MendeKikakuiScript': 'MendeScript',
+    'SaurashtraScript': 'SourashtraScript',
 }
