@@ -72,6 +72,50 @@ using namespace Qt::StringLiterals;
     link to plugins statically. You can use QLibrary if you need to
     load dynamic libraries in a statically linked application.
 
+    \section1 Security considerations
+
+    \section2 Plugin lookup
+
+    Qt treats plugins as trusted content: loading a plugin executes its
+    code with the privileges of the application. It is therefore the
+    responsibility of the application developer, and of whoever deploys
+    the application, to ensure that no malicious plugin can be placed in
+    a location from which it may be loaded.
+
+    If the file name passed to QPluginLoader is not an absolute path, the
+    plugin is searched for in the directories returned by
+    \l QCoreApplication::libraryPaths(). By default, this list contains
+    the entries of the \c QT_PLUGIN_PATH environment variable, the plugin
+    installation directory, which can be changed in \l{Using qt.conf}{qt.conf},
+    and the directory of the application executable. The application can modify
+    the list with \l QCoreApplication::setLibraryPaths() and
+    \l QCoreApplication::addLibraryPath().
+
+    Libraries that a plugin depends on are resolved by the operating
+    system's dynamic loader, and are therefore subject to the platform's
+    library search rules, for example the \c PATH environment variable on
+    Windows, or \c LD_LIBRARY_PATH on Linux.
+
+    \section2 Plugin validation
+
+    On most platforms, Qt parses the plugin file before loading it, to
+    verify that it contains Qt plugin metadata and that it was built
+    against a compatible version of Qt. This is a compatibility check,
+    not a security measure: the metadata is provided by the plugin
+    itself, and Qt does not verify the plugin's origin or integrity.
+
+    Validation and loading do not happen atomically. The plugin is
+    validated when its file name is set, but it is only loaded when
+    load() or instance() is called, which may happen much later. If the
+    file, or a directory or symbolic link in its path, is replaced in the
+    meantime, whether intentionally or unintentionally (for example, by
+    an automatic update while the application is running), a different
+    binary than the one that was validated may be loaded.
+
+    Make sure that plugin files, and the directories that contain them,
+    can only be modified by trusted accounts, and that they are not
+    changed while the application is running.
+
     \sa QLibrary
 */
 
