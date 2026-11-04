@@ -746,6 +746,8 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {   347,    66,   117,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Ladin/Latin/Italy
       {   348,    86,   161, 5370, 5370, 5370, 5370,  153,  153,108,108,108,108, 26, 26 },// Shan/Myanmar/Myanmar
       {   348,    86,   231, 5370, 5370, 5370, 5370,  153,  153,108,108,108,108, 26, 26 },// Shan/Myanmar/Thailand
+      {   349,    66,    99,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Qʼeqchiʼ/Latin/Guatemala
+      {   350,    27,   193,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Tuvinian/Cyrillic/Russia
       {     0,     0,     0,    0,    0,    0,    0,    0,    0,  0,  0,  0,  0,  0,  0 },// trailing zeros
 };
 

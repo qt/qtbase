@@ -391,6 +391,8 @@ public:
         SwampyCree = 346,
         Ladin = 347,
         Shan = 348,
+        Qeqchi = 349,
+        Tuvinian = 350,
 
         Afan = Oromo,
         Bengali = Bangla,
@@ -415,7 +417,7 @@ public:
         Uigur = Uyghur,
         Walamo = Wolaytta,
 
-        LastLanguage = Shan
+        LastLanguage = Tuvinian
     };
 
     enum Script : ushort {

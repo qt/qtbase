@@ -369,6 +369,7 @@
     \value Portuguese
     \value [since 5.5] Prussian
     \value Punjabi
+    \value [since 6.13] Qeqchi for the Qʼeqchiʼ language
     \value Quechua
     \value [since 6.5] Rajasthani
     \value RhaetoRomance Obsolete, please use Romansh
@@ -444,6 +445,7 @@
     \value Turkish
     \value Turkmen
     \value [since 5.7] TuvaluLanguage
+    \value [since 6.13] Tuvinian
     \value Tyap
     \value [since 5.1] Ugaritic
     \value Uighur Obsolete, please use Uyghur

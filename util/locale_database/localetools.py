@@ -92,7 +92,7 @@ def names_clash(cldr: str, enum: str) -> None | str:
 
     # Various accented letters:
     remap = { 'ã': 'a', 'å': 'a', 'ā': 'a', 'ç': 'c', 'é': 'e', 'í': 'i', 'ô': 'o', 'ü': 'u'}
-    skip = '\u02bc' # Punctuation for which .isalpha() is true.
+    skip = '\u02BC' # glottal stop: .isalpha() is true, but treat as punctuation.
     # Let cldr match (ignoring non-letters and case) any substring as enum:
     if ''.join(enum.lower().split()) in ''.join(
             remap.get(ch, ch) for ch in cldr.lower() if ch.isalpha() and ch not in skip):

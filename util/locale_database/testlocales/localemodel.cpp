@@ -695,6 +695,8 @@ const LocaleListItem g_locale_list[] = {
     {    347,   117 }, // Ladin/Italy
     {    348,   161 }, // Shan/Myanmar
     {    348,   231 }, // Shan/Thailand
+    {    349,    99 }, // Qʼeqchiʼ/Guatemala
+    {    350,   193 }, // Tuvinian/Russia
 };
 
 // GENERATED PART ENDS HERE

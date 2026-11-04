@@ -428,6 +428,9 @@ language_map = {
     # added in CLDR v48
     347: ("Ladin",                       "lld"), # very minority (in Italy)
     348: ("Shan",                        "shn"),
+    # added to Qt in CLDR v49
+    349: ("Qʼeqchiʼ",                    "kek"), # "ʼ" or "\u02BC" is a glottal stop.
+    350: ("Tuvinian",                    "tyv"),
 }
 # Don't add languages just because they exist; check CLDR does provide
 # substantial data for locales using it; and check, once added, they
@@ -435,33 +438,29 @@ language_map = {
 # the data's draft status; if it's (nearly) all unconfirmed, leave it.
 
 # Known, but omitted because too little that isn't draft="unconfirmed",
-# at least at v48:
+# at least at v49:
+# ("Adyghe",                      "ady"),
+# ("Moroccan Arabic",             "ary"),
 # ("Betawi",                      "bew"),
 # ("Bakhtiari",                   "bqi"),
+# ("Brahui",                      "brh"),
 # ("Buriat",                      "bua"),
 # ("Caddo",                       "cad"),
 # ("Choctaw",                     "cho"),
 # ("Hakka",                       "hak"), # or Hakka Chinese
 # ("Hmong Njua",                  "hnj"),
-# ("Qʼeqchiʼ",                    "kek"),
+# ("Kabardian",                   "kbd"),
 # ("Lombard",                     "lmo"),
 # ("Latgalian",                   "ltg"),
 # ("Laz",                         "lzz"),
-# ("Hassaniyya",                  "mey"),
-# ("Mócheno",                     "mhn"),
 # ("Mi'kmaw",                     "mic"),
-# ("Hmong Daw",                   "mww"),
 # ("Min Nan",                     "nan"), # or Min Nan Chinese
 # ("Okanagan",                    "oka"),
 # ("Piedmontese",                 "pms"),
 # ("Pontic",                      "pnt"),
-# ("Riffian",                     "rif"), # getting there !
+# ("Riffian",                     "rif"),
 # ("Samogitian",                  "sgs"),
-# ("Saraiki",                     "skr"),
-# ("Samtao",                      "stu"),
-# ("Sunwar",                      "suz"),
-# ("Tuvinian",                    "tyv"), # not far short of adequate
-# ("Mundari",                     "unr"),
+# ("Susu",                        "sus"),
 # ("Makhuwa",                     "vmw"),
 
 # It can be helpful to look in supplemental/supplementalData.xml for

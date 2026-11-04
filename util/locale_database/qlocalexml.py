@@ -298,7 +298,8 @@ class QLocaleXmlReader (object):
         We also need to resolve duplication between languages and
         territories (by adding a suffix to each) and add Script to the
         ends of script-names that don't already end in it."""
-        name = name.replace('-', ' ')
+        # Map hyphens to word-breaks and drop U+02BC glottal stops:
+        name = name.replace('-', ' ').replace("\u02BC", '')
         # Don't .capitalize() as McDonald is already camel-case (see enumdata.py):
         name = ''.join(word[0].upper() + word[1:] for word in name.split())
         if suffix != 'Script':
