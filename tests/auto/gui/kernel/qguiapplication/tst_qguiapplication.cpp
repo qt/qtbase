@@ -27,6 +27,8 @@
 
 #include "tst_qcoreapplication.h"
 
+using namespace std::chrono_literals;
+
 enum { spacing  = 50, windowSize = 200 };
 
 // helper to skip an autotest that shows two top-level windows at once
@@ -340,7 +342,6 @@ public:
       : QWindow(parent), showAgain(showAgain)
     {
         QTimer::singleShot(0, this, SLOT(doClose()));
-        QTimer::singleShot(500, this, SLOT(exitApp()));
     }
 
 private slots:
@@ -348,10 +349,6 @@ private slots:
         close();
         if (showAgain)
             show();
-    }
-
-    void exitApp() {
-      qApp->exit(1);
     }
 
 private:
@@ -369,13 +366,18 @@ void tst_QGuiApplication::abortQuitOnShow()
     window1->setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
     window1->setTitle(QStringLiteral("abortQuitOnShow:window1"));
     window1->show();
+    // The app quits when window1 closes; the timer only guards against a hang
+    QTimer::singleShot(10s, window1.get(), [] { QCoreApplication::exit(1); });
     QCOMPARE(app.exec(), 0);
+    window1.reset(); // cancels the timer
 
     QScopedPointer<QWindow> window2(new ShowCloseShowWindow(true));
     window2->setTitle(QStringLiteral("abortQuitOnShow:window2"));
     window2->resize(windowSize, windowSize);
     window2->setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
     window2->show();
+    // Showing window2 again aborts the quit, so only the timer ends exec()
+    QTimer::singleShot(500ms, window2.get(), [] { QCoreApplication::exit(1); });
     QCOMPARE(app.exec(), 1);
 }
 

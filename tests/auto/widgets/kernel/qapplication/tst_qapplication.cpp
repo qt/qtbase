@@ -58,6 +58,8 @@ QT_BEGIN_NAMESPACE
 extern bool Q_GUI_EXPORT qt_tab_all_widgets(); // from qapplication.cpp
 QT_END_NAMESPACE
 
+using namespace std::chrono_literals;
+
 class tst_QApplication : public QObject
 {
 Q_OBJECT
@@ -2517,13 +2519,6 @@ public:
     explicit ShowCloseShowWidget(bool showAgain, QWidget *parent = nullptr)
         : QWidget(parent), showAgain(showAgain)
     {
-        int timeout = 500;
-#ifdef Q_OS_ANDROID
-        // On Android, CI Android emulator is not running HW accelerated graphics and can be slow,
-        // use a longer timeout to avoid flaky failures
-        timeout = 1000;
-#endif
-        QTimer::singleShot(timeout, this, [] () { QCoreApplication::exit(1); });
     }
 
     bool shown = false;
@@ -2558,16 +2553,22 @@ void tst_QApplication::abortQuitOnShow()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This crash, see QTBUG-123172.");
 
-    ShowCloseShowWidget window1(false);
-    window1.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    window1.show();
-    QVERIFY(QTest::qWaitFor([&window1](){ return window1.shown; }));
-    QCOMPARE(QCoreApplication::exec(), 0);
+    {
+        ShowCloseShowWidget window1(false);
+        window1.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+        window1.show();
+        QVERIFY(QTest::qWaitFor([&window1]() { return window1.shown; }));
+        // The app quits when window1 closes; the timer only guards against a hang
+        QTimer::singleShot(10s, &window1, [] { QCoreApplication::exit(1); });
+        QCOMPARE(QCoreApplication::exec(), 0);
+    } // cancels the timer
 
     ShowCloseShowWidget window2(true);
     window2.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window2.show();
     QVERIFY(QTest::qWaitFor([&window2](){ return window2.shown; }));
+    // Showing window2 again aborts the quit, so only the timer ends exec()
+    QTimer::singleShot(500ms, &window2, [] { QCoreApplication::exit(1); });
     QCOMPARE(QCoreApplication::exec(), 1);
 }
 
