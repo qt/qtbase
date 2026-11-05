@@ -224,7 +224,7 @@ QModelIndex QTreeModel::index(int row, int column, const QModelIndex &parent) co
     executePendingSort();
 
     int c = columnCount(parent);
-    if (row < 0 || column < 0 || column >= c)
+    if (row < 0 || column < 0 || column >= c || parent.column() > 0)
         return QModelIndex();
 
     QTreeWidgetItem *parentItem = parent.isValid() ? item(parent) : rootItem;
@@ -271,6 +271,8 @@ int QTreeModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
         return rootItem->childCount();
+    if (parent.column() > 0)
+        return 0;
 
     QTreeWidgetItem *parentItem = item(parent);
     if (parentItem)
@@ -298,6 +300,8 @@ bool QTreeModel::hasChildren(const QModelIndex &parent) const
 {
     if (!parent.isValid())
         return (rootItem->childCount() > 0);
+    if (parent.column() > 0)
+        return false;
 
     QTreeWidgetItem *itm = item(parent);
     if (!itm)

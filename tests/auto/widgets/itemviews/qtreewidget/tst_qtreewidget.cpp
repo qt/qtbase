@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
+#include <QAbstractItemModelTester>
 #include <QApplication>
 #include <QHeaderView>
 #include <QLineEdit>
@@ -28,6 +29,7 @@ public slots:
 
 private slots:
     void getSetCheck();
+    void childrenOnlyInFirstColumn();
     void addTopLevelItem();
     void currentItem_data();
     void currentItem();
@@ -250,6 +252,13 @@ static void populate(QTreeWidget *widget, const TreeItemList &topLevelItems,
     widget->setHeaderItem(headerItem);
     for (TreeItem *item : topLevelItems)
         widget->addTopLevelItem(item);
+}
+
+void tst_QTreeWidget::childrenOnlyInFirstColumn()
+{
+    auto *parent = new QTreeWidgetItem(testWidget, {"parent", "second column"});
+    new QTreeWidgetItem(parent, {"child"});
+    QAbstractItemModelTester tester(testWidget->model());
 }
 
 void tst_QTreeWidget::addTopLevelItem()
