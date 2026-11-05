@@ -23,18 +23,13 @@ public:
         OtherProcess,
     };
 
-    struct PasteboardData
-    {
-        std::optional<PasteboardDataSource> dataSource;
-        std::unique_ptr<QMimeData> lazyFetchingData;
-    };
-
     static std::unique_ptr<QOhosClipboardObject> makeInstance(
         std::function<void(std::optional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier);
 
-    PasteboardData getPasteboardDataWithLazyFetch();
+    std::unique_ptr<QMimeData> getPasteboardDataWithLazyFetch();
     void setMimeDataSync(
         std::shared_ptr<QMimeData> mimeData, const std::optional<bool> &shareInAppOnly);
+    std::optional<PasteboardDataSource> tryGetPasteboardDataSourceFromChangeCountSync();
 
 protected:
     QOhosClipboardObject(std::function<void(std::optional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier);
@@ -44,6 +39,7 @@ private:
     {
         std::shared_ptr<::OH_Pasteboard> pasteboard;
         std::shared_ptr<void> pasteboardDataChangedListenerHandle;
+        std::shared_ptr<std::optional<std::uint32_t>> ownWriteChangeCount;
     };
 
     std::shared_ptr<QOhosConsumer<std::optional<PasteboardDataSource>>> m_pasteboardUpdatesNotifier;

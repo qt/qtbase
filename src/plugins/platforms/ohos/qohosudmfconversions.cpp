@@ -23,8 +23,6 @@
 #include <qohosudmf.h>
 #include <qohosudsobject.h>
 #include <qohosutils.h>
-#include <random>
-#include <unistd.h>
 
 namespace ch = std::chrono;
 
@@ -37,7 +35,6 @@ constexpr const char *mimeTextHtml = "text/html";
 constexpr const char *mimeTextUriList = "text/uri-list";
 constexpr const char *mimeAppXQtImage = "application/x-qt-image";
 
-const auto qtAppInfoDataPseudoMimeType = "io.qt.ohos.appInfoData";
 const auto qtDummyEntryPseudoMimeType = "io.qt.ohos.dummyEntry";
 
 constexpr auto processQMimeDataInQtThreadTimeout = ch::seconds(2);
@@ -72,25 +69,6 @@ struct UdmfRecordEntryMetaFactory
     QOhosSupplier<std::optional<std::string>> optUdmfMetaIdFactory;
     std::function<UdmfRecordEntryFactory(const QMimeData &)> metaFactoryFunc;
 };
-
-std::vector<std::uint8_t> getAppInfoDataForThisProcess()
-{
-    static std::vector<std::uint8_t> appInfoData = []() {
-        std::vector<std::uint8_t> appInfoData;
-
-        auto pidString = std::to_string(::getpid()) + ":";
-        std::copy(pidString.begin(), pidString.end(), std::back_inserter(appInfoData));
-
-        using RandomBytesEngine = std::independent_bits_engine<std::default_random_engine, 8, std::uint8_t>;
-        std::vector<std::uint8_t> key(64);
-        std::generate(std::begin(key), std::end(key), RandomBytesEngine(std::random_device()()));
-        std::copy(key.begin(), key.end(), std::back_inserter(appInfoData));
-
-        return appInfoData;
-    }();
-
-    return appInfoData;
-}
 
 template<typename T>
 std::optional<T> tryEvalInQtThreadWithConsumer(
@@ -723,15 +701,6 @@ std::function<QOhosUdmfData()> makeUdmfDataFactoryFromQMimeDataImpl(
         }
     }
 
-    recordFactories.emplace_back(
-        []() {
-            QOhosUdmfRecord record;
-            auto appInfoDataBytes = getAppInfoDataForThisProcess();
-            addGeneralEntryToRecord(
-                qtAppInfoDataPseudoMimeType, QSpan<const std::uint8_t>(appInfoDataBytes.data(), appInfoDataBytes.size()), record);
-            return record;
-        });
-
     return [shareInAppOnly, recordFactories = std::move(recordFactories)]() {
         QOhosUdmfData udmfData;
 
@@ -822,32 +791,6 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeDummyQMimeDataFactoryFromUdmfDataT
 
         return mimeData;
     };
-}
-
-bool isQOhosUdmfDataConvertedFromThisProcessMimeData(QOhosUdmfData &udmfData)
-{
-    auto qtAppInfoDataUtdTypeId = tryMapMimeTypeToUtdTypeId(qtAppInfoDataPseudoMimeType);
-    if (!qtAppInfoDataUtdTypeId.has_value()) {
-        qOhosPrintfError("%s: Can't map %s to UTD type id", Q_FUNC_INFO, qtAppInfoDataPseudoMimeType);
-        return false;
-    }
-
-    auto udmfRecords = udmfData.getRecords();
-    auto thisProcessAppInfoData = getAppInfoDataForThisProcess();
-
-    return std::any_of(
-        udmfRecords.begin(), udmfRecords.end(),
-        [&](auto &udmfRecord) {
-            auto optAppInfoData = udmfRecord.tryGetGeneralEntry(qtAppInfoDataUtdTypeId.value());
-            if (!optAppInfoData.has_value())
-                return false;
-
-            auto appInfoData = optAppInfoData.value();
-
-            return
-                static_cast<std::size_t>(appInfoData.size()) == thisProcessAppInfoData.size()
-                && std::memcmp(appInfoData.data(), thisProcessAppInfoData.data(), appInfoData.size()) == 0;
-        });
 }
 
 std::optional<std::string> tryMapUtdTypeIdToMimeType(const std::string &utdTypeId)

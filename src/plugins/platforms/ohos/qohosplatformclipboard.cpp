@@ -54,7 +54,7 @@ QMimeData *QOhosPlatformClipboard::mimeData(QClipboard::Mode mode)
     // in an empty QMimeData object (in this case: due to clipboard content being inaccessible for
     // an app with all windows inactive).
     if (!m_mimeDataIsOurs && (m_mimeData == nullptr || m_mimeData->formats().isEmpty()))
-        m_mimeData = m_clipboardObject->getPasteboardDataWithLazyFetch().lazyFetchingData;
+        m_mimeData = m_clipboardObject->getPasteboardDataWithLazyFetch();
 
     return m_mimeData.get();
 }
@@ -96,16 +96,12 @@ bool QOhosPlatformClipboard::ownsMode(QClipboard::Mode mode) const
 
 std::shared_ptr<QMimeData> QOhosPlatformClipboard::getPasteboardDataWithLazyFetchOrLocalIfOwner() const
 {
-    auto pasteboardData = m_clipboardObject->getPasteboardDataWithLazyFetch();
+    if (m_mimeData
+        && m_clipboardObject->tryGetPasteboardDataSourceFromChangeCountSync()
+            == QOhosClipboardObject::PasteboardDataSource::OurProcess)
+        return m_mimeData;
 
-    if (!pasteboardData.dataSource.has_value())
-        return std::make_shared<QMimeData>();
-
-    return pasteboardData.dataSource == QOhosClipboardObject::PasteboardDataSource::OtherProcess
-        ? std::move(pasteboardData.lazyFetchingData)
-        : m_mimeData
-            ? m_mimeData
-            : std::make_shared<QMimeData>();
+    return m_clipboardObject->getPasteboardDataWithLazyFetch();
 }
 
 QT_END_NAMESPACE

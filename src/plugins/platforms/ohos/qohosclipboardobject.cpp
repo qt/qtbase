@@ -108,7 +108,8 @@ std::shared_ptr<void> subscribePasteboardObserver(
 }
 
 std::shared_ptr<void> addPasteboardDataChangedListener(
-    std::shared_ptr<::OH_Pasteboard> pasteboard, std::function<void()> dataChangedListener,
+    std::shared_ptr<::OH_Pasteboard> pasteboard,
+    std::function<void(::Pasteboard_NotifyType)> dataChangedListener,
     std::vector<::Pasteboard_NotifyType> monitoredNotifyTypes)
 {
     std::vector<std::shared_ptr<void>> subscriptionHandles;
@@ -119,12 +120,49 @@ std::shared_ptr<void> addPasteboardDataChangedListener(
         subscriptionHandles.push_back(
             subscribePasteboardObserver(
                 pasteboard, observer, notifyType,
-                [sharedDataChangedFunc]() {
-                    (*sharedDataChangedFunc)();
+                [sharedDataChangedFunc, notifyType]() {
+                    (*sharedDataChangedFunc)(notifyType);
                 }));
     }
 
     return QtOhos::moveToSharedPtr(std::move(subscriptionHandles));
+}
+
+std::uint32_t getPasteboardChangeCount(::OH_Pasteboard *pasteboard)
+{
+    return QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_Pasteboard_GetChangeCount), pasteboard);
+}
+
+bool isPasteboardEmpty(::OH_Pasteboard *pasteboard)
+{
+    return !QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_Pasteboard_HasData), pasteboard);
+}
+
+QOhosClipboardObject::PasteboardDataSource getPasteboardDataSourceFromChangeCount(
+    ::OH_Pasteboard *pasteboard, const std::optional<std::uint32_t> &ownWriteChangeCount)
+{
+    return getPasteboardChangeCount(pasteboard) == ownWriteChangeCount
+        ? QOhosClipboardObject::PasteboardDataSource::OurProcess
+        : QOhosClipboardObject::PasteboardDataSource::OtherProcess;
+}
+
+std::optional<std::uint32_t> trySetPasteboardDataAndGetOwnWriteChangeCount(::OH_Pasteboard *pasteboard, ::OH_UdmfData *udmfData)
+{
+    std::uint32_t changeCountBeforeWrite = getPasteboardChangeCount(pasteboard);
+    int setDataRes = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_Pasteboard_SetData), pasteboard, udmfData);
+    if (setDataRes != ::PASTEBOARD_ErrCode::ERR_OK) {
+        qOhosPrintfError("%s: cannot set data for pasteboard: %d", Q_FUNC_INFO, setDataRes);
+        return std::nullopt;
+    }
+
+    std::uint32_t changeCountAfterWrite = getPasteboardChangeCount(pasteboard);
+    const bool onlyOurWriteInBetween = changeCountAfterWrite == changeCountBeforeWrite + 1;
+    if (!onlyOurWriteInBetween) {
+        qOhosPrintfDebug(
+            "%s: pasteboard change count went from %u to %u, not confirming our write",
+            Q_FUNC_INFO, changeCountBeforeWrite, changeCountAfterWrite);
+    }
+    return onlyOurWriteInBetween ? std::optional(changeCountAfterWrite) : std::nullopt;
 }
 
 std::unique_ptr<QOhosUdmfData> tryGetUdmfDataFromPasteboard(::OH_Pasteboard *pasteboard)
@@ -162,16 +200,17 @@ QOhosClipboardObject::QOhosClipboardObject(
                     QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_Pasteboard_Destroy), pasteboard);
                 });
 
-            auto pasteboardDataChangedJsThreadListener = std::make_shared<std::function<void()>>(
-                [pasteboard, weakPasteboardUpdatesNotifier]() {
-                    auto optPasteboardUdmfData = tryGetUdmfDataFromPasteboard(pasteboard.get());
-                    auto pasteboardDataSource =
-                        optPasteboardUdmfData
-                            ? std::optional(
-                                isQOhosUdmfDataConvertedFromThisProcessMimeData(*optPasteboardUdmfData)
-                                    ? PasteboardDataSource::OurProcess
-                                    : PasteboardDataSource::OtherProcess)
-                            : std::nullopt;
+            auto ownWriteChangeCount = std::make_shared<std::optional<std::uint32_t>>();
+
+            auto pasteboardDataChangedJsThreadListener = std::make_shared<std::function<void(::Pasteboard_NotifyType)>>(
+                [pasteboard, ownWriteChangeCount, weakPasteboardUpdatesNotifier](::Pasteboard_NotifyType notifyType) {
+                    std::optional<PasteboardDataSource> pasteboardDataSource;
+                    if (notifyType == ::Pasteboard_NotifyType::NOTIFY_REMOTE_DATA_CHANGE) {
+                        pasteboardDataSource = PasteboardDataSource::OtherProcess;
+                    } else if (!isPasteboardEmpty(pasteboard.get())) {
+                        pasteboardDataSource =
+                            getPasteboardDataSourceFromChangeCount(pasteboard.get(), *ownWriteChangeCount);
+                    }
 
                     qOhosPrintfDebug(
                         "%s: Pasteboard data source: %s",
@@ -188,11 +227,11 @@ QOhosClipboardObject::QOhosClipboardObject(
 
             auto pasteboardDataChangedListenerHandle = addPasteboardDataChangedListener(
                 pasteboard,
-                [pasteboardDataChangedJsThreadListener]() {
+                [pasteboardDataChangedJsThreadListener](::Pasteboard_NotifyType notifyType) {
                     auto __dbg = make_QCScopedDebugJS(Q_FUNC_INFO);
                     QOhosJsThreadGateway::invoke(
-                        [pasteboardDataChangedJsThreadListener](auto &) {
-                            (*pasteboardDataChangedJsThreadListener)();
+                        [pasteboardDataChangedJsThreadListener, notifyType](auto &) {
+                            (*pasteboardDataChangedJsThreadListener)(notifyType);
                         });
                 },
                 {
@@ -203,6 +242,7 @@ QOhosClipboardObject::QOhosClipboardObject(
             *m_jsScopeData = JsScopeData{
                 .pasteboard = pasteboard,
                 .pasteboardDataChangedListenerHandle = pasteboardDataChangedListenerHandle,
+                .ownWriteChangeCount = ownWriteChangeCount,
             };
         },
         Q_FUNC_INFO);
@@ -215,11 +255,9 @@ std::unique_ptr<QOhosClipboardObject> QOhosClipboardObject::makeInstance(
         new QOhosClipboardObject(std::move(pasteboardUpdatesNotifier)));
 }
 
-QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWithLazyFetch()
+std::unique_ptr<QMimeData> QOhosClipboardObject::getPasteboardDataWithLazyFetch()
 {
-    std::optional<PasteboardDataSource> dataSource;
-    QOhosSupplier<std::unique_ptr<QMimeData>> mimeDataFactory;
-    std::tie(dataSource, mimeDataFactory) = QOhosJsThreadGateway::evalWithPromise<std::pair<std::optional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
+    auto mimeDataFactory = QOhosJsThreadGateway::evalWithPromise<QOhosSupplier<std::unique_ptr<QMimeData>>>(
         [&](QOhosJsState &jsState, auto evalPromise) {
             static constexpr const char *ohosGetPasteboardDataPermission = "ohos.permission.READ_PASTEBOARD";
             auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
@@ -230,31 +268,23 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
                         qOhosPrintfError(
                             "%s: %s hasn't been granted by user. Cannot read pasteboard data.", Q_FUNC_INFO,
                             ohosGetPasteboardDataPermission);
-                        (*sharedEvalPromise)({{}, std::make_unique<QMimeData>});
+                        (*sharedEvalPromise)(std::make_unique<QMimeData>);
                         return;
                     }
 
                     auto optPasteboardUdmfData = tryGetUdmfDataFromPasteboard(m_jsScopeData->pasteboard.get());
                     if (!optPasteboardUdmfData) {
-                        (*sharedEvalPromise)({{}, std::make_unique<QMimeData>});
+                        (*sharedEvalPromise)(std::make_unique<QMimeData>);
                         return;
                     }
 
                     (*sharedEvalPromise)(
-                        {
-                            isQOhosUdmfDataConvertedFromThisProcessMimeData(*optPasteboardUdmfData)
-                                ? PasteboardDataSource::OurProcess
-                                : PasteboardDataSource::OtherProcess,
-                            makeLazyFetchingQMimeDataFactoryFromUdmfData(std::move(*optPasteboardUdmfData))
-                        });
+                        makeLazyFetchingQMimeDataFactoryFromUdmfData(std::move(*optPasteboardUdmfData)));
                 });
         },
         Q_FUNC_INFO);
 
-    return PasteboardData{
-        .dataSource = dataSource,
-        .lazyFetchingData = mimeDataFactory(),
-    };
+    return mimeDataFactory();
 }
 
 void QOhosClipboardObject::setMimeDataSync(
@@ -268,14 +298,21 @@ void QOhosClipboardObject::setMimeDataSync(
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &) {
             auto udmfData = udmfDataFactory();
-
-            int res = QArkUi::callArkUi(
-                Q_OHOS_NAMED_FUNC(::OH_Pasteboard_SetData),
+            *m_jsScopeData->ownWriteChangeCount = trySetPasteboardDataAndGetOwnWriteChangeCount(
                 m_jsScopeData->pasteboard.get(), udmfData.nativePtr());
-            if (res != ::PASTEBOARD_ErrCode::ERR_OK) {
-                qOhosPrintfError("%s: cannot set data for pasteboard.", Q_FUNC_INFO);
-                return;
-            }
+        },
+        Q_FUNC_INFO);
+}
+
+std::optional<QOhosClipboardObject::PasteboardDataSource> QOhosClipboardObject::tryGetPasteboardDataSourceFromChangeCountSync()
+{
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) -> std::optional<PasteboardDataSource> {
+            auto *pasteboard = m_jsScopeData->pasteboard.get();
+            if (isPasteboardEmpty(pasteboard))
+                return std::nullopt;
+            return getPasteboardDataSourceFromChangeCount(
+                pasteboard, *m_jsScopeData->ownWriteChangeCount);
         },
         Q_FUNC_INFO);
 }
