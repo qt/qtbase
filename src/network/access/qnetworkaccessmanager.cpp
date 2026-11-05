@@ -1159,6 +1159,15 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
 }
 
 /*!
+    \fn QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, std::nullptr_t)
+    \since 6.13
+    \overload
+
+    Sends the custom request without body to the server specified by the URL of
+    \a request and returns a new QNetworkReply object.
+*/
+
+/*!
     \since 5.8
 
     \overload

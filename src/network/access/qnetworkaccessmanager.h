@@ -99,6 +99,8 @@ public:
     QNetworkReply *deleteResource(const QNetworkRequest &request);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, const QByteArray &data);
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, std::nullptr_t)
+    { return sendCustomRequest(request, verb); }
 
 #if QT_CONFIG(http) || defined(Q_OS_WASM)
     QNetworkReply *post(const QNetworkRequest &request, QHttpMultiPart *multiPart);

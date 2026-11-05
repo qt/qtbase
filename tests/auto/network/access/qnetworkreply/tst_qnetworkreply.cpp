@@ -2543,12 +2543,9 @@ void tst_QNetworkReply::overloadSets()
     static_assert(qxp::is_detected_v<test::sendCustomRequest, QByteArray, QFile*>); // derived from QIODevice
     static_assert(qxp::is_detected_v<test::sendCustomRequest, const char*, QByteArray>);
     static_assert(qxp::is_detected_v<test::sendCustomRequest, QByteArray, detail::ConvertsToQByteArray>);
-    QEXPECT_FAIL("", "QTBUG-152053", Continue);
-    QVERIFY((qxp::is_detected_v<test::sendCustomRequest, QByteArray, std::nullptr_t>));
-    QEXPECT_FAIL("", "QTBUG-152053", Continue);
-    QVERIFY((qxp::is_detected_v<test::sendCustomRequest, char[16], std::nullptr_t>));
-    QEXPECT_FAIL("", "QTBUG-152053", Continue);
-    QVERIFY((qxp::is_detected_v<test::sendCustomRequest, detail::ConvertsToQByteArray, std::nullptr_t>));
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, QByteArray, std::nullptr_t>);
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, char[16], std::nullptr_t>);
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, detail::ConvertsToQByteArray, std::nullptr_t>);
     #if QT_CONFIG(http) || defined(Q_OS_WASM)
     static_assert(qxp::is_detected_v<test::sendCustomRequest, QByteArray, QHttpMultiPart*>);
     #endif
