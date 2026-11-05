@@ -1554,7 +1554,8 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
         reply.reset(manager.deleteResource(request));
         break;
 
-    default:
+    case QNetworkAccessManager::Operation::CustomOperation:
+    case QNetworkAccessManager::Operation::UnknownOperation:
         qFatal("%s: Invalid/unknown operation requested", Q_FUNC_INFO);
     }
     QTEST_ASSERT(reply);
