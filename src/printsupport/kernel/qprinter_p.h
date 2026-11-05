@@ -55,9 +55,7 @@ public:
     {
     }
 
-    ~QPrinterPrivate() {
-
-    }
+    ~QPrinterPrivate();
 
     static QPrinterPrivate *get(QPrinter *printer) {
         return printer->d_ptr.get();
