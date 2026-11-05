@@ -1449,12 +1449,19 @@ function(qt_internal_find_modified_test_functions)
         return()
     endif()
 
-    # Some systems (e.g. openSuSE 15.6) provide Python 3.5, while the script needs 3.11 which.
-    # Its path is usually in PYTHON3_EXECUTABLE.
+    # The script requires Python 3.6 or newer.
+    # Some systems (e.g. SLES 15) provide Python 2 as "python" and an outdated "python3",
+    # so don't rely on either name. Prefer an interpreter from PYTHON3_EXECUTABLE, if set.
     if(DEFINED ENV{PYTHON3_EXECUTABLE})
-        set(python $ENV{PYTHON3_EXECUTABLE})
+        set(python "$ENV{PYTHON3_EXECUTABLE}")
     else()
-        set(python "python")
+        find_package(Python3 3.6 QUIET COMPONENTS Interpreter)
+        if(NOT Python3_Interpreter_FOUND)
+            message(STATUS "Skipping detection of new/modified test functions: "
+                "no Python 3.6 or newer interpreter found.")
+            return()
+        endif()
+        set(python "${Python3_EXECUTABLE}")
     endif()
 
     set(parser "${CMAKE_SOURCE_DIR}/util/testrunner/qt-modified-testfunctions.py")
@@ -1463,5 +1470,11 @@ function(qt_internal_find_modified_test_functions)
     execute_process(
         COMMAND "${python}" "${parser}"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        RESULT_VARIABLE result
     )
+    # The detection is optional. Don't fail the build, if it fails.
+    if(NOT result EQUAL 0)
+        message(STATUS "Detection of new/modified test functions failed (${result}). "
+            "Continuing without it.")
+    endif()
 endfunction()
