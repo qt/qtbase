@@ -4,6 +4,8 @@
 #include <QtNetwork/qtnetworkglobal.h>
 
 #include <QTest>
+#include <QtTest/qtestassert.h>
+
 #include <QSemaphore>
 #include <QTestEventLoop>
 #include <QSignalSpy>
@@ -1555,6 +1557,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
     default:
         qFatal("%s: Invalid/unknown operation requested", Q_FUNC_INFO);
     }
+    QTEST_ASSERT(reply);
     reply->setParent(this);
 
     returnCode = Timeout;
