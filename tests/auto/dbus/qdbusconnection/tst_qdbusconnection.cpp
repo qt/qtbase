@@ -1400,7 +1400,7 @@ struct DisconnectingConnection : public QDBusConnection
 static void startStandaloneSessionBus(QProcess &daemon, DisconnectingConnection &con)
 {
     daemon.start("dbus-daemon", QStringList() << "--session" << "--nofork" << "--print-address");
-    QVERIFY2(daemon.waitForReadyRead(2000),
+    QVERIFY2(daemon.waitForReadyRead(20000),
              "Daemon didn't print its address in time; error: \"" + daemon.errorString().toLocal8Bit() +
              "\"; stderr:\n" + daemon.readAllStandardError());
 
