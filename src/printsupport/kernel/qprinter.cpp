@@ -458,6 +458,9 @@ QPrinter::QPrinter(const QPrinterInfo& printer, PrinterMode mode)
     d_ptr->init(printer, mode);
 }
 
+QPrinterPrivate::~QPrinterPrivate()
+    = default;
+
 void QPrinterPrivate::init(const QPrinterInfo &printer, QPrinter::PrinterMode mode)
 {
     if (Q_UNLIKELY(!QCoreApplication::instance())) {
