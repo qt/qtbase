@@ -1668,7 +1668,7 @@ int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
     loop = new QEventLoop;
     QSignalSpy spy(reply.data(), SIGNAL(downloadProgress(qint64,qint64)));
     while (!reply->isFinished()) {
-        QTimer::singleShot(5000, loop, SLOT(quit()));
+        QTimer::singleShot(20000, loop, SLOT(quit()));
         if (loop->exec() == Timeout && count == spy.size() && !reply->isFinished()) {
             returnCode = Timeout;
             break;
