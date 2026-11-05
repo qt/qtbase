@@ -345,6 +345,9 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
         [&](auto &) {
             auto textEditorProxyData = std::make_shared<JsScopeData::JsTextEditorProxyData>();
             auto textEditorProxy = makeTextEditorProxy();
+            QArkUi::callArkUiOrFailOnErrorResult(
+                Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetCallbackInMainThread),
+                textEditorProxy.get(), true);
             auto callbacksRegistrationHandle = registerCallbacks(
                 textEditorProxy, textEditorProxyData, m_textAroundCursor, weakClientCallbacks);
 
