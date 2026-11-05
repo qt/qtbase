@@ -93,6 +93,7 @@ void tst_QSystemTrayIcon::supportsMessages()
         QStringLiteral("xcb"),
         QStringLiteral("windows"),
         QStringLiteral("cocoa"),
+        QStringLiteral("ohos"),
     };
     const QString platform = QGuiApplication::platformName();
     if (!platformsWithTrayMessages.contains(platform, Qt::CaseInsensitive))
