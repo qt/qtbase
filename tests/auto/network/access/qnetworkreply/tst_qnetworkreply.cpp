@@ -109,6 +109,25 @@ void qt_ForceTlsSecurityLevel();
 QT_END_NAMESPACE
 #endif
 
+namespace QNetworkAccessManagerOverloadSets {
+namespace test {
+#define TEST(x) \
+    template <typename...Args> \
+    using x = decltype(std::declval<QNetworkAccessManager&>(). x (std::declval<const QNetworkRequest &>(), std::declval<Args>()...)) \
+    /* end */
+TEST(get);
+TEST(put);
+TEST(post);
+TEST(sendCustomRequest);
+#undef TEST
+}
+namespace detail {
+struct ConvertsToQByteArray {
+    Q_IMPLICIT operator QByteArray() const noexcept;
+};
+}
+}
+
 class MyCookieJar;
 class tst_QNetworkReply: public QObject
 {
@@ -264,6 +283,7 @@ private Q_SLOTS:
     void headFromHttp_data();
     void headFromHttp();
 #endif // QT_CONFIG(networkproxy)
+    void overloadSets();
     void putToFile_data();
     void putToFile();
     void putToFtp_data();
@@ -2489,6 +2509,51 @@ void tst_QNetworkReply::headFromHttp()
         QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), referenceSize);
     if (reply->header(QNetworkRequest::ContentTypeHeader).isValid())
         QCOMPARE(reply->header(QNetworkRequest::ContentTypeHeader).toString(), contentType);
+}
+
+void tst_QNetworkReply::overloadSets()
+{
+    using namespace QNetworkAccessManagerOverloadSets;
+
+    static_assert(qxp::is_detected_v<test::get>);
+    static_assert(qxp::is_detected_v<test::get, QIODevice*>);
+    static_assert(qxp::is_detected_v<test::get, QFile*>); // derived from QIODevice
+    static_assert(qxp::is_detected_v<test::get, QByteArray>);
+    static_assert(qxp::is_detected_v<test::get, detail::ConvertsToQByteArray>);
+    static_assert(qxp::is_detected_v<test::get, std::nullptr_t>);
+
+    static_assert(qxp::is_detected_v<test::post, QIODevice*>);
+    static_assert(qxp::is_detected_v<test::post, QFile*>); // derived from QIODevice
+    static_assert(qxp::is_detected_v<test::post, QByteArray>);
+    static_assert(qxp::is_detected_v<test::post, detail::ConvertsToQByteArray>);
+    static_assert(qxp::is_detected_v<test::post, std::nullptr_t>);
+    #if QT_CONFIG(http) || defined(Q_OS_WASM)
+    static_assert(qxp::is_detected_v<test::post, QHttpMultiPart*>);
+    #endif
+
+    static_assert(qxp::is_detected_v<test::put, QIODevice*>);
+    static_assert(qxp::is_detected_v<test::put, QFile*>); // derived from QIODevice
+    static_assert(qxp::is_detected_v<test::put, QByteArray>);
+    static_assert(qxp::is_detected_v<test::put, detail::ConvertsToQByteArray>);
+    static_assert(qxp::is_detected_v<test::put, std::nullptr_t>);
+    #if QT_CONFIG(http) || defined(Q_OS_WASM)
+    static_assert(qxp::is_detected_v<test::put, QHttpMultiPart*>);
+    #endif
+
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, char[4]>);
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, char[4], QIODevice*>);
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, QByteArray, QFile*>); // derived from QIODevice
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, const char*, QByteArray>);
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, QByteArray, detail::ConvertsToQByteArray>);
+    QEXPECT_FAIL("", "QTBUG-152053", Continue);
+    QVERIFY((qxp::is_detected_v<test::sendCustomRequest, QByteArray, std::nullptr_t>));
+    QEXPECT_FAIL("", "QTBUG-152053", Continue);
+    QVERIFY((qxp::is_detected_v<test::sendCustomRequest, char[16], std::nullptr_t>));
+    QEXPECT_FAIL("", "QTBUG-152053", Continue);
+    QVERIFY((qxp::is_detected_v<test::sendCustomRequest, detail::ConvertsToQByteArray, std::nullptr_t>));
+    #if QT_CONFIG(http) || defined(Q_OS_WASM)
+    static_assert(qxp::is_detected_v<test::sendCustomRequest, QByteArray, QHttpMultiPart*>);
+    #endif
 }
 #endif // QT_CONFIG(networkproxy)
 
