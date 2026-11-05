@@ -31,6 +31,10 @@ the forms:
 * map { Numeric value: ("Proper name", "ISO code") }
 * alias { "OldName": "CurrentName" }
 
+(The latter use digested forms of names, the former the raw forms.)
+Order doesn't mattter among aliases: prefer alphabetic (on alias)
+within each logical group within each mapping.
+
 TODO: add support for marking entries as deprecated from a specified
 version. For aliases that merely deprecates the name. Where we have a
 name for which CLDR offers no data, we may also want to deprecate
@@ -457,25 +461,25 @@ language_map = {
 language_aliases = {
     # Renamings prior to Qt 6.0 (CLDR v37):
     'Afan': 'Oromo',
-    'Byelorussian': 'Belarusian',
     'Bhutani': 'Dzongkha',
+    'Byelorussian': 'Belarusian',
     'Cambodian': 'Khmer',
-    'Kurundi': 'Rundi',
-    'RhaetoRomance': 'Romansh',
     'Chewa': 'Nyanja',
     'Frisian': 'WesternFrisian',
-    'Uigur': 'Uyghur',
+    'Kurundi': 'Rundi',
+    'RhaetoRomance': 'Romansh',
+    'Uigur': 'Uyghur', # via Uighur, see below
     # Renamings:
-    'Uighur': 'Uyghur',
-    'Kwanyama': 'Kuanyama',
-    'Inupiak': 'Inupiaq',
     'Bengali': 'Bangla',
     'CentralMoroccoTamazight': 'CentralAtlasTamazight',
     'Greenlandic': 'Kalaallisut',
-    'Walamo': 'Wolaytta',
+    'Inupiak': 'Inupiaq',
+    'Kirghiz': 'Kyrgyz',
+    'Kwanyama': 'Kuanyama',
     'Navaho': 'Navajo',
     'Oriya': 'Odia',
-    'Kirghiz': 'Kyrgyz'
+    'Uighur': 'Uyghur',
+    'Walamo': 'Wolaytta',
 }
 
 territory_map = {
@@ -748,28 +752,30 @@ territory_map = {
 }
 
 territory_aliases = {
-    # Renamings prior to Qt 6.0 (CLDR v37):
+    # Congo:
     'DemocraticRepublicOfCongo': 'CongoKinshasa',
     'PeoplesRepublicOfCongo': 'CongoBrazzaville',
+    # Korea:
     'DemocraticRepublicOfKorea': 'NorthKorea',
     'RepublicOfKorea': 'SouthKorea',
+    # Other renamings prior to Qt 6.0 (CLDR v37):
+    'LatinAmericaAndTheCaribbean': 'LatinAmerica',
     'RussianFederation': 'Russia',
     'SyrianArabRepublic': 'Syria',
-    'LatinAmericaAndTheCaribbean': 'LatinAmerica',
     # Renamings:
-    'EastTimor': 'TimorLeste',
     'Bonaire': 'CaribbeanNetherlands',
-    'Macau': 'Macao',
-    'SouthGeorgiaAndTheSouthSandwichIslands': 'SouthGeorgiaAndSouthSandwichIslands',
-    'WallisAndFutunaIslands': 'WallisAndFutuna',
-    'SaintVincentAndTheGrenadines': 'SaintVincentAndGrenadines',
     'BosniaAndHerzegowina': 'BosniaAndHerzegovina',
-    'SvalbardAndJanMayenIslands': 'SvalbardAndJanMayen',
-    'VaticanCityState': 'VaticanCity',
-    'Swaziland': 'Eswatini',
-    'UnitedStatesMinorOutlyingIslands': 'UnitedStatesOutlyingIslands',
     'CuraSao': 'Curacao',
     'CzechRepublic': 'Czechia',
+    'EastTimor': 'TimorLeste',
+    'Macau': 'Macao',
+    'SaintVincentAndTheGrenadines': 'SaintVincentAndGrenadines',
+    'SouthGeorgiaAndTheSouthSandwichIslands': 'SouthGeorgiaAndSouthSandwichIslands',
+    'SvalbardAndJanMayenIslands': 'SvalbardAndJanMayen',
+    'Swaziland': 'Eswatini',
+    'UnitedStatesMinorOutlyingIslands': 'UnitedStatesOutlyingIslands',
+    'VaticanCityState': 'VaticanCity',
+    'WallisAndFutunaIslands': 'WallisAndFutuna',
 
     # Backwards compatibility with old Country enum, prior to Qt 6.2:
     'AnyCountry': 'AnyTerritory',
@@ -935,7 +941,7 @@ script_aliases = {
     'SimplifiedChineseScript': 'SimplifiedHanScript',
     'TraditionalChineseScript': 'TraditionalHanScript',
     # Renamings:
+    'BengaliScript': 'BanglaScript',
     'OriyaScript': 'OdiaScript',
     'MendeKikakuiScript': 'MendeScript',
-    'BengaliScript': 'BanglaScript',
 }
