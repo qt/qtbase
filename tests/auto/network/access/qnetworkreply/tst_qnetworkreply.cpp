@@ -102,6 +102,8 @@ typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
 
+constexpr auto EventLoopTimeout = 25s;
+
 #if QT_CONFIG(ssl)
 QT_BEGIN_NAMESPACE
 // Technically, a workaround, and only needed for OpenSSL:
@@ -189,7 +191,7 @@ class tst_QNetworkReply: public QObject
     static const QByteArray httpEmpty200Response;
     static const QString filePermissionFileName;
 
-    QEventLoop *loop;
+    std::optional<QEventLoop> loop = std::nullopt;
     enum RunSimpleRequestReturn { Timeout = 0, Success, Failure };
     int returnCode;
     QString testFileName;
@@ -1532,11 +1534,10 @@ QString tst_QNetworkReply::runMultipartRequest(const QNetworkRequest &request,
     multiPart->setParent(reply.data());
 
     returnCode = Timeout;
-    loop = new QEventLoop;
-    QTimer::singleShot(25000, loop, SLOT(quit()));
+    loop.emplace();
+    QTimer::singleShot(EventLoopTimeout, &*loop, SLOT(quit()));
     int code = returnCode == Timeout ? loop->exec() : returnCode;
-    delete loop;
-    loop = 0;
+    loop.reset();
 
     switch (code) {
     case Failure:
@@ -1594,10 +1595,10 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
         connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), SLOT(gotError()));
 
         int count = 0;
-        loop = new QEventLoop;
+        loop.emplace();
         QSignalSpy spy(reply.data(), SIGNAL(downloadProgress(qint64,qint64)));
         while (!reply->isFinished()) {
-            QTimer::singleShot(20000, loop, SLOT(quit()));
+            QTimer::singleShot(EventLoopTimeout, &*loop, SLOT(quit()));
             code = loop->exec();
             if (count == spy.size() && !reply->isFinished()) {
                 code = Timeout;
@@ -1605,8 +1606,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
             }
             count = spy.size();
         }
-        delete loop;
-        loop = 0;
+        loop.reset();
     }
 
     switch (code) {
@@ -1629,11 +1629,10 @@ QString tst_QNetworkReply::runCustomRequest(const QNetworkRequest &request,
     connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), SLOT(gotError()));
 
     returnCode = Timeout;
-    loop = new QEventLoop;
-    QTimer::singleShot(20000, loop, SLOT(quit()));
+    loop.emplace();
+    QTimer::singleShot(EventLoopTimeout, &*loop, SLOT(quit()));
     int code = returnCode == Timeout ? loop->exec() : returnCode;
-    delete loop;
-    loop = 0;
+    loop.reset();
 
     switch (code) {
     case Failure:
@@ -1665,18 +1664,17 @@ int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
     connect(reply, SIGNAL(finished()), SLOT(finished()));
     connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), SLOT(gotError()));
     returnCode = Success;
-    loop = new QEventLoop;
+    loop.emplace();
     QSignalSpy spy(reply.data(), SIGNAL(downloadProgress(qint64,qint64)));
     while (!reply->isFinished()) {
-        QTimer::singleShot(20000, loop, SLOT(quit()));
+        QTimer::singleShot(EventLoopTimeout, &*loop, SLOT(quit()));
         if (loop->exec() == Timeout && count == spy.size() && !reply->isFinished()) {
             returnCode = Timeout;
             break;
         }
         count = spy.size();
     }
-    delete loop;
-    loop = 0;
+    loop.reset();
 
     return returnCode;
 }
