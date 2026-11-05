@@ -40,14 +40,13 @@ class Q_NETWORK_EXPORT QNetworkAccessManager: public QObject
 
 public:
     enum Operation {
-        HeadOperation = 1,
+        UnknownOperation,
+        HeadOperation,
         GetOperation,
         PutOperation,
         PostOperation,
         DeleteOperation,
         CustomOperation,
-
-        UnknownOperation = 0
     };
 
     explicit QNetworkAccessManager(QObject *parent = nullptr);
