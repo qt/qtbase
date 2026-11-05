@@ -5890,7 +5890,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                 case SC_SpinBoxEditField: {
                     QRect r = rule.contentsRect(opt->rect);
                     if (spin->buttonSymbols != QAbstractSpinBox::NoButtons) {
-                        // Use the widest button on each side to determine edit field size.
+                        // Keep the edit field inside the contents rect and outside both buttons.
                         Qt::Alignment upAlign =
                                 upRule.hasPosition() ? upRule.position()->position : Qt::AlignRight;
                         upAlign = resolveAlignment(opt->direction, upAlign);
@@ -5905,25 +5905,17 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                         const QRect upRect = subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w);
                         const QRect downRect = subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w);
 
-                        int widestL = 0;
-                        int widestR = 0;
-                        if (upAlign & downAlign) {
-                            // both on same side
-                            int minX = std::min(upRect.left(), downRect.left());
-                            int maxX = std::max(upRect.right(), downRect.right());
-                            if (upAlign & Qt::AlignRight)
-                                r.setRight(minX);
-                            else
-                                r.setLeft(maxX);
-                        } else {
-                            // one on the right, one on the left
-                            widestL = qMax((upAlign & Qt::AlignLeft) ? upRect.width() : 0,
-                                           (downAlign & Qt::AlignLeft) ? downRect.width() : 0);
-                            widestR = qMax((upAlign & Qt::AlignRight) ? upRect.width() : 0,
-                                           (downAlign & Qt::AlignRight) ? downRect.width() : 0);
-                            r.setRight(r.right() - widestR);
-                            r.setLeft(r.left() + widestL);
-                        }
+                        const auto excludeButton = [&r](Qt::Alignment alignment, const QRect &button) {
+                            if (button.isEmpty())
+                                return;
+                            // QRect edges are inclusive; leave no shared pixel column.
+                            if (alignment & Qt::AlignLeft)
+                                r.setLeft(qMax(r.left(), button.right() + 1));
+                            else if (alignment & Qt::AlignRight)
+                                r.setRight(qMin(r.right(), button.left() - 1));
+                        };
+                        excludeButton(upAlign, upRect);
+                        excludeButton(downAlign, downRect);
                     }
                     return r;
                 }
