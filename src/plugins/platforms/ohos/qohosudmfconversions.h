@@ -29,8 +29,6 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeLazyFetchingQMimeDataFactoryFromUd
 QOhosSupplier<std::unique_ptr<QMimeData>> makeDummyQMimeDataFactoryFromUdmfDataTypes(
     std::vector<std::string> udmfDataTypes);
 
-bool isQOhosUdmfDataConvertedFromThisProcessMimeData(QOhosUdmfData &udmfData);
-
 std::optional<std::string> tryMapUtdTypeIdToMimeType(const std::string &utdTypeId);
 
 std::optional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType);
