@@ -564,6 +564,23 @@ function(_qt_internal_sbom_begin_project)
     endif()
 endfunction()
 
+# Adds paths that are searched for external SBOM documents.
+# Meant to be called in a Config.cmake file, for a package installed outside of the default search
+# paths, so that projects depending on it can find its SBOM document.
+function(_qt_internal_sbom_add_external_document_search_paths)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        PATHS
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # Not guarded by QT_GENERATE_SBOM, the Config.cmake file might be loaded before sbom setup.
+    _qt_internal_append_to_cmake_property_without_duplicates(
+        _qt_internal_sbom_external_document_search_paths ${arg_PATHS})
+endfunction()
+
 # Check various internal options to decide which sbom generation operations should be setup.
 # Considered operations are generation of a JSON sbom, validation of the SBOM, NTIA checker, etc.
 function(_qt_internal_sbom_setup_project_ops)
