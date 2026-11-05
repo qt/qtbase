@@ -392,6 +392,40 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #endif // QT_PLATFORM_UIKIT
 QT_END_INCLUDE_NAMESPACE
 
+#if defined(Q_OS_MACOS)
+QT_BEGIN_INCLUDE_NAMESPACE
+#  include <CoreFoundation/CoreFoundation.h>
+#  include <SystemConfiguration/SystemConfiguration.h>
+#  include <QtCore/private/qcore_mac_p.h>
+QT_END_INCLUDE_NAMESPACE
+
+// Maps BSD interface names (e.g. "en1") to the localized display names shown
+// in System Settings.
+static QHash<QString, QString> interfaceFriendlyNames()
+{
+    QHash<QString, QString> result;
+    QCFType<CFArrayRef> interfaces = SCNetworkInterfaceCopyAll();
+    if (!interfaces)
+        return result;
+
+    CFIndex count = CFArrayGetCount(interfaces);
+    result.reserve(count);
+    for (CFIndex i = 0; i < count; ++i) {
+        auto iface = static_cast<SCNetworkInterfaceRef>(CFArrayGetValueAtIndex(interfaces, i));
+        CFStringRef bsdName = SCNetworkInterfaceGetBSDName(iface);
+        CFStringRef displayName = SCNetworkInterfaceGetLocalizedDisplayName(iface);
+        if (bsdName && displayName)
+            result.insert(QString::fromCFString(bsdName), QString::fromCFString(displayName));
+    }
+    return result;
+}
+#else
+static QHash<QString, QString> interfaceFriendlyNames()
+{
+    return {};
+}
+#endif // Q_OS_MACOS
+
 static QNetworkInterface::InterfaceType probeIfType(int socket, int iftype, struct ifmediareq *req)
 {
     // Determine the interface type.
@@ -457,6 +491,8 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     static_assert(offsetof(struct ifmediareq, ifm_name) == 0);
     static_assert(offsetof(struct ifreq, ifr_name) == 0);
 
+    const QHash<QString, QString> friendlyNames = interfaceFriendlyNames();
+
     // on NetBSD we use AF_LINK and sockaddr_dl
     // scan the list for that family
     for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next)
@@ -469,6 +505,7 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             iface->name = QString::fromLatin1(ptr->ifa_name);
             iface->flags = convertFlags(ptr->ifa_flags);
             iface->hardwareAddress = iface->makeHwAddress(sdl->sdl_alen, (uchar*)LLADDR(sdl));
+            iface->friendlyName = friendlyNames.value(iface->name);
 
             qstrncpy(mediareq.ifm_name, ptr->ifa_name, sizeof(mediareq.ifm_name));
             iface->type = probeIfType(openSocket(socket), sdl->sdl_type, &mediareq);
