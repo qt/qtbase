@@ -181,7 +181,7 @@ public:
 
 #if QT_DEPRECATED_SINCE(6,0)
 #ifdef Q_QDOC
-    QWidget *parentWidget() const;
+    QT_DEPRECATED_VERSION_6_0 QWidget *parentWidget() const;
 #else
     template<typename T = QWidget*>
     QT_DEPRECATED_VERSION_X_6_0("Use parent() and qobject_cast instead")

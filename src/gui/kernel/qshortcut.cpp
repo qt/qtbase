@@ -553,6 +553,8 @@ int QShortcut::id() const
 /*!
     \fn QWidget *QShortcut::parentWidget() const
 
+    \deprecated [6.0] Use parent() with qobject_cast() instead.
+
     Returns the shortcut's parent widget.
 */
 
