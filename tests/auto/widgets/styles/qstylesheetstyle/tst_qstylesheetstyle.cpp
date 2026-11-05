@@ -20,6 +20,7 @@
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QStyleOptionSpinBox>
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QTableWidget>
@@ -110,6 +111,8 @@ private slots:
     void task232085_spinBoxLineEditBg();
     void QTBUG140497_spinBoxSizeHintWithEmptyStyleSheet_data();
     void QTBUG140497_spinBoxSizeHintWithEmptyStyleSheet();
+    void spinBoxEditField_data();
+    void spinBoxEditField();
     void changeStyleInChangeEvent();
     void QTBUG15910_crashNullWidget();
     void QTBUG36933_brokenPseudoClassLookup();
@@ -2214,6 +2217,143 @@ void tst_QStyleSheetStyle::QTBUG140497_spinBoxSizeHintWithEmptyStyleSheet()
 
     QCOMPARE(styled.sizeHint(), unstyled.sizeHint());
     QCOMPARE(styled.minimumSizeHint(), unstyled.minimumSizeHint());
+}
+
+void tst_QStyleSheetStyle::spinBoxEditField_data()
+{
+    QTest::addColumn<QString>("style");
+    QTest::addColumn<bool>("decimal");
+    QTest::addColumn<bool>("rtl");
+    QTest::addColumn<QString>("placement");
+    QTest::addColumn<int>("padding");
+
+    for (const auto &style : QStyleFactory::keys()) {
+        for (bool decimal : {false, true}) {
+            for (bool rtl : {false, true}) {
+                for (const auto &placement : {"native", "right", "left", "split", "reverse", "none"}) {
+                    for (int padding : {0, 5, 30}) {
+                        const auto name = QStringLiteral("%1-%2-%3-%4-padding%5")
+                                .arg(style, decimal ? "double" : "int", rtl ? "rtl" : "ltr",
+                                     QLatin1String(placement)).arg(padding);
+                        QTest::newRow(qPrintable(name)) << style << decimal << rtl
+                                                       << QString::fromLatin1(placement) << padding;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void tst_QStyleSheetStyle::spinBoxEditField()
+{
+    QFETCH(QString, style);
+    QFETCH(bool, decimal);
+    QFETCH(bool, rtl);
+    QFETCH(QString, placement);
+    QFETCH(int, padding);
+
+    ApplicationStyleSetter styleSetter(QStyleFactory::create(style));
+    QSpinBox integerSpin;
+    QDoubleSpinBox doubleSpin;
+    QAbstractSpinBox *spin = decimal ? static_cast<QAbstractSpinBox *>(&doubleSpin) : &integerSpin;
+    integerSpin.setRange(0, 100);
+    doubleSpin.setRange(0, 100);
+    const auto setValue = [&](int value) {
+        if (decimal)
+            doubleSpin.setValue(value);
+        else
+            integerSpin.setValue(value);
+    };
+    const auto value = [&] { return decimal ? doubleSpin.value() : integerSpin.value(); };
+    spin->setLayoutDirection(rtl ? Qt::RightToLeft : Qt::LeftToRight);
+    QString sheet = QStringLiteral("QAbstractSpinBox { border: 1px solid black; padding: %1px; }")
+                            .arg(padding);
+    const bool buttons = placement != "none";
+    if (!buttons) {
+        spin->setButtonSymbols(QAbstractSpinBox::NoButtons);
+    } else if (placement != "native") {
+        const bool upLeft = placement == "left" || placement == "reverse";
+        const bool downLeft = placement == "left" || placement == "split";
+        sheet += QStringLiteral(
+                "QAbstractSpinBox::up-button { subcontrol-origin: border;"
+                " subcontrol-position: top %1; width: 17px; height: 16px; }"
+                "QAbstractSpinBox::down-button { subcontrol-origin: border;"
+                " subcontrol-position: bottom %2; width: 23px; height: 16px; }")
+                         .arg(upLeft ? "left" : "right", downLeft ? "left" : "right");
+    }
+    spin->setStyleSheet(sheet);
+    spin->resize(180, 100);
+    setValue(50);
+    spin->show();
+    QVERIFY(QTest::qWaitForWindowExposed(spin));
+
+    QStyleOptionSpinBox option;
+    option.initFrom(spin);
+    option.frame = spin->hasFrame();
+    option.buttonSymbols = spin->buttonSymbols();
+    option.stepEnabled = QAbstractSpinBox::StepUpEnabled | QAbstractSpinBox::StepDownEnabled;
+    const auto rect = [&](QStyle::SubControl control) {
+        return spin->style()->subControlRect(QStyle::CC_SpinBox, &option, control, spin);
+    };
+    const QRect contents = spin->rect().adjusted(1 + padding, 1 + padding,
+                                               -1 - padding, -1 - padding);
+    const QRect field = rect(QStyle::SC_SpinBoxEditField);
+    QVERIFY(contents.contains(field));
+    QCOMPARE(field.top(), contents.top());
+    QCOMPARE(field.bottom(), contents.bottom());
+    auto *editor = spin->findChild<QLineEdit *>();
+    QVERIFY(editor);
+    if (!buttons) {
+        QCOMPARE(field, contents);
+    } else {
+        QRect expected = contents;
+        for (const auto control : {QStyle::SC_SpinBoxUp, QStyle::SC_SpinBoxDown}) {
+            const QRect button = rect(control);
+            QVERIFY(!button.isEmpty());
+            QVERIFY(!field.intersects(button));
+            QVERIFY(!editor->geometry().intersects(button));
+            const bool left = button.center().x() < spin->rect().center().x();
+            const int expectedEdge = left ? qMax(contents.left(), button.right() + 1)
+                                          : qMin(contents.right(), button.left() - 1);
+            if (left)
+                expected.setLeft(qMax(expected.left(), expectedEdge));
+            else
+                expected.setRight(qMin(expected.right(), expectedEdge));
+
+            const int delta = control == QStyle::SC_SpinBoxUp ? 1 : -1;
+            for (const QPoint point : {QPoint(left ? button.right() : button.left(),
+                                              button.center().y()), button.center()}) {
+                setValue(50);
+                // Dispatch to the actual child, as normal mouse delivery would.
+                QWidget *target = spin->childAt(point);
+                if (!target)
+                    target = spin;
+                QTest::mouseClick(target, Qt::LeftButton, Qt::NoModifier,
+                                  target->mapFrom(spin, point));
+                QCOMPARE(value(), 50 + delta);
+            }
+            setValue(delta > 0 ? 100 : 0);
+            QTest::mouseClick(spin, Qt::LeftButton, Qt::NoModifier, button.center());
+            QCOMPARE(value(), delta > 0 ? 100 : 0);
+        }
+        QCOMPARE(field, expected);
+    }
+
+    setValue(50);
+    QTest::keyClick(spin, Qt::Key_Up);
+    QCOMPARE(value(), 51);
+    QTest::keyClick(spin, Qt::Key_Down);
+    QCOMPARE(value(), 50);
+    editor->selectAll();
+    QTest::keyClicks(editor, "42");
+    QTest::keyClick(editor, Qt::Key_Return);
+    QCOMPARE(value(), 42);
+    setValue(100);
+    QTest::keyClick(spin, Qt::Key_Up);
+    QCOMPARE(value(), 100);
+    setValue(0);
+    QTest::keyClick(spin, Qt::Key_Down);
+    QCOMPARE(value(), 0);
 }
 
 class ChangeEventWidget : public QWidget
