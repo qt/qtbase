@@ -1007,27 +1007,29 @@ void QOhosWindowProxy::setWindowMask(
     if (qtIsMainWindow())
         return;
 
-    auto ohosMaskSize = ohosMaskSizeOverride.has_value()
-        ? ohosMaskSizeOverride.value()
-        : getWindowProperties().windowRect.size();
-
-    if (ohosMaskSize.isEmpty()) {
-        const auto *maskSrcSizeMsg = ohosMaskSizeOverride.has_value()
-            ? "overridden mask source"
-            : "window";
-        if (ohosMaskSizeOverride.has_value()) {
-            qOhosPrintfError(
-                "%s failed - %s size is 0x0", maskSrcSizeMsg,
-                "QOhosWindowProxy::setWindowMask");
-        }
-        return;
-    }
-
     QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
             taskPromise();
             return;
         }
+
+        auto ohosMaskSize = ohosMaskSizeOverride.has_value()
+            ? ohosMaskSizeOverride.value()
+            : getWindowPropertiesFromJsWindow(m_jsScopeData->jsWindowRef->jsObject()).windowRect.size();
+
+        if (ohosMaskSize.isEmpty()) {
+            const auto *maskSrcSizeMsg = ohosMaskSizeOverride.has_value()
+                ? "overridden mask source"
+                : "window";
+            if (ohosMaskSizeOverride.has_value()) {
+                qOhosPrintfError(
+                    "%s failed - %s size is 0x0", maskSrcSizeMsg,
+                    "QOhosWindowProxy::setWindowMask");
+            }
+            taskPromise();
+            return;
+        }
+
         auto *env = jsState.env();
 
         QNapi::Array maskRowsArray = QNapi::Array::New(env, ohosMaskSize.height());
