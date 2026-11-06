@@ -338,9 +338,12 @@ WindowGeometryPersistenceState syncWindowGeometryPersistenceState(QOhosWindowPro
         windowProxy->setWindowRectAutoSave(false);
         break;
     case WindowGeometryPersistencePolicy::Enabled:
-        windowProxy->setWindowRectAutoSave(true);
+    {
+        QtOhos::JsCallBatch jsCallBatch(Q_FUNC_INFO);
+        windowProxy->setWindowRectAutoSave(true, jsCallBatch);
         geometryPersistenceEnabled = windowProxy->isWindowRectAutoSave();
         break;
+    }
     case WindowGeometryPersistencePolicy::FollowSystemSetting:
         geometryPersistenceEnabled = windowProxy->isWindowRectAutoSave();
         break;
