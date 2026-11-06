@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Axel Spoerl <axel.spoerl@qt.io>
+Date: Wed, 18 Feb 2026 09:26:39 +0100
+Subject: [PATCH] Add Qt-Security header
+
+QUIP-23: Mark the file with the default security header.
+
+This corresponds to Qt commit bc83d91d4e3575ba688d65e12860c05b3fb1dcbd.
+---
+ src/corelib/global/qexpected_p.h | 1 +
+ 1 file changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/src/corelib/global/qexpected_p.h b/src/corelib/global/qexpected_p.h
+--- a/src/corelib/global/qexpected_p.h
++++ b/src/corelib/global/qexpected_p.h
+@@ -15,6 +15,7 @@
+ // along with this software. If not, see
+ // <http://creativecommons.org/publicdomain/zero/1.0/>.
+ ///
++// Qt-Security score:significant reason:default
+ 
+ #ifndef Q23_TL_EXPECTED_HPP
+ #define Q23_TL_EXPECTED_HPP
