@@ -607,6 +607,7 @@ endif()
 
 if(QT_FEATURE_framework)
     add_subdirectory(test_framework_forwarding_headers)
+    _qt_internal_add_qmake_test(test_framework_forwarding_headers_qmake)
 endif()
 
 # Add all tests using CMake's RunCMake test module
