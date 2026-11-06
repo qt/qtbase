@@ -875,7 +875,6 @@ QMdiSubWindowPrivate::QMdiSubWindowPrivate()
       isExplicitlyDeactivated(false),
       keyboardSingleStep(5),
       keyboardPageStep(20),
-      currentOperation(None),
       hoveredSubControl(QStyle::SC_None),
       activeSubControl(QStyle::SC_None),
       focusInReason(Qt::ActiveWindowFocusReason)
@@ -974,7 +973,7 @@ void QMdiSubWindowPrivate::leaveInteractiveMode()
 #endif
         q->releaseMouse();
     isInInteractiveMode = false;
-    currentOperation = None;
+    currentOperation = std::nullopt;
     updateDirtyRegions();
     updateCursor();
     if (baseWidget && baseWidget->focusWidget())
@@ -1070,13 +1069,13 @@ void QMdiSubWindowPrivate::updateCursor()
     if (isMacStyle(q->style()))
         return;
 
-    if (currentOperation == None) {
+    if (!currentOperation) {
         q->unsetCursor();
         return;
     }
 
-    if (currentOperation == Move || operationMap.find(currentOperation).value().hover) {
-        q->setCursor(operationMap.find(currentOperation).value().cursorShape);
+    if (currentOperation == Move || operationMap.find(*currentOperation).value().hover) {
+        q->setCursor(operationMap.find(*currentOperation).value().cursorShape);
         return;
     }
 #endif
@@ -1153,10 +1152,10 @@ void QMdiSubWindowPrivate::updateMask()
 void QMdiSubWindowPrivate::setNewGeometry(const QPoint &pos)
 {
     Q_Q(QMdiSubWindow);
-    Q_ASSERT(currentOperation != None);
+    Q_ASSERT(currentOperation);
     Q_ASSERT(parent);
 
-    uint cflags = operationMap.find(currentOperation).value().changeFlags;
+    uint cflags = operationMap.find(*currentOperation).value().changeFlags;
     int posX = pos.x();
     int posY = pos.y();
 
@@ -1596,13 +1595,13 @@ QRegion QMdiSubWindowPrivate::getRegion(Operation operation) const
 /*!
     \internal
 */
-QMdiSubWindowPrivate::Operation QMdiSubWindowPrivate::getOperation(const QPoint &pos) const
+auto QMdiSubWindowPrivate::getOperation(QPoint pos) const -> std::optional<Operation>
 {
     OperationInfoMap::const_iterator it;
     for (it = operationMap.constBegin(); it != operationMap.constEnd(); ++it)
         if (it.value().region.contains(pos))
             return it.key();
-    return None;
+    return std::nullopt;
 }
 
 extern QString qt_setWindowTitle_helperHelper(const QString&, const QWidget*);
@@ -1900,7 +1899,7 @@ void QMdiSubWindowPrivate::leaveRubberBandMode()
     isInRubberBandMode = false;
     q->setGeometry(rubberBand->geometry());
     rubberBand->hide();
-    currentOperation = None;
+    currentOperation = std::nullopt;
 }
 #endif // QT_CONFIG(rubberband)
 
@@ -2699,7 +2698,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
         break;
     }
     case QEvent::Enter:
-        d->currentOperation = QMdiSubWindowPrivate::None;
+        d->currentOperation = std::nullopt;
         d->updateCursor();
         break;
     case QEvent::LayoutRequest:
@@ -2777,7 +2776,7 @@ bool QMdiSubWindow::event(QEvent *event)
 #if QT_CONFIG(menubar)
         d->removeButtonsFromMenuBar();
 #endif
-        d->currentOperation = QMdiSubWindowPrivate::None;
+        d->currentOperation = std::nullopt;
         d->activeSubControl = QStyle::SC_None;
         d->hoveredSubControl = QStyle::SC_None;
 #if QT_CONFIG(rubberband)
@@ -2971,7 +2970,7 @@ void QMdiSubWindow::changeEvent(QEvent *changeEvent)
         d->oldGeometry = geometry();
 
     if ((oldState & Qt::WindowActive) && (newState & Qt::WindowActive))
-        d->currentOperation = QMdiSubWindowPrivate::None;
+        d->currentOperation = std::nullopt;
 
     if (!(oldState & Qt::WindowMinimized) && (newState & Qt::WindowMinimized))
         d->setMinimizeMode();
@@ -3162,7 +3161,7 @@ void QMdiSubWindow::mousePressEvent(QMouseEvent *mouseEvent)
         return;
     }
 
-    if (d->currentOperation != QMdiSubWindowPrivate::None) {
+    if (d->currentOperation) {
         d->updateCursor();
         d->mousePressPosition = mapToParent(mouseEvent->position().toPoint());
         if (d->resizeEnabled || d->moveEnabled)
@@ -3246,7 +3245,7 @@ void QMdiSubWindow::mouseReleaseEvent(QMouseEvent *mouseEvent)
     }
 
     Q_D(QMdiSubWindow);
-    if (d->currentOperation != QMdiSubWindowPrivate::None) {
+    if (d->currentOperation) {
 #if QT_CONFIG(rubberband)
         if (d->isInRubberBandMode && !d->isInInteractiveMode)
             d->leaveRubberBandMode();
@@ -3311,7 +3310,7 @@ void QMdiSubWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
     // Do not resize/move if not allowed.
     d->currentOperation = d->getOperation(mouseEvent->position().toPoint());
     if ((d->isResizeOperation() && !d->resizeEnabled) || (d->isMoveOperation() && !d->moveEnabled))
-        d->currentOperation = QMdiSubWindowPrivate::None;
+        d->currentOperation = std::nullopt;
     d->updateCursor();
 }
 
