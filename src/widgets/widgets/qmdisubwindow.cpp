@@ -1011,20 +1011,20 @@ void QMdiSubWindowPrivate::removeBaseWidget()
 */
 auto QMdiSubWindowPrivate::initOperationMap() -> OperationInfoMap
 {
-    OperationInfoMap operationMap;
-    operationMap.insert(Move, OperationInfo(HMove | VMove, Qt::ArrowCursor, false));
-    operationMap.insert(TopResize, OperationInfo(VMove | VResize | VResizeReverse, Qt::SizeVerCursor));
-    operationMap.insert(BottomResize, OperationInfo(VResize, Qt::SizeVerCursor));
-    operationMap.insert(LeftResize, OperationInfo(HMove | HResize | HResizeReverse, Qt::SizeHorCursor));
-    operationMap.insert(RightResize, OperationInfo(HResize, Qt::SizeHorCursor));
-    operationMap.insert(TopLeftResize, OperationInfo(HMove | VMove | HResize | VResize | VResizeReverse
-                                                     | HResizeReverse, Qt::SizeFDiagCursor));
-    operationMap.insert(TopRightResize, OperationInfo(VMove | HResize | VResize
-                                                      | VResizeReverse, Qt::SizeBDiagCursor));
-    operationMap.insert(BottomLeftResize, OperationInfo(HMove | HResize | VResize | HResizeReverse,
-                                                        Qt::SizeBDiagCursor));
-    operationMap.insert(BottomRightResize, OperationInfo(HResize | VResize, Qt::SizeFDiagCursor));
-    return operationMap;
+    return {
+        { Move,              {HMove | VMove,                    Qt::ArrowCursor,    false} },
+        { TopResize,         {VMove | VResize | VResizeReverse, Qt::SizeVerCursor,   true} },
+        { BottomResize,      {VResize,                          Qt::SizeVerCursor,   true} },
+        { LeftResize,        {HMove | HResize | HResizeReverse, Qt::SizeHorCursor,   true} },
+        { RightResize,       {HResize,                          Qt::SizeHorCursor,   true} },
+        { TopLeftResize,     {HMove | VMove | HResize | VResize | VResizeReverse | HResizeReverse,
+                                                                Qt::SizeFDiagCursor, true} },
+        { TopRightResize,    {VMove | HResize | VResize | VResizeReverse,
+                                                                Qt::SizeBDiagCursor, true} },
+        { BottomLeftResize,  {HMove | HResize | VResize | HResizeReverse,
+                                                                Qt::SizeBDiagCursor, true} },
+        { BottomRightResize, {HResize | VResize,                Qt::SizeFDiagCursor, true} },
+    };
 }
 
 #if QT_CONFIG(menu)

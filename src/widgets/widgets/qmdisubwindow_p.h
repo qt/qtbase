@@ -132,11 +132,6 @@ public:
         uint changeFlags;
         Qt::CursorShape cursorShape;
         bool hover;
-        OperationInfo(uint changeFlags, Qt::CursorShape cursorShape, bool hover = true)
-            : changeFlags(changeFlags),
-              cursorShape(cursorShape),
-              hover(hover)
-        {}
     };
 
     typedef QMap<Operation, OperationInfo> OperationInfoMap;
