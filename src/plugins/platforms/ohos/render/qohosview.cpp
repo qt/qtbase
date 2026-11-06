@@ -1053,7 +1053,7 @@ void QOhosView::showImmediate()
         Q_EMIT windowVisibilityChange(true);
 }
 
-void QOhosView::applyPhoneWindowChrome()
+void QOhosView::applyPhoneWindowChrome(JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy == nullptr)
         return;
@@ -1062,25 +1062,27 @@ void QOhosView::applyPhoneWindowChrome()
     // client area is expanded; only fullscreen also hides the bars.
     const bool fullScreen = m_ownerWindow->windowStates().testFlag(Qt::WindowFullScreen);
     const bool expanded = m_ownerWindow->flags().testFlag(Qt::ExpandedClientAreaHint);
-    m_ohosWindowProxy->setWindowLayoutFullScreen(fullScreen || expanded);
+    m_ohosWindowProxy->setWindowLayoutFullScreen(fullScreen || expanded, jsCallBatch);
     m_ohosWindowProxy->setWindowSystemBarEnable(
         fullScreen ? QStringList{}
-                   : QStringList{ QStringLiteral("status"), QStringLiteral("navigation") });
+                   : QStringList{ QStringLiteral("status"), QStringLiteral("navigation") },
+        jsCallBatch);
 }
 
 void QOhosView::setFullScreen()
 {
-    updateWindowFullScreen();
+    JsCallBatch jsCallBatch(Q_FUNC_INFO);
+    updateWindowFullScreen(jsCallBatch);
 }
 
-void QOhosView::updateWindowFullScreen()
+void QOhosView::updateWindowFullScreen(JsCallBatch &jsCallBatch)
 {
-    auto *windowProxy = flushedWindowProxyOrNull();
+    auto *windowProxy = windowProxyAfterPropertyUpdatesOrNull(jsCallBatch);
     if (windowProxy == nullptr)
         return;
 
     if (QOhosDeviceInfo::isPhone()) {
-        applyPhoneWindowChrome();
+        applyPhoneWindowChrome(jsCallBatch);
         return;
     }
 
@@ -1095,21 +1097,24 @@ void QOhosView::updateWindowFullScreen()
 
 void QOhosView::recover()
 {
-    auto *windowProxy = flushedWindowProxyOrNull();
+    JsCallBatch jsCallBatch(Q_FUNC_INFO);
+
+    auto *windowProxy = windowProxyAfterPropertyUpdatesOrNull(jsCallBatch);
     if (windowProxy == nullptr)
         return;
 
     if (!QOhosDeviceInfo::isPhone())
-        windowProxy->recover();
+        windowProxy->recover(jsCallBatch);
     else
-        applyPhoneWindowChrome();
+        applyPhoneWindowChrome(jsCallBatch);
 }
 
 void QOhosView::minimize()
 {
-    auto *windowProxy = flushedWindowProxyOrNull();
+    JsCallBatch jsCallBatch(Q_FUNC_INFO);
+    auto *windowProxy = windowProxyAfterPropertyUpdatesOrNull(jsCallBatch);
     if (windowProxy != nullptr)
-        windowProxy->minimize();
+        windowProxy->minimize(jsCallBatch);
 }
 
 void QOhosView::requestActivate()
@@ -1135,12 +1140,13 @@ void QOhosView::requestActivate()
 
 void QOhosView::maximize()
 {
-    updateWindowMaximized();
+    JsCallBatch jsCallBatch(Q_FUNC_INFO);
+    updateWindowMaximized(jsCallBatch);
 }
 
-void QOhosView::updateWindowMaximized()
+void QOhosView::updateWindowMaximized(JsCallBatch &jsCallBatch)
 {
-    auto *windowProxy = flushedWindowProxyOrNull();
+    auto *windowProxy = windowProxyAfterPropertyUpdatesOrNull(jsCallBatch);
     if (windowProxy == nullptr)
         return;
 
@@ -1547,12 +1553,12 @@ void QOhosView::flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch)
     m_updatePending = false;
 }
 
-QOhosWindowProxy *QOhosView::flushedWindowProxyOrNull()
+QOhosWindowProxy *QOhosView::windowProxyAfterPropertyUpdatesOrNull(JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy == nullptr)
         return nullptr;
 
-    flushSystemPropertyUpdatesImmediate();
+    flushSystemPropertyUpdatesImmediate(jsCallBatch);
     return m_ohosWindowProxy.get();
 }
 
