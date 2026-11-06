@@ -1933,8 +1933,8 @@ void QMdiSubWindowPrivate::updateActions()
 
 #if defined(Q_OS_MACOS) && QT_CONFIG(action)
     if (q_func()->style()->inherits("QMacStyle"))
-        for (int i = 0; i < NumWindowStateActions; ++i)
-            if (QAction *action = actions[i])
+        for (QAction *action : actions)
+            if (action)
                 action->setIconVisibleInMenu(false);
 #endif
 
