@@ -1076,8 +1076,8 @@ void QMdiSubWindowPrivate::updateCursor()
         return;
     }
 
-    if (currentOperation == Move || operationMap.find(*currentOperation).value().hover) {
-        q->setCursor(operationMap.find(*currentOperation).value().cursorShape);
+    if (currentOperation == Move || operationMap[*currentOperation].hover) {
+        q->setCursor(operationMap[*currentOperation].cursorShape);
         return;
     }
 #endif
@@ -1158,7 +1158,7 @@ void QMdiSubWindowPrivate::setNewGeometry(const QPoint &pos)
     Q_ASSERT(currentOperation);
     Q_ASSERT(parent);
 
-    uint cflags = operationMap.find(*currentOperation).value().changeFlags;
+    const uint cflags = operationMap[*currentOperation].changeFlags;
     int posX = pos.x();
     int posY = pos.y();
 
