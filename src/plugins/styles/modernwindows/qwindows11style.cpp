@@ -574,7 +574,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
-            QStyleOption opt(*option);
+            // State_On = combobox popup is open
+            const bool isPressed = option->state & QStyle::State_On;
+            QStyleOptionComboBox opt = *combobox;
             opt.state.setFlag(QStyle::State_On, false);
             drawRoundedRect(painter, frameRect, Qt::NoPen,
                             combobox->editable ? inputFillBrush(option, widget)
@@ -583,15 +585,17 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             if (combobox->frame)
                 drawLineEditFrame(painter, frameRect, combobox, combobox->editable);
 
-            const bool hasFocus = state & State_HasFocus;
-
             if (sub & SC_ComboBoxArrow) {
-                QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
+                if (isPressed)
+                    opt.state |= QStyle::State_Sunken;
+                QRectF rect = proxy()->subControlRect(CC_ComboBox, &opt, SC_ComboBoxArrow, widget);
+                if (isPressed) // move the arrow a little bit down
+                    rect = rect.marginsRemoved(QMargins(0, 2, 0, 0));
                 painter->setFont(d->m_assetFont);
-                painter->setPen(controlTextColor(option, true));
+                painter->setPen(controlTextColor(&opt, true));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
             }
-            if (state & State_KeyboardFocusChange && hasFocus) {
+            if (state & State_KeyboardFocusChange && state & State_HasFocus) {
                 QStyleOptionFocusRect fropt;
                 fropt.QStyleOption::operator=(*option);
                 proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
@@ -1295,8 +1299,11 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     case QStyle::CE_ComboBoxLabel:
 #if QT_CONFIG(combobox)
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            painter->setPen(controlTextColor(option, true));
             QStyleOptionComboBox newOption = *cb;
+            // State_On = combobox popup is open
+            if (option->state & QStyle::State_On)
+                newOption.state |= QStyle::State_Sunken;
+            painter->setPen(controlTextColor(&newOption, true));
             newOption.rect.adjust(4,0,-4,0);
             QCommonStyle::drawControl(element, &newOption, painter, widget);
         }
