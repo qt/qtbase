@@ -92,7 +92,6 @@ class Q_AUTOTEST_EXPORT QMdiSubWindowPrivate : public QWidgetPrivate
 public:
     // Enums and typedefs.
     enum Operation {
-        None,
         Move,
         TopResize,
         BottomResize,
@@ -174,7 +173,7 @@ public:
     int keyboardSingleStep;
     int keyboardPageStep;
     QBasicTimer resizeTimer;
-    Operation currentOperation;
+    std::optional<Operation> currentOperation = std::nullopt;
     QStyle::SubControl hoveredSubControl;
     QStyle::SubControl activeSubControl;
     Qt::FocusReason focusInReason;
@@ -215,7 +214,7 @@ public:
     void setActive(bool activate, bool changeFocus = true);
     void processClickedSubControl();
     QRegion getRegion(Operation operation) const;
-    Operation getOperation(const QPoint &pos) const;
+    std::optional<Operation> getOperation(QPoint pos) const;
     QStyleOptionTitleBar titleBarOptions() const;
     void ensureWindowState(Qt::WindowState state);
     int titleBarHeight(const QStyleOptionTitleBar &options) const;
@@ -303,7 +302,7 @@ public:
 
     inline bool isResizeOperation() const
     {
-        return currentOperation != None && currentOperation != Move;
+        return currentOperation && currentOperation != Move;
     }
 
     inline bool isMoveOperation() const
