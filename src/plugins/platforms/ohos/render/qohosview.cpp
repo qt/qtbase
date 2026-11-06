@@ -971,10 +971,13 @@ void QOhosView::showImmediate()
         && currentViewTypeInfo.viewType != ViewType::EmbeddedWindow;
     const bool windowProxyRoleChanged = hadWindowProxy
         && viewType() != currentViewTypeInfo.viewType;
+    const bool windowProxySetupNeeded = needsWindowProxy || windowProxyRoleChanged;
 
-    if (needsWindowProxy || windowProxyRoleChanged) {
-        auto qOhosWindowProxy = tryCreateWindowProxyIfNeeded(currentViewTypeInfo.viewType, currentViewTypeInfo.optLogicalParent);
+    const auto qOhosWindowProxy = windowProxySetupNeeded
+        ? tryCreateWindowProxyIfNeeded(currentViewTypeInfo.viewType, currentViewTypeInfo.optLogicalParent)
+        : nullptr;
 
+    if (windowProxySetupNeeded) {
         if (qOhosWindowProxy != nullptr
             && currentViewTypeInfo.viewType == ViewType::SubWindow) {
             constexpr bool preventSubWindowClose = true;
@@ -994,7 +997,11 @@ void QOhosView::showImmediate()
 
         m_viewType = currentViewTypeInfo.viewType;
         setOrResetWindowProxy(qOhosWindowProxy, currentViewTypeInfo.optLogicalParent);
+    } else {
+        syncWindowStateImmediate();
+    }
 
+    if (windowProxySetupNeeded) {
         if (qOhosWindowProxy != nullptr) {
             m_nativeNode->setParent(qOhosWindowProxy->nodeXComponent());
             m_nativeNode->fillToParent();
@@ -1002,8 +1009,6 @@ void QOhosView::showImmediate()
 #if QT_CONFIG(draganddrop)
         m_nativeNode->enableDropDisallowedBadge();
 #endif
-    } else {
-        syncWindowStateImmediate();
     }
 
     if (viewType() == ViewType::MainWindow) {
