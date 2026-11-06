@@ -5,6 +5,7 @@
 #define QTDEPRECATIONDEFINITIONS_H
 
 #include <QtCore/qcompilerdetection.h>
+#include <QtCore/qtversionchecks.h>         // ensure QT_DISABLE_DEPRECATED_TO=QT_VERSION_CHECK(x, y, z) works
 
 #ifndef QT_DISABLE_DEPRECATED_UP_TO
 #  ifdef QT_DISABLE_DEPRECATED_BEFORE // If the deprecated macro is defined, use its value
