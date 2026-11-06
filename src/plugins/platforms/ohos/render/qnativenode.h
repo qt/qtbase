@@ -23,6 +23,7 @@
 #include <qohosforeignwindow.h>
 #include <qohosjsscopedataowner.h>
 #include <qohosplatformwindow.h>
+#include <qohosplugincore.h>
 #include <render/qohossurface.h>
 #include <render/qxcomponent.h>
 #include <vector>
@@ -33,6 +34,8 @@ class QNativeNode : public QObject
 {
     Q_OBJECT
 public:
+    using JsCallBatch = QtOhos::JsCallBatch;
+
     struct CreateInfo
     {
         QRect geometry;
@@ -44,31 +47,36 @@ public:
 
     explicit QNativeNode(const CreateInfo &nativeNodeCreateInfo);
 
-    void setParent(std::shared_ptr<QXComponentNode> xComponent);
+    void setParent(std::shared_ptr<QXComponentNode> xComponent, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setParent(QNativeNode &other);
-    void detachFromParentIfPresent();
+    void detachFromParentIfPresent(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
 
-    void setSize(const QSizeF &size);
-    void setSizeParentFillPercentNormalized(const QSizeF &size);
-    void setPosition(QPoint position);
-    void setVisibility(bool visible);
-    void fillToParent();
-    void raise();
-    void lower();
-    void setFocused(bool focused);
-    void setFocusable(bool focusable);
-    void setBackgroundColor(const QColor &color);
-    void setBrightness(int brightness);
-    void setContrast(int contrast);
-    void setSaturation(int saturation);
-    void setTransparentForInput(bool transparentForInput);
+    void setSize(const QSizeF &size, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setSizeParentFillPercentNormalized(const QSizeF &size, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setPosition(QPoint position, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setVisibility(bool visible, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void fillToParent(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void raise(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void lower(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setFocused(bool focused, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setFocusable(bool focusable, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setBackgroundColor(const QColor &color, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setBrightness(int brightness, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setContrast(int contrast, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setSaturation(int saturation, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setTransparentForInput(bool transparentForInput, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void startDrag(
         const std::vector<QImage> &images, const QPointF &hotspot,
-        const QMimeData &mimeData, QOhosConsumer<Qt::DropAction> dropActionConsumer);
-    void enableDropDisallowedBadge();
-    void setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer);
-    void setNodeFocusChangeHandler(QOhosConsumer<bool> focusedChangedConsumer);
-    void setNodeVisibilityChangeHandler(QOhosConsumer<bool> visibilityChangedConsumer);
+        const QMimeData &mimeData, QOhosConsumer<Qt::DropAction> dropActionConsumer,
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void enableDropDisallowedBadge(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setNodeAreaChangeHandler(
+        QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer,
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setNodeFocusChangeHandler(
+        QOhosConsumer<bool> focusedChangedConsumer, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setNodeVisibilityChangeHandler(
+        QOhosConsumer<bool> visibilityChangedConsumer, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     QRect nodeScreenGeometryPixels() const;
     QRect nodeParentRelativeGeometryPixels() const;
     QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo nodeAreaInfo() const;

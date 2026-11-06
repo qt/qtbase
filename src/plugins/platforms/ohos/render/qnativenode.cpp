@@ -229,39 +229,39 @@ QRectF QNativeNode::geometry() const
     return m_nodeGeometry;
 }
 
-void QNativeNode::setSizeParentFillPercentNormalized(const QSizeF &size)
+void QNativeNode::setSizeParentFillPercentNormalized(const QSizeF &size, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, size](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setSizeParentFillPercentageNormalized(size);
         },
         Q_FUNC_INFO);
 }
 
-void QNativeNode::setSize(const QSizeF &size)
+void QNativeNode::setSize(const QSizeF &size, JsCallBatch &jsCallBatch)
 {
     m_nodeGeometry.setSize(size.toSize());
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, size](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setSize(size);
         },
         Q_FUNC_INFO);
 }
 
-void QNativeNode::setPosition(QPoint position)
+void QNativeNode::setPosition(QPoint position, JsCallBatch &jsCallBatch)
 {
     m_nodeGeometry.setTopLeft(position);
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, position](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setPosition(position);
         },
         Q_FUNC_INFO);
 }
 
-void QNativeNode::setVisibility(bool visible)
+void QNativeNode::setVisibility(bool visible, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, visible](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setNodeVisibility(visible);
         },
         Q_FUNC_INFO);
@@ -272,10 +272,10 @@ QOhosSurface *QNativeNode::surfaceOrNull() const
     return m_optSurface.get();
 }
 
-void QNativeNode::fillToParent()
+void QNativeNode::fillToParent(JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setPosition(QPointF(0, 0));
             m_jsStateData->embeddedWindow->setSizeParentFillPercentageNormalized(QSizeF(1.0, 1.0));
         },
@@ -319,13 +319,14 @@ WId QNativeNode::windowId() const
     Q_FUNC_INFO);
 }
 
-void QNativeNode::setParent(std::shared_ptr<QXComponentNode> xComponent)
+void QNativeNode::setParent(std::shared_ptr<QXComponentNode> xComponent, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &){
-        m_jsStateData->embeddedWindow->setParentOrReparent(
-            QArkUi::QEmbeddedWindowNode::ParentDescriptor(xComponent));
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, xComponent](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->setParentOrReparent(
+                QArkUi::QEmbeddedWindowNode::ParentDescriptor(xComponent));
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::setParent(QNativeNode &other)
@@ -337,79 +338,85 @@ void QNativeNode::setParent(QNativeNode &other)
     Q_FUNC_INFO);
 }
 
-void QNativeNode::raise()
+void QNativeNode::raise(JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &){
-        auto &window = *m_jsStateData->embeddedWindow;
-        window.raise();
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this](QOhosJsState &) {
+            auto &window = *m_jsStateData->embeddedWindow;
+            window.raise();
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::lower()
+void QNativeNode::lower(JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &){
-        auto &window = *m_jsStateData->embeddedWindow;
-        window.lower();
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this](QOhosJsState &) {
+            auto &window = *m_jsStateData->embeddedWindow;
+            window.lower();
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::detachFromParentIfPresent()
+void QNativeNode::detachFromParentIfPresent(JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        auto &window = *m_jsStateData->embeddedWindow;
-        window.detachFromParentIfPresent();
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this](QOhosJsState &) {
+            auto &window = *m_jsStateData->embeddedWindow;
+            window.detachFromParentIfPresent();
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::setFocused(bool focused)
+void QNativeNode::setFocused(bool focused, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->setFocused(focused);
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, focused](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->setFocused(focused);
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::setFocusable(bool focusable)
+void QNativeNode::setFocusable(bool focusable, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->setFocusable(focusable);
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, focusable](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->setFocusable(focusable);
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::setBackgroundColor(const QColor &color)
+void QNativeNode::setBackgroundColor(const QColor &color, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->setBackgroundColor(color);
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, color](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->setBackgroundColor(color);
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::setBrightness(int brightness)
+void QNativeNode::setBrightness(int brightness, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, brightness](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setBrightness(brightness);
         },
         Q_FUNC_INFO);
 }
 
-void QNativeNode::setContrast(int contrast)
+void QNativeNode::setContrast(int contrast, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, contrast](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setContrast(contrast);
         },
         Q_FUNC_INFO);
 }
 
-void QNativeNode::setSaturation(int saturation)
+void QNativeNode::setSaturation(int saturation, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, saturation](QOhosJsState &) {
             m_jsStateData->embeddedWindow->setSaturation(saturation);
         },
         Q_FUNC_INFO);
@@ -417,12 +424,13 @@ void QNativeNode::setSaturation(int saturation)
 
 void QNativeNode::startDrag(
     const std::vector<QImage> &images, const QPointF &hotspot,
-    const QMimeData &mimeData, QOhosConsumer<Qt::DropAction> dropActionConsumer)
+    const QMimeData &mimeData, QOhosConsumer<Qt::DropAction> dropActionConsumer, JsCallBatch &jsCallBatch)
 {
     auto udmfDataFactory = makeUdmfDataFactoryFromQMimeData(mimeData, {});
 
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &) {
+    jsCallBatch.submit(
+        [this, images, hotspot, udmfDataFactory = std::move(udmfDataFactory),
+            dropActionConsumer = std::move(dropActionConsumer)](QOhosJsState &) mutable {
             qOhosPrintfDebug("%s: starting drag", Q_FUNC_INFO);
 
             std::vector<std::shared_ptr<::OH_PixelmapNative>> pixelMaps;
@@ -474,16 +482,17 @@ void QNativeNode::startDrag(
                     }
                 });
             context->startedDragHandle = startedDragHandle;
-    },
-    Q_FUNC_INFO);
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::enableDropDisallowedBadge()
+void QNativeNode::enableDropDisallowedBadge(JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->enableDropDisallowedBadge();
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->enableDropDisallowedBadge();
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::addForeignWindowChild(QOhosForeignWindow *foreignWindow)
@@ -496,61 +505,67 @@ void QNativeNode::addForeignWindowChild(QOhosForeignWindow *foreignWindow)
     Q_FUNC_INFO);
 }
 
-void QNativeNode::setTransparentForInput(bool transparentForInput)
+void QNativeNode::setTransparentForInput(bool transparentForInput, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->setHitTestMode(
-            transparentForInput
-                ? ::ARKUI_HIT_TEST_MODE_NONE
-                : ::ARKUI_HIT_TEST_MODE_DEFAULT);
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, transparentForInput](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->setHitTestMode(
+                transparentForInput
+                    ? ::ARKUI_HIT_TEST_MODE_NONE
+                    : ::ARKUI_HIT_TEST_MODE_DEFAULT);
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer)
+void QNativeNode::setNodeAreaChangeHandler(
+    QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer, JsCallBatch &jsCallBatch)
 {
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->setAreaChangeReceiver(
-            QtOhos::makeCompressingAsyncConsumer(
-                std::move(areaChangeEventConsumer),
-                [selfRef](auto task) {
-                    selfRef.visitInQtThreadIfAlive([task = std::move(task)](QNativeNode &) {
-                        task();
-                    });
-                }));
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, selfRef, areaChangeEventConsumer = std::move(areaChangeEventConsumer)](QOhosJsState &) mutable {
+            m_jsStateData->embeddedWindow->setAreaChangeReceiver(
+                QtOhos::makeCompressingAsyncConsumer(
+                    std::move(areaChangeEventConsumer),
+                    [selfRef](auto task) {
+                        selfRef.visitInQtThreadIfAlive([task = std::move(task)](QNativeNode &) {
+                            task();
+                        });
+                    }));
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::setNodeFocusChangeHandler(QOhosConsumer<bool> focusedChangedConsumer)
+void QNativeNode::setNodeFocusChangeHandler(QOhosConsumer<bool> focusedChangedConsumer, JsCallBatch &jsCallBatch)
 {
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
     auto sharedConsumer = QtOhos::moveToSharedPtr(std::move(focusedChangedConsumer));
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->setFocusedChangeReceiver(
-            [selfRef, sharedConsumer = std::move(sharedConsumer)](bool focused) {
-                selfRef.visitInQtThreadIfAlive([focused, sharedConsumer](QNativeNode &) {
-                    (*sharedConsumer)(focused);
+    jsCallBatch.submit(
+        [this, selfRef, sharedConsumer](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->setFocusedChangeReceiver(
+                [selfRef, sharedConsumer](bool focused) {
+                    selfRef.visitInQtThreadIfAlive([focused, sharedConsumer](QNativeNode &) {
+                        (*sharedConsumer)(focused);
+                    });
                 });
-            });
-    },
-    Q_FUNC_INFO);
+        },
+        Q_FUNC_INFO);
 }
 
-void QNativeNode::setNodeVisibilityChangeHandler(QOhosConsumer<bool> visibilityChangedConsumer)
+void QNativeNode::setNodeVisibilityChangeHandler(
+    QOhosConsumer<bool> visibilityChangedConsumer, JsCallBatch &jsCallBatch)
 {
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
     auto sharedConsumer = QtOhos::moveToSharedPtr(std::move(visibilityChangedConsumer));
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData->embeddedWindow->setVisibilityChangeReceiver(
-            [selfRef, sharedConsumer = std::move(sharedConsumer)](bool visibile) {
-                selfRef.visitInQtThreadIfAlive([visibile, sharedConsumer](QNativeNode &) {
-                    (*sharedConsumer)(visibile);
+    jsCallBatch.submit(
+        [this, selfRef, sharedConsumer](QOhosJsState &) {
+            m_jsStateData->embeddedWindow->setVisibilityChangeReceiver(
+                [selfRef, sharedConsumer](bool visibile) {
+                    selfRef.visitInQtThreadIfAlive([visibile, sharedConsumer](QNativeNode &) {
+                        (*sharedConsumer)(visibile);
+                    });
                 });
-            });
-    },
-    Q_FUNC_INFO);
+        },
+        Q_FUNC_INFO);
 }
 
 QRect QNativeNode::nodeScreenGeometryPixels() const
