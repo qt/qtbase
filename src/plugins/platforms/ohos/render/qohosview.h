@@ -265,9 +265,12 @@ private:
     void updateWindowStaysOnTop(bool staysOnTop, JsCallBatch &jsCallBatch);
     void updateWindowFrameless(bool frameless, JsCallBatch &jsCallBatch);
     void updateWindowShadowDisabled(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void updateMainWindowRestored();
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
     void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     QOhosWindowProxy *flushedWindowProxyOrNull();
+    void updateWindowFullScreen();
+    void updateWindowMaximized();
     void setOrResetWindowProxy(std::shared_ptr<QOhosWindowProxy> windowProxy, QWindow *optLogicalParent);
     const QOhosView *ancestorViewWithWindowOrNull() const;
     void hideMainWindow();

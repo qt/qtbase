@@ -1070,6 +1070,11 @@ void QOhosView::applyPhoneWindowChrome()
 
 void QOhosView::setFullScreen()
 {
+    updateWindowFullScreen();
+}
+
+void QOhosView::updateWindowFullScreen()
+{
     auto *windowProxy = flushedWindowProxyOrNull();
     if (windowProxy == nullptr)
         return;
@@ -1129,6 +1134,11 @@ void QOhosView::requestActivate()
 }
 
 void QOhosView::maximize()
+{
+    updateWindowMaximized();
+}
+
+void QOhosView::updateWindowMaximized()
 {
     auto *windowProxy = flushedWindowProxyOrNull();
     if (windowProxy == nullptr)
@@ -1661,6 +1671,11 @@ void QOhosView::startDrag(
 }
 
 void QOhosView::restoreMainWindow()
+{
+    updateMainWindowRestored();
+}
+
+void QOhosView::updateMainWindowRestored()
 {
     const auto lastMainWindowHideMethod = std::exchange(m_lastMainWindowHideMethod, {});
     if (m_ohosWindowProxy == nullptr || !m_ohosWindowProxy->qtIsMainWindow())
