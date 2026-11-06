@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dmitrii Akshintsev <dmitrii.akshintsev@qt.io>
+Date: Wed, 30 Jul 2025 15:28:34 +0200
+Subject: [PATCH] Use Q_UNREACHABLE instead of __builtin_unreachable
+
+__builtin_unreachable() might not exist on some platforms, for
+example, INTEGRITY; use Qt API instead.
+
+This corresponds to Qt commit 4e9f4d5d02e29b4522540b8f9b9b01b7e57a6b54
+(fills the 0005 slot left free by the 0006 patch).
+---
+ src/corelib/global/qexpected_p.h | 2 +-
+ 1 file changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/corelib/global/qexpected_p.h b/src/corelib/global/qexpected_p.h
+--- a/src/corelib/global/qexpected_p.h
++++ b/src/corelib/global/qexpected_p.h
+@@ -253,7 +253,7 @@ template <typename E>
+ #ifdef _MSC_VER
+   __assume(0);
+ #else
+-  __builtin_unreachable();
++  Q_UNREACHABLE();
+ #endif
+ #endif
+ }
