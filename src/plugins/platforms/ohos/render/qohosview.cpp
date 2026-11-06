@@ -590,16 +590,20 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
         m_nativeNode.get(), &QNativeNode::externalContentClickDetected,
         this, &QOhosView::externalContentInteractionDetected);
 
-    m_nativeNode->setNodeAreaChangeHandler(
-        [this](auto nodeAreaChangeEvent) {
-            Q_EMIT nodeAreaChanged(nodeAreaChangeEvent);
-        });
-
-    m_nativeNode->setNodeVisibilityChangeHandler(
-        [this](bool visible) {
-            if (m_ohosWindowProxy == nullptr)
-                Q_EMIT windowVisibilityChange(visible);
-        });
+    {
+        JsCallBatch jsCallBatch(Q_FUNC_INFO);
+        m_nativeNode->setNodeAreaChangeHandler(
+            [this](auto nodeAreaChangeEvent) {
+                Q_EMIT nodeAreaChanged(nodeAreaChangeEvent);
+            },
+            jsCallBatch);
+        m_nativeNode->setNodeVisibilityChangeHandler(
+            [this](bool visible) {
+                if (m_ohosWindowProxy == nullptr)
+                    Q_EMIT windowVisibilityChange(visible);
+            },
+            jsCallBatch);
+    }
 
     std::vector<std::shared_ptr<void>> writeCallbacks = {
         m_windowPropertiesProvider.addPropertyWriteCallback<double, &QOhosPlatformWindow::windowCornerRadiusProperty>(
