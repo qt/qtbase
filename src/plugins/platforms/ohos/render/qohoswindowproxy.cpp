@@ -1033,13 +1033,9 @@ void QOhosWindowProxy::setWindowMask(
                 : getWindowPropertiesFromJsWindow(m_jsScopeData->jsWindowRef->jsObject()).windowRect.size();
 
             if (ohosMaskSize.isEmpty()) {
-                const auto *maskSrcSizeMsg = ohosMaskSizeOverride.has_value()
-                    ? "overridden mask source"
-                    : "window";
                 if (ohosMaskSizeOverride.has_value()) {
                     qOhosPrintfError(
-                        "%s failed - %s size is 0x0", maskSrcSizeMsg,
-                        "QOhosWindowProxy::setWindowMask");
+                        "QOhosWindowProxy::setWindowMask failed - overridden mask source size is 0x0");
                 }
                 taskPromise();
                 return;
