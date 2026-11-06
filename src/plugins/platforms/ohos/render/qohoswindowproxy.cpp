@@ -391,10 +391,10 @@ QOhosWindowProxy::~QOhosWindowProxy()
     m_subWindowCloseRegistrationHandle.reset();
 }
 
-void QOhosWindowProxy::removeStartingWindow()
+void QOhosWindowProxy::removeStartingWindow(JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -415,13 +415,13 @@ void QOhosWindowProxy::removeStartingWindow()
 }
 
 void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
-    const QPoint &point, std::optional<QOhosDisplayInfo::JsDisplayId> optMoveToTargetDisplay)
+    const QPoint &point, std::optional<QOhosDisplayInfo::JsDisplayId> optMoveToTargetDisplay, JsCallBatch &jsCallBatch)
 {
     auto displayIdValue = optMoveToTargetDisplay.value_or(QOhosDisplayInfo::JsDisplayId(-1)).value();
     qOhosPrintfDebug("%s: %d,%d,%f", Q_FUNC_INFO, point.x(), point.y(), displayIdValue);
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, point, optMoveToTargetDisplay](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -484,15 +484,16 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
             promise
                 .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
                 .onFinally(std::move(taskPromise));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setSize(const QSize &size)
+void QOhosWindowProxy::setSize(const QSize &size, JsCallBatch &jsCallBatch)
 {
     qOhosPrintfDebug("%s: %d,%d", Q_FUNC_INFO, size.width(), size.height());
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, size](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -514,19 +515,20 @@ void QOhosWindowProxy::setSize(const QSize &size)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowBackgroundColor(const QColor &color)
+void QOhosWindowProxy::setWindowBackgroundColor(const QColor &color, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos) << Q_FUNC_INFO << color;
 
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        if (m_jsScopeData->isWindowClosing())
-            return;
-        m_jsScopeData->jsWindowRef->eval("setWindowBackgroundColor(*)", {color.name(QColor::HexArgb).toStdString()});
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, color](QOhosJsState &) {
+            if (m_jsScopeData->isWindowClosing())
+                return;
+            m_jsScopeData->jsWindowRef->eval("setWindowBackgroundColor(*)", {color.name(QColor::HexArgb).toStdString()});
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setCustomCursor(const QImage &customCursorImage, const QPoint &hotSpot)
+void QOhosWindowProxy::setCustomCursor(const QImage &customCursorImage, const QPoint &hotSpot, JsCallBatch &jsCallBatch)
 {
     const auto maxOhosCustomCursorSize = QSize(256, 256);
     const auto customCursorSize = customCursorImage.size();
@@ -540,47 +542,50 @@ void QOhosWindowProxy::setCustomCursor(const QImage &customCursorImage, const QP
     }
 
     auto convertedImage = customCursorImage.convertToFormat(QImage::Format_RGBA8888);
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
-        auto windowId = m_jsScopeData->jsWindowRef->jsObject().get<QNapi::Number>("getWindowProperties().id");
+    jsCallBatch.submit(
+        [this, convertedImage, hotSpot](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+            auto windowId = m_jsScopeData->jsWindowRef->jsObject().get<QNapi::Number>("getWindowProperties().id");
 
-        auto jsCursor = QNapi::makeObject(
-            jsState.env(),
-            {
-                {"pixelMap", makeOhosNapiPixelMapFromQImage(jsState, convertedImage)},
-                {"focusX", hotSpot.x()},
-                {"focusY", hotSpot.y()},
-            });
+            auto jsCursor = QNapi::makeObject(
+                jsState.env(),
+                {
+                    {"pixelMap", makeOhosNapiPixelMapFromQImage(jsState, convertedImage)},
+                    {"focusX", hotSpot.x()},
+                    {"focusY", hotSpot.y()},
+                });
 
-        auto jsCursorConfig = QNapi::makeObject(
-            jsState.env(),
-            {
-                {"followSystem", false},
-            });
+            auto jsCursorConfig = QNapi::makeObject(
+                jsState.env(),
+                {
+                    {"followSystem", false},
+                });
 
-        jsState.evalToPromiseOrRejectOnThrow(
-            "@ohos.multimodalInput.pointer.setCustomCursor(*)", {windowId, jsCursor, jsCursorConfig})
-        .onCatch(QtOhos::makeErrorLoggingJsCallback("setCustomCursor()"))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+            jsState.evalToPromiseOrRejectOnThrow(
+                "@ohos.multimodalInput.pointer.setCustomCursor(*)", {windowId, jsCursor, jsCursorConfig})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("setCustomCursor()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setPointerStyleSync(const QCursor &cursor)
+void QOhosWindowProxy::setPointerStyleSync(const QCursor &cursor, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &jsState) {
-        if (m_jsScopeData->isWindowClosing())
-            return;
-        auto windowId = m_jsScopeData->jsWindowRef->jsObject().get<QNapi::Number>("getWindowProperties().id");
+    const auto cursorShape = cursor.shape();
+    jsCallBatch.submit(
+        [this, cursorShape](QOhosJsState &jsState) {
+            if (m_jsScopeData->isWindowClosing())
+                return;
+            auto windowId = m_jsScopeData->jsWindowRef->jsObject().get<QNapi::Number>("getWindowProperties().id");
 
-        jsState.eval(
-            "@ohos.multimodalInput.pointer.setPointerStyleSync(*)",
-            {windowId, jsState.mapOhosEnumToJs(convertToOhosCursor(cursor.shape()))});
-    },
-    Q_FUNC_INFO);
+            jsState.eval(
+                "@ohos.multimodalInput.pointer.setPointerStyleSync(*)",
+                {windowId, jsState.mapOhosEnumToJs(convertToOhosCursor(cursorShape))});
+        },
+        Q_FUNC_INFO);
 }
 
 QArkUi::WindowProperties QOhosWindowProxy::getWindowProperties() const
@@ -669,93 +674,98 @@ bool QOhosWindowProxy::isSubWindowMaximizeSupported() const
     return m_subWindowMaximizeSupported;
 }
 
-void QOhosWindowProxy::raiseToAppTop()
+void QOhosWindowProxy::raiseToAppTop(JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
-        auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("raiseToAppTop()");
-        promise
+    jsCallBatch.submit(
+        [this](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+            auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("raiseToAppTop()");
+            promise
+                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
+}
+
+void QOhosWindowProxy::showWindow(const ShowWindowOptions &options, JsCallBatch &jsCallBatch)
+{
+    qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, options](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+
+            std::vector<std::pair<std::string, QNapi::ValueWrapper>> jsOptionsProps;
+
+            if (options.focusOnShow.has_value())
+                jsOptionsProps.emplace_back("focusOnShow", options.focusOnShow.value());
+
+            std::vector<QNapi::ValueWrapper> showWindowArgs;
+            constexpr bool brokenHandlingOfEmptyOptionsParamInOhos = true;
+            if (!(jsOptionsProps.empty() && brokenHandlingOfEmptyOptionsParamInOhos))
+                showWindowArgs.push_back(QNapi::makeObject(jsState.env(), jsOptionsProps));
+
+            auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("showWindow(*)", showWindowArgs);
+            promise
+                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
+}
+
+void QOhosWindowProxy::recover(JsCallBatch &jsCallBatch)
+{
+    qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("recover()")
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("recover()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
+}
+
+void QOhosWindowProxy::restore(JsCallBatch &jsCallBatch)
+{
+    qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("restore()")
             .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::showWindow(const ShowWindowOptions &options)
+void QOhosWindowProxy::minimize(JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
-
-        std::vector<std::pair<std::string, QNapi::ValueWrapper>> jsOptionsProps;
-
-        if (options.focusOnShow.has_value())
-            jsOptionsProps.emplace_back("focusOnShow", options.focusOnShow.value());
-
-        std::vector<QNapi::ValueWrapper> showWindowArgs;
-        constexpr bool brokenHandlingOfEmptyOptionsParamInOhos = true;
-        if (!(jsOptionsProps.empty() && brokenHandlingOfEmptyOptionsParamInOhos))
-            showWindowArgs.push_back(QNapi::makeObject(jsState.env(), jsOptionsProps));
-
-        auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("showWindow(*)", showWindowArgs);
-        promise
+    jsCallBatch.submit(
+        [this](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("minimize()")
             .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
-}
-
-void QOhosWindowProxy::recover()
-{
-    qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
-
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("recover()")
-        .onCatch(QtOhos::makeErrorLoggingJsCallback("recover()"))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
-}
-
-void QOhosWindowProxy::restore()
-{
-    qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("restore()")
-        .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
-}
-
-void QOhosWindowProxy::minimize()
-{
-    qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("minimize()")
-        .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosWindowProxy::tryMaximize(MaximizePresentation maximizePresentation)
@@ -799,11 +809,11 @@ bool QOhosWindowProxy::tryMaximize(MaximizePresentation maximizePresentation)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowLayoutFullScreen(bool isLayoutFullScreen)
+void QOhosWindowProxy::setWindowLayoutFullScreen(bool isLayoutFullScreen, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, isLayoutFullScreen ? "true" : "false");
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, isLayoutFullScreen](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -816,11 +826,11 @@ void QOhosWindowProxy::setWindowLayoutFullScreen(bool isLayoutFullScreen)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowSystemBarEnable(const QStringList &names)
+void QOhosWindowProxy::setWindowSystemBarEnable(const QStringList &names, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos) << Q_FUNC_INFO << names;
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, names](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -834,21 +844,22 @@ void QOhosWindowProxy::setWindowSystemBarEnable(const QStringList &names)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::showAbility()
+void QOhosWindowProxy::showAbility(JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
+    jsCallBatch.submit(
+        [this](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
 
-        m_jsScopeData->qAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow("context.showAbility()")
-        .onCatch(QtOhos::makeErrorLoggingJsCallback("showAbility()"))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+            m_jsScopeData->qAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow("context.showAbility()")
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("showAbility()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosWindowProxy::tryHideAbility()
@@ -887,62 +898,65 @@ bool QOhosWindowProxy::getImmersiveModeEnabledState()
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowPrivacyMode(bool privacyMode)
+void QOhosWindowProxy::setWindowPrivacyMode(bool privacyMode, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, privacyMode ? "true" : "false");
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
+    jsCallBatch.submit(
+        [this, privacyMode](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
 
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowPrivacyMode(*)", {privacyMode})
-        .onCatch(QtOhos::makeErrorLoggingJsCallback("setPrivacyMode()"))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowPrivacyMode(*)", {privacyMode})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("setPrivacyMode()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowFocusable(bool focusable)
+void QOhosWindowProxy::setWindowFocusable(bool focusable, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, focusable ? "true" : "false");
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
+    jsCallBatch.submit(
+        [this, focusable](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
 
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowFocusable(*)", {focusable})
-        .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowFocusable()"))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowFocusable(*)", {focusable})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowFocusable()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowTouchable(bool touchable)
+void QOhosWindowProxy::setWindowTouchable(bool touchable, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, touchable ? "true" : "false");
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
+    jsCallBatch.submit(
+        [this, touchable](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
 
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowTouchable(*)", {touchable})
-        .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowTouchable()"))
-        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowTouchable(*)", {touchable})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowTouchable()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowLimits(const QSize &minSize, const QSize &maxSize)
+void QOhosWindowProxy::setWindowLimits(const QSize &minSize, const QSize &maxSize, JsCallBatch &jsCallBatch)
 {
     qCDebug(
         QtForOhos, "%s: (%d x %d)-(%d x %d)", Q_FUNC_INFO, minSize.width(), minSize.height(),
         maxSize.width(), maxSize.height());
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, minSize, maxSize](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1002,73 +1016,74 @@ QOhosWindowProxy::AvoidArea QOhosWindowProxy::getWindowAvoidArea(AvoidAreaType a
 }
 
 void QOhosWindowProxy::setWindowMask(
-    const WindowMask &windowMask, const std::optional<QSize> &ohosMaskSizeOverride)
+    const WindowMask &windowMask, const std::optional<QSize> &ohosMaskSizeOverride, JsCallBatch &jsCallBatch)
 {
     if (qtIsMainWindow())
         return;
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue([&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-        if (m_jsScopeData->isWindowClosing()) {
-            taskPromise();
-            return;
-        }
-
-        auto ohosMaskSize = ohosMaskSizeOverride.has_value()
-            ? ohosMaskSizeOverride.value()
-            : getWindowPropertiesFromJsWindow(m_jsScopeData->jsWindowRef->jsObject()).windowRect.size();
-
-        if (ohosMaskSize.isEmpty()) {
-            const auto *maskSrcSizeMsg = ohosMaskSizeOverride.has_value()
-                ? "overridden mask source"
-                : "window";
-            if (ohosMaskSizeOverride.has_value()) {
-                qOhosPrintfError(
-                    "%s failed - %s size is 0x0", maskSrcSizeMsg,
-                    "QOhosWindowProxy::setWindowMask");
+    jsCallBatch.submit(
+        [this, windowMask, ohosMaskSizeOverride](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
             }
-            taskPromise();
-            return;
-        }
 
-        auto *env = jsState.env();
+            auto ohosMaskSize = ohosMaskSizeOverride.has_value()
+                ? ohosMaskSizeOverride.value()
+                : getWindowPropertiesFromJsWindow(m_jsScopeData->jsWindowRef->jsObject()).windowRect.size();
 
-        QNapi::Array maskRowsArray = QNapi::Array::New(env, ohosMaskSize.height());
-        const int defaultValue = windowMask.windowMaskRegion.isEmpty() ? 1 : 0;
-
-        for (int rowIndex = 0; rowIndex < ohosMaskSize.height(); ++rowIndex) {
-            auto arr = QNapi::Array::New(env, ohosMaskSize.width());
-            arr.fill(defaultValue);
-            maskRowsArray[rowIndex] = arr;
-        }
-
-        auto valueToSet = QNapi::Number::New(env, 1);
-        for (const auto &rect: windowMask.windowMaskRegion) {
-            auto top = qBound(0, rect.top(), ohosMaskSize.height() - 1);
-            auto bottom = qBound(0, rect.bottom(), ohosMaskSize.height() - 1);
-            auto left = qBound(0, rect.left(), ohosMaskSize.width() - 1);
-            auto right = qBound(0, rect.right(), ohosMaskSize.width() - 1);
-
-            for (auto rowIndex = top; rowIndex <= bottom; ++rowIndex) {
-                auto row = maskRowsArray.Get(rowIndex).As<QNapi::Array>();
-                for (auto columnIndex = left; columnIndex <= right; ++columnIndex)
-                    row[columnIndex] = valueToSet;
+            if (ohosMaskSize.isEmpty()) {
+                const auto *maskSrcSizeMsg = ohosMaskSizeOverride.has_value()
+                    ? "overridden mask source"
+                    : "window";
+                if (ohosMaskSizeOverride.has_value()) {
+                    qOhosPrintfError(
+                        "%s failed - %s size is 0x0", maskSrcSizeMsg,
+                        "QOhosWindowProxy::setWindowMask");
+                }
+                taskPromise();
+                return;
             }
-        }
 
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowMask(*)", {maskRowsArray})
-            .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowMask()"))
-            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-    },
-    Q_FUNC_INFO);
+            auto *env = jsState.env();
+
+            QNapi::Array maskRowsArray = QNapi::Array::New(env, ohosMaskSize.height());
+            const int defaultValue = windowMask.windowMaskRegion.isEmpty() ? 1 : 0;
+
+            for (int rowIndex = 0; rowIndex < ohosMaskSize.height(); ++rowIndex) {
+                auto arr = QNapi::Array::New(env, ohosMaskSize.width());
+                arr.fill(defaultValue);
+                maskRowsArray[rowIndex] = arr;
+            }
+
+            auto valueToSet = QNapi::Number::New(env, 1);
+            for (const auto &rect: windowMask.windowMaskRegion) {
+                auto top = qBound(0, rect.top(), ohosMaskSize.height() - 1);
+                auto bottom = qBound(0, rect.bottom(), ohosMaskSize.height() - 1);
+                auto left = qBound(0, rect.left(), ohosMaskSize.width() - 1);
+                auto right = qBound(0, rect.right(), ohosMaskSize.width() - 1);
+
+                for (auto rowIndex = top; rowIndex <= bottom; ++rowIndex) {
+                    auto row = maskRowsArray.Get(rowIndex).As<QNapi::Array>();
+                    for (auto columnIndex = left; columnIndex <= right; ++columnIndex)
+                        row[columnIndex] = valueToSet;
+                }
+            }
+
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowMask(*)", {maskRowsArray})
+                .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowMask()"))
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setSubWindowModalDisabled()
+void QOhosWindowProxy::setSubWindowModalDisabled(JsCallBatch &jsCallBatch)
 {
     if (qtIsMainWindow())
         return;
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1080,7 +1095,7 @@ void QOhosWindowProxy::setSubWindowModalDisabled()
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setSubWindowModalEnabled(ModalityType modalityType)
+void QOhosWindowProxy::setSubWindowModalEnabled(ModalityType modalityType, JsCallBatch &jsCallBatch)
 {
     if (qtIsMainWindow())
         return;
@@ -1092,8 +1107,8 @@ void QOhosWindowProxy::setSubWindowModalEnabled(ModalityType modalityType)
         return;
     }
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, modalityType](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1106,10 +1121,10 @@ void QOhosWindowProxy::setSubWindowModalEnabled(ModalityType modalityType)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setTitle(const QString &title)
+void QOhosWindowProxy::setTitle(const QString &title, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, title](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1122,7 +1137,8 @@ void QOhosWindowProxy::setTitle(const QString &title)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowTitleButtonVisible(bool maximizeVisible, bool minimizeVisible, bool closeVisible)
+void QOhosWindowProxy::setWindowTitleButtonVisible(
+    bool maximizeVisible, bool minimizeVisible, bool closeVisible, JsCallBatch &jsCallBatch)
 {
     qOhosPrintfDebug(
         "%s: isMaximizeVisible:%s, isMinimizeVisible:%s, isCloseVisible:%s",
@@ -1132,8 +1148,8 @@ void QOhosWindowProxy::setWindowTitleButtonVisible(bool maximizeVisible, bool mi
     if (!qtIsMainWindow())
         return;
 
-    QOhosJsThreadGateway::runAndWait(
-        [&](QOhosJsState &jsState) {
+    jsCallBatch.submit(
+        [this, maximizeVisible, minimizeVisible, closeVisible](QOhosJsState &jsState) {
             if (m_jsScopeData->isWindowClosing())
                 return;
 
@@ -1149,7 +1165,7 @@ void QOhosWindowProxy::setWindowTitleButtonVisible(bool maximizeVisible, bool mi
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowTopmost(bool topmost)
+void QOhosWindowProxy::setWindowTopmost(bool topmost, JsCallBatch &jsCallBatch)
 {
     if (!qtIsMainWindow())
         return;
@@ -1161,8 +1177,8 @@ void QOhosWindowProxy::setWindowTopmost(bool topmost)
 
     qOhosPrintfDebug("%s: topMost: %s", Q_FUNC_INFO, topmost ? "true" : "false");
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, topmost](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1175,34 +1191,36 @@ void QOhosWindowProxy::setWindowTopmost(bool topmost)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowDecorVisible(bool visible)
+void QOhosWindowProxy::setWindowDecorVisible(bool visible, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        if (m_jsScopeData->isWindowClosing())
-            return;
+    jsCallBatch.submit(
+        [this, visible](QOhosJsState &) {
+            if (m_jsScopeData->isWindowClosing())
+                return;
 
-        m_jsScopeData->jsWindowRef->eval("setWindowDecorVisible(*)", {visible});
-    },
-    Q_FUNC_INFO);
+            m_jsScopeData->jsWindowRef->eval("setWindowDecorVisible(*)", {visible});
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowTitleMoveEnabled(bool enabled)
+void QOhosWindowProxy::setWindowTitleMoveEnabled(bool enabled, JsCallBatch &jsCallBatch)
 {
     if (!QOhosSettings::instance().isWindowPcModeEnabled()) {
         qOhosPrintfWarning("%s: can be used only on 2-in-1 devices or tablets in PC mode - skipping", Q_FUNC_INFO);
         return;
     }
 
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        if (m_jsScopeData->isWindowClosing())
-            return;
+    jsCallBatch.submit(
+        [this, enabled](QOhosJsState &) {
+            if (m_jsScopeData->isWindowClosing())
+                return;
 
-        m_jsScopeData->jsWindowRef->eval("setWindowTitleMoveEnabled(*)", {enabled});
-    },
-    Q_FUNC_INFO);
+            m_jsScopeData->jsWindowRef->eval("setWindowTitleMoveEnabled(*)", {enabled});
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowShadowRadius(double radius)
+void QOhosWindowProxy::setWindowShadowRadius(double radius, JsCallBatch &jsCallBatch)
 {
     if (!(QOhosDeviceInfo::is2in1() || QOhosDeviceInfo::isTablet())) {
         qOhosPrintfWarning("%s: can be used only on 2-in-1 devices or tablets - skipping", Q_FUNC_INFO);
@@ -1212,19 +1230,20 @@ void QOhosWindowProxy::setWindowShadowRadius(double radius)
     if (qtIsMainWindow())
         return;
 
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsScopeData->jsWindowRef->eval("setWindowShadowRadius(*)", {radius});
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, radius](QOhosJsState &) {
+            m_jsScopeData->jsWindowRef->eval("setWindowShadowRadius(*)", {radius});
+        },
+        Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowCornerRadius(double radius)
+void QOhosWindowProxy::setWindowCornerRadius(double radius, JsCallBatch &jsCallBatch)
 {
     if (qtIsMainWindow())
         return;
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, radius](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowCornerRadius(*)", {radius})
             .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
@@ -1263,13 +1282,13 @@ bool QOhosWindowProxy::isWindowRectAutoSave() const
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setFollowParentMultiScreenPolicy(bool enabled)
+void QOhosWindowProxy::setFollowParentMultiScreenPolicy(bool enabled, JsCallBatch &jsCallBatch)
 {
     if (qtIsMainWindow())
         return;
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, enabled](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1281,12 +1300,12 @@ void QOhosWindowProxy::setFollowParentMultiScreenPolicy(bool enabled)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowKeepScreenOn(bool keepScreenOn)
+void QOhosWindowProxy::setWindowKeepScreenOn(bool keepScreenOn, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, QtOhos::mapBoolToTrueFalseStr(keepScreenOn));
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, keepScreenOn](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1299,12 +1318,13 @@ void QOhosWindowProxy::setWindowKeepScreenOn(bool keepScreenOn)
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode> &supportedWindowModes)
+void QOhosWindowProxy::setSupportedWindowModes(
+    const std::set<SupportWindowMode> &supportedWindowModes, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, mapEnumsToLogString(supportedWindowModes).c_str());
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, supportedWindowModes](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1338,12 +1358,10 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowRectAutoSave(bool enabled)
+void QOhosWindowProxy::setWindowRectAutoSave(bool enabled, JsCallBatch &jsCallBatch)
 {
-    constexpr bool isSaveBySpecifiedFlag = true;
-
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, enabled](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1354,6 +1372,7 @@ void QOhosWindowProxy::setWindowRectAutoSave(bool enabled)
                 return;
             }
 
+            constexpr bool isSaveBySpecifiedFlag = true;
             optQUiAbilityPeer->windowStage()
             .evalToPromiseOrRejectOnThrow("setWindowRectAutoSave(*)", {enabled, isSaveBySpecifiedFlag})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowRectAutoSave()"))
@@ -1884,7 +1903,7 @@ bool QOhosWindowProxy::startMoving()
     return true;
 }
 
-void QOhosWindowProxy::enableDrag(bool enable)
+void QOhosWindowProxy::enableDrag(bool enable, JsCallBatch &jsCallBatch)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, QtOhos::mapBoolToTrueFalseStr(enable));
 
@@ -1893,8 +1912,8 @@ void QOhosWindowProxy::enableDrag(bool enable)
         return;
     }
 
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, enable](QOhosJsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;
@@ -1958,10 +1977,10 @@ std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryQtManagedWindowIdsByPredi
 }
 
 void QOhosWindowProxy::moveWindowToGlobal(
-    const QPoint &position, const MoveConfiguration &moveConfiguration)
+    const QPoint &position, const MoveConfiguration &moveConfiguration, JsCallBatch &jsCallBatch)
 {
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    jsCallBatch.submit(
+        [this, position, moveConfiguration](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 taskPromise();
                 return;

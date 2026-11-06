@@ -49,6 +49,8 @@ public:
 
     using ModalityType = QtOhosQpa::enums::ohos::window::ModalityType;
 
+    using JsCallBatch = QtOhos::JsCallBatch;
+
     struct WindowEvent
     {
         WindowEventType type;
@@ -149,54 +151,64 @@ public:
     ~QOhosWindowProxy();
 
     void moveWindowToGlobalOrGlobalDisplay(
-        const QPoint &position, std::optional<QOhosDisplayInfo::JsDisplayId> optDisplayId);
+        const QPoint &position, std::optional<QOhosDisplayInfo::JsDisplayId> optDisplayId,
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
 
-    void setSize(const QSize &size);
-    void moveWindowToGlobal(const QPoint &position, const MoveConfiguration &moveConfiguration);
-    void setWindowBackgroundColor(const QColor &color);
-    void setCustomCursor(const QImage &customCursorImage, const QPoint &hotSpot);
-    void setPointerStyleSync(const QCursor &cursor);
-    void setWindowPrivacyMode(bool privacyMode);
-    void setWindowFocusable(bool focusable);
-    void setWindowTouchable(bool touchable);
-    void setWindowLimits(const QSize &minSize, const QSize &maxSize);
+    void setSize(const QSize &size, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void moveWindowToGlobal(
+        const QPoint &position, const MoveConfiguration &moveConfiguration,
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowBackgroundColor(const QColor &color, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setCustomCursor(
+        const QImage &customCursorImage, const QPoint &hotSpot, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setPointerStyleSync(const QCursor &cursor, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowPrivacyMode(bool privacyMode, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowFocusable(bool focusable, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowTouchable(bool touchable, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowLimits(
+        const QSize &minSize, const QSize &maxSize, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setWindowMask(
-        const WindowMask &windowMask, const std::optional<QSize> &ohosMaskSizeOverride = {});
-    void setSubWindowModalDisabled();
-    void setSubWindowModalEnabled(ModalityType ModalityType);
-    void setTitle(const QString &title);
-    void setWindowTitleButtonVisible(bool maximizeVisible, bool minimizeVisible, bool closeVisible);
-    void setWindowTopmost(bool topmost);
-    void setWindowDecorVisible(bool visible);
-    void setWindowTitleMoveEnabled(bool enabled);
-    void setWindowShadowRadius(double radius);
-    void setWindowCornerRadius(double radius);
-    void setWindowRectAutoSave(bool enabed);
+        const WindowMask &windowMask, const std::optional<QSize> &ohosMaskSizeOverride = {},
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setSubWindowModalDisabled(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setSubWindowModalEnabled(ModalityType ModalityType, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setTitle(const QString &title, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowTitleButtonVisible(
+        bool maximizeVisible, bool minimizeVisible, bool closeVisible,
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowTopmost(bool topmost, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowDecorVisible(bool visible, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowTitleMoveEnabled(bool enabled, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowShadowRadius(double radius, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowCornerRadius(double radius, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowRectAutoSave(bool enabed, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     bool isWindowRectAutoSave() const;
-    void setFollowParentMultiScreenPolicy(bool enabled);
-    void setWindowKeepScreenOn(bool keepScreenOn);
+    void setFollowParentMultiScreenPolicy(bool enabled, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowKeepScreenOn(bool keepScreenOn, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
 
-    void setSupportedWindowModes(const std::set<SupportWindowMode> &supportedWindowModes);
+    void setSupportedWindowModes(
+        const std::set<SupportWindowMode> &supportedWindowModes, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
 
     void setSubWindowCloseHandler(std::function<void()> handler, bool handlerReturnValue);
     void resetSubWindowCloseHandler();
 
-    void raiseToAppTop();
-    void showWindow(const ShowWindowOptions &options = ShowWindowOptions());
-    void recover();
-    void restore();
+    void raiseToAppTop(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void showWindow(
+        const ShowWindowOptions &options = ShowWindowOptions(), JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void recover(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void restore(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     bool tryMaximize(MaximizePresentation maximizePresentation);
-    void minimize();
-    void setWindowLayoutFullScreen(bool isLayoutFullScreen);
-    void setWindowSystemBarEnable(const QStringList &names);
+    void minimize(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowLayoutFullScreen(bool isLayoutFullScreen, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowSystemBarEnable(const QStringList &names, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     QList<QRect> getDisplayCutoutRects() const;
-    void showAbility();
+    void showAbility(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     bool tryHideAbility();
-    void removeStartingWindow();
+    void removeStartingWindow(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     bool getImmersiveModeEnabledState();
     QPixmap snapshot() const;
     bool startMoving();
-    void enableDrag(bool enable);
+    void enableDrag(bool enable, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
 
     std::optional<bool> isFocused() const;
 
