@@ -1077,7 +1077,7 @@ void QMdiSubWindowPrivate::updateCursor()
         return;
 
     if (currentOperation)
-        q->setCursor(operationMap[*currentOperation].cursorShape);
+        q->setCursor(operationMap[*currentOperation].cursorShape());
     else
         q->unsetCursor();
 #endif

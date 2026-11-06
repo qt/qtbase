@@ -129,8 +129,9 @@ public:
     };
 
     struct OperationInfo {
-        uint changeFlags;
-        Qt::CursorShape cursorShape;
+        constexpr Qt::CursorShape cursorShape() const { return Qt::CursorShape(_cursorShape); }
+        uchar changeFlags;
+        uchar _cursorShape;
     };
 
     using OperationInfoMap = QEnumIndexedArray<
