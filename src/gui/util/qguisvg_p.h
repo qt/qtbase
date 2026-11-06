@@ -46,7 +46,7 @@ Q_GUI_EXPORT qreal convertToPixels(qreal len, bool , LengthType type);
 Q_GUI_EXPORT std::optional<qreal> parseAngle(QStringView str, bool tiny12FeaturesOnly = false);
 Q_GUI_EXPORT void parseNumbersArray(QStringView *str, QVarLengthArray<qreal, 8> &points,
                                     const char *pattern = nullptr);
-Q_GUI_EXPORT std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength = true);
+Q_GUI_EXPORT std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength = false);
 Q_GUI_EXPORT void pathArc(QPainterPath &path, qreal rx, qreal ry, qreal x_axis_rotation,
                           int large_arc_flag, int sweep_flag, qreal x, qreal y, qreal curx,
                           qreal cury);
