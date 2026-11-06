@@ -31,6 +31,8 @@
 #include <QPointer>
 #include <private/qwidget_p.h>
 
+#include <QtCore/private/qenumindexedarray_p.h>
+
 QT_REQUIRE_CONFIG(mdiarea);
 
 QT_BEGIN_NAMESPACE
@@ -180,7 +182,7 @@ public:
     OperationInfoMap operationMap;
     QPointer<QMenu> systemMenu;
 #ifndef QT_NO_ACTION
-    QPointer<QAction> actions[NumWindowStateActions];
+    QEnumIndexedArrayFor<QPointer<QAction>, NumWindowStateActions> actions;
 #endif
     QMdiSubWindow::SubWindowOptions options;
     QString lastChildWindowTitle;
