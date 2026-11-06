@@ -129,7 +129,6 @@ public:
     void setWindowMinMaxCloseButtonState(const WindowMinMaxCloseButtonsState &state);
     void setWindowStaysOnTop(bool staysOnTop);
     void setFramelessWindow(bool frameless);
-    void setWindowShadowDisabled();
     void setNativeNodeVisibility(bool visible);
     QPixmap makeSnapshot() const;
     bool startMoving();
@@ -265,6 +264,7 @@ private:
     void updateWindowMinMaxCloseButtonsState(const WindowMinMaxCloseButtonsState &state, JsCallBatch &jsCallBatch);
     void updateWindowStaysOnTop(bool staysOnTop, JsCallBatch &jsCallBatch);
     void updateWindowFrameless(bool frameless, JsCallBatch &jsCallBatch);
+    void updateWindowShadowDisabled();
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
     void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     QOhosWindowProxy *flushedWindowProxyOrNull();

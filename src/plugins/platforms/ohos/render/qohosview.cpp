@@ -1464,7 +1464,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
 
     bool disableWindowShadow = windowFlags.testFlag(Qt::WindowType::NoDropShadowWindowHint);
     if (disableWindowShadow)
-        setWindowShadowDisabled();
+        updateWindowShadowDisabled();
 
     if (!m_ownerWindow->mask().isNull() && m_ohosWindowProxy != nullptr) {
         m_ohosWindowProxy->setWindowMask(
@@ -1616,7 +1616,7 @@ void QOhosView::setFramelessWindow(bool frameless)
     setSystemUpdateProperty(&SystemUpdateData::frameless, frameless);
 }
 
-void QOhosView::setWindowShadowDisabled()
+void QOhosView::updateWindowShadowDisabled()
 {
     if (m_ohosWindowProxy != nullptr) {
         constexpr double windowShadowDisabledRadius = 0.0;
@@ -1744,7 +1744,7 @@ void QOhosView::handleWindowFlagsChange(
 
     bool disableWindowShadowChanged = (flagsChange & Qt::NoDropShadowWindowHint) != 0;
     if (disableWindowShadowChanged && currentWindowFlags.testFlag(Qt::NoDropShadowWindowHint))
-        setWindowShadowDisabled();
+        updateWindowShadowDisabled();
 
     bool expandedClientAreaChanged = (flagsChange & Qt::ExpandedClientAreaHint) != 0;
     if (expandedClientAreaChanged && QOhosDeviceInfo::isPhone())
