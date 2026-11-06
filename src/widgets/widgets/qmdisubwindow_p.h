@@ -180,7 +180,7 @@ public:
     QStyle::SubControl hoveredSubControl;
     QStyle::SubControl activeSubControl;
     Qt::FocusReason focusInReason;
-    OperationInfoMap operationMap;
+    const OperationInfoMap operationMap = initOperationMap();
     QEnumIndexedArray<QRegion, Operation, NumOperations> regions;
     QPointer<QMenu> systemMenu;
 #ifndef QT_NO_ACTION
@@ -203,7 +203,7 @@ public:
     // Functions.
     void leaveInteractiveMode();
     void removeBaseWidget();
-    void initOperationMap();
+    static OperationInfoMap initOperationMap();
 #if QT_CONFIG(menu)
     void createSystemMenu();
 #endif

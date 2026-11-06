@@ -1009,8 +1009,9 @@ void QMdiSubWindowPrivate::removeBaseWidget()
 /*!
     \internal
 */
-void QMdiSubWindowPrivate::initOperationMap()
+auto QMdiSubWindowPrivate::initOperationMap() -> OperationInfoMap
 {
+    OperationInfoMap operationMap;
     operationMap.insert(Move, OperationInfo(HMove | VMove, Qt::ArrowCursor, false));
     operationMap.insert(TopResize, OperationInfo(VMove | VResize | VResizeReverse, Qt::SizeVerCursor));
     operationMap.insert(BottomResize, OperationInfo(VResize, Qt::SizeVerCursor));
@@ -1023,6 +1024,7 @@ void QMdiSubWindowPrivate::initOperationMap()
     operationMap.insert(BottomLeftResize, OperationInfo(HMove | HResize | VResize | HResizeReverse,
                                                         Qt::SizeBDiagCursor));
     operationMap.insert(BottomRightResize, OperationInfo(HResize | VResize, Qt::SizeFDiagCursor));
+    return operationMap;
 }
 
 #if QT_CONFIG(menu)
