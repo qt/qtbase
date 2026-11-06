@@ -1008,10 +1008,13 @@ void QMdiSubWindowPrivate::removeBaseWidget()
 
 /*!
     \internal
+
+    This is only a function to avoid having to scope all the identifiers
+    manually.
 */
-auto QMdiSubWindowPrivate::initOperationMap() -> OperationInfoMap
+constexpr auto QMdiSubWindowPrivate::initOperationMap() -> OperationInfoMap
 {
-    return {
+    return {{{
         { Move,              {HMove | VMove,                    Qt::ArrowCursor,    false} },
         { TopResize,         {VMove | VResize | VResizeReverse, Qt::SizeVerCursor,   true} },
         { BottomResize,      {VResize,                          Qt::SizeVerCursor,   true} },
@@ -1024,8 +1027,10 @@ auto QMdiSubWindowPrivate::initOperationMap() -> OperationInfoMap
         { BottomLeftResize,  {HMove | HResize | VResize | HResizeReverse,
                                                                 Qt::SizeBDiagCursor, true} },
         { BottomRightResize, {HResize | VResize,                Qt::SizeFDiagCursor, true} },
-    };
+    }}};
 }
+
+constexpr auto operationMap = QMdiSubWindowPrivate::initOperationMap();
 
 #if QT_CONFIG(menu)
 
