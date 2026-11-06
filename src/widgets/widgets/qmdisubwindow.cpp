@@ -1015,18 +1015,18 @@ void QMdiSubWindowPrivate::removeBaseWidget()
 constexpr auto QMdiSubWindowPrivate::initOperationMap() -> OperationInfoMap
 {
     return {{{
-        { Move,              {HMove | VMove,                    Qt::ArrowCursor,    false} },
-        { TopResize,         {VMove | VResize | VResizeReverse, Qt::SizeVerCursor,   true} },
-        { BottomResize,      {VResize,                          Qt::SizeVerCursor,   true} },
-        { LeftResize,        {HMove | HResize | HResizeReverse, Qt::SizeHorCursor,   true} },
-        { RightResize,       {HResize,                          Qt::SizeHorCursor,   true} },
+        { Move,              {HMove | VMove,                    Qt::ArrowCursor} },
+        { TopResize,         {VMove | VResize | VResizeReverse, Qt::SizeVerCursor} },
+        { BottomResize,      {VResize,                          Qt::SizeVerCursor} },
+        { LeftResize,        {HMove | HResize | HResizeReverse, Qt::SizeHorCursor} },
+        { RightResize,       {HResize,                          Qt::SizeHorCursor} },
         { TopLeftResize,     {HMove | VMove | HResize | VResize | VResizeReverse | HResizeReverse,
-                                                                Qt::SizeFDiagCursor, true} },
+                                                                Qt::SizeFDiagCursor} },
         { TopRightResize,    {VMove | HResize | VResize | VResizeReverse,
-                                                                Qt::SizeBDiagCursor, true} },
+                                                                Qt::SizeBDiagCursor} },
         { BottomLeftResize,  {HMove | HResize | VResize | HResizeReverse,
-                                                                Qt::SizeBDiagCursor, true} },
-        { BottomRightResize, {HResize | VResize,                Qt::SizeFDiagCursor, true} },
+                                                                Qt::SizeBDiagCursor} },
+        { BottomRightResize, {HResize | VResize,                Qt::SizeFDiagCursor} },
     }}};
 }
 
@@ -1076,15 +1076,10 @@ void QMdiSubWindowPrivate::updateCursor()
     if (isMacStyle(q->style()))
         return;
 
-    if (!currentOperation) {
-        q->unsetCursor();
-        return;
-    }
-
-    if (currentOperation == Move || operationMap[*currentOperation].hover) {
+    if (currentOperation)
         q->setCursor(operationMap[*currentOperation].cursorShape);
-        return;
-    }
+    else
+        q->unsetCursor();
 #endif
 }
 

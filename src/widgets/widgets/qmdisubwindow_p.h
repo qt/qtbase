@@ -131,7 +131,6 @@ public:
     struct OperationInfo {
         uint changeFlags;
         Qt::CursorShape cursorShape;
-        bool hover;
     };
 
     using OperationInfoMap = QEnumIndexedArray<
