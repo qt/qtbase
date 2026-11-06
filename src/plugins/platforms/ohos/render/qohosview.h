@@ -181,7 +181,7 @@ Q_SIGNALS:
 private:
     using JsCallBatch = QtOhos::JsCallBatch;
 
-    void applyPhoneWindowChrome(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void applyPhoneWindowChrome(JsCallBatch &jsCallBatch);
 
     static constexpr QOhosRuntimeDeviceTypeAndMode allModes =
         QOhosRuntimeDeviceTypeAndMode::_2in1
@@ -264,7 +264,7 @@ private:
     void updateWindowMinMaxCloseButtonsState(const WindowMinMaxCloseButtonsState &state, JsCallBatch &jsCallBatch);
     void updateWindowStaysOnTop(bool staysOnTop, JsCallBatch &jsCallBatch);
     void updateWindowFrameless(bool frameless, JsCallBatch &jsCallBatch);
-    void updateWindowShadowDisabled(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void updateWindowShadowDisabled(JsCallBatch &jsCallBatch);
     void updateMainWindowRestored(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
     void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch = JsCallBatch::immediate());

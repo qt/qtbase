@@ -1779,13 +1779,17 @@ void QOhosView::handleWindowFlagsChange(
         setFocusable(windowAcceptsFocus);
     }
 
-    bool disableWindowShadowChanged = (flagsChange & Qt::NoDropShadowWindowHint) != 0;
-    if (disableWindowShadowChanged && currentWindowFlags.testFlag(Qt::NoDropShadowWindowHint))
-        updateWindowShadowDisabled();
+    {
+        JsCallBatch jsCallBatch(Q_FUNC_INFO);
 
-    bool expandedClientAreaChanged = (flagsChange & Qt::ExpandedClientAreaHint) != 0;
-    if (expandedClientAreaChanged && QOhosDeviceInfo::isPhone())
-        applyPhoneWindowChrome();
+        bool disableWindowShadowChanged = (flagsChange & Qt::NoDropShadowWindowHint) != 0;
+        if (disableWindowShadowChanged && currentWindowFlags.testFlag(Qt::NoDropShadowWindowHint))
+            updateWindowShadowDisabled(jsCallBatch);
+
+        bool expandedClientAreaChanged = (flagsChange & Qt::ExpandedClientAreaHint) != 0;
+        if (expandedClientAreaChanged && QOhosDeviceInfo::isPhone())
+            applyPhoneWindowChrome(jsCallBatch);
+    }
 }
 
 QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo QOhosView::nodeAreaInfo() const
