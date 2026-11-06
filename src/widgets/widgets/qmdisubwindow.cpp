@@ -1585,8 +1585,8 @@ QRegion QMdiSubWindowPrivate::getRegion(Operation operation) const
         region = QRegion(width - titleBarHeight, height - titleBarHeight, titleBarHeight, titleBarHeight)
                  - QRegion(width - titleBarHeight, height - titleBarHeight, cornerConst, cornerConst);
         break;
-    default:
-        break;
+    case Operation::Move: // handled above
+        Q_UNREACHABLE();
     }
 
     return region;
