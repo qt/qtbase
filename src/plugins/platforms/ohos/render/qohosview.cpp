@@ -808,28 +808,29 @@ void QOhosView::lower()
         m_nativeNode->lower();
 }
 
-void QOhosView::updateWindowSize(const QSize &size)
+void QOhosView::updateWindowSize(const QSize &size, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setSize(size);
+        m_ohosWindowProxy->setSize(size, jsCallBatch);
     else
-        m_nativeNode->setSize(size);
+        m_nativeNode->setSize(size, jsCallBatch);
 }
 
-void QOhosView::updateWindowPosition(const std::pair<QPoint, std::optional<QOhosDisplayInfo::JsDisplayId>> &positionProp)
+void QOhosView::updateWindowPosition(
+    const std::pair<QPoint, std::optional<QOhosDisplayInfo::JsDisplayId>> &positionProp, JsCallBatch &jsCallBatch)
 {
     QPoint position;
     std::optional<QOhosDisplayInfo::JsDisplayId> displayId;
     std::tie(position, displayId) = positionProp;
 
     if (m_ohosWindowProxy != nullptr) {
-        m_ohosWindowProxy->moveWindowToGlobalOrGlobalDisplay(position, displayId);
+        m_ohosWindowProxy->moveWindowToGlobalOrGlobalDisplay(position, displayId, jsCallBatch);
     } else {
-        m_nativeNode->setPosition(position);
+        m_nativeNode->setPosition(position, jsCallBatch);
     }
 }
 
-void QOhosView::updateWindowBackgroundTransparency(bool transparent)
+void QOhosView::updateWindowBackgroundTransparency(bool transparent, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr) {
         auto opaqueSystemBackgroundRgb = QGuiApplicationPrivate::platformTheme()
@@ -841,11 +842,12 @@ void QOhosView::updateWindowBackgroundTransparency(bool transparent)
             transparent
                 ? QColor(Qt::transparent)
                 : tryGetBackgroundColorFromWindow(m_ownerWindow).value_or(
-                    QColor(opaqueSystemBackgroundRgb)));
+                    QColor(opaqueSystemBackgroundRgb)),
+            jsCallBatch);
     }
 }
 
-void QOhosView::updateWindowCursor(const QCursor &cursor)
+void QOhosView::updateWindowCursor(const QCursor &cursor, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy == nullptr)
         return;
@@ -860,47 +862,47 @@ void QOhosView::updateWindowCursor(const QCursor &cursor)
             ? createImageFromBitmapAndMask(getCursorBitmap(bitmapCursor), getCursorMask(bitmapCursor))
             : bitmapCursor.pixmap().toImage();
 
-        m_ohosWindowProxy->setCustomCursor(bitmapCursorImage, bitmapCursor.hotSpot());
+        m_ohosWindowProxy->setCustomCursor(bitmapCursorImage, bitmapCursor.hotSpot(), jsCallBatch);
     } else {
-        m_ohosWindowProxy->setPointerStyleSync(cursor);
+        m_ohosWindowProxy->setPointerStyleSync(cursor, jsCallBatch);
     }
 }
 
-void QOhosView::updateWindowFocusable(bool focusable)
+void QOhosView::updateWindowFocusable(bool focusable, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setWindowFocusable(focusable);
-    m_nativeNode->setFocusable(focusable);
+        m_ohosWindowProxy->setWindowFocusable(focusable, jsCallBatch);
+    m_nativeNode->setFocusable(focusable, jsCallBatch);
 }
 
-void QOhosView::updateWindowBackgroundColor(const QColor &color)
+void QOhosView::updateWindowBackgroundColor(const QColor &color, JsCallBatch &jsCallBatch)
 {
-    m_nativeNode->setBackgroundColor(color);
+    m_nativeNode->setBackgroundColor(color, jsCallBatch);
 }
 
-void QOhosView::updateWindowBrightness(int brightness)
+void QOhosView::updateWindowBrightness(int brightness, JsCallBatch &jsCallBatch)
 {
-    m_nativeNode->setBrightness(brightness);
+    m_nativeNode->setBrightness(brightness, jsCallBatch);
 }
 
-void QOhosView::updateWindowContrast(int contrast)
+void QOhosView::updateWindowContrast(int contrast, JsCallBatch &jsCallBatch)
 {
-    m_nativeNode->setContrast(contrast);
+    m_nativeNode->setContrast(contrast, jsCallBatch);
 }
 
-void QOhosView::updateWindowSaturation(int saturation)
+void QOhosView::updateWindowSaturation(int saturation, JsCallBatch &jsCallBatch)
 {
-    m_nativeNode->setSaturation(saturation);
+    m_nativeNode->setSaturation(saturation, jsCallBatch);
 }
 
-void QOhosView::updateWindowTransparentForInput(bool transparentForInput)
+void QOhosView::updateWindowTransparentForInput(bool transparentForInput, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setWindowTouchable(!transparentForInput);
-    m_nativeNode->setTransparentForInput(transparentForInput);
+        m_ohosWindowProxy->setWindowTouchable(!transparentForInput, jsCallBatch);
+    m_nativeNode->setTransparentForInput(transparentForInput, jsCallBatch);
 }
 
-void QOhosView::updateWindowSizeLimits(const std::pair<QSize, QSize> &sizeLimits)
+void QOhosView::updateWindowSizeLimits(const std::pair<QSize, QSize> &sizeLimits, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr) {
         auto windowMargins = QOhosPlatformWindow::fromQWindow(m_ownerWindow)->frameMargins();
@@ -908,11 +910,12 @@ void QOhosView::updateWindowSizeLimits(const std::pair<QSize, QSize> &sizeLimits
         // its default (320x72 vp), so send at least 1.
         m_ohosWindowProxy->setWindowLimits(
             sizeLimits.first.grownBy(windowMargins).expandedTo(QSize(1, 1)),
-            sizeLimits.second.grownBy(windowMargins).expandedTo(QSize(1, 1)));
+            sizeLimits.second.grownBy(windowMargins).expandedTo(QSize(1, 1)),
+            jsCallBatch);
     }
 }
 
-void QOhosView::updateWindowModality(Qt::WindowModality modality)
+void QOhosView::updateWindowModality(Qt::WindowModality modality, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr) {
         if (viewType() != ViewType::SubWindow) {
@@ -928,16 +931,16 @@ void QOhosView::updateWindowModality(Qt::WindowModality modality)
 
         auto ohosModalityType = mapQtWindowModalityToOhosOrDefault(modality);
         if (ohosModalityType.has_value())
-            m_ohosWindowProxy->setSubWindowModalEnabled(ohosModalityType.value());
+            m_ohosWindowProxy->setSubWindowModalEnabled(ohosModalityType.value(), jsCallBatch);
         else
-            m_ohosWindowProxy->setSubWindowModalDisabled();
+            m_ohosWindowProxy->setSubWindowModalDisabled(jsCallBatch);
     }
 }
 
-void QOhosView::updateWindowTitle(const QString &title)
+void QOhosView::updateWindowTitle(const QString &title, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setTitle(title);
+        m_ohosWindowProxy->setTitle(title, jsCallBatch);
 }
 
 void QOhosView::scheduleSystemUpdateIfNeeded()
@@ -947,7 +950,8 @@ void QOhosView::scheduleSystemUpdateIfNeeded()
     m_updatePending = QMetaObject::invokeMethod(
         this,
         [this]() {
-            flushSystemPropertyUpdatesImmediate();
+            JsCallBatch jsCallBatch(Q_FUNC_INFO);
+            flushSystemPropertyUpdatesImmediate(jsCallBatch);
         },
         Qt::QueuedConnection);
 }
@@ -1511,7 +1515,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
     }
 }
 
-void QOhosView::flushSystemPropertyUpdatesImmediate()
+void QOhosView::flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch)
 {
     static const auto systemDataPropertyUpdateFuncPairsTuple = makeSystemUpdateDataPropertyUpdateFuncPairsTuple();
 
@@ -1523,7 +1527,7 @@ void QOhosView::flushSystemPropertyUpdatesImmediate()
             auto &property = m_updateData.*memberPtr;
             auto optUpdateRequest = std::exchange(property.optPendingUpdateRequest, {});
             if (optUpdateRequest.has_value())
-                (this->*updateFuncPtr)(optUpdateRequest.value());
+                (this->*updateFuncPtr)(optUpdateRequest.value(), jsCallBatch);
     });
     m_updatePending = false;
 }
@@ -1567,26 +1571,27 @@ bool QOhosView::isSubWindowCoveringFullScreen() const
     return false;
 }
 
-void QOhosView::updateWindowMinMaxCloseButtonsState(const WindowMinMaxCloseButtonsState &state)
+void QOhosView::updateWindowMinMaxCloseButtonsState(
+    const WindowMinMaxCloseButtonsState &state, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr) {
         m_ohosWindowProxy->setWindowTitleButtonVisible(
-            state.maxButtonShown, state.minButtonShown, state.closeButtonShown);
+            state.maxButtonShown, state.minButtonShown, state.closeButtonShown, jsCallBatch);
     }
 }
 
-void QOhosView::updateWindowStaysOnTop(bool staysOnTop)
+void QOhosView::updateWindowStaysOnTop(bool staysOnTop, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setWindowTopmost(staysOnTop);
+        m_ohosWindowProxy->setWindowTopmost(staysOnTop, jsCallBatch);
 }
 
-void QOhosView::updateWindowFrameless(bool frameless)
+void QOhosView::updateWindowFrameless(bool frameless, JsCallBatch &jsCallBatch)
 {
     bool supportsFramelessWindow = viewType() == ViewType::MainWindow || viewType() == ViewType::SubWindow;
     if (m_ohosWindowProxy != nullptr && supportsFramelessWindow) {
-        m_ohosWindowProxy->setWindowDecorVisible(!frameless);
-        m_ohosWindowProxy->setWindowTitleMoveEnabled(!frameless);
+        m_ohosWindowProxy->setWindowDecorVisible(!frameless, jsCallBatch);
+        m_ohosWindowProxy->setWindowTitleMoveEnabled(!frameless, jsCallBatch);
     }
 }
 
