@@ -102,8 +102,10 @@ public:
         TopLeftResize,
         TopRightResize,
         BottomLeftResize,
-        BottomRightResize
+        BottomRightResize,
+        // update NumOperations below when adding to this
     };
+    static constexpr size_t NumOperations = size_t{BottomRightResize} + 1;
 
     enum ChangeFlag {
         HMove = 0x01,
@@ -129,7 +131,6 @@ public:
     struct OperationInfo {
         uint changeFlags;
         Qt::CursorShape cursorShape;
-        QRegion region;
         bool hover;
         OperationInfo(uint changeFlags, Qt::CursorShape cursorShape, bool hover = true)
             : changeFlags(changeFlags),
@@ -180,6 +181,7 @@ public:
     QStyle::SubControl activeSubControl;
     Qt::FocusReason focusInReason;
     OperationInfoMap operationMap;
+    QEnumIndexedArray<QRegion, Operation, NumOperations> regions;
     QPointer<QMenu> systemMenu;
 #ifndef QT_NO_ACTION
     QEnumIndexedArrayFor<QPointer<QAction>, NumWindowStateActions> actions;
