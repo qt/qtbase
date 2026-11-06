@@ -8217,9 +8217,9 @@ void tst_QWidget::renderChildFillsBackground()
     QCoreApplication::processEvents();
     const QPixmap childPixmap = child.grab(QRect(QPoint(0, 0), QSize(-1, -1)));
     const QPixmap windowPixmap = window.grab(QRect(QPoint(0, 0), QSize(-1, -1)));
-#ifndef Q_OS_ANDROID
-    // On Android all widgets are shown maximized, so the pixmaps
-    // will be similar
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY)
+    // On Android all widgets are shown maximized, and on HarmonyOS
+    // the screen format has alpha, so the pixmaps will be similar
     if (!m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QEXPECT_FAIL("", "This test fails on all platforms", Continue);
 #endif
