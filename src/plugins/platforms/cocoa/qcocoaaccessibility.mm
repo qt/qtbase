@@ -430,6 +430,16 @@ bool hasValueAttribute(QAccessibleInterface *interface)
     return false;
 }
 
+// Converts a QVariant value to the corresponding Cocoa type
+id valueAsNSObject(const QVariant &value)
+{
+    bool ok = false;
+    const double d = value.toDouble(&ok);
+    if (ok)
+        return @(d);
+    return value.toString().toNSString();
+}
+
 id getValueAttribute(QAccessibleInterface *interface)
 {
     const QAccessible::Role qtrole = interface->role();
@@ -459,9 +469,8 @@ id getValueAttribute(QAccessibleInterface *interface)
         }
     }
 
-    if (QAccessibleValueInterface *valueInterface = interface->valueInterface()) {
-        return valueInterface->currentValue().toString().toNSString();
-    }
+    if (QAccessibleValueInterface *valueInterface = interface->valueInterface())
+        return valueAsNSObject(valueInterface->currentValue());
 
     if (interface->state().checkable) {
         if (interface->state().checkStateMixed)

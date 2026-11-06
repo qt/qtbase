@@ -60,6 +60,7 @@ NSArray<id> *unignoredChildren(QAccessibleInterface *interface,
 NSString *getTranslatedAction(const QString &qtAction);
 QString translateAction(NSString *nsAction, QAccessibleInterface *interface);
 bool hasValueAttribute(QAccessibleInterface *interface);
+id valueAsNSObject(const QVariant &value);
 id getValueAttribute(QAccessibleInterface *interface);
 #endif // __OBJC__
 

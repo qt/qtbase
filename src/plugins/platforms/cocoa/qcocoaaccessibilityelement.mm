@@ -725,7 +725,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (id) accessibilityMinValue {
     if (QAccessibleInterface *iface = self.qtInterface) {
         if (iface->valueInterface()) {
-            return iface->valueInterface()->minimumValue().toString().toNSString();
+            return QCocoaAccessible::valueAsNSObject(iface->valueInterface()->minimumValue());
         }
     }
     return nil;
@@ -735,7 +735,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (id) accessibilityMaxValue {
     if (QAccessibleInterface *iface = self.qtInterface) {
         if (iface->valueInterface()) {
-            return iface->valueInterface()->maximumValue().toString().toNSString();
+            return QCocoaAccessible::valueAsNSObject(iface->valueInterface()->maximumValue());
         }
     }
     return nil;
