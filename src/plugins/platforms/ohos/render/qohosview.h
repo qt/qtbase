@@ -265,7 +265,7 @@ private:
     void updateWindowStaysOnTop(bool staysOnTop, JsCallBatch &jsCallBatch);
     void updateWindowFrameless(bool frameless, JsCallBatch &jsCallBatch);
     void updateWindowShadowDisabled(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
-    void updateMainWindowRestored();
+    void updateMainWindowRestored(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
     void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     QOhosWindowProxy *windowProxyAfterPropertyUpdatesOrNull(JsCallBatch &jsCallBatch);
@@ -283,7 +283,7 @@ private:
     void setWindowKeepScreenOn(bool keepScreenOn, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setFixedSizeStateEnabled(bool fixedSizeStateEnabled, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setWindowDragResizable(bool dragResizable, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
-    void showWindow();
+    void showWindow(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void sendAsyncSyntheticWindowActiveEvent();
 
     std::shared_ptr<QOhosWindowProxy> tryCreateWindowProxyIfNeeded(ViewType viewType, QWindow *optLogicalParent);

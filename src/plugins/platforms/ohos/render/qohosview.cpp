@@ -741,7 +741,7 @@ void QOhosView::setFixedSizeStateEnabled(bool enabled, JsCallBatch &jsCallBatch)
     m_ohosWindowProxy->setSupportedWindowModes(supportedWindowModes, jsCallBatch);
 }
 
-void QOhosView::showWindow()
+void QOhosView::showWindow(JsCallBatch &jsCallBatch)
 {
     auto *ohosPlatformWindow = static_cast<QOhosPlatformWindow *>(m_ownerWindow->handle());
     m_ohosWindowProxy->showWindow(
@@ -749,7 +749,8 @@ void QOhosView::showWindow()
             .focusOnShow = ohosPlatformWindow->shouldShowWindowWithoutActivating()
                 ? std::optional(false)
                 : std::nullopt,
-        });
+        },
+        jsCallBatch);
 }
 
 void QOhosView::sendAsyncSyntheticWindowActiveEvent()
@@ -1001,47 +1002,52 @@ void QOhosView::showImmediate()
         syncWindowStateImmediate();
     }
 
-    if (windowProxySetupNeeded) {
-        if (qOhosWindowProxy != nullptr) {
-            m_nativeNode->setParent(qOhosWindowProxy->nodeXComponent());
-            m_nativeNode->fillToParent();
-        }
+    {
+        JsCallBatch jsCallBatch(Q_FUNC_INFO);
+
+        if (windowProxySetupNeeded) {
+            if (qOhosWindowProxy != nullptr) {
+                // Keep these two adjacent in one batch, or ArkUI can lay out the node between them.
+                m_nativeNode->setParent(qOhosWindowProxy->nodeXComponent(), jsCallBatch);
+                m_nativeNode->fillToParent(jsCallBatch);
+            }
 #if QT_CONFIG(draganddrop)
-        m_nativeNode->enableDropDisallowedBadge();
+            m_nativeNode->enableDropDisallowedBadge(jsCallBatch);
 #endif
-    }
-
-    if (viewType() == ViewType::MainWindow) {
-        const auto windowStates = m_ownerWindow->windowStates();
-        if (windowStates.testFlag(Qt::WindowState::WindowFullScreen)) {
-            // A phone window created fullscreen still shows the system bars, so
-            // hide them explicitly. On 2-in-1/tablet the window is already
-            // immersive at creation; re-applying would only make it twitch.
-            if (hadWindowProxy || QOhosDeviceInfo::isPhone())
-                setFullScreen();
-        } else if (windowStates.testFlag(Qt::WindowState::WindowMaximized)) {
-            maximize();
-        } else if (QOhosDeviceInfo::isPhone()
-                   && m_ownerWindow->flags().testFlag(Qt::ExpandedClientAreaHint)) {
-            applyPhoneWindowChrome();
         }
-    } else if (viewType() == ViewType::SubWindow && m_ohosWindowProxy != nullptr) {
-        m_ohosWindowProxy->setFollowParentMultiScreenPolicy(true);
-    }
 
-    if (m_ohosWindowProxy != nullptr) {
-        if (hadWindowProxy)
-            restoreMainWindow();
-        showWindow();
-    }
+        if (viewType() == ViewType::MainWindow) {
+            const auto windowStates = m_ownerWindow->windowStates();
+            if (windowStates.testFlag(Qt::WindowState::WindowFullScreen)) {
+                // A phone window created fullscreen still shows the system bars, so
+                // hide them explicitly. On 2-in-1/tablet the window is already
+                // immersive at creation; re-applying would only make it twitch.
+                if (hadWindowProxy || QOhosDeviceInfo::isPhone())
+                    updateWindowFullScreen(jsCallBatch);
+            } else if (windowStates.testFlag(Qt::WindowState::WindowMaximized)) {
+                updateWindowMaximized(jsCallBatch);
+            } else if (QOhosDeviceInfo::isPhone()
+                       && m_ownerWindow->flags().testFlag(Qt::ExpandedClientAreaHint)) {
+                applyPhoneWindowChrome(jsCallBatch);
+            }
+        } else if (viewType() == ViewType::SubWindow && m_ohosWindowProxy != nullptr) {
+            m_ohosWindowProxy->setFollowParentMultiScreenPolicy(true, jsCallBatch);
+        }
 
-    // A sub window ignores maximize requests until it is shown.
-    if (viewType() == ViewType::SubWindow && m_ohosWindowProxy != nullptr) {
-        const auto windowStates = m_ownerWindow->windowStates();
-        if (windowStates.testFlag(Qt::WindowState::WindowFullScreen))
-            setFullScreen();
-        else if (windowStates.testFlag(Qt::WindowState::WindowMaximized))
-            maximize();
+        if (m_ohosWindowProxy != nullptr) {
+            if (hadWindowProxy)
+                updateMainWindowRestored(jsCallBatch);
+            showWindow(jsCallBatch);
+        }
+
+        // A sub window ignores maximize requests until it is shown.
+        if (viewType() == ViewType::SubWindow && m_ohosWindowProxy != nullptr) {
+            const auto windowStates = m_ownerWindow->windowStates();
+            if (windowStates.testFlag(Qt::WindowState::WindowFullScreen))
+                updateWindowFullScreen(jsCallBatch);
+            else if (windowStates.testFlag(Qt::WindowState::WindowMaximized))
+                updateWindowMaximized(jsCallBatch);
+        }
     }
 
     auto *surface = surfaceOrNull();
@@ -1686,24 +1692,24 @@ void QOhosView::restoreMainWindow()
     updateMainWindowRestored();
 }
 
-void QOhosView::updateMainWindowRestored()
+void QOhosView::updateMainWindowRestored(JsCallBatch &jsCallBatch)
 {
     const auto lastMainWindowHideMethod = std::exchange(m_lastMainWindowHideMethod, {});
     if (m_ohosWindowProxy == nullptr || !m_ohosWindowProxy->qtIsMainWindow())
         return;
 
     if (!lastMainWindowHideMethod.has_value()) {
-        m_ohosWindowProxy->restore();
+        m_ohosWindowProxy->restore(jsCallBatch);
         return;
     }
 
     switch (lastMainWindowHideMethod.value()) {
     case WindowHideMethod::NativeNodeVisibility:
     case WindowHideMethod::Minimize:
-        m_ohosWindowProxy->restore();
+        m_ohosWindowProxy->restore(jsCallBatch);
         break;
     case WindowHideMethod::HideAbility:
-        m_ohosWindowProxy->showAbility();
+        m_ohosWindowProxy->showAbility(jsCallBatch);
         break;
     }
 }
