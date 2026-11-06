@@ -785,10 +785,10 @@ const char16_t *QtPrivate::qustrcasechr(QStringView str, char16_t c) noexcept
     return reinterpret_cast<const char16_t *>(it);
 }
 
-// Note: ptr on output may be off by one and point to a preceding US-ASCII
-// character. Usually harmless.
-bool qt_is_ascii(const char *&ptr, qsizetype len) noexcept
+bool QtPrivate::isAscii(QLatin1StringView s) noexcept
 {
+    const char *const ptr = s.begin();
+    const qsizetype len = s.size();
     qptrdiff offset = 0;
 #if defined(__SSE2__)
     // Testing for the high bit can be done efficiently with just PMOVMSKB
@@ -797,11 +797,8 @@ bool qt_is_ascii(const char *&ptr, qsizetype len) noexcept
         while (offset + 32 <= len) {
             __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr + offset));
             quint32 mask = _mm256_movemask_epi8(data);
-            if (mask) {
-                uint idx = qCountTrailingZeroBits(mask);
-                ptr += offset + idx;
+            if (mask)
                 return false;
-            }
             offset += 32;
         }
         loops = false;
@@ -811,8 +808,6 @@ bool qt_is_ascii(const char *&ptr, qsizetype len) noexcept
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + offset));
         quint32 mask = _mm_movemask_epi8(data);
         if (mask) {
-            uint idx = qCountTrailingZeroBits(mask);
-            ptr += offset + idx;
             return false;
         }
         offset += 16;
@@ -823,24 +818,16 @@ bool qt_is_ascii(const char *&ptr, qsizetype len) noexcept
     if (offset + 8 <= len) {
         __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr + offset));
         quint8 mask = _mm_movemask_epi8(data);
-        if (mask) {
-            uint idx = qCountTrailingZeroBits(mask);
-            ptr += offset + idx;
+        if (mask)
             return false;
-        }
         offset += 8;
     }
 #endif
 
     while (offset + 4 <= len) {
         quint32 data = qFromUnaligned<quint32>(ptr + offset);
-        if (data &= 0x80808080U) {
-            uint idx = QSysInfo::ByteOrder == QSysInfo::BigEndian
-                    ? qCountLeadingZeroBits(data)
-                    : qCountTrailingZeroBits(data);
-            ptr += offset + idx / 8;
+        if (data & 0x80808080U)
             return false;
-        }
         offset += 4;
     }
 
@@ -850,13 +837,6 @@ bool qt_is_ascii(const char *&ptr, qsizetype len) noexcept
         ++offset;
     }
     return true;
-}
-
-bool QtPrivate::isAscii(QLatin1StringView s) noexcept
-{
-    const char *ptr = s.begin();
-
-    return qt_is_ascii(ptr, s.size());
 }
 
 static qptrdiff isAscii_helper(const char16_t *ptr, qsizetype len)
