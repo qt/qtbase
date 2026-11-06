@@ -1090,8 +1090,9 @@ void QMdiSubWindowPrivate::updateDirtyRegions()
     if (!parent)
         return;
 
-    for (OperationInfoMap::iterator it = operationMap.begin(), end = operationMap.end(); it != end; ++it)
-        it.value().region = getRegion(it.key());
+    size_t i = 0;
+    for (QRegion &r : regions)
+        r = getRegion(Operation(i++));
 }
 
 /*!
@@ -1597,10 +1598,12 @@ QRegion QMdiSubWindowPrivate::getRegion(Operation operation) const
 */
 auto QMdiSubWindowPrivate::getOperation(QPoint pos) const -> std::optional<Operation>
 {
-    OperationInfoMap::const_iterator it;
-    for (it = operationMap.constBegin(); it != operationMap.constEnd(); ++it)
-        if (it.value().region.contains(pos))
-            return it.key();
+    size_t i = 0;
+    for (const QRegion &r : regions) {
+        if (r.contains(pos))
+            return Operation(i);
+        ++i;
+    }
     return std::nullopt;
 }
 
