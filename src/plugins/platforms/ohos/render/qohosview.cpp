@@ -708,13 +708,13 @@ void QOhosView::setSaturation(int saturation)
     setSystemUpdateProperty(&SystemUpdateData::saturation, saturation);
 }
 
-void QOhosView::setWindowKeepScreenOn(bool keepScreenOn)
+void QOhosView::setWindowKeepScreenOn(bool keepScreenOn, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setWindowKeepScreenOn(keepScreenOn);
+        m_ohosWindowProxy->setWindowKeepScreenOn(keepScreenOn, jsCallBatch);
 }
 
-void QOhosView::setFixedSizeStateEnabled(bool enabled)
+void QOhosView::setFixedSizeStateEnabled(bool enabled, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy == nullptr)
         return;
@@ -738,7 +738,7 @@ void QOhosView::setFixedSizeStateEnabled(bool enabled)
             ? std::set<SupportWindowMode>({SupportWindowMode::FULL_SCREEN, SupportWindowMode::FLOATING, SupportWindowMode::SPLIT})
             : std::set<SupportWindowMode>({SupportWindowMode::FULL_SCREEN, SupportWindowMode::FLOATING});
 
-    m_ohosWindowProxy->setSupportedWindowModes(supportedWindowModes);
+    m_ohosWindowProxy->setSupportedWindowModes(supportedWindowModes, jsCallBatch);
 }
 
 void QOhosView::showWindow()
@@ -1460,43 +1460,48 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
     submitSystemPropertyUpdate(
         m_updateData.windowTransparentForInput, windowFlags.testFlag(Qt::WindowTransparentForInput));
 
-    flushSystemPropertyUpdatesImmediate();
+    {
+        JsCallBatch jsCallBatch(Q_FUNC_INFO);
 
-    bool disableWindowShadow = windowFlags.testFlag(Qt::WindowType::NoDropShadowWindowHint);
-    if (disableWindowShadow)
-        updateWindowShadowDisabled();
+        flushSystemPropertyUpdatesImmediate(jsCallBatch);
 
-    if (!m_ownerWindow->mask().isNull() && m_ohosWindowProxy != nullptr) {
-        m_ohosWindowProxy->setWindowMask(
-            QOhosWindowProxy::WindowMask {
-                .windowMaskRegion = m_ownerWindow->mask(),
-            },
-            targetGeometryToSet.size());
+        bool disableWindowShadow = windowFlags.testFlag(Qt::WindowType::NoDropShadowWindowHint);
+        if (disableWindowShadow)
+            updateWindowShadowDisabled(jsCallBatch);
+
+        if (!m_ownerWindow->mask().isNull() && m_ohosWindowProxy != nullptr) {
+            m_ohosWindowProxy->setWindowMask(
+                QOhosWindowProxy::WindowMask {
+                    .windowMaskRegion = m_ownerWindow->mask(),
+                },
+                targetGeometryToSet.size(),
+                jsCallBatch);
+        }
+        const auto privacyModeSetting = m_windowPropertiesProvider
+            .tryGetProperty<bool, &QOhosPlatformWindow::windowPrivacyModeSettingProperty>();
+        if (privacyModeSetting.has_value())
+            setPrivacyMode(privacyModeSetting.value(), jsCallBatch);
+
+        const auto windowCornerRadius = m_windowPropertiesProvider
+            .tryGetProperty<double, &QOhosPlatformWindow::windowCornerRadiusProperty>();
+        if (windowCornerRadius.has_value())
+            setWindowCornerRadius(windowCornerRadius.value(), jsCallBatch);
+
+        const auto keepScreenOn = m_windowPropertiesProvider
+            .tryGetProperty<bool, &QOhosPlatformWindow::windowKeepScreenOnProperty>();
+        if (keepScreenOn.has_value())
+            setWindowKeepScreenOn(keepScreenOn.value(), jsCallBatch);
+
+        auto fixedSizeStateEnabled = m_windowPropertiesProvider
+            .tryGetProperty<bool, &QOhosPlatformWindow::windowFixedSizeStateProperty>();
+        if (fixedSizeStateEnabled.has_value())
+            setFixedSizeStateEnabled(fixedSizeStateEnabled.value(), jsCallBatch);
+
+        auto windowDragResizable = m_windowPropertiesProvider
+            .tryGetProperty<bool, &QOhosPlatformWindow::windowDragResizableProperty>();
+        if (windowDragResizable.has_value())
+            setWindowDragResizable(windowDragResizable.value(), jsCallBatch);
     }
-    const auto privacyModeSetting = m_windowPropertiesProvider
-        .tryGetProperty<bool, &QOhosPlatformWindow::windowPrivacyModeSettingProperty>();
-    if (privacyModeSetting.has_value())
-        setPrivacyMode(privacyModeSetting.value());
-
-    const auto windowCornerRadius = m_windowPropertiesProvider
-        .tryGetProperty<double, &QOhosPlatformWindow::windowCornerRadiusProperty>();
-    if (windowCornerRadius.has_value())
-        setWindowCornerRadius(windowCornerRadius.value());
-
-    const auto keepScreenOn = m_windowPropertiesProvider
-        .tryGetProperty<bool, &QOhosPlatformWindow::windowKeepScreenOnProperty>();
-    if (keepScreenOn.has_value())
-        setWindowKeepScreenOn(keepScreenOn.value());
-
-    auto fixedSizeStateEnabled = m_windowPropertiesProvider
-        .tryGetProperty<bool, &QOhosPlatformWindow::windowFixedSizeStateProperty>();
-    if (fixedSizeStateEnabled.has_value())
-        setFixedSizeStateEnabled(fixedSizeStateEnabled.value());
-
-    auto windowDragResizable = m_windowPropertiesProvider
-        .tryGetProperty<bool, &QOhosPlatformWindow::windowDragResizableProperty>();
-    if (windowDragResizable.has_value())
-        setWindowDragResizable(windowDragResizable.value());
 
     // NOTE - when position automatic is set we do not control window position
     // therefore no window callback about window position change will be sent
@@ -1595,10 +1600,10 @@ void QOhosView::updateWindowFrameless(bool frameless, JsCallBatch &jsCallBatch)
     }
 }
 
-void QOhosView::setWindowDragResizable(bool dragResizable)
+void QOhosView::setWindowDragResizable(bool dragResizable, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->enableDrag(dragResizable);
+        m_ohosWindowProxy->enableDrag(dragResizable, jsCallBatch);
 }
 
 void QOhosView::setWindowMinMaxCloseButtonState(const WindowMinMaxCloseButtonsState &state)
@@ -1616,18 +1621,18 @@ void QOhosView::setFramelessWindow(bool frameless)
     setSystemUpdateProperty(&SystemUpdateData::frameless, frameless);
 }
 
-void QOhosView::updateWindowShadowDisabled()
+void QOhosView::updateWindowShadowDisabled(JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr) {
         constexpr double windowShadowDisabledRadius = 0.0;
-        m_ohosWindowProxy->setWindowShadowRadius(windowShadowDisabledRadius);
+        m_ohosWindowProxy->setWindowShadowRadius(windowShadowDisabledRadius, jsCallBatch);
     }
 }
 
-void QOhosView::setWindowCornerRadius(double radius)
+void QOhosView::setWindowCornerRadius(double radius, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setWindowCornerRadius(radius);
+        m_ohosWindowProxy->setWindowCornerRadius(radius, jsCallBatch);
 }
 
 void QOhosView::setWindowTransparentForInput(bool transparentForInput)
@@ -1642,10 +1647,10 @@ bool QOhosView::startMoving()
     return false;
 }
 
-void QOhosView::setPrivacyMode(bool privacyModeEnabled)
+void QOhosView::setPrivacyMode(bool privacyModeEnabled, JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->setWindowPrivacyMode(privacyModeEnabled);
+        m_ohosWindowProxy->setWindowPrivacyMode(privacyModeEnabled, jsCallBatch);
 }
 
 void QOhosView::startDrag(

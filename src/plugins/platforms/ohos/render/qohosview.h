@@ -264,22 +264,22 @@ private:
     void updateWindowMinMaxCloseButtonsState(const WindowMinMaxCloseButtonsState &state, JsCallBatch &jsCallBatch);
     void updateWindowStaysOnTop(bool staysOnTop, JsCallBatch &jsCallBatch);
     void updateWindowFrameless(bool frameless, JsCallBatch &jsCallBatch);
-    void updateWindowShadowDisabled();
+    void updateWindowShadowDisabled(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
     void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     QOhosWindowProxy *flushedWindowProxyOrNull();
     void setOrResetWindowProxy(std::shared_ptr<QOhosWindowProxy> windowProxy, QWindow *optLogicalParent);
     const QOhosView *ancestorViewWithWindowOrNull() const;
     void hideMainWindow();
-    void setWindowCornerRadius(double radius);
-    void setPrivacyMode(bool privacyModeEnabled);
+    void setWindowCornerRadius(double radius, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setPrivacyMode(bool privacyModeEnabled, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setBackgroundColor(const QColor &color);
     void setBrightness(int brightness);
     void setContrast(int contrast);
     void setSaturation(int saturation);
-    void setWindowKeepScreenOn(bool keepScreenOn);
-    void setFixedSizeStateEnabled(bool fixedSizeStateEnabled);
-    void setWindowDragResizable(bool dragResizable);
+    void setWindowKeepScreenOn(bool keepScreenOn, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setFixedSizeStateEnabled(bool fixedSizeStateEnabled, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void setWindowDragResizable(bool dragResizable, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void showWindow();
     void sendAsyncSyntheticWindowActiveEvent();
 
