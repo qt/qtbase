@@ -8420,7 +8420,8 @@ QString QString::repeated(qsizetype times) const
     return result;
 }
 
-void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, qsizetype from)
+static void normalize(QString *data, QString::NormalizationForm mode,
+                      QChar::UnicodeVersion version, qsizetype from)
 {
     {
         // check if it's fully ASCII first, because then we have no work
@@ -8515,7 +8516,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
 QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersion version) const
 {
     QString copy = *this;
-    qt_string_normalize(&copy, mode, version, 0);
+    normalize(&copy, mode, version, 0);
     return copy;
 }
 
