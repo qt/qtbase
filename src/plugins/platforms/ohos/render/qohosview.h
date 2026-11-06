@@ -181,7 +181,7 @@ Q_SIGNALS:
 private:
     using JsCallBatch = QtOhos::JsCallBatch;
 
-    void applyPhoneWindowChrome();
+    void applyPhoneWindowChrome(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
 
     static constexpr QOhosRuntimeDeviceTypeAndMode allModes =
         QOhosRuntimeDeviceTypeAndMode::_2in1
@@ -268,9 +268,9 @@ private:
     void updateMainWindowRestored();
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
     void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
-    QOhosWindowProxy *flushedWindowProxyOrNull();
-    void updateWindowFullScreen();
-    void updateWindowMaximized();
+    QOhosWindowProxy *windowProxyAfterPropertyUpdatesOrNull(JsCallBatch &jsCallBatch);
+    void updateWindowFullScreen(JsCallBatch &jsCallBatch);
+    void updateWindowMaximized(JsCallBatch &jsCallBatch);
     void setOrResetWindowProxy(std::shared_ptr<QOhosWindowProxy> windowProxy, QWindow *optLogicalParent);
     const QOhosView *ancestorViewWithWindowOrNull() const;
     void hideMainWindow();
