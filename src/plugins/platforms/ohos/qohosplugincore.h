@@ -177,6 +177,39 @@ Q_REQUIRED_RESULT bool tryInvokeInQtThreadAndTryWaitForContinue(
     std::function<void(std::function<void()>)> &&task,
     std::chrono::nanoseconds timeout);
 
+// Calls submitted to a batch made on the Qt thread run in call order, in one wait for the JS thread at the end of its scope
+// or at the next call to the JS thread, and in one JS-thread task until a call settles later. Called objects must outlive it.
+class JsCallBatch
+{
+public:
+    explicit JsCallBatch(const char *staticContextName);
+    ~JsCallBatch();
+
+    JsCallBatch(const JsCallBatch &) = delete;
+    JsCallBatch(JsCallBatch &&) = delete;
+    JsCallBatch &operator=(const JsCallBatch &) = delete;
+    JsCallBatch &operator=(JsCallBatch &&) = delete;
+
+    // the batch that runs each call right away
+    static JsCallBatch &immediate();
+
+    // the immediate batch runs the task with QOhosJsThreadGateway::invokeAndWaitForContinue() or runAndWait(),
+    // others queue it, so it must not capture by reference and, if it takes a promise, must settle it on the JS thread
+    void submit(std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName);
+    void submit(std::function<void(QOhosJsState &)> task, std::string callerContextName);
+
+private:
+    enum class Mode
+    {
+        Immediate,
+        Deferring,
+    };
+
+    explicit JsCallBatch(Mode mode);
+
+    Mode m_mode;
+};
+
 template<typename T>
 QNapi::Symbol JsState::getJsSymbolForType()
 {
