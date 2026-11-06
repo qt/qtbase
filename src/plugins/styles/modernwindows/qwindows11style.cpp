@@ -2292,8 +2292,6 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
     }
     case CC_ComboBox: {
         if (const auto *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            const auto indicatorWidth =
-                    proxy()->pixelMetric(PM_MenuButtonIndicator, option, widget);
             switch (subControl) {
             case SC_ComboBoxArrow: {
                 const int fw =
@@ -2310,6 +2308,8 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
                 break;
             }
             case SC_ComboBoxEditField: {
+                const auto indicatorWidth =
+                        proxy()->pixelMetric(PM_MenuButtonIndicator, option, widget);
                 ret = option->rect;
                 if (cb->frame) {
                     const int fw = proxy()->pixelMetric(PM_ComboBoxFrameWidth, cb, widget);
