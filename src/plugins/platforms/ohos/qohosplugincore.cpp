@@ -702,6 +702,112 @@ QOhosMtBlockingCallsGateway<JsState> &getQtJsBlockingCallsGateway()
     return *qtJsBlockingCallsGateway;
 }
 
+struct QueuedJsCall
+{
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task;
+    std::string callerContextName;
+};
+
+struct JsCallSequence
+{
+    JsCallSequence(
+        std::deque<QueuedJsCall> queuedJsCalls, std::optional<QueuedJsCall> optFinalJsCall,
+        QOhosTaskPromise<> donePromise);
+
+    std::deque<QueuedJsCall> remainingCalls;
+    std::optional<QueuedJsCall> optFinalJsCall;
+    bool currentCallRunning = false;
+    bool currentCallSettled = false;
+    QOhosTaskPromise<> donePromise;
+};
+
+JsCallSequence::JsCallSequence(
+    std::deque<QueuedJsCall> queuedJsCalls, std::optional<QueuedJsCall> optFinalJsCall,
+    QOhosTaskPromise<> donePromise)
+    : remainingCalls(std::move(queuedJsCalls))
+    , optFinalJsCall(std::move(optFinalJsCall))
+    , donePromise(std::move(donePromise))
+{
+}
+
+void runJsCallSequence(QOhosJsState &jsState, const std::shared_ptr<JsCallSequence> &jsCallSequence)
+{
+    const char *funcInfo = Q_FUNC_INFO;
+
+    while (!jsCallSequence->remainingCalls.empty()) {
+        auto queuedJsCall = std::move(jsCallSequence->remainingCalls.front());
+        jsCallSequence->remainingCalls.pop_front();
+        jsCallSequence->currentCallRunning = true;
+        jsCallSequence->currentCallSettled = false;
+
+        auto callPromise = QOhosTaskPromise<>(
+            [&jsState, jsCallSequence, funcInfo, callerContextName = queuedJsCall.callerContextName]() {
+                if (!isJsThread()) {
+                    qOhosReportFatalErrorAndAbort(
+                        "%s: batched task settled its promise outside the JS thread: %s",
+                        funcInfo, callerContextName.c_str());
+                }
+                jsCallSequence->currentCallSettled = true;
+                if (!jsCallSequence->currentCallRunning)
+                    runJsCallSequence(jsState, jsCallSequence);
+            },
+            [funcInfo, callerContextName = queuedJsCall.callerContextName]() {
+                if (std::uncaught_exceptions() == 0) {
+                    qOhosReportFatalErrorAndAbort(
+                        "%s: promise destroyed without notifying the caller: %s",
+                        funcInfo, callerContextName.c_str());
+                }
+            },
+            queuedJsCall.callerContextName);
+
+        try {
+            queuedJsCall.task(jsState, std::move(callPromise));
+        } catch (const std::exception &e) {
+            qOhosReportFatalErrorAndAbort(
+                "%s: exception from batched task invoked in JS thread (caller: \"%s\"): %s",
+                funcInfo, queuedJsCall.callerContextName.c_str(), e.what());
+        } catch (...) {
+            qOhosReportFatalErrorAndAbort(
+                "%s: exception from batched task invoked in JS thread (caller: \"%s\"): <unknown exception>",
+                funcInfo, queuedJsCall.callerContextName.c_str());
+        }
+
+        jsCallSequence->currentCallRunning = false;
+        if (!jsCallSequence->currentCallSettled)
+            return;
+    }
+
+    if (!jsCallSequence->optFinalJsCall) {
+        jsCallSequence->donePromise();
+        return;
+    }
+
+    auto finalJsCall = std::move(*jsCallSequence->optFinalJsCall);
+    try {
+        finalJsCall.task(jsState, std::move(jsCallSequence->donePromise));
+    } catch (const std::exception &e) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: exception from task invoked in JS thread (caller: \"%s\"): %s",
+            funcInfo, finalJsCall.callerContextName.c_str(), e.what());
+    } catch (...) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: exception from task invoked in JS thread (caller: \"%s\"): <unknown exception>",
+            funcInfo, finalJsCall.callerContextName.c_str());
+    }
+}
+
+std::function<void(QOhosJsState &, QOhosTaskPromise<>)> makeJsCallSequenceTask(
+    std::deque<QueuedJsCall> queuedJsCalls, std::optional<QueuedJsCall> optFinalJsCall)
+{
+    return [queuedJsCalls = std::move(queuedJsCalls), optFinalJsCall = std::move(optFinalJsCall)](
+               QOhosJsState &jsState, QOhosTaskPromise<> donePromise) mutable {
+        runJsCallSequence(
+            jsState,
+            std::make_shared<JsCallSequence>(
+                std::move(queuedJsCalls), std::move(optFinalJsCall), std::move(donePromise)));
+    };
+}
+
 class JsThreadOpsImpl : public ::QOhosJsThreadOps
 {
 public:
@@ -714,6 +820,15 @@ public:
     void runAndWait(
         const std::function<void(QOhosJsState &)> &task,
         std::string callerContextName) override;
+
+    void queueCall(std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName);
+    void runQueuedCalls();
+
+private:
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> takeQueuedCallsFollowedBy(
+        std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName);
+
+    std::deque<QueuedJsCall> m_qtThreadQueuedCalls;
 };
 
 QOhosJsState &JsThreadOpsImpl::jsState()
@@ -723,6 +838,9 @@ QOhosJsState &JsThreadOpsImpl::jsState()
 
 void JsThreadOpsImpl::invoke(std::function<void(QOhosJsState &)> &&task)
 {
+    if (getQtState().isQtThread())
+        runQueuedCalls();
+
     getJsStateImpl().invokeTask(
         [sharedTask = takeFunctionToSharedPtr(task)](JsState &jsState) {
             const auto takenTask = std::exchange(*sharedTask, nullptr);
@@ -745,7 +863,8 @@ void JsThreadOpsImpl::invokeAndWaitForContinue(
     auto completionState = std::make_shared<JsTaskCompletionState>();
 
     auto catchingTaskWrapper =
-        [task = std::move(task), completionState, callerContextName, funcInfo](
+        [task = takeQueuedCallsFollowedBy(std::move(task), callerContextName), completionState,
+            callerContextName, funcInfo](
             JsState &jsState, QOhosTaskPromise<> outerTaskPromise) {
             auto sharedOuterTaskPromise =
                 std::make_shared<QOhosTaskPromise<>>(std::move(outerTaskPromise));
@@ -833,6 +952,100 @@ void JsThreadOpsImpl::runAndWait(
     }
 }
 
+void JsThreadOpsImpl::queueCall(
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName)
+{
+    m_qtThreadQueuedCalls.push_back(
+        QueuedJsCall{
+            .task = std::move(task),
+            .callerContextName = std::move(callerContextName),
+        });
+}
+
+void JsThreadOpsImpl::runQueuedCalls()
+{
+    if (m_qtThreadQueuedCalls.empty())
+        return;
+
+    invokeAndWaitForContinue(
+        makeJsCallSequenceTask(std::exchange(m_qtThreadQueuedCalls, {}), std::nullopt), Q_FUNC_INFO);
+}
+
+std::function<void(QOhosJsState &, QOhosTaskPromise<>)> JsThreadOpsImpl::takeQueuedCallsFollowedBy(
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName)
+{
+    if (!getQtState().isQtThread() || m_qtThreadQueuedCalls.empty())
+        return task;
+
+    return makeJsCallSequenceTask(
+        std::exchange(m_qtThreadQueuedCalls, {}),
+        QueuedJsCall{
+            .task = std::move(task),
+            .callerContextName = std::move(callerContextName),
+        });
+}
+
+JsThreadOpsImpl &getJsThreadOpsImpl()
+{
+    static JsThreadOpsImpl jsThreadOpsImpl;
+    return jsThreadOpsImpl;
+}
+
+}
+
+JsCallBatch::JsCallBatch(const char *staticContextName)
+    : JsCallBatch(getQtState().isQtThread() ? Mode::Deferring : Mode::Immediate)
+{
+    if (!getQtState().isQtThread())
+        qOhosPrintfDebug("%s: batch created outside the Qt thread runs each call right away: %s", Q_FUNC_INFO, staticContextName);
+}
+
+JsCallBatch::JsCallBatch(Mode mode)
+    : m_mode(mode)
+{
+}
+
+JsCallBatch::~JsCallBatch()
+{
+    if (m_mode == Mode::Deferring)
+        getJsThreadOpsImpl().runQueuedCalls();
+}
+
+JsCallBatch &JsCallBatch::immediate()
+{
+    static JsCallBatch immediateBatch(Mode::Immediate);
+    return immediateBatch;
+}
+
+void JsCallBatch::submit(
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName)
+{
+    if (m_mode == Mode::Immediate) {
+        QOhosJsThreadGateway::invokeAndWaitForContinue(std::move(task), std::move(callerContextName));
+        return;
+    }
+
+    if (!getQtState().isQtThread()) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: call submitted to a batch outside the Qt thread: %s", Q_FUNC_INFO, callerContextName.c_str());
+    }
+
+    getJsThreadOpsImpl().queueCall(std::move(task), std::move(callerContextName));
+}
+
+void JsCallBatch::submit(std::function<void(QOhosJsState &)> task, std::string callerContextName)
+{
+    if (m_mode == Mode::Immediate) {
+        QOhosJsThreadGateway::runAndWait(task, std::move(callerContextName));
+        return;
+    }
+
+    submit(
+        [task = std::move(task)](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+            task(jsState);
+            taskPromise();
+        },
+        std::move(callerContextName));
 }
 
 AppFunctions::~AppFunctions() = default;
@@ -911,8 +1124,7 @@ void initJsThreadState(
     napi_env env, std::map<std::string, QNapi::Reference<QNapi::Function>> &&jsModulesFactories,
     std::shared_ptr<AppFunctions> appFunctions, QtRunMode qtRunMode)
 {
-    static JsThreadOpsImpl jsThreadOpsImpl;
-    QOhosJsThreadOps::registerInstance(&jsThreadOpsImpl);
+    QOhosJsThreadOps::registerInstance(&getJsThreadOpsImpl());
 
     getJsStateImpl().initInJsThread(env, std::move(jsModulesFactories), appFunctions, qtRunMode);
 
