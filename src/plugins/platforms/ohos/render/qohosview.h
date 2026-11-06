@@ -22,6 +22,7 @@
 #include <qohosdisplayinfo.h>
 #include <qohosforeignwindow.h>
 #include <qohosplatformwindow.h>
+#include <qohosplugincore.h>
 #include <qohosruntimedevicetypeandmode.h>
 #include <qohossettings.h>
 #include <qohoswindowproperty.h>
@@ -179,6 +180,8 @@ Q_SIGNALS:
     void nodeAreaChanged(QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo areaChangeEvt);
 
 private:
+    using JsCallBatch = QtOhos::JsCallBatch;
+
     void applyPhoneWindowChrome();
 
     static constexpr QOhosRuntimeDeviceTypeAndMode allModes =
