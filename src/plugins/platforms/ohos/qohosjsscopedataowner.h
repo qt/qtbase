@@ -24,7 +24,8 @@ class JsScopeDataOwner
 {
 public:
     JsScopeDataOwner();
-    // not on the JS thread; waits until the data and its cleanups are released
+    // not on the JS thread; waits until the data and its cleanups are released,
+    // and JS-thread code can still use the data until then
     ~JsScopeDataOwner();
 
     JsScopeDataOwner(const JsScopeDataOwner &) = delete;
@@ -32,7 +33,7 @@ public:
     JsScopeDataOwner &operator=(const JsScopeDataOwner &) = delete;
     JsScopeDataOwner &operator=(JsScopeDataOwner &&) = delete;
 
-    // JS thread only; create the data on first access
+    // JS thread only; create the data on first access and abort once it has been released
     JsScopeData *operator->() const;
     JsScopeData &operator*() const;
 
@@ -47,8 +48,7 @@ private:
     };
 
     static void checkJsThreadOrAbort();
-    static void runAsyncCleanupsAndDestroyData(
-        QOhosJsState &jsState, std::shared_ptr<State> state, std::shared_ptr<QOhosTaskPromise<>> donePromise);
+    void runAsyncCleanupsAndDestroyData(QOhosJsState &jsState, std::shared_ptr<QOhosTaskPromise<>> donePromise);
     void createDataIfMissing() const;
 
     std::shared_ptr<State> m_state;
@@ -70,9 +70,8 @@ JsScopeDataOwner<JsScopeData>::~JsScopeDataOwner()
         return;
 
     QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [state = std::move(m_state)](QOhosJsState &jsState, QOhosTaskPromise<> donePromise) mutable {
-            runAsyncCleanupsAndDestroyData(
-                jsState, std::move(state), std::make_shared<QOhosTaskPromise<>>(std::move(donePromise)));
+        [&](QOhosJsState &jsState, QOhosTaskPromise<> donePromise) {
+            runAsyncCleanupsAndDestroyData(jsState, std::make_shared<QOhosTaskPromise<>>(std::move(donePromise)));
         },
         Q_FUNC_INFO);
 }
@@ -112,29 +111,33 @@ void JsScopeDataOwner<JsScopeData>::checkJsThreadOrAbort()
 template<typename JsScopeData>
 void JsScopeDataOwner<JsScopeData>::createDataIfMissing() const
 {
+    if (!m_state)
+        qOhosReportFatalErrorAndAbort("%s: JS scope data accessed after its release", Q_FUNC_INFO);
+
     if (!m_state->data)
         m_state->data = std::make_shared<JsScopeData>();
 }
 
 template<typename JsScopeData>
 void JsScopeDataOwner<JsScopeData>::runAsyncCleanupsAndDestroyData(
-    QOhosJsState &jsState, std::shared_ptr<State> state, std::shared_ptr<QOhosTaskPromise<>> donePromise)
+    QOhosJsState &jsState, std::shared_ptr<QOhosTaskPromise<>> donePromise)
 {
-    if (state->asyncCleanupFuncs.empty()) {
+    if (m_state->asyncCleanupFuncs.empty()) {
+        const auto state = std::move(m_state);
         state->data.reset();
         (*donePromise)();
         return;
     }
 
-    auto nextCleanupFunc = std::move(state->asyncCleanupFuncs.back());
-    state->asyncCleanupFuncs.pop_back();
+    auto nextCleanupFunc = std::move(m_state->asyncCleanupFuncs.back());
+    m_state->asyncCleanupFuncs.pop_back();
 
-    auto runNextCleanup = [state, &jsState, donePromise]() {
-        runAsyncCleanupsAndDestroyData(jsState, state, donePromise);
+    auto runNextCleanup = [this, &jsState, donePromise]() {
+        runAsyncCleanupsAndDestroyData(jsState, donePromise);
     };
 
     try {
-        nextCleanupFunc(jsState, *state->data, QOhosTaskPromise<>(runNextCleanup, runNextCleanup, Q_FUNC_INFO));
+        nextCleanupFunc(jsState, *m_state->data, QOhosTaskPromise<>(runNextCleanup, runNextCleanup, Q_FUNC_INFO));
     } catch (const std::exception &e) {
         qOhosPrintfError("%s: asynchronous cleanup threw, continuing with the remaining ones: %s", Q_FUNC_INFO, e.what());
     }

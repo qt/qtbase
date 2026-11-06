@@ -53,7 +53,7 @@ A bundle whose members all come from one JS-thread visit is assigned as a whole 
 
 A class whose bundle exists only part of the time (e.g. while a tray icon is shown) holds `std::optional<QtOhos::JsScopeDataOwner<JsScopeData>> m_optJsScopeData`, calls `emplace()` on the Qt thread before populating and `reset()` there to release.
 
-You do not write any teardown code in the destructor: when `m_jsScopeData` or the owning object is destroyed (on the Qt thread, or any thread other than the JS thread), the contents are released on the JS thread automatically. The owning object's destructor can stay trivial. If populating fails, release whatever was populated the same way, by destroying the owner, or resetting the `std::optional` holding it, on the Qt thread.
+You do not write any teardown code in the destructor: when `m_jsScopeData` or the owning object is destroyed (on the Qt thread, or any thread other than the JS thread), the contents are released on the JS thread automatically. JS-thread code can use the bundle until it is released, so a listener held in it can still run while the owning object is being destroyed, when the object's other members may already be gone. Using the bundle after its release aborts with a message. The owning object's destructor can stay trivial. If populating fails, release whatever was populated the same way, by destroying the owner, or resetting the `std::optional` holding it, on the Qt thread.
 
 An object that is itself created or destroyed on the JS thread is outside this pattern; it keeps its JS-thread state in a `std::shared_ptr` wrapped with `QtOhos::makeProxyWithJsThreadDeleter()`.
 
