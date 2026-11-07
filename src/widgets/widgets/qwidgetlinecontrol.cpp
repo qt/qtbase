@@ -1463,6 +1463,11 @@ void QWidgetLineControl::complete(int key)
         if (!advanceToEnabledItem(n))
             return;
     } else {
+        if (text.isEmpty()) {
+            if (auto *popup = QCompleterPrivate::get(m_completer)->popup)
+                popup->hide();
+            return;
+        }
         m_completer->setCompletionPrefix(text);
     }
 
