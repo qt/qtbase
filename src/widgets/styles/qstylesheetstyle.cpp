@@ -4234,7 +4234,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     int x = reverse ? r.left() + r.width() - offset - chunkWidth : r.x() + offset;
                     while (chunkCount > 0) {
                         r.setRect(x, rect.y(), chunkWidth, rect.height());
-                        r = m.mapRect(QRectF(r)).toRect();
+                        r = m.mapRect(r);
                         subRule.drawRule(p, r);
                         x += reverse ? -chunkWidth : chunkWidth;
                         if (reverse ? x < rect.left() : x > rect.right())
@@ -4247,7 +4247,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                                 : r.left() + (x - r.right() - chunkWidth);
                     while (chunkCount > 0) {
                         r.setRect(x, rect.y(), chunkWidth, rect.height());
-                        r = m.mapRect(QRectF(r)).toRect();
+                        r = m.mapRect(r);
                         subRule.drawRule(p, r);
                         x += reverse ? -chunkWidth : chunkWidth;
                         --chunkCount;
@@ -4259,7 +4259,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
                     for (int i = 0; i < chunkCount; ++i) {
                         r.setRect(x, rect.y(), chunkWidth, rect.height());
-                        r = m.mapRect(QRectF(r)).toRect();
+                        r = m.mapRect(r);
                         subRule.drawRule(p, r);
                         x += reverse ? -chunkWidth : chunkWidth;
                     }

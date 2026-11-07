@@ -1593,7 +1593,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 pbBits.state &= QStyle::State_Horizontal;  // all other is irrelevant here
                 for (int i = 0; i < nu; ++i) {
                     pbBits.rect.setRect(x0 + x, myY, unit_width, myHeight);
-                    pbBits.rect = m.mapRect(QRectF(pbBits.rect)).toRect();
+                    pbBits.rect = m.mapRect(pbBits.rect);
                     proxy()->drawPrimitive(PE_IndicatorProgressChunk, &pbBits, p, widget);
                     x += reverse ? -unit_width : unit_width;
                 }
@@ -1604,7 +1604,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     int pixels_left = w - (nu * unit_width);
                     int offset = reverse ? x0 + x + unit_width-pixels_left : x0 + x;
                     pbBits.rect.setRect(offset, myY, pixels_left, myHeight);
-                    pbBits.rect = m.mapRect(QRectF(pbBits.rect)).toRect();
+                    pbBits.rect = m.mapRect(pbBits.rect);
                     proxy()->drawPrimitive(PE_IndicatorProgressChunk, &pbBits, p, widget);
                 }
             }
