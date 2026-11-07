@@ -4252,9 +4252,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         x += reverse ? -chunkWidth : chunkWidth;
                         --chunkCount;
                     };
-                } else if (chunkWidth > 0) {
-                    const auto ceil = [](qreal x) { return int(x) + (x > 0 && x != int(x)); };
-                    const int chunkCount = ceil(qreal(fillWidth)/chunkWidth);
+                } else {
+                    const int chunkCount =
+                            chunkWidth > 0 ? int(std::ceil(qreal(fillWidth) / chunkWidth)) : 0;
                     int x = reverse ? r.left() + r.width() - chunkWidth : r.x();
 
                     for (int i = 0; i < chunkCount; ++i) {
