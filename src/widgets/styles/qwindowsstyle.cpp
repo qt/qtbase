@@ -1636,14 +1636,14 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
                 if (step > chunkCount - 5)chunksToDraw = (chunkCount - step);
                 p->save();
-                p->setClipRect(m.mapRect(QRectF(rect)).toRect());
+                p->setClipRect(m.mapRect(rect));
 
                 int x0 = reverse ? rect.left() + rect.width() - unit_width*(step) - unit_width  : rect.left() + unit_width * step;
                 int x = 0;
 
                 for (int i = 0; i < chunksToDraw ; ++i) {
                     pbBits.rect.setRect(x0 + x, myY, unit_width, myHeight);
-                    pbBits.rect = m.mapRect(QRectF(pbBits.rect)).toRect();
+                    pbBits.rect = m.mapRect(pbBits.rect);
                     proxy()->drawPrimitive(PE_IndicatorProgressChunk, &pbBits, p, widget);
                     x += reverse ? -unit_width : unit_width;
                 }
@@ -1654,7 +1654,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                     int chunksToDraw = step - (chunkCount - chunksInRow);
                     for (int i = 0; i < chunksToDraw ; ++i) {
                         pbBits.rect.setRect(x0 + x, myY, unit_width, myHeight);
-                        pbBits.rect = m.mapRect(QRectF(pbBits.rect)).toRect();
+                        pbBits.rect = m.mapRect(pbBits.rect);
                         proxy()->drawPrimitive(PE_IndicatorProgressChunk, &pbBits, p, widget);
                         x += reverse ? -unit_width : unit_width;
                     }
