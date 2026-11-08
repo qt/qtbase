@@ -13,7 +13,33 @@ private slots:
 
     void event_posting_multiple_objects_benchmark_data();
     void event_posting_multiple_objects_benchmark();
+
+    void compress_timer_events_during_delivery_data();
+    void compress_timer_events_during_delivery();
 };
+
+namespace {
+// Posts a timer event to target whenever it receives a QEvent::User,
+// i.e. while sendPostedEvents() is busy delivering the queue.
+class TimerEventPoster : public QObject
+{
+public:
+    explicit TimerEventPoster(QObject *target, int timerId) : target(target), timerId(timerId) {}
+
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::User) {
+            QCoreApplication::postEvent(target, new QTimerEvent(timerId));
+            return true;
+        }
+        return QObject::event(e);
+    }
+
+private:
+    QObject *target;
+    int timerId;
+};
+} // unnamed namespace
 
 void tst_QCoreApplication::event_posting_benchmark_data()
 {
@@ -61,6 +87,32 @@ void tst_QCoreApplication::event_posting_multiple_objects_benchmark()
             QCoreApplication::postEvent(&objects[gen.bounded(0, int(std::size(objects)))],
                                         new QTimerEvent(i % 10));
         }
+        QCoreApplication::sendPostedEvents();
+    }
+}
+
+void tst_QCoreApplication::compress_timer_events_during_delivery_data()
+{
+    QTest::addColumn<int>("size");
+    QTest::newRow("100 events") << 100;
+    QTest::newRow("1000 events") << 1000;
+    QTest::newRow("10000 events") << 10000;
+}
+
+void tst_QCoreApplication::compress_timer_events_during_delivery()
+{
+    QFETCH(int, size);
+
+    constexpr int timerId = 42;
+    QObject target;
+    TimerEventPoster poster(&target, timerId);
+
+    QBENCHMARK {
+        for (int i = 0; i < size; ++i)
+            QCoreApplication::postEvent(&poster, new QEvent(QEvent::User));
+        // pending timer event at the end of the queue: every timer event
+        // posted while delivering the events above gets compressed into it
+        QCoreApplication::postEvent(&target, new QTimerEvent(timerId), Qt::LowEventPriority);
         QCoreApplication::sendPostedEvents();
     }
 }
