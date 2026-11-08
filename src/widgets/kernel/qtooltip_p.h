@@ -63,7 +63,6 @@ private:
 private:
     friend class QToolTip;
 
-    static QTipLabel *instance;
     QBasicTimer hideTimer, expireTimer;
     QPointer<QWidget> widget;
     QRect rect;
