@@ -94,7 +94,7 @@ using namespace Qt::StringLiterals;
     \sa QWidget::toolTip, QAction::toolTip
 */
 
-QTipLabel *QTipLabel::instance = nullptr;
+static QTipLabel *qTipLabel = nullptr;
 
 QTipLabel::QTipLabel(const QString &text, QPoint pos, QWidget *w,
                      std::chrono::milliseconds displayTime)
@@ -107,8 +107,8 @@ QTipLabel::QTipLabel(const QString &text, QPoint pos, QWidget *w,
 {
     setTextFormat(Qt::AutoText);
 
-    delete instance;
-    instance = this;
+    delete qTipLabel;
+    qTipLabel = this;
     setForegroundRole(QPalette::ToolTipText);
     setBackgroundRole(QPalette::ToolTipBase);
     setPalette(QToolTip::palette());
@@ -208,7 +208,7 @@ void QTipLabel::mouseMoveEvent(QMouseEvent *e)
 
 QTipLabel::~QTipLabel()
 {
-    instance = nullptr;
+    qTipLabel = nullptr;
 }
 
 void QTipLabel::hideTip()
@@ -311,21 +311,21 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 #if QT_CONFIG(style_stylesheet)
     if (testAttribute(Qt::WA_StyleSheet) || (w && qt_styleSheet(w->style()))) {
         //the stylesheet need to know the real parent
-        QTipLabel::instance->setProperty("_q_stylesheet_parent", QVariant::fromValue(w));
+        qTipLabel->setProperty("_q_stylesheet_parent", QVariant::fromValue(w));
         //we force the style to be the QStyleSheetStyle, and force to clear the cache as well.
-        QTipLabel::instance->setStyleSheet("/* */"_L1);
+        qTipLabel->setStyleSheet("/* */"_L1);
 
         // Set up for cleaning up this later...
-        QTipLabel::instance->styleSheetParent = w;
+        qTipLabel->styleSheetParent = w;
         if (w) {
             connect(w, &QWidget::destroyed,
-                    QTipLabel::instance, &QTipLabel::styleSheetParentDestroyed);
+                    qTipLabel, &QTipLabel::styleSheetParentDestroyed);
         }
         // QTBUG-64550: A font inherited by the style sheet might change the size,
         // particular on Windows, where the tip is not parented on a window.
         // The updatesSize() also makes sure that the content size be updated with
         // correct content margin.
-        QTipLabel::instance->updateSize(pos);
+        qTipLabel->updateSize(pos);
     }
 #endif //QT_CONFIG(style_stylesheet)
 
@@ -382,7 +382,7 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 
 bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
 {
-    if (QTipLabel::instance->text() != text)
+    if (qTipLabel->text() != text)
         return true;
 
     if (o != widget)
@@ -461,20 +461,21 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
 void QToolTip::showText(QPoint pos, const QString &text, QWidget *w, const QRect &rect,
                         std::chrono::milliseconds displayTime)
 {
-    if (QTipLabel::instance && QTipLabel::instance->isVisible()) { // a tip does already exist
+    if (qTipLabel && qTipLabel->isVisible()) { // a tip does already exist
         if (text.isEmpty()){ // empty text means hide current tip
-            QTipLabel::instance->hideTip();
+            qTipLabel->hideTip();
             return;
-        } else if (!QTipLabel::instance->fadingOut) {
+        }
+        if (!qTipLabel->fadingOut) {
             // If the tip has changed, reuse the one
             // that is showing (removes flickering)
             QPoint localPos = pos;
             if (w)
                 localPos = w->mapFromGlobal(pos);
-            if (QTipLabel::instance->tipChanged(localPos, text, w)){
-                QTipLabel::instance->reuseTip(text, displayTime, pos);
-                QTipLabel::instance->setTipRect(w, rect);
-                QTipLabel::instance->placeTip(pos, w);
+            if (qTipLabel->tipChanged(localPos, text, w)) {
+                qTipLabel->reuseTip(text, displayTime, pos);
+                qTipLabel->setTipRect(w, rect);
+                qTipLabel->placeTip(pos, w);
             }
             return;
         }
@@ -491,21 +492,21 @@ void QToolTip::showText(QPoint pos, const QString &text, QWidget *w, const QRect
             return w;
 #endif
         }();
-        new QTipLabel(text, pos, tipLabelParent, displayTime); // sets QTipLabel::instance to itself
-        QWidgetPrivate::get(QTipLabel::instance)->setScreen(QTipLabel::getTipScreen(pos, w));
-        QTipLabel::instance->setTipRect(w, rect);
-        QTipLabel::instance->placeTip(pos, w);
-        QTipLabel::instance->setObjectName("qtooltip_label"_L1);
+        new QTipLabel(text, pos, tipLabelParent, displayTime); // sets qTipLabel to itself
+        QWidgetPrivate::get(qTipLabel)->setScreen(QTipLabel::getTipScreen(pos, w));
+        qTipLabel->setTipRect(w, rect);
+        qTipLabel->placeTip(pos, w);
+        qTipLabel->setObjectName("qtooltip_label"_L1);
 
 #if QT_CONFIG(effects)
         if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip))
-            qFadeEffect(QTipLabel::instance);
+            qFadeEffect(qTipLabel);
         else if (QApplication::isEffectEnabled(Qt::UI_AnimateTooltip))
-            qScrollEffect(QTipLabel::instance);
+            qScrollEffect(qTipLabel);
         else
-            QTipLabel::instance->showNormal();
+            qTipLabel->showNormal();
 #else
-        QTipLabel::instance->showNormal();
+        qTipLabel->showNormal();
 #endif
     }
 }
@@ -530,7 +531,7 @@ void QToolTip::showText(QPoint pos, const QString &text, QWidget *w, const QRect
  */
 bool QToolTip::isVisible()
 {
-    return (QTipLabel::instance != nullptr && QTipLabel::instance->isVisible());
+    return qTipLabel && qTipLabel->isVisible();
 }
 
 /*!
@@ -541,8 +542,8 @@ bool QToolTip::isVisible()
  */
 QString QToolTip::text()
 {
-    if (QTipLabel::instance)
-        return QTipLabel::instance->text();
+    if (qTipLabel)
+        return qTipLabel->text();
     return QString();
 }
 
@@ -581,8 +582,8 @@ QFont QToolTip::font()
 void QToolTip::setPalette(const QPalette &palette)
 {
     *tooltip_palette() = palette;
-    if (QTipLabel::instance)
-        QTipLabel::instance->setPalette(palette);
+    if (qTipLabel)
+        qTipLabel->setPalette(palette);
 }
 
 /*!
