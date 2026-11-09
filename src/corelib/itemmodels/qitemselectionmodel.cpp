@@ -1559,13 +1559,13 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     if (!colCount)
         return false; // no columns means no selected items
 
-    int unselectable = 0;
     std::vector<QItemSelectionRangeRefCache> cache;
     cache.reserve(d->currentSelection.size() + d->ranges.size());
     std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
 
     // check ranges and currentSelection
+    int unselectable = 0;
     for (int column = 0; column < colCount; ++column) {
         if (!isSelectable(row, column)) {
             ++unselectable;
@@ -1648,13 +1648,13 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     if (!rowCount)
         return false; // no rows means no selected items
 
-    int unselectable = 0;
     std::vector<QItemSelectionRangeRefCache> cache;
     cache.reserve(d->currentSelection.size() + d->ranges.size());
     std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
 
     // check ranges and currentSelection
+    int unselectable = 0;
     for (int row = 0; row < rowCount; ++row) {
         if (!isSelectable(row, column)) {
             ++unselectable;
