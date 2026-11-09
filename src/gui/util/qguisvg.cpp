@@ -8,12 +8,15 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qregularexpression.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtGui/private/qmath_p.h>
 #include <array>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::Literals::StringLiterals;
+
+Q_STATIC_LOGGING_CATEGORY(lcGuiSvg, "qt.gui.svg")
 
 namespace {
 
@@ -439,8 +442,10 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
             }
 
             lastMode = cmd;
-            if (limitLength && path.elementCount() > maxElementCount)
-                return std::nullopt;
+            if (limitLength && path.elementCount() > maxElementCount) {
+                qCWarning(lcGuiSvg, "Untrusted SVG path limit exceeded. Path truncated.");
+                return path;
+            }
 
             // the z/Z command should have no arguments. Otherwise,
             // the remaining part of the path is invalid.
