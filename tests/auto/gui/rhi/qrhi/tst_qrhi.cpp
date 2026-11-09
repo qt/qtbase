@@ -784,9 +784,9 @@ void tst_QRhi::stats()
 
         stats = rhi->statistics();
         qDebug() << stats;
-        QCOMPARE_GT(stats.allocCount, 0);
-        QCOMPARE_GT(stats.blockCount, 0);
-        QCOMPARE_GT(stats.usedBytes, 0);
+        QCOMPARE_GT(stats.allocCount, 0U);
+        QCOMPARE_GT(stats.blockCount, 0U);
+        QCOMPARE_GT(stats.usedBytes, 0U);
     }
 }
 
