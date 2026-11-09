@@ -285,17 +285,17 @@ void QSocketNotifier::setEnabled(bool enable)
         return;
     if (d->snenabled == enable)                        // no change
         return;
-    d->snenabled = enable;
-
 
     auto thisThreadData = d->threadData.loadRelaxed();
-
-    if (!thisThreadData->hasEventDispatcher()) // perhaps application/thread is shutting down
-        return;
-    if (thisThreadData->threadId != QThread::currentThreadId()) {
+    const bool hasDispatcher = thisThreadData->hasEventDispatcher();
+    if (hasDispatcher && thisThreadData->threadId != QThread::currentThreadId()) {
         qWarning("QSocketNotifier: Socket notifiers cannot be enabled or disabled from another thread");
         return;
     }
+
+    d->snenabled = enable;
+    if (!hasDispatcher) // perhaps application/thread is shutting down
+        return;
     if (d->snenabled)
         thisThreadData->eventDispatcher.loadRelaxed()->registerSocketNotifier(this);
     else
