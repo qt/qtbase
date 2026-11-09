@@ -160,27 +160,41 @@ void QDxgiVSyncService::beginFrame(LUID)
     // not handle this at all (and rendering does not actually break or stop
     // just because the factory says !IsCurrent), whereas here it makes more
     // sense to act since we may want to get rid of threads that are no longer
-    // needed. Keep the adapter IDs and the registered windows, drop everything
-    // else, then start from scratch.
+    // needed. Keep the adapter IDs with their ref counts (one per QRhi) and
+    // the registered windows, drop everything else, then start from scratch.
 
     if (dxgiFactory && !dxgiFactory->IsCurrent()) {
         qCDebug(lcQpaScreenUpdates, "QDxgiVSyncService: DXGI Factory is no longer Current");
-        QVarLengthArray<LUID, 8> luids;
-        for (auto it = adapters.begin(), end = adapters.end(); it != end; ++it)
-            luids.append(it->luid);
-        for (auto it = windows.begin(), end = windows.end(); it != end; ++it)
-            cleanupWindowData(&*it);
-        lock.unlock();
-        teardownDxgi();
-        for (LUID luid : luids)
-            refAdapter(luid);
-        lock.relock();
-        for (auto it = windows.begin(), end = windows.end(); it != end; ++it)
-            updateWindowData(it.key(), &*it);
+        recreateDxgi(lock);
     }
 }
 
-void QDxgiVSyncService::refAdapter(LUID luid)
+void QDxgiVSyncService::recreateDxgi(QMutexLocker<QMutex> &lock)
+{
+    QVarLengthArray<std::pair<LUID, int>, 8> luids;
+    for (auto it = adapters.begin(), end = adapters.end(); it != end; ++it)
+        luids.append({ it->luid, it->ref });
+    for (auto it = windows.begin(), end = windows.end(); it != end; ++it)
+        cleanupWindowData(&*it);
+    lock.unlock();
+    teardownDxgi();
+    for (const auto &[luid, ref] : luids)
+        refAdapter(luid, ref);
+    lock.relock();
+    for (auto it = windows.begin(), end = windows.end(); it != end; ++it)
+        updateWindowData(it.key(), &*it);
+}
+
+#ifdef QT_BUILD_INTERNAL
+void QDxgiVSyncService::simulateStaleFactory()
+{
+    QMutexLocker lock(&mutex);
+    if (!disableService && dxgiFactory)
+        recreateDxgi(lock);
+}
+#endif
+
+void QDxgiVSyncService::refAdapter(LUID luid, int count)
 {
     QMutexLocker lock(&mutex);
     if (disableService)
@@ -201,13 +215,13 @@ void QDxgiVSyncService::refAdapter(LUID luid)
 
     for (AdapterData &a : adapters) {
         if (a.luid.LowPart == luid.LowPart && a.luid.HighPart == luid.HighPart) {
-            a.ref += 1;
+            a.ref += count;
             return;
         }
     }
 
     AdapterData a;
-    a.ref = 1;
+    a.ref = count;
     a.luid = luid;
     a.adapter = nullptr;
 
