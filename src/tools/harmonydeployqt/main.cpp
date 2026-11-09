@@ -29,6 +29,19 @@ using namespace Qt::StringLiterals;
 // Used to generate dependency file for CMake DEPFILE support
 static QStringList dependenciesForDepfile;
 
+struct TestRawfile
+{
+    QString source;
+    QString destination;
+};
+
+struct TestRawfileEntry
+{
+    QString rawfilePath;
+    QString sourcePath;
+    bool isDirectory;
+};
+
 struct Options
 {
     QString inputFile;
@@ -94,6 +107,7 @@ struct Options
     bool testBundleMode = false;
     QString testBinariesDirectory;   // Directory to scan for libtst_*.so
     QStringList testExcludeList;     // Filenames to exclude from test bundle
+    QList<TestRawfile> testRawfiles;
 
     // HAP signing material from --signing-* CLI flags (empty = use env vars).
     QString signingCertPath;
@@ -340,6 +354,20 @@ static bool readInputConfiguration(Options *options)
     QJsonArray excludeArray = obj["test-exclude-list"_L1].toArray();
     for (const QJsonValue &value : excludeArray)
         options->testExcludeList.append(value.toString());
+    const QJsonArray rawfilesArray = obj["test-rawfiles"_L1].toArray();
+    for (const QJsonValue &value : rawfilesArray) {
+        const QJsonObject rawfile = value.toObject();
+        QString destination = QDir::cleanPath(rawfile["destination"_L1].toString());
+        if (destination == "."_L1)
+            destination.clear();
+        if (QDir::isAbsolutePath(destination) || destination == ".."_L1
+            || destination.startsWith("../"_L1)) {
+            fprintf(stderr, "Test rawfile destination is outside the rawfile directory: %s\n",
+                    qPrintable(destination));
+            return false;
+        }
+        options->testRawfiles.append({ rawfile["source"_L1].toString(), destination });
+    }
 
     // Parse project libraries
     QJsonArray projectLibsArray = obj["project-libraries"_L1].toArray();
@@ -2155,6 +2183,105 @@ static bool copyTestQmlModules(const QList<TestQmlModule> &modules, const Option
     return true;
 }
 
+static QStringList listDirectoryTree(const QString &root)
+{
+    QStringList entries;
+    QDirIterator it(
+        root, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden,
+        QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+    while (it.hasNext())
+        entries << it.next();
+    return entries;
+}
+
+static QList<TestRawfileEntry> listTestRawfileEntries(const TestRawfile &rawfile)
+{
+    const QFileInfo source(rawfile.source);
+    const QString rawfileRoot = rawfile.destination.isEmpty()
+            ? source.fileName()
+            : rawfile.destination + u'/' + source.fileName();
+    QList<TestRawfileEntry> entries = { { rawfileRoot, rawfile.source, source.isDir() } };
+    if (!source.isDir())
+        return entries;
+    const QDir sourceDir(rawfile.source);
+    for (const QString &sourcePath : listDirectoryTree(rawfile.source)) {
+        entries.append({ rawfileRoot + u'/' + sourceDir.relativeFilePath(sourcePath), sourcePath,
+                         QFileInfo(sourcePath).isDir() });
+    }
+    return entries;
+}
+
+static QList<TestRawfileEntry> listDestinationDirectories(const TestRawfile &rawfile)
+{
+    QList<TestRawfileEntry> directories;
+    QString rawfilePath;
+    for (const QString &segment : rawfile.destination.split(u'/', Qt::SkipEmptyParts)) {
+        rawfilePath += rawfilePath.isEmpty() ? segment : u'/' + segment;
+        directories.append({ rawfilePath,
+                             rawfile.source + " (DESTINATION "_L1 + rawfile.destination + u')',
+                             true });
+    }
+    return directories;
+}
+
+static bool verifyUniqueTestRawfilePaths(const QList<TestRawfile> &rawfiles)
+{
+    QHash<QString, TestRawfileEntry> entryByCaseFoldedPath;
+    for (const TestRawfile &rawfile : rawfiles) {
+        if (!QFileInfo::exists(rawfile.source)) {
+            fprintf(stderr, "Test rawfile source does not exist: %s\n", qPrintable(rawfile.source));
+            return false;
+        }
+        const QList<TestRawfileEntry> entries =
+                listDestinationDirectories(rawfile) + listTestRawfileEntries(rawfile);
+        for (const TestRawfileEntry &entry : entries) {
+            const QString caseFoldedPath = entry.rawfilePath.toCaseFolded();
+            const auto existing = entryByCaseFoldedPath.constFind(caseFoldedPath);
+            if (existing == entryByCaseFoldedPath.constEnd()) {
+                entryByCaseFoldedPath.insert(caseFoldedPath, entry);
+                continue;
+            }
+            if (existing->isDirectory && entry.isDirectory
+                && existing->rawfilePath == entry.rawfilePath) {
+                continue;
+            }
+            fprintf(
+                stderr,
+                "Error: test rawfiles clash at rawfile/%s:\n  %s\n  %s\n"
+                "They would overwrite one another; rename one of them.\n",
+                qPrintable(entry.rawfilePath), qPrintable(existing->sourcePath),
+                qPrintable(entry.sourcePath));
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool copyTestRawfiles(const Options &options)
+{
+    const QString rawfileDir = options.outputDirectory + "/entry/src/main/resources/rawfile"_L1;
+    if (!QDir(rawfileDir).removeRecursively()) {
+        fprintf(stderr, "Failed to remove previous test rawfiles: %s\n", qPrintable(rawfileDir));
+        return false;
+    }
+    for (const TestRawfile &rawfile : options.testRawfiles) {
+        for (const TestRawfileEntry &entry : listTestRawfileEntries(rawfile)) {
+            const QString destination = rawfileDir + u'/' + entry.rawfilePath;
+            if (entry.isDirectory) {
+                if (!QDir().mkpath(destination)) {
+                    fprintf(stderr, "Failed to create directory: %s\n", qPrintable(destination));
+                    return false;
+                }
+            } else if (!copyFileIfNewer(entry.sourcePath, destination, options.verbose)) {
+                return false;
+            }
+            if (!options.depFilePath.isEmpty())
+                dependenciesForDepfile << entry.sourcePath;
+        }
+    }
+    return true;
+}
+
 static QString findLlvmReadobj(const Options &options)
 {
     // Look for llvm-readobj in the NDK and alternative path
@@ -3891,6 +4018,9 @@ int main(int argc, char *argv[])
     if (options.testBundleMode && !verifyUniqueTestQmlModuleDeployDirs(testQmlModules))
         return 1;
 
+    if (options.testBundleMode && !verifyUniqueTestRawfilePaths(options.testRawfiles))
+        return 1;
+
     if (options.verbose)
         fprintf(stdout, "\nDeployment process started...\n");
 
@@ -3929,6 +4059,10 @@ int main(int argc, char *argv[])
         }
         if (!copyTestQmlModules(testQmlModules, options)) {
             fprintf(stderr, "Failed to copy test QML modules\n");
+            return 1;
+        }
+        if (!copyTestRawfiles(options)) {
+            fprintf(stderr, "Failed to copy test rawfiles\n");
             return 1;
         }
     } else {

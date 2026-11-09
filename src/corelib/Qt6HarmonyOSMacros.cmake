@@ -904,6 +904,22 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
             ",\n    \"harmonyos-extra-plugins\": [\"${_extra_plugins_joined}\"]")
     endif()
 
+    set(_all_rawfiles "")
+    foreach(_test IN LISTS _test_targets)
+        if(NOT TARGET "${_test}")
+            continue()
+        endif()
+        get_target_property(_rawfiles "${_test}" _qt_harmonyos_test_rawfiles)
+        if(_rawfiles)
+            list(APPEND _all_rawfiles ${_rawfiles})
+        endif()
+    endforeach()
+    if(_all_rawfiles)
+        list(JOIN _all_rawfiles ",\n        " _rawfiles_joined)
+        string(APPEND JSON_CONTENT
+            ",\n    \"test-rawfiles\": [\n        ${_rawfiles_joined}\n    ]")
+    endif()
+
     string(APPEND JSON_CONTENT "\n}\n")
 
     file(GENERATE OUTPUT "${CONFIG_FILE}" CONTENT "${JSON_CONTENT}")
