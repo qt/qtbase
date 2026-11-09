@@ -26,8 +26,10 @@
 
 #include "hb.hh"
 
+#include "hb-geometry.hh"
 #include "hb-machinery.hh"
 #include "hb-vector-buf.hh"
+#include "hb-vector-internal.hh"
 
 /**
  * SECTION:hb-vector
@@ -45,7 +47,7 @@
  * hb_vector_draw_t *draw = hb_vector_draw_create_or_fail (HB_VECTOR_FORMAT_SVG);
  * hb_vector_draw_set_scale_factor (draw, 64.f, 64.f);
  * hb_vector_draw_set_foreground (draw, foreground);
- * hb_vector_draw_glyph (draw, font, gid, pen_x, pen_y);
+ * hb_vector_draw_glyph (draw, font, gid, HB_VECTOR_EXTENTS_MODE_EXPAND);
  * hb_blob_t *svg = hb_vector_draw_render (draw);
  * ]|
  *
@@ -57,23 +59,24 @@
  * hb_vector_paint_t *paint = hb_vector_paint_create_or_fail (HB_VECTOR_FORMAT_SVG);
  * hb_vector_paint_set_scale_factor (paint, 64.f, 64.f);
  * hb_vector_paint_set_foreground (paint, foreground);
- * hb_vector_paint_glyph (paint, font, gid, pen_x, pen_y,
- *                        HB_VECTOR_EXTENTS_MODE_EXPAND);
+ * hb_vector_paint_glyph (paint, font, gid, HB_VECTOR_EXTENTS_MODE_EXPAND);
  * hb_blob_t *svg = hb_vector_paint_render (paint);
  * ]|
  *
  * Both contexts accumulate multiple glyphs into a single document.
  * Call hb_vector_draw_render() / hb_vector_paint_render() to
  * retrieve the final blob.  Rendering clears all accumulated
- * content (including extents), so retrieve any needed extents
- * via hb_vector_draw_get_extents() / hb_vector_paint_get_extents()
- * before rendering.
+ * content (including extents), even on failure, so retrieve any
+ * needed extents via hb_vector_draw_get_extents() /
+ * hb_vector_paint_get_extents() before rendering.
  *
  * Each glyph is emitted as an independent element.  If glyphs
  * overlap and the foreground color is semi-transparent, the
  * overlapping regions will be composited separately rather than
  * painted as a single uniform layer.
  **/
+
+hb_user_data_key_t hb_vector_blob_meta_user_data_key = {};
 
 struct hb_vector_decimal_point_t
 {

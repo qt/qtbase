@@ -55,4 +55,19 @@ typedef int hb_atomic_int_impl_t;
 #define hb_atomic_ptr_impl_get(P)              makeAtomicPointer(*(P))->loadAcquire()
 #define hb_atomic_ptr_impl_cmpexch(P,O,N)      makeAtomicPointer(*(P))->testAndSetOrdered((O), (N))
 
+// VxWorks currently defines NAN as non-constexpr which is not according to spec, and this causes
+// compilation errors in the OpenType parser.
+#if defined(Q_OS_VXWORKS) && defined(__cplusplus)
+#include <math.h>
+#undef NAN
+#define NAN __builtin_nanf("")
+#endif
+
+#if defined(Q_OS_INTEGRITY) && defined(__cplusplus)
+#include <limits>
+#include <math.h>
+#undef NAN
+#define NAN (std::numeric_limits<float>::quiet_NaN())
+#endif
+
 #endif // QHARFBUZZ_CONFIG_H
