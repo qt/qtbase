@@ -36,12 +36,18 @@ public:
     // We want to know what adapters are in use by all the active QRhi instances
     // at any time. This is to avoid blind EnumAdapters calls to enumerate the
     // world every time a window is created. To be called by create()/destroy()
-    // of the QRhi D3D11/12 backends.
-    void refAdapter(LUID luid);
+    // of the QRhi D3D11/12 backends. refAdapter() adds 'count' references to
+    // the one adapter identified by 'luid'.
+    void refAdapter(LUID luid, int count = 1);
     void derefAdapter(LUID luid);
 
     // To be called from QRhi's beginFrame. Used to check if the factory is stale.
     void beginFrame(LUID luid);
+
+#ifdef QT_BUILD_INTERNAL
+    // For autotests. Re-creates the factory as if it was no longer current.
+    void simulateStaleFactory();
+#endif
 
     // Registering the windows can be done either by the QRhi swapchain in the
     // backends, or e.g. in the platformwindow implementation based on the
@@ -74,6 +80,7 @@ private:
     ~QDxgiVSyncService();
     void destroy();
     void teardownDxgi();
+    void recreateDxgi(QMutexLocker<QMutex> &lock);
     static void global_destroy();
 
     struct AdapterData {

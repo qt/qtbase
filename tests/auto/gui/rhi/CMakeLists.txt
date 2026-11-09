@@ -3,3 +3,6 @@
 
 add_subdirectory(qshader)
 add_subdirectory(qrhi)
+if(WIN32)
+    add_subdirectory(qdxgivsyncservice)
+endif()
