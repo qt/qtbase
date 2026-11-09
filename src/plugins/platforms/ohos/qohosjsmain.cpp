@@ -59,6 +59,7 @@
 #include "qohosnouichildprocess.h"
 #include "qohosplatformintegration.h"
 #include "qohosqabilityinstancesmanager.h"
+#include "qohosrawfileengine_p.h"
 #include "qohosutils.h"
 #include "qohoswatchdog.h"
 #include "qohosplatformdialoghelper.h"
@@ -770,6 +771,8 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
 
         if (!launchOpts.autoRequestPermissions.IsEmpty())
             requestAppPermissionsInBackground(jsState, splitString(launchOpts.autoRequestPermissions, ','));
+
+        QOhosRawFile::installEngineHandler(jsState, qAbilityPeer->qAbility());
 
         std::string appSharedLibName =
             !launchOpts.appSharedLibNameOverride.IsEmpty()

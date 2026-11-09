@@ -74,6 +74,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosqabilityinstancesmanager.cpp qohosqabilityinstancesmanager.h
         qohosqpaenums.h
         qohosqpafunctionsimpl.cpp qohosqpafunctions_p.h
+        qohosrawfileengine.cpp qohosrawfileengine_p.h
         qohosruntimedevicetypeandmode.cpp qohosruntimedevicetypeandmode.h
         qohosscreenmanager.cpp qohosscreenmanager.h
         qohossettings.cpp qohossettings.h
@@ -138,6 +139,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         pasteboard
         pixelmap
         qos
+        rawfile.z
         udmf
         ohinputmethod
 )
