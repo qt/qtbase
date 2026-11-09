@@ -6,6 +6,7 @@
 #include <QtTest/QTestEventLoop>
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QThread>
 #include <QtCore/QTimer>
 #include <QtCore/QSocketNotifier>
 #include <QtNetwork/QTcpServer>
@@ -40,6 +41,7 @@ private slots:
     void activationReason_data();
     void activationReason();
     void legacyConnect();
+    void crossThreadSetEnabled();
 
 protected slots:
     void async_readDatagramSlot();
@@ -450,6 +452,26 @@ void tst_QSocketNotifier::legacyConnect()
     QVERIFY(receivedInt);
 }
 
+
+void tst_QSocketNotifier::crossThreadSetEnabled()
+{
+    QTcpServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    server.pauseAccepting(); // drop the server's own notifier on this socket
+    QSocketNotifier notifier(server.socketDescriptor(), QSocketNotifier::Read);
+    QVERIFY(notifier.isEnabled());
+
+    // A refused cross-thread change must not be recorded
+    QTest::ignoreMessage(QtWarningMsg,
+        "QSocketNotifier: Socket notifiers cannot be enabled or disabled from another thread");
+    std::unique_ptr<QThread> thread(QThread::create([&notifier] { notifier.setEnabled(false); }));
+    thread->start();
+    QVERIFY(thread->wait());
+    QVERIFY(notifier.isEnabled());
+
+    notifier.setEnabled(false);
+    QVERIFY(!notifier.isEnabled());
+}
 
 QTEST_MAIN(tst_QSocketNotifier)
 #include <tst_qsocketnotifier.moc>
