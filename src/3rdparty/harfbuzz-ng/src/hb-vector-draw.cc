@@ -730,9 +730,8 @@ hb_vector_draw_render_pdf (hb_vector_draw_t *draw)
   if (!draw->has_extents)
     return nullptr;
 
-  /* Collect the content stream.  The path coordinates are in
-   * SVG space (Y-down).  Prepend a CTM that flips Y so the
-   * PDF page (Y-up) renders correctly. */
+  /* Collect the content stream.  Extents and path coordinates are
+   * both in Y-up (font) space, same as the PDF page. */
   float ex = draw->extents.x;
   float ey = draw->extents.y;
   float ew = draw->extents.width;
@@ -758,7 +757,7 @@ hb_vector_draw_render_pdf (hb_vector_draw_t *draw)
     stream.append_str (" rg\n");
     stream.append_num (ex);
     stream.append_c (' ');
-    stream.append_num (-(ey + eh));
+    stream.append_num (ey);
     stream.append_c (' ');
     stream.append_num (ew);
     stream.append_c (' ');
@@ -787,17 +786,16 @@ hb_vector_draw_render_pdf (hb_vector_draw_t *draw)
   offsets[1] = out.length;
   out.append_str ("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
 
-  /* Object 3: Page.  Extents are in SVG space (y = -font_y).
-   * Convert back: font Y range = [-(ey+eh) .. -ey]. */
+  /* Object 3: Page */
   offsets[2] = out.length;
   out.append_str ("3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [");
   out.append_num (ex);
   out.append_c (' ');
-  out.append_num (-(ey + eh));
+  out.append_num (ey);
   out.append_c (' ');
   out.append_num (ex + ew);
   out.append_c (' ');
-  out.append_num (-ey);
+  out.append_num (ey + eh);
   out.append_str ("] /Contents 4 0 R");
   if (draw->pdf_extgstate_dict.length)
   {
@@ -832,8 +830,6 @@ hb_vector_draw_render_pdf (hb_vector_draw_t *draw)
   out.append_str ("\n%%EOF\n");
 
   hb_blob_t *blob = hb_buf_blob_from (&draw->recycled_blob, &out);
-
-  hb_vector_draw_clear (draw);
 
   return blob;
 }
@@ -918,8 +914,6 @@ hb_vector_draw_render_svg (hb_vector_draw_t *draw)
 
   hb_blob_t *blob = hb_buf_blob_from (&draw->recycled_blob, &out);
 
-  hb_vector_draw_clear (draw);
-
   return blob;
 }
 
@@ -928,6 +922,8 @@ hb_vector_draw_render_svg (hb_vector_draw_t *draw)
  * @draw: a draw context.
  *
  * Renders accumulated draw content to an output blob.
+ * Accumulated content and extents are cleared on return, including
+ * when rendering fails. User configuration is preserved.
  *
  * Return value: (transfer full) (nullable): output blob, or `NULL` if rendering cannot proceed.
  *
@@ -936,6 +932,7 @@ hb_vector_draw_render_svg (hb_vector_draw_t *draw)
 hb_blob_t *
 hb_vector_draw_render (hb_vector_draw_t *draw)
 {
+  HB_SCOPE_GUARD (hb_vector_draw_clear (draw));
   switch (draw->format)
   {
     case HB_VECTOR_FORMAT_SVG:
@@ -955,8 +952,8 @@ hb_vector_draw_render (hb_vector_draw_t *draw)
  *
  * Discards accumulated draw output so @draw can be reused for
  * another render.  User configuration (transform, scale factors,
- * precision) is preserved.  Call hb_vector_draw_reset() to
- * also reset user configuration to defaults.
+ * precision, foreground, background, and budget) is preserved.  Call
+ * hb_vector_draw_reset() to also reset user configuration to defaults.
  *
  * Since: 14.2.0
  */
@@ -968,6 +965,8 @@ hb_vector_draw_clear (hb_vector_draw_t *draw)
   draw->defs.clear ();
   draw->body.clear ();
   draw->path.clear ();
+  draw->pdf_extgstate_dict.clear ();
+  draw->pdf_extgstate_count = 0;
   draw->recharge_budget ();
 }
 
@@ -975,7 +974,8 @@ hb_vector_draw_clear (hb_vector_draw_t *draw)
  * hb_vector_draw_reset:
  * @draw: a draw context.
  *
- * Resets @draw state and clears accumulated content.
+ * Restores user configuration to defaults and clears accumulated content.
+ * The output format and attached user data are preserved.
  *
  * Since: 13.0.0
  */
@@ -985,6 +985,8 @@ hb_vector_draw_reset (hb_vector_draw_t *draw)
   draw->transform = {1, 0, 0, 1, 0, 0};
   draw->x_scale_factor = 1.f;
   draw->y_scale_factor = 1.f;
+  draw->foreground = HB_COLOR (0, 0, 0, 255);
+  draw->background = HB_COLOR (0, 0, 0, 0);
   draw->set_precision (2);
   draw->budget = HB_BUDGET_DEFAULT;
   hb_vector_draw_clear (draw);
@@ -993,9 +995,13 @@ hb_vector_draw_reset (hb_vector_draw_t *draw)
 /**
  * hb_vector_draw_recycle_blob:
  * @draw: a draw context.
- * @blob: (nullable): previously rendered blob to recycle.
+ * @blob: (transfer full) (nullable): previously rendered blob to recycle.
  *
  * Provides a blob for internal buffer reuse by later render calls.
+ * The caller transfers ownership of one reference to @draw and must
+ * not destroy that reference after this call. Finish accessing @blob
+ * and its data before recycling: later renders may reuse the blob
+ * and overwrite its data.
  *
  * Since: 13.0.0
  */
