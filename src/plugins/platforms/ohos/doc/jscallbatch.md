@@ -83,6 +83,21 @@ A class that implements its own behavior with gateways, such as `QOhosView`, dec
 2. **Alias in the private section.** The class declares `using JsCallBatch = QtOhos::JsCallBatch;` at the start of its private section.
 3. **Default only while needed.** A helper's batch parameter defaults to `JsCallBatch::immediate()` only while some caller passes no batch. When every caller passes one, the parameter is required.
 
+## Diagnostics
+
+To see what batches actually do, enable the `qt.ohos.jscallbatch` logging category. It is off by default and can be turned on with `QT_LOGGING_RULES`, for example through the `io.qt.envVarsJson` launch parameter.
+
+- `qt.ohos.jscallbatch.info=true` logs a single line, starting with "summary of batch", when the outermost batch ends. The line says how many calls the batch made, how many round trips they took and what split the batch. A batch that got no calls logs "no calls".
+- `qt.ohos.jscallbatch=true` additionally logs every queued call and every round trip.
+
+Nested batches count toward the outermost one. Every blocking call made while a batch exists counts as one of the batch's calls. One that runs the queued calls shares their round trip, and one that finds nothing queued takes a round trip of its own. Running the queued calls early only counts as a split if more calls are queued after it.
+
+A summary line looks like this:
+
+```
+qt.ohos.jscallbatch: summary of batch void QOhosFoo::update(): 4 calls in 2 round trips; split by QSize QOhosFooProxy::size() const
+```
+
 ## Why an explicit batch
 
 - **No hidden deferral.** A call is deferred only when the call site passes a batch, so reading the code shows which calls are queued.
