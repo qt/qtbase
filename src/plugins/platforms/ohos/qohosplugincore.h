@@ -194,9 +194,10 @@ private:
         Deferring,
     };
 
-    explicit JsCallBatch(Mode mode);
+    JsCallBatch(Mode mode, const char *staticContextName);
 
     Mode m_mode;
+    const char *m_staticContextName;
     QMetaObject::Connection m_eventProcessingDetectionConnection;
 };
 

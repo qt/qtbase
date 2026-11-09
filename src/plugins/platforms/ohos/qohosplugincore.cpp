@@ -17,6 +17,7 @@
 #include <napi.h>
 #include <napi/native_api.h>
 #include <optional>
+#include <qohosjscallbatchtrace.h>
 #include <qohosqabilityinstancesmanager.h>
 #include <qohosutils.h>
 #include <render/qohosjswindowregistry.h>
@@ -822,14 +823,20 @@ public:
         const std::function<void(QOhosJsState &)> &task,
         std::string callerContextName) override;
 
+    void startBatch(const char *batchContextName);
+    void finishBatch(const char *batchContextName);
     void queueCall(std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName);
-    void runQueuedCalls();
 
 private:
+    void invokeAndWaitForContinueUntraced(
+        std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
+        std::string callerContextName);
+    void runQueuedCalls();
     std::function<void(QOhosJsState &, QOhosTaskPromise<>)> takeQueuedCallsFollowedBy(
         std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName);
 
     std::deque<QueuedJsCall> m_qtThreadQueuedCalls;
+    JsCallBatchTrace m_batchTrace;
 };
 
 QOhosJsState &JsThreadOpsImpl::jsState()
@@ -839,8 +846,10 @@ QOhosJsState &JsThreadOpsImpl::jsState()
 
 void JsThreadOpsImpl::invoke(std::function<void(QOhosJsState &)> &&task)
 {
-    if (getQtState().isQtThread())
+    if (getQtState().isQtThread()) {
+        m_batchTrace.recordRunForcedBy(m_qtThreadQueuedCalls.size(), "invoke()");
         runQueuedCalls();
+    }
 
     getJsStateImpl().invokeTask(
         [sharedTask = takeFunctionToSharedPtr(task)](JsState &jsState) {
@@ -850,6 +859,16 @@ void JsThreadOpsImpl::invoke(std::function<void(QOhosJsState &)> &&task)
 }
 
 void JsThreadOpsImpl::invokeAndWaitForContinue(
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
+    std::string callerContextName)
+{
+    if (getQtState().isQtThread())
+        m_batchTrace.recordBlockingCall(m_qtThreadQueuedCalls.size(), callerContextName);
+
+    invokeAndWaitForContinueUntraced(std::move(task), std::move(callerContextName));
+}
+
+void JsThreadOpsImpl::invokeAndWaitForContinueUntraced(
     std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
     std::string callerContextName)
 {
@@ -953,9 +972,22 @@ void JsThreadOpsImpl::runAndWait(
     }
 }
 
+void JsThreadOpsImpl::startBatch(const char *batchContextName)
+{
+    m_batchTrace.recordBatchStart(batchContextName);
+}
+
+void JsThreadOpsImpl::finishBatch(const char *batchContextName)
+{
+    m_batchTrace.recordBatchEnd(batchContextName, m_qtThreadQueuedCalls.size());
+    runQueuedCalls();
+}
+
 void JsThreadOpsImpl::queueCall(
     std::function<void(QOhosJsState &, QOhosTaskPromise<>)> task, std::string callerContextName)
 {
+    m_batchTrace.recordQueuedCall(callerContextName);
+
     m_qtThreadQueuedCalls.push_back(
         QueuedJsCall{
             .task = std::move(task),
@@ -968,7 +1000,7 @@ void JsThreadOpsImpl::runQueuedCalls()
     if (m_qtThreadQueuedCalls.empty())
         return;
 
-    invokeAndWaitForContinue(
+    invokeAndWaitForContinueUntraced(
         makeJsCallSequenceTask(std::exchange(m_qtThreadQueuedCalls, {}), std::nullopt), Q_FUNC_INFO);
 }
 
@@ -995,12 +1027,14 @@ JsThreadOpsImpl &getJsThreadOpsImpl()
 }
 
 JsCallBatch::JsCallBatch(const char *staticContextName)
-    : JsCallBatch(getQtState().isQtThread() ? Mode::Deferring : Mode::Immediate)
+    : JsCallBatch(getQtState().isQtThread() ? Mode::Deferring : Mode::Immediate, staticContextName)
 {
     if (!getQtState().isQtThread()) {
         qOhosPrintfDebug("%s: batch created outside the Qt thread runs each call right away: %s", Q_FUNC_INFO, staticContextName);
         return;
     }
+
+    getJsThreadOpsImpl().startBatch(staticContextName);
 
     const char *funcInfo = Q_FUNC_INFO;
     if (auto *eventDispatcher = QAbstractEventDispatcher::instance()) {
@@ -1017,8 +1051,9 @@ JsCallBatch::JsCallBatch(const char *staticContextName)
     }
 }
 
-JsCallBatch::JsCallBatch(Mode mode)
+JsCallBatch::JsCallBatch(Mode mode, const char *staticContextName)
     : m_mode(mode)
+    , m_staticContextName(staticContextName)
 {
 }
 
@@ -1026,13 +1061,13 @@ JsCallBatch::~JsCallBatch()
 {
     if (m_mode == Mode::Deferring) {
         QObject::disconnect(m_eventProcessingDetectionConnection);
-        getJsThreadOpsImpl().runQueuedCalls();
+        getJsThreadOpsImpl().finishBatch(m_staticContextName);
     }
 }
 
 JsCallBatch &JsCallBatch::immediate()
 {
-    static JsCallBatch immediateBatch(Mode::Immediate);
+    static JsCallBatch immediateBatch(Mode::Immediate, Q_FUNC_INFO);
     return immediateBatch;
 }
 
