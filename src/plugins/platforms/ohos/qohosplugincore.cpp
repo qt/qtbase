@@ -6,6 +6,7 @@
 #include "qohosmtblockingcallsgateway_p.h"
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
+#include <QtCore/qabstracteventdispatcher.h>
 #include <algorithm>
 #include <cstdint>
 #include <deque>
@@ -996,8 +997,24 @@ JsThreadOpsImpl &getJsThreadOpsImpl()
 JsCallBatch::JsCallBatch(const char *staticContextName)
     : JsCallBatch(getQtState().isQtThread() ? Mode::Deferring : Mode::Immediate)
 {
-    if (!getQtState().isQtThread())
+    if (!getQtState().isQtThread()) {
         qOhosPrintfDebug("%s: batch created outside the Qt thread runs each call right away: %s", Q_FUNC_INFO, staticContextName);
+        return;
+    }
+
+    const char *funcInfo = Q_FUNC_INFO;
+    if (auto *eventDispatcher = QAbstractEventDispatcher::instance()) {
+        m_eventProcessingDetectionConnection = QObject::connect(
+            eventDispatcher, &QAbstractEventDispatcher::awake,
+            [funcInfo, batchContextName = staticContextName, warned = false]() mutable {
+                if (!warned) {
+                    warned = true;
+                    qCWarning(
+                        QtForOhos, "%s: events processed inside batch %s, where application code must not run",
+                        funcInfo, batchContextName);
+                }
+            });
+    }
 }
 
 JsCallBatch::JsCallBatch(Mode mode)
@@ -1007,8 +1024,10 @@ JsCallBatch::JsCallBatch(Mode mode)
 
 JsCallBatch::~JsCallBatch()
 {
-    if (m_mode == Mode::Deferring)
+    if (m_mode == Mode::Deferring) {
+        QObject::disconnect(m_eventProcessingDetectionConnection);
         getJsThreadOpsImpl().runQueuedCalls();
+    }
 }
 
 JsCallBatch &JsCallBatch::immediate()
