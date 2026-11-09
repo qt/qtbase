@@ -10,6 +10,7 @@
 #include <private/qduplicatetracker_p.h>
 #include <private/qoffsetstringarray_p.h>
 #include <qdebug.h>
+#include <QtCore/qvarlengtharray.h>
 
 #include <algorithm>
 #include <functional>
@@ -1559,7 +1560,7 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     if (!colCount)
         return false; // no columns means no selected items
 
-    std::vector<QItemSelectionRangeRefCache> cache;
+    QVarLengthArray<QItemSelectionRangeRefCache, 32> cache;
     cache.reserve(d->currentSelection.size() + d->ranges.size());
     std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
@@ -1648,7 +1649,7 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     if (!rowCount)
         return false; // no rows means no selected items
 
-    std::vector<QItemSelectionRangeRefCache> cache;
+    QVarLengthArray<QItemSelectionRangeRefCache, 32> cache;
     cache.reserve(d->currentSelection.size() + d->ranges.size());
     std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
