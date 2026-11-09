@@ -57,7 +57,7 @@
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
         "SecurityCritical": true,
-        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.gz",
+        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.15.0.tar.gz",
         "Path": "src/gzip",
 
         "Description": "FreeType is a freely available software library to render fonts.",
@@ -73,7 +73,7 @@
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
         "SecurityCritical": true,
-        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.gz",
+        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.15.0.tar.gz",
         "Path": "src/bdf",
 
         "Description": "FreeType is a freely available software library to render fonts.",
@@ -90,7 +90,7 @@
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
         "SecurityCritical": true,
-        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.gz",
+        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.15.0.tar.gz",
         "Path": "src/pcf",
 
         "Description": "FreeType is a freely available software library to render fonts.",
