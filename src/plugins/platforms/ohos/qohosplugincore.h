@@ -7,6 +7,7 @@
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/qobjectdefs.h>
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
@@ -208,6 +209,7 @@ private:
     explicit JsCallBatch(Mode mode);
 
     Mode m_mode;
+    QMetaObject::Connection m_eventProcessingDetectionConnection;
 };
 
 template<typename T>
