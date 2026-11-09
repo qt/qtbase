@@ -576,17 +576,16 @@ hb_vector_paint_push_clip_path_end (hb_paint_funcs_t *,
   unsigned pfx_len = paint->id_prefix_length;
   unsigned clip_id = paint->clip_path_counter++;
 
-  /* The accumulated path is in font Y-up coords (the
-   * convention used inside per-glyph <use scale(_,-sy)>
-   * wrappers); this clip is emitted at base body level
-   * (free-form between glyphs), so flip its geometry inside
-   * the clipPath via the path's own transform attribute,
-   * keeping the body's <g clip-path> at body Y-down. */
+  /* The accumulated path is in font Y-up coords, the same
+   * space as the body's <g clip-path> that references it:
+   * the whole body is wrapped in a single scale(1,-1) at
+   * render time, so no per-clip flip here (matches the
+   * glyph and rectangle clips above). */
   paint->defs.append_str ("<clipPath id=\"");
   paint->defs.append_len (pfx, pfx_len);
   paint->defs.append_str ("cp");
   paint->defs.append_unsigned (clip_id);
-  paint->defs.append_str ("\"><path transform=\"scale(1,-1)\" d=\"");
+  paint->defs.append_str ("\"><path d=\"");
   paint->defs.append_len (paint->path.arrayZ, paint->path.length);
   paint->defs.append_str ("\"/></clipPath>\n");
 
@@ -846,7 +845,11 @@ hb_vector_paint_push_group (hb_paint_funcs_t *,
   auto *paint = (hb_vector_paint_t *) paint_data;
   if (unlikely (!paint->ensure_initialized ()))
     return;
-  if (unlikely (!paint->group_stack.push_or_fail (hb_vector_buf_t {})))
+  /* The group is appended to the enclosing body when popped, so it shares
+   * the document cap with everything already held by the open groups. */
+  hb_vector_buf_t group;
+  group.base = paint->current_body ().base + paint->current_body ().length;
+  if (unlikely (!paint->group_stack.push_or_fail (std::move (group))))
     return;
 }
 
@@ -880,30 +883,17 @@ hb_vector_paint_pop_group (hb_paint_funcs_t *,
 
 static hb_bool_t
 hb_vector_paint_color_glyph (hb_paint_funcs_t *,
-                             void *paint_data,
-                             hb_codepoint_t glyph,
-                             hb_font_t *font,
+                             void *,
+                             hb_codepoint_t,
+                             hb_font_t *,
                              void *)
 {
-  auto *paint = (hb_vector_paint_t *) paint_data;
-  if (unlikely (!paint->ensure_initialized ()))
-    return false;
-  if (unlikely (paint->color_glyph_depth >= HB_MAX_NESTING_LEVEL))
-    return false;
-  if (unlikely (hb_set_has (paint->active_color_glyphs, glyph)))
-    return false;
-
-  paint->color_glyph_depth++;
-  hb_set_add (paint->active_color_glyphs, glyph);
-
-  hb_font_paint_glyph (font, glyph,
-		       hb_vector_paint_svg_funcs_get (),
-		       paint,
-		       paint->palette,
-		       paint->foreground);
-  hb_set_del (paint->active_color_glyphs, glyph);
-  paint->color_glyph_depth--;
-  return true;
+  /* Painting the nested glyph from here would re-enter
+   * hb_font_paint_glyph(), with fresh cycle, depth, and edge limits
+   * for every reference to it, so a DAG with fan-out f over n levels is
+   * walked f^n times.  Decline, as hb-raster and the PDF backend do, so
+   * the caller paints it inline under the limits of the current walk. */
+  return false;
 }
 
 
@@ -982,8 +972,6 @@ hb_vector_paint_render_svg (hb_vector_paint_t *paint)
   out.append_str ("</svg>\n");
 
   hb_blob_t *blob = hb_buf_blob_from (&paint->recycled_blob, &out);
-
-  hb_vector_paint_clear (paint);
 
   return blob;
 }

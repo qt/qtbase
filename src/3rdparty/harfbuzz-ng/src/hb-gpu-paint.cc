@@ -53,6 +53,10 @@ enum {
 #define HB_GPU_PAINT_MAX_CLIP_DEPTH  3      /* shader can intersect up to 3 clip outlines per layer */
 #define HB_GPU_PAINT_MAX_SUB_BLOBS   1024   /* bound clip-glyph rasterizations per paint walk */
 
+/* pending_clip_t::sub_blob_index of a clip whose outline is empty:
+ * nothing shows through it, so layers under it are skipped. */
+#define HB_GPU_PAINT_CLIP_EMPTY      -2
+
 /* Layer-op flag bits (LAYER_SOLID texel 0 .g, LAYER_GRADIENT
  * texel 0 .g where bits 0-7 hold the gradient subtype). */
 #define HB_GPU_PAINT_FLAG_IS_FOREGROUND  0x0001
@@ -100,7 +104,33 @@ hb_gpu_paint_pop_clip (hb_paint_funcs_t *funcs HB_UNUSED,
 		       void             *user_data HB_UNUSED)
 {
   hb_gpu_paint_t *c = (hb_gpu_paint_t *) paint_data;
+
+  /* A rectangle clip pushed at this depth is popped before the
+   * glyph/path clip below it; its pop leaves clip_depth alone. */
+  unsigned &rects = c->rect_clips[hb_min (c->clip_depth, (unsigned) HB_GPU_PAINT_MAX_CLIP_DEPTH)];
+  if (rects)
+  {
+    rects--;
+    return;
+  }
+
   if (likely (c->clip_depth > 0)) c->clip_depth--;
+}
+
+/* Clip rectangles are not encoded in v1 (see the design notes in
+ * hb-gpu-paint.hh).  Only count the push so that the matching
+ * pop_clip does not pop the glyph/path clip below it. */
+static void
+hb_gpu_paint_push_clip_rectangle (hb_paint_funcs_t *funcs HB_UNUSED,
+				  void             *paint_data,
+				  float             xmin HB_UNUSED,
+				  float             ymin HB_UNUSED,
+				  float             xmax HB_UNUSED,
+				  float             ymax HB_UNUSED,
+				  void             *user_data HB_UNUSED)
+{
+  hb_gpu_paint_t *c = (hb_gpu_paint_t *) paint_data;
+  c->rect_clips[hb_min (c->clip_depth, (unsigned) HB_GPU_PAINT_MAX_CLIP_DEPTH)]++;
 }
 
 /* Arbitrary-path clip: hand the caller the same hb_gpu_draw
@@ -166,13 +196,19 @@ hb_gpu_paint_push_clip_path_end (hb_paint_funcs_t *funcs HB_UNUSED,
 
   hb_glyph_extents_t ext;
   hb_blob_t *blob = hb_gpu_draw_encode (c->scratch_draw, &ext);
-  if (unlikely (!blob || !c->push_sub_blob (blob)))
+  /* A path with no ink encodes to the empty blob, not NULL.  Don't
+   * record a zero-length sub-blob for it (see emit_clip_sub_blob);
+   * mark the slot so layers under this clip are skipped. */
+  bool empty = blob && !hb_blob_get_length (blob);
+  if (unlikely (!blob || (!empty && !c->push_sub_blob (blob))))
   {
     hb_blob_destroy (blob);
     c->unsupported = true;
     return;
   }
-  int idx = (int) (c->sub_blobs.length - 1);
+  int idx = empty ? HB_GPU_PAINT_CLIP_EMPTY : (int) (c->sub_blobs.length - 1);
+  if (empty)
+    hb_blob_destroy (blob);
 
   if (unlikely (c->clip_depth >= HB_GPU_PAINT_MAX_CLIP_DEPTH))
   {
@@ -452,6 +488,8 @@ emit_clip_sub_blob (hb_gpu_paint_t *c,
     c->ext_max_y = hb_max (c->ext_max_y, clip.ext_y1);
     return clip.sub_blob_index;
   }
+  if (clip.sub_blob_index == HB_GPU_PAINT_CLIP_EMPTY)
+    return -1;
 
   /* Adversarial COLR trees can drive thousands of fresh
    * push_clip_glyph / paint_color cycles within a single paint
@@ -524,6 +562,19 @@ emit_clip_sub_blob (hb_gpu_paint_t *c,
 
   hb_glyph_extents_t ext;
   hb_blob_t *blob = hb_gpu_draw_encode (c->scratch_draw, &ext);
+  /* A glyph with no ink (e.g. a space, or one with zero contours)
+   * draws successfully but encodes to the empty blob, not NULL.  A
+   * zero-length sub-blob would get the texel offset of whatever
+   * follows it -- the next sub-blob or the end of the blob -- and
+   * the shader would decode that as the clip outline.  Nothing
+   * shows through an empty clip: skip the layer, and remember so
+   * further layers under this clip don't redraw the glyph. */
+  if (blob && !hb_blob_get_length (blob))
+  {
+    hb_blob_destroy (blob);
+    clip.sub_blob_index = HB_GPU_PAINT_CLIP_EMPTY;
+    return -1;
+  }
   if (unlikely (!blob || !c->push_sub_blob (blob)))
   {
     hb_blob_destroy (blob);
@@ -560,7 +611,8 @@ emit_clip_sub_blob (hb_gpu_paint_t *c,
 /* Emit a sub-blob for every clip currently on the stack and return
  * their indices in @out (set to -1 for unused slots).  Returns
  * false if any clip's outline is empty (caller should skip the
- * layer entirely) or hb_gpu_draw_encode failed. */
+ * layer entirely), hb_gpu_draw_encode failed, or the session
+ * budget is exhausted. */
 static bool
 emit_all_clip_sub_blobs (hb_gpu_paint_t *c, int out[HB_GPU_PAINT_MAX_CLIP_DEPTH])
 {
@@ -571,6 +623,18 @@ emit_all_clip_sub_blobs (hb_gpu_paint_t *c, int out[HB_GPU_PAINT_MAX_CLIP_DEPTH]
     out[i] = emit_clip_sub_blob (c, c->clip_stack[i]);
     if (out[i] < 0)
       return false;
+
+    /* The memoized clip outline is encoded once however many layers
+     * share it, but the fragment shader walks its band tables again
+     * for every layer painted under it.  Charge each reference to the
+     * session budget, in RGBA16I texels, so the layer count cannot
+     * multiply with the clip size past it. */
+    unsigned texels = hb_blob_get_length (c->sub_blobs.arrayZ[out[i]]) / 8;
+    if (unlikely (!hb_budget_spend (c->budget_remaining, HB_BUDGET_1, texels)))
+    {
+      c->unsupported = true;
+      return false;
+    }
   }
   return true;
 }
@@ -745,9 +809,12 @@ hb_gpu_paint_emit_linear (hb_gpu_paint_t  *c,
   { c->unsupported = true; return; }
 
   unsigned grad_bytes = grad_data.length * sizeof (int16_t);
-  hb_blob_t *grad_blob = hb_blob_create ((const char *) grad_data.arrayZ,
-					 grad_bytes, HB_MEMORY_MODE_DUPLICATE,
-					 nullptr, nullptr);
+  /* _or_fail: hb_blob_create() hands back the empty singleton on
+   * allocation failure, which push_sub_blob() would record as a
+   * zero-length sub-blob with a dangling texel offset. */
+  hb_blob_t *grad_blob = hb_blob_create_or_fail ((const char *) grad_data.arrayZ,
+						 grad_bytes, HB_MEMORY_MODE_DUPLICATE,
+						 nullptr, nullptr);
   if (unlikely (!grad_blob || !c->push_sub_blob (grad_blob)))
   {
     hb_blob_destroy (grad_blob);
@@ -833,9 +900,9 @@ hb_gpu_paint_emit_radial (hb_gpu_paint_t  *c,
   { c->unsupported = true; return; }
 
   unsigned grad_bytes = grad_data.length * sizeof (int16_t);
-  hb_blob_t *grad_blob = hb_blob_create ((const char *) grad_data.arrayZ,
-					 grad_bytes, HB_MEMORY_MODE_DUPLICATE,
-					 nullptr, nullptr);
+  hb_blob_t *grad_blob = hb_blob_create_or_fail ((const char *) grad_data.arrayZ,
+						 grad_bytes, HB_MEMORY_MODE_DUPLICATE,
+						 nullptr, nullptr);
   if (unlikely (!grad_blob || !c->push_sub_blob (grad_blob)))
   {
     hb_blob_destroy (grad_blob);
@@ -969,9 +1036,9 @@ hb_gpu_paint_emit_sweep (hb_gpu_paint_t  *c,
   hb_free (heap_stops);
 
   unsigned grad_bytes = grad_data.length * sizeof (int16_t);
-  hb_blob_t *grad_blob = hb_blob_create ((const char *) grad_data.arrayZ,
-					 grad_bytes, HB_MEMORY_MODE_DUPLICATE,
-					 nullptr, nullptr);
+  hb_blob_t *grad_blob = hb_blob_create_or_fail ((const char *) grad_data.arrayZ,
+						 grad_bytes, HB_MEMORY_MODE_DUPLICATE,
+						 nullptr, nullptr);
   if (unlikely (!grad_blob || !c->push_sub_blob (grad_blob)))
   {
     hb_blob_destroy (grad_blob);
@@ -1056,6 +1123,7 @@ static struct hb_gpu_paint_funcs_lazy_loader_t
     hb_paint_funcs_set_push_transform_func        (funcs, hb_gpu_paint_push_transform,        nullptr, nullptr);
     hb_paint_funcs_set_pop_transform_func         (funcs, hb_gpu_paint_pop_transform,         nullptr, nullptr);
     hb_paint_funcs_set_push_clip_glyph_func       (funcs, hb_gpu_paint_push_clip_glyph,       nullptr, nullptr);
+    hb_paint_funcs_set_push_clip_rectangle_func   (funcs, hb_gpu_paint_push_clip_rectangle,   nullptr, nullptr);
     hb_paint_funcs_set_push_clip_path_start_func  (funcs, hb_gpu_paint_push_clip_path_start,  nullptr, nullptr);
     hb_paint_funcs_set_push_clip_path_end_func    (funcs, hb_gpu_paint_push_clip_path_end,    nullptr, nullptr);
     hb_paint_funcs_set_pop_clip_func              (funcs, hb_gpu_paint_pop_clip,              nullptr, nullptr);
@@ -1445,9 +1513,14 @@ hb_gpu_paint_encode (hb_gpu_paint_t     *paint,
   /* No ink (e.g. space glyph): return the empty-blob singleton, not
    * nullptr.  Same convention as hb_gpu_draw_encode(); callers can
    * distinguish "nothing to render" (length 0) from "encoder
-   * failed" (NULL). */
-  if (paint->num_ops == 0)
+   * failed" (NULL).  Extents still at their sentinels means every
+   * layer was skipped (empty clips) and only group ops remain. */
+  if (paint->num_ops == 0 || paint->ext_min_x > paint->ext_max_x)
+  {
+    if (extents)
+      *extents = {0, 0, 0, 0};
     return hb_blob_get_empty ();
+  }
 
   /* Layout:
    *   header          (3 texels = 24 bytes)
@@ -1613,6 +1686,7 @@ hb_gpu_paint_clear (hb_gpu_paint_t *paint)
   paint->sub_blobs.reset ();
   paint->sub_bytes = 0;
   paint->clip_depth = 0;
+  hb_memset (paint->rect_clips, 0, sizeof (paint->rect_clips));
   paint->pending_clip_path = false;
   paint->unsupported = false;
   paint->recharge_budget ();

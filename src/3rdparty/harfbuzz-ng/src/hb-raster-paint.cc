@@ -207,7 +207,8 @@ typedef void (*hb_raster_paint_clip_mask_emit_t) (hb_raster_draw_t *rdr, void *u
  * outlines are drawn into it: curves outside the surface collapse to
  * their chord, and outline traversal and curve flattening charge the
  * seeded budget.  hb_raster_paint_readback_budget() pulls the remainder
- * back into the session afterwards. */
+ * back into the session afterwards.  An unlimited policy is seeded as
+ * such, so that it disables the rasterizer's own pixel budget too. */
 static void
 hb_raster_paint_attach_clip_rdr (hb_raster_paint_t *c,
 				 hb_raster_draw_t *rdr,
@@ -218,7 +219,9 @@ hb_raster_paint_attach_clip_rdr (hb_raster_paint_t *c,
 			       (float) surf->extents.y_origin,
 			       (float) surf->extents.x_origin + (float) surf->extents.width,
 			       (float) surf->extents.y_origin + (float) surf->extents.height);
-  hb_draw_set_budget (hb_raster_draw_get_funcs (rdr), rdr, c->budget_remaining);
+  hb_draw_set_budget (hb_raster_draw_get_funcs (rdr), rdr,
+		      c->budget == HB_BUDGET_UNLIMITED ? c->budget :
+		      c->budget_remaining);
 }
 
 /* Pull the outline budget the rasterizer has consumed back into the
@@ -282,7 +285,7 @@ hb_raster_paint_finalize_path_clip (hb_raster_paint_t *c,
 				    hb_raster_image_t *surf,
 				    unsigned w, unsigned h)
 {
-  if (unlikely (!c->precharge_work (hb_raster_draw_get_pixel_work (rdr, h, w))))
+  if (unlikely (!c->precharge_work (hb_raster_draw_get_pixel_work (rdr))))
   {
     hb_raster_draw_clear (rdr);
     hb_raster_paint_push_empty_clip (c, w, h);
@@ -629,7 +632,9 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
       /* Precompute edge normals for point-in-quad test.
        * Edge i goes from corner i to corner (i+1)%4.
-       * Normal = (dy, -dx); inside test: dot(normal, p-corner) >= 0 */
+       * Normal = (dy, -dx) points inward for a clockwise quad, so the
+       * inside test is dot(normal, p-corner) >= 0; a reflected transform
+       * yields a counter-clockwise quad and flips the sign. */
 	      float enx[4], eny[4], ed[4];
 	      for (unsigned i = 0; i < 4; i++)
 	      {
@@ -658,7 +663,7 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
 		    for (unsigned i = 0; i < 4; i++)
 		    {
 		      float d = enx[i] * px_f + eny[i] * py_f;
-		      if (ccw ? d < ed[i] : d > ed[i])
+		      if (ccw ? d > ed[i] : d < ed[i])
 		      {
 			inside = false;
 			break;
@@ -688,7 +693,7 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
 		    for (unsigned i = 0; i < 4; i++)
 		    {
 		      float d = enx[i] * px_f + eny[i] * py_f;
-		      if (ccw ? d < ed[i] : d > ed[i])
+		      if (ccw ? d > ed[i] : d < ed[i])
 		      {
 			inside = false;
 			break;
@@ -788,7 +793,8 @@ hb_raster_paint_push_group (hb_paint_funcs_t *pfuncs HB_UNUSED,
   ensure_initialized (c);
 
   /* acquire_surface() clears a full surface; charge its area. */
-  if (unlikely (!c->charge_work ((int64_t) c->fixed_extents.width * c->fixed_extents.height)))
+  const hb_raster_extents_t &extents = c->get_surface_extents ();
+  if (unlikely (!c->charge_work ((int64_t) extents.width * extents.height)))
     return;
 
   hb_raster_image_t *new_surf = c->acquire_surface ();
@@ -952,9 +958,7 @@ hb_raster_paint_fill_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_raster_paint_emit_clip_glyph_mask (rdr, &data);
   hb_raster_paint_readback_budget (c, rdr);
 
-  if (unlikely (!c->precharge_work (hb_raster_draw_get_pixel_work (rdr,
-							  surf->extents.height,
-							  surf->extents.width))))
+  if (unlikely (!c->precharge_work (hb_raster_draw_get_pixel_work (rdr))))
   {
     hb_raster_draw_clear (rdr);
     return;
@@ -1018,7 +1022,10 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
   else if (format == HB_PAINT_IMAGE_FORMAT_PNG)
   {
 #ifdef HAVE_PNG
-    if (!decoded_png.deserialize_from_png (blob))
+    /* The image size is font data and the decoder allocates and fills all
+     * of it before it can be charged below; bound it like other surfaces
+     * sized from font data. */
+    if (!decoded_png.deserialize_from_png (blob, HB_RASTER_MAX_AUTO_DIMENSION))
       return false;
     src_width = decoded_png.extents.width;
     src_height = decoded_png.extents.height;
@@ -2153,6 +2160,10 @@ hb_raster_paint_get_scale_factor (const hb_raster_paint_t *paint,
  *
  * Sets the output image extents (pixel rectangle).
  *
+ * Changing extents after painting starts does not resize the active image.
+ * The extents are cleared by hb_raster_paint_render(), so set them again
+ * before painting the next image.
+ *
  * Call this before hb_font_paint_glyph() for each render.
  * A common pattern is:
  * |[<!-- language="plain" -->
@@ -2583,9 +2594,9 @@ hb_raster_paint_render (hb_raster_paint_t *paint)
  *
  * Discards accumulated paint output so @paint can be reused for
  * another render.  User configuration (base transform, scale
- * factors, foreground, custom palette colors) is preserved.  Call
- * hb_raster_paint_reset() to also reset user configuration to
- * defaults.
+ * factors, foreground, background, palette, custom palette colors)
+ * is preserved.  Call hb_raster_paint_reset() to also reset user
+ * configuration to defaults.
  *
  * Since: 14.2.0
  **/
@@ -2619,6 +2630,8 @@ hb_raster_paint_reset (hb_raster_paint_t *paint)
   paint->x_scale_factor = 1.f;
   paint->y_scale_factor = 1.f;
   paint->foreground = HB_COLOR (0, 0, 0, 255);
+  paint->background = HB_COLOR (0, 0, 0, 0);
+  paint->palette = 0;
   paint->budget = HB_BUDGET_DEFAULT;
   hb_raster_paint_clear_custom_palette_colors (paint);
   hb_raster_paint_clear (paint);
