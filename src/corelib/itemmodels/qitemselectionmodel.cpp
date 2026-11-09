@@ -1556,6 +1556,9 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     };
 
     const int colCount = d->model->columnCount(parent);
+    if (!colCount)
+        return false; // no columns means no selected items
+
     int unselectable = 0;
     std::vector<QItemSelectionRangeRefCache> cache;
     cache.reserve(d->currentSelection.size() + d->ranges.size());
@@ -1642,6 +1645,9 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     };
 
     const int rowCount = d->model->rowCount(parent);
+    if (!rowCount)
+        return false; // no rows means no selected items
+
     int unselectable = 0;
     std::vector<QItemSelectionRangeRefCache> cache;
     cache.reserve(d->currentSelection.size() + d->ranges.size());
