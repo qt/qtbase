@@ -32,6 +32,7 @@
 
 #include <algorithm> // for std::lower_bound, std::sort
 #include <functional> // for std::less, std::ref
+#include <iterator> // for std::iterator_traits
 
 QT_BEGIN_NAMESPACE
 
@@ -164,6 +165,12 @@ private:
     }
 #endif
 };
+
+template <typename InputIt,
+          typename T = typename std::iterator_traits<InputIt>::value_type,
+          typename Compare = std::less<T>>
+QMinimalFlatSet(InputIt, InputIt, Compare = Compare())
+        -> QMinimalFlatSet<T, QList<T>, Compare>;
 
 #undef QMINIMAL_FLAT_SET_PRINT_AT_END
 
