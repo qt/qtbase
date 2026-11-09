@@ -6,9 +6,21 @@
 #include <QtTest/private/qpropertytesthelper_p.h>
 #include <QSignalSpy>
 
-#include <QtGui/QtGui>
+#include <QtGui/qstandarditemmodel.h>
+
+#include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qdatastream.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qitemselectionmodel.h>
+#include <QtCore/qlist.h>
+#if QT_CONFIG(proxymodel)
+#include <QtCore/qsortfilterproxymodel.h>
+#endif
+#include <QtCore/qstringlist.h>
+#include <QtCore/qstringlistmodel.h>
 
 #include <algorithm>
+#include <memory>
 
 Q_DECLARE_METATYPE(QItemSelectionModel::SelectionFlag)
 Q_DECLARE_METATYPE(Qt::SortOrder)
