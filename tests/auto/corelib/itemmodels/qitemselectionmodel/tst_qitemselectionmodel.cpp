@@ -11,6 +11,7 @@
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qitemselectionmodel.h>
 #include <QtCore/qlist.h>
 #if QT_CONFIG(proxymodel)
@@ -20,6 +21,7 @@
 #include <QtCore/qstringlistmodel.h>
 
 #include <algorithm>
+#include <chrono>
 #include <memory>
 
 Q_DECLARE_METATYPE(QItemSelectionModel::SelectionFlag)
@@ -67,6 +69,7 @@ private slots:
     void layoutChanged();
     void merge_data();
     void merge();
+    void isColumnSelectedManyRanges();
     void isRowSelected();
     void isColumnSelected();
     void childrenDeselectionSignal();
@@ -2215,6 +2218,52 @@ void tst_QItemSelectionModel::merge()
     };
     verify(init.indexes(), result);
     verify(result.indexes(), init);
+}
+
+void tst_QItemSelectionModel::isColumnSelectedManyRanges()
+{
+    QElapsedTimer timer;
+    auto timing = [&] (const char *what) {
+        const std::chrono::duration<double, std::milli> secs = timer.durationElapsed();
+        qDebug("Executed %21s in %9.3fms", what, secs.count());
+        timer.restart();
+    };
+    timer.start();
+    constexpr int numRows = 50000;
+    QStandardItemModel model(numRows, 3);
+    QItemSelection sel;
+    sel.reserve(numRows);
+    timing("setup");
+
+    // Create a selection that cannot be shared across rows:
+    //  ↓ will query this column
+    // ##_
+    // _##
+    // ##_
+    // _##
+    // :
+    // ___ (last row unselected)
+
+    for (int row = 0; row < numRows - 1; ++row) {
+        const int offset = row % 2;
+        sel.select(model.index(row, offset), model.index(row, offset + 1));
+    }
+    timing("select pattern");
+
+    QItemSelectionModel sm(&model);
+    sm.select(sel, QItemSelectionModel::Select);
+    timing("model select pattern");
+
+    QVERIFY(!sm.isColumnSelected(1, QModelIndex()));
+    timing("isColumnSelected #1");
+
+    // select the full last row
+    sm.select({model.index(numRows - 1, 0), model.index(numRows - 1, 2)},
+              QItemSelectionModel::Select);
+    timing("model select last row");
+
+    QVERIFY(sm.isColumnSelected(1, QModelIndex()));
+    timing("isColumnSelected #2");
 }
 
 void tst_QItemSelectionModel::isRowSelected()
