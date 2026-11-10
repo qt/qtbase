@@ -35,6 +35,10 @@ private slots:
     void qtbug59443();
     void colorFont();
     void invalidFontName();
+    void fileAttachment();
+    void fileAttachmentUnicodeName();
+    void fileAttachmentEscaping();
+    void fileAttachmentMultiple();
 };
 
 void tst_QPdfWriter::basics()
@@ -408,6 +412,116 @@ void tst_QPdfWriter::invalidFontName()
         }
     }
     QVERIFY2(checkedAny, "No embedded font name found to validate.");
+}
+
+void tst_QPdfWriter::fileAttachment()
+{
+    QByteArray contents;
+    {
+        QBuffer buffer(&contents);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QPdfWriter writer(&buffer);
+        writer.addFileAttachment("factur-x.xml", "<factur-x/>", "text/xml");
+        QPainter painter(&writer);
+        painter.drawText(QPointF(100, 100), "attachment");
+    }
+    QVERIFY(!contents.isEmpty());
+
+    // The /F entry of a file specification dictionary is a byte string, and
+    // PDF readers interpret it as 8-bit text. Writing it as a UTF-16 text
+    // string makes Acrobat display the byte order mark as "þÿ"
+    // (QTBUG-151975).
+    QVERIFY2(contents.contains("/F (factur-x.xml)"),
+             "The file specification string is not printable ASCII");
+    QVERIFY2(!contents.contains("/F (\xfe\xff"),
+             "The file specification string must not start with a UTF-16 BOM");
+
+    // /UF carries the exact name as a Unicode text string and is written for
+    // every attachment.
+    QVERIFY2(contents.contains("/UF (\xfe\xff"),
+             "The file name is not stored in /UF");
+
+    // The name tree key is a Unicode text string as well.
+    QVERIFY2(contents.contains("[(\xfe\xff"),
+             "The embedded files name tree key is not a Unicode text string");
+}
+
+void tst_QPdfWriter::fileAttachmentUnicodeName()
+{
+    const QString fileName = QStringLiteral("附件.xml");
+    QByteArray contents;
+    {
+        QBuffer buffer(&contents);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QPdfWriter writer(&buffer);
+        writer.addFileAttachment(fileName, "<factur-x/>", "text/xml");
+        QPainter painter(&writer);
+        painter.drawText(QPointF(100, 100), "attachment");
+    }
+    QVERIFY(!contents.isEmpty());
+
+    // Characters that cannot be represented in ASCII are replaced by '?' in
+    // /F, so that readers which only look at that entry still show a usable
+    // name instead of a mojibake UTF-16 string.
+    QVERIFY2(contents.contains("/F (??.xml)"),
+             "The /F entry does not contain the ASCII fallback");
+    QVERIFY2(!contents.contains("/F (\xfe\xff"),
+             "The /F entry must not contain a UTF-16 text string");
+
+    // The exact name is carried in the /UF entry as a UTF-16BE text string.
+    QVERIFY2(contents.contains("/UF (\xfe\xff"),
+             "The Unicode file name is not stored in /UF");
+
+    // The name tree key keeps the exact name so that keys stay unique.
+    QVERIFY2(contents.contains("[(\xfe\xff"),
+             "The embedded files name tree key is not a Unicode text string");
+    QVERIFY2(!contents.contains("[(??.xml)"),
+             "The embedded files name tree key uses the ASCII fallback");
+}
+
+void tst_QPdfWriter::fileAttachmentEscaping()
+{
+    const QString fileName = QStringLiteral("a(b)c\\d.xml");
+    QByteArray contents;
+    {
+        QBuffer buffer(&contents);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QPdfWriter writer(&buffer);
+        writer.addFileAttachment(fileName, "<factur-x/>", "text/xml");
+        QPainter painter(&writer);
+        painter.drawText(QPointF(100, 100), "attachment");
+    }
+    QVERIFY(!contents.isEmpty());
+
+    // Parentheses and backslashes are escaped in PDF string objects.
+    QVERIFY2(contents.contains("/F (a\\(b\\)c\\\\d.xml)"),
+             "Special characters are not escaped in the /F entry");
+    QVERIFY2(contents.contains("/UF (\xfe\xff"),
+             "The file name is not stored in /UF");
+}
+
+void tst_QPdfWriter::fileAttachmentMultiple()
+{
+    QByteArray contents;
+    {
+        QBuffer buffer(&contents);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QPdfWriter writer(&buffer);
+        writer.addFileAttachment(QStringLiteral("附件.xml"), "<a/>", "text/xml");
+        writer.addFileAttachment(QStringLiteral("文件.xml"), "<b/>", "text/xml");
+        QPainter painter(&writer);
+        painter.drawText(QPointF(100, 100), "attachments");
+    }
+    QVERIFY(!contents.isEmpty());
+
+    // Both attachments have the same ASCII fallback, but the exact names in
+    // /UF and in the name tree keys keep them distinct. Each exact name
+    // appears twice: in /UF and as the name tree key.
+    QCOMPARE(contents.count("/Type/Filespec"), qsizetype(2));
+    QCOMPARE(contents.count("/UF (\xfe\xff"), qsizetype(2));
+    QCOMPARE(contents.count("/F (??.xml)"), qsizetype(2));
+    QCOMPARE(contents.count("(\xfe\xff\x96\x44\x4e\xf6"), qsizetype(2));
+    QCOMPARE(contents.count("(\xfe\xff\x65\x87\x4e\xf6"), qsizetype(2));
 }
 
 QTEST_MAIN(tst_QPdfWriter)

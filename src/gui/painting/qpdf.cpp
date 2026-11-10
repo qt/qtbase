@@ -12,6 +12,7 @@
 #include <private/qfont_p.h>
 #include <private/qmath_p.h>
 #include <private/qpainter_p.h>
+#include <private/qstringiterator_p.h>
 
 #include <qbuffer.h>
 #include <qcryptographichash.h>
@@ -2066,6 +2067,37 @@ void QPdfEnginePrivate::writeDestsRoot()
             "endobj\n");
 }
 
+/*!
+    \internal
+
+    Returns \a string as a file specification string object, including the
+    enclosing parentheses, for the \c /F entry of a file specification
+    dictionary.
+
+    A file specification string is a byte string, so only printable ASCII can
+    be passed to readers reliably. Characters outside of that range are
+    replaced by '?'; the exact name is stored in the \c /UF entry, which is a
+    Unicode text string (ISO 32000-1, table 44).
+*/
+static QByteArray pdfFileSpecName(QStringView string)
+{
+    QByteArray result;
+    result.reserve(string.size() + 2);
+    result.append('(');
+    QStringIterator it(string);
+    while (it.hasNext()) {
+        const char32_t uc = it.next();
+        char c = '?';
+        if (uc >= 0x20 && uc <= 0x7e)
+            c = char(uc);
+        if (c == '(' || c == ')' || c == '\\')
+            result.append('\\');
+        result.append(c);
+    }
+    result.append(')');
+    return result;
+}
+
 void QPdfEnginePrivate::writeAttachmentRoot()
 {
     if (fileCache.isEmpty())
@@ -2094,6 +2126,13 @@ void QPdfEnginePrivate::writeAttachmentRoot()
         attachments.push_back(addXrefEntry(-1));
         xprintf("<<\n"
                 "/F ");
+        write(pdfFileSpecName(attachment.fileName));
+
+        // /F is a byte string and can only carry the ASCII fallback. The exact
+        // name goes into /UF, which is a Unicode text string. Table 44 of
+        // ISO 32000-1 recommends writing both, and PDF/A-2 and PDF/A-3 require
+        // both entries on embedded file specifications.
+        xprintf("\n/UF ");
         printString(attachment.fileName);
 
         xprintf("\n/EF <</F %d 0 R>>\n"
@@ -2110,6 +2149,9 @@ void QPdfEnginePrivate::writeAttachmentRoot()
     xprintf("<</Names[");
     for (int i = 0; i < size; ++i) {
         auto attachment = fileCache.at(i);
+        // The name tree keys are never displayed to the user, and they must be
+        // unique: the ASCII fallback used for /F may map several names to the
+        // same string, so store the exact name as a Unicode text string.
         printString(attachment.fileName);
         xprintf("%d 0 R\n", attachments.at(i));
     }
