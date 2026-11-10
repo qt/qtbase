@@ -4337,7 +4337,8 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsLineItem()
     item.setLine(QLineF(0, 0, 10, 0));
     QCOMPARE(item.line(), QLineF(0, 0, 10, 0));
     QCOMPARE(item.boundingRect(), QRectF(-0.5, -0.5, 11, 1));
-    QCOMPARE(item.shape().elementCount(), 11);
+    const QPainterPath shape = item.shape();
+    QCOMPARE(shape.elementCount(), 11);
 
     QPainterPath path;
     path.moveTo(0, -0.5);
@@ -4354,7 +4355,7 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsLineItem()
     path.closeSubpath();
 
     for (int i = 0; i < 11; ++i)
-        QCOMPARE(QPointF(item.shape().elementAt(i)), QPointF(path.elementAt(i)));
+        QCOMPARE(QPointF(shape.elementAt(i)), QPointF(path.elementAt(i)));
 }
 
 void tst_QGraphicsItem::defaultItemTest_QGraphicsPixmapItem()
