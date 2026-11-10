@@ -8,6 +8,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qtransform.h>
 
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qline.h>
 #include <QtCore/qlist.h>
@@ -137,6 +138,7 @@ public:
     QList<QPolygonF> toFillPolygons(const QTransform &matrix = QTransform()) const;
     QPolygonF toFillPolygon(const QTransform &matrix = QTransform()) const;
 
+    QSpan<const Element> elements() const noexcept;
     int elementCount() const;
     QPainterPath::Element elementAt(int i) const;
     void setElementPositionAt(int i, qreal x, qreal y);

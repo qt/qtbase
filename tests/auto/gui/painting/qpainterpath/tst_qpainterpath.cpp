@@ -11,6 +11,7 @@
 #include <qpen.h>
 #include <qmath.h>
 
+#include <algorithm>
 #include <tuple>
 
 class tst_QPainterPath : public QObject
@@ -96,6 +97,17 @@ private slots:
     void percentAtEmptyPath_data();
     void percentAtEmptyPath();
 };
+
+static void checkElementViewConsistent(const QPainterPath &p)
+{
+    using S = decltype(p.elementCount());
+    const auto n = p.elementCount();
+    const QSpan s = p.elements();
+    QCOMPARE(n, s.size());
+    S i = 0;
+    for (auto &e : s)
+        QCOMPARE_EQ(e, p.elementAt(i++));
+}
 
 void tst_QPainterPath::cleanupTestCase()
 {
@@ -680,28 +692,46 @@ void tst_QPainterPath::testStroker()
 void tst_QPainterPath::testOperatorEquals()
 {
     QPainterPath empty1;
+    checkElementViewConsistent(empty1);
     QPainterPath empty2;
     QCOMPARE(empty1, empty2);
+    QVERIFY(std::equal(empty1.elements().begin(), empty1.elements().end(),
+                       empty2.elements().begin(), empty2.elements().end()));
 
     QPainterPath rect1;
     rect1.addRect(100, 100, 100, 100);
+    checkElementViewConsistent(rect1);
     QCOMPARE(rect1, rect1);
     QVERIFY(rect1 != empty1);
+    QVERIFY(!std::equal(empty1.elements().begin(), empty1.elements().end(),
+                        rect1.elements().begin(), rect1.elements().end()));
+
 
     QPainterPath rect2;
     rect2.addRect(100, 100, 100, 100);
     QCOMPARE(rect1, rect2);
+    QVERIFY(std::equal(rect1.elements().begin(), rect1.elements().end(),
+                       rect2.elements().begin(), rect2.elements().end()));
 
     rect2.setFillRule(Qt::WindingFill);
     QVERIFY(rect1 != rect2);
+    // but elements() are still the same:
+    checkElementViewConsistent(rect2);
+    QVERIFY(std::equal(rect1.elements().begin(), rect1.elements().end(),
+                       rect2.elements().begin(), rect2.elements().end()));
 
     QPainterPath ellipse1;
     ellipse1.addEllipse(50, 50, 100, 100);
     QVERIFY(rect1 != ellipse1);
+    checkElementViewConsistent(ellipse1);
+    QVERIFY(!std::equal(rect1.elements().begin(), rect1.elements().end(),
+                        ellipse1.elements().begin(), ellipse1.elements().end()));
 
     QPainterPath ellipse2;
     ellipse2.addEllipse(50, 50, 100, 100);
     QCOMPARE(ellipse1, ellipse2);
+    QVERIFY(std::equal(ellipse1.elements().begin(), ellipse1.elements().end(),
+                       ellipse2.elements().begin(), ellipse2.elements().end()));
 }
 
 void tst_QPainterPath::testOperatorEquals_fuzzy()
@@ -1381,6 +1411,7 @@ void tst_QPainterPath::setElementPositionAt()
     QCOMPARE(path.elementAt(0).type, QPainterPath::MoveToElement);
     QCOMPARE(path.elementAt(0).x, qreal(42.));
     QCOMPARE(path.elementAt(0).y, qreal(42.));
+    checkElementViewConsistent(path);
 
     QPainterPath copy = path;
     copy.setElementPositionAt(0, qreal(0), qreal(0));
@@ -1388,11 +1419,13 @@ void tst_QPainterPath::setElementPositionAt()
     QCOMPARE(copy.elementAt(0).type, QPainterPath::MoveToElement);
     QCOMPARE(copy.elementAt(0).x, qreal(0));
     QCOMPARE(copy.elementAt(0).y, qreal(0));
+    checkElementViewConsistent(copy);
 
     QCOMPARE(path.elementCount(), 1);
     QCOMPARE(path.elementAt(0).type, QPainterPath::MoveToElement);
     QCOMPARE(path.elementAt(0).x, qreal(42.));
     QCOMPARE(path.elementAt(0).y, qreal(42.));
+    checkElementViewConsistent(path);
 }
 
 void tst_QPainterPath::angleAtPercent()
@@ -1641,6 +1674,8 @@ void tst_QPainterPath::translate()
         QCOMPARE(QPointF(complexPath.elementAt(i)) - offset, untranslatedElements.at(i));
 
     QCOMPARE(complexPath.translated(-offset), untranslatedComplexPath);
+
+    checkElementViewConsistent(complexPath);
 }
 
 

@@ -473,11 +473,30 @@ static void qt_debug_path(const QPainterPath &path)
 */
 
 /*!
+    \since 6.13
+
+    Returns a (potentially empty) \l{QSpan}{span} of the painter path's
+    elements.
+
+    The return value is valid until the next call to a non-const operation on
+    this painter path (which might be destruction).
+
+    \sa elementCount(), elementAt(), isEmpty(), ElementType
+*/
+auto QPainterPath::elements() const noexcept -> QSpan<const Element>
+{
+    if (!d_ptr)
+        return {};
+    return d_ptr->elements;
+}
+
+/*!
     \fn int QPainterPath::elementCount() const
 
     Returns the number of path elements in the painter path.
 
     \sa ElementType, elementAt(), isEmpty()
+    \sa elements()
 */
 
 int QPainterPath::elementCount() const
@@ -491,6 +510,7 @@ int QPainterPath::elementCount() const
     Returns the element at the given \a index in the painter path.
 
     \sa ElementType, elementCount(), isEmpty()
+    \sa elements()
 */
 
 QPainterPath::Element QPainterPath::elementAt(int i) const

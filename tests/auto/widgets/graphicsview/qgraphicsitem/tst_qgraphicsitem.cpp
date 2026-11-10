@@ -4354,8 +4354,11 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsLineItem()
     path.lineTo(10, 0);
     path.closeSubpath();
 
+    const QSpan shapeElements = shape.elements();
+    const QSpan pathElements = path.elements();
+
     for (int i = 0; i < 11; ++i)
-        QCOMPARE(QPointF(shape.elementAt(i)), QPointF(path.elementAt(i)));
+        QCOMPARE(QPointF(shapeElements[i]), QPointF(pathElements[i]));
 }
 
 void tst_QGraphicsItem::defaultItemTest_QGraphicsPixmapItem()

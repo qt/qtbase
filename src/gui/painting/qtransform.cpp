@@ -1491,33 +1491,34 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
     QPointF last;
     QPointF lastMoveTo;
     bool needsMoveTo = true;
-    for (int i = 0; i < path.elementCount(); ++i) {
-        switch (path.elementAt(i).type) {
+    const QSpan elements = path.elements();
+    for (qsizetype i = 0; i < elements.size(); ++i) {
+        switch (elements[i].type) {
         case QPainterPath::MoveToElement:
             if (i > 0 && lastMoveTo != last)
                 lineTo_clipped(result, transform, last, lastMoveTo, needsMoveTo);
 
-            lastMoveTo = path.elementAt(i);
-            last = path.elementAt(i);
+            lastMoveTo = elements[i];
+            last = elements[i];
             needsMoveTo = true;
             break;
         case QPainterPath::LineToElement:
-            if (lineTo_clipped(result, transform, last, path.elementAt(i), needsMoveTo))
+            if (lineTo_clipped(result, transform, last, elements[i], needsMoveTo))
                 needsMoveTo = false;
-            last = path.elementAt(i);
+            last = elements[i];
             break;
         case QPainterPath::CurveToElement:
-            if (cubicTo_clipped(result, transform, last, path.elementAt(i), path.elementAt(i+1), path.elementAt(i+2), needsMoveTo))
+            if (cubicTo_clipped(result, transform, last, elements[i], elements[i + 1], elements[i + 2], needsMoveTo))
                 needsMoveTo = false;
             i += 2;
-            last = path.elementAt(i);
+            last = elements[i];
             break;
         default:
             Q_ASSERT(false);
         }
     }
 
-    if (path.elementCount() > 0 && lastMoveTo != last)
+    if (elements.size() > 0 && lastMoveTo != last)
         lineTo_clipped(result, transform, last, lastMoveTo, needsMoveTo, false);
 
     result.setFillRule(path.fillRule());
