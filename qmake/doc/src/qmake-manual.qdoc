@@ -2127,6 +2127,9 @@
 
     Specifies a list of additional qmake targets.
 
+    \note The generators for Visual Studio and Xcode project files do not run
+    custom targets as part of the build. Use \l{QMAKE_EXTRA_COMPILERS} instead.
+
     See also \l{Adding Custom Targets}.
 
     \section1 QMAKE_FAILED_REQUIREMENTS
@@ -4949,6 +4952,23 @@
         \li target
         \li The name of the custom build target.
     \endtable
+
+    \note The generators for Visual Studio and Xcode project files do not run
+    custom targets as part of the build. Use
+    \l{QMAKE_EXTRA_COMPILERS}{extra compilers} instead, which these generators
+    support. For example, instead of a custom target that runs a command to
+    create a file, use a custom compiler that creates the file from an input
+    file:
+
+    \snippet code/doc_src_qmake-manual.pro extra compiler instead of extra target
+
+    The command runs when \c version.h is missing or older than \c version.in.
+    The \c no_link option keeps the file out of the linked objects. It is also
+    required for Xcode project files: without it, the generator treats the
+    output as a source file, and the command is not run. In Makefile-based
+    builds, \c target_predeps additionally makes the build create the file
+    before it builds the target. See \l{Adding Compilers} for the details of
+    both options.
 
     \section1 Adding Compilers
 
