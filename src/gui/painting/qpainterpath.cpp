@@ -604,7 +604,7 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 /*!
     \fn void QPainterPath::swap(QPainterPath &other)
     \since 4.8
-    \memberswap{painer path}
+    \memberswap{painter path}
 */
 
 /*!
