@@ -167,10 +167,10 @@ private:
 };
 
 template <typename InputIt,
-          typename T = typename std::iterator_traits<InputIt>::value_type,
-          typename Compare = std::less<T>>
+          typename Compare = std::less<typename std::iterator_traits<InputIt>::value_type>>
 QMinimalFlatSet(InputIt, InputIt, Compare = Compare())
-        -> QMinimalFlatSet<T, QList<T>, Compare>;
+        -> QMinimalFlatSet<typename std::iterator_traits<InputIt>::value_type,
+                           QList<typename std::iterator_traits<InputIt>::value_type>, Compare>;
 
 #undef QMINIMAL_FLAT_SET_PRINT_AT_END
 
