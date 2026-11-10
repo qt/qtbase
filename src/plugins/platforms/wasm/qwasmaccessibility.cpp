@@ -1438,7 +1438,8 @@ bool QWasmAccessibility::handleUpdateByEventType(QAccessibleEvent *event)
 
     QAccessibleInterface *iface = event->accessibleInterface();
     if (!iface) {
-        qWarning() << "handleUpdateByEventType with null a11y interface" << event->type() << event->object();
+        // Expected for objects without an accessible interface, such as a Qt Quick Action
+        qCDebug(lcQpaAccessibility) << "handleUpdateByEventType with null a11y interface" << event->type() << event->object();
         return false;
     }
 
@@ -1546,7 +1547,7 @@ void QWasmAccessibility::handleUpdateByInterfaceRole(QAccessibleEvent *event)
 
     QAccessibleInterface *iface = event->accessibleInterface();
     if (!iface) {
-        qWarning() << "handleUpdateByInterfaceRole with null a11y interface" << event->type() << event->object();
+        qCDebug(lcQpaAccessibility) << "handleUpdateByInterfaceRole with null a11y interface" << event->type() << event->object();
         return;
     }
 
