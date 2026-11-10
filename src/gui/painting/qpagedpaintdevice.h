@@ -12,10 +12,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(B0)
-#undef B0 // Terminal hang-up.  We assume that you do not want that.
-#endif
-
 class QPagedPaintDevicePrivate;
 
 class Q_GUI_EXPORT QPagedPaintDevice : public QPaintDevice
