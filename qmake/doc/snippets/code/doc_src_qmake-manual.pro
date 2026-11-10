@@ -464,6 +464,16 @@ QMAKE_EXTRA_TARGETS += mytarget mytarget2
 #! [87]
 
 
+#! [extra compiler instead of extra target]
+VERSION_INPUT = version.in
+version_gen.input = VERSION_INPUT
+version_gen.output = version.h
+version_gen.commands = gen_version ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+version_gen.CONFIG += target_predeps no_link
+QMAKE_EXTRA_COMPILERS += version_gen
+#! [extra compiler instead of extra target]
+
+
 #! [88]
 new_moc.output  = moc_${QMAKE_FILE_BASE}.cpp
 new_moc.commands = moc ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
