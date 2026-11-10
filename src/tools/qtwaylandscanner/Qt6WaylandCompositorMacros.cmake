@@ -101,6 +101,16 @@ function(qt6_generate_wayland_protocol_server_sources target)
             "${qtwaylandscanner_header_output}"
             "${qtwaylandscanner_code_output}"
         )
+
+        # Doc generation shouldn't need qtwaylandscanner to be built and run.
+        set_source_files_properties(
+            "${waylandscanner_header_output}"
+            "${waylandscanner_code_output}"
+            "${qtwaylandscanner_header_output}"
+            "${qtwaylandscanner_code_output}"
+            PROPERTIES
+                _qt_syncqt_exclude_from_docs TRUE
+        )
     endforeach()
     target_include_directories(${target} PRIVATE ${target_binary_dir})
 endfunction()

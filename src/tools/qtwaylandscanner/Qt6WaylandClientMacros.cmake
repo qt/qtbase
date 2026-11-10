@@ -120,7 +120,11 @@ function(qt6_generate_wayland_protocol_client_sources target)
 
         target_sources(${target} PRIVATE ${sources})
 
-        set_source_files_properties(${sources} PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+        set_source_files_properties(${sources} PROPERTIES
+            SKIP_UNITY_BUILD_INCLUSION ON
+            # Doc generation shouldn't need qtwaylandscanner to be built and run.
+            _qt_syncqt_exclude_from_docs TRUE
+        )
     endforeach()
     target_include_directories(${target} PRIVATE ${target_binary_dir})
 endfunction()
