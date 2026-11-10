@@ -2828,7 +2828,8 @@ void tst_QGraphicsView::levelOfDetail()
     QTRY_COMPARE(item->lastLod, lod);
 }
 
-static void scrollBarRanges_addTestData(const QString &style, bool styled)
+static void scrollBarRanges_addTestData(const std::shared_ptr<QGraphicsView> &viewPtr,
+                                        const QString &style, bool styled)
 {
     const int viewWidth = 400;
     const int viewHeight = 100;
@@ -4008,6 +4009,7 @@ static void scrollBarRanges_addTestData(const QString &style, bool styled)
             << e.hbarpolicy
             << e.vbarpolicy
             << e.hmin << e.hmax << e.vmin << e.vmax
+            << viewPtr
             << stylePtr
             << styled;
     }
@@ -4025,13 +4027,18 @@ void tst_QGraphicsView::scrollBarRanges_data()
     QTest::addColumn<ExpectedValueDescription>("hmax");
     QTest::addColumn<ExpectedValueDescription>("vmin");
     QTest::addColumn<ExpectedValueDescription>("vmax");
+    QTest::addColumn<std::shared_ptr<QGraphicsView>>("viewPtr");
     QTest::addColumn<std::shared_ptr<QStyle>>("stylePtr");
     QTest::addColumn<bool>("useStyledPanel");
 
+    // share the view across all rows so as to avoid mapping 300+ windows in quick succession:
+    const auto view = std::make_shared<QGraphicsView>();
+    view->setRenderHint(QPainter::Antialiasing);
+
     const auto styles = QStyleFactory::keys();
     for (const QString &style : styles) {
-        scrollBarRanges_addTestData(style, false);
-        scrollBarRanges_addTestData(style, true);
+        scrollBarRanges_addTestData(view, style, false);
+        scrollBarRanges_addTestData(view, style, true);
     }
 }
 
@@ -4050,20 +4057,27 @@ void tst_QGraphicsView::scrollBarRanges()
     QFETCH(ExpectedValueDescription, hmax);
     QFETCH(ExpectedValueDescription, vmin);
     QFETCH(ExpectedValueDescription, vmax);
+    QFETCH(const std::shared_ptr<QGraphicsView>, viewPtr);
     QFETCH(const std::shared_ptr<QStyle>, stylePtr);
     QFETCH(bool, useStyledPanel);
 
     if (useStyledPanel && stylePtr->inherits("QMacStyle") && platformName == QStringLiteral("cocoa"))
         QSKIP("Insignificant on OSX");
 
+    QGraphicsView &view = *viewPtr;
 
     QGraphicsScene scene;
-    QGraphicsView view(&scene);
-    view.setRenderHint(QPainter::Antialiasing);
+    view.setScene(&scene);
     view.setTransform(transform);
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
     view.setStyle(stylePtr.get());
+    const auto unsetStyle = qScopeGuard([&] {
+            // Manually reset the style: otherwise the style needs to outlive
+            // the view, and we don't want to depend on QtTest column
+            // destruction ordering
+            view.setStyle(nullptr);
+        });
     view.setStyleSheet(" "); // enables style propagation ;-)
 
     int adjust = 0;
