@@ -1513,8 +1513,13 @@ static bool createDirectoryWithParents(const QString &nativeName,
         return false;
 
     if (shouldMkdirFirst) {
-        if (mkDir(nativeName, securityAttributes))
+        DWORD lastError;
+        if (mkDir(nativeName, securityAttributes, &lastError))
             return true;
+        // Another thread or process may have created the directory in the
+        // meantime.
+        if (lastError == ERROR_ALREADY_EXISTS)
+            return isDir(nativeName);
     }
 
     const int backSlash = nativeName.lastIndexOf(QDir::separator());
