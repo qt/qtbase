@@ -677,6 +677,7 @@ class SyncScanner
     std::map<std::string /* header file name */, std::string /* header feature guard name */,
              decltype(MasterHeaderIncludeComparator) *>
             m_masterHeaderContents;
+    std::string m_masterHeaderBuffer;
 
     std::unordered_map<std::string /* the deprecated header name*/,
                        std::string /* the replacement */>
@@ -944,7 +945,14 @@ public:
         for (const auto &header : m_producedHeaders) {
             std::filesystem::path src(m_commandLineArgs->includeDir() + '/' + header);
             std::filesystem::path dst(outputDirectory + '/' + header);
-            if (!m_commandLineArgs->showOnly())
+            if (m_commandLineArgs->showOnly())
+                continue;
+            // A concurrent syncqt -all run could write a module header with different content
+            // to the include directory. So instead of copying that file, write the
+            // 'correct' module header contents from memory directly into the staging directory.
+            if (header == m_commandLineArgs->moduleName())
+                result &= writeIfDifferent(dst.string(), m_masterHeaderBuffer);
+            else
                 result &= updateOrCopy(src, dst);
         }
         return result;
@@ -1759,7 +1767,8 @@ public:
 
         m_producedHeaders.insert(m_commandLineArgs->moduleName());
         m_moduleMapContents.insert({outputFile, {}});
-        return writeIfDifferent(outputFile, buffer.str());
+        m_masterHeaderBuffer = buffer.str();
+        return writeIfDifferent(outputFile, m_masterHeaderBuffer);
     }
 
     [[nodiscard]] bool generateVersionHeader(const std::string &outputFile)
