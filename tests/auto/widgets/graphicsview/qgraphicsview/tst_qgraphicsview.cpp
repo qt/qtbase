@@ -43,6 +43,8 @@
 
 #include <QtWidgets/private/qapplication_p.h>
 
+#include <memory>
+
 using namespace QTestPrivate;
 
 Q_DECLARE_METATYPE(ExpectedValueDescription)
@@ -3995,22 +3997,24 @@ static void scrollBarRanges_addTestData(const QString &style, bool styled)
 
     const QSize viewSize(viewWidth, viewHeight);
 
+    const auto stylePtr = std::shared_ptr<QStyle>(QStyleFactory::create(style));
+
     for (const Data &e : data) {
         QTest::addRow("%s%s, %s", style.toLatin1().data(), styled ? ", Styled" : "", e.name)
-            << style << viewSize
+            << viewSize
             << e.sceneRect
             << e.sceneRectOffsetFactors
             << QTransform().scale(e.scale, e.scale)
             << e.hbarpolicy
             << e.vbarpolicy
             << e.hmin << e.hmax << e.vmin << e.vmax
+            << stylePtr
             << styled;
     }
 }
 
 void tst_QGraphicsView::scrollBarRanges_data()
 {
-    QTest::addColumn<QString>("style");
     QTest::addColumn<QSize>("viewportSize");
     QTest::addColumn<QRectF>("sceneRect");
     QTest::addColumn<ScrollBarCount>("sceneRectOffsetFactors");
@@ -4021,6 +4025,7 @@ void tst_QGraphicsView::scrollBarRanges_data()
     QTest::addColumn<ExpectedValueDescription>("hmax");
     QTest::addColumn<ExpectedValueDescription>("vmin");
     QTest::addColumn<ExpectedValueDescription>("vmax");
+    QTest::addColumn<std::shared_ptr<QStyle>>("stylePtr");
     QTest::addColumn<bool>("useStyledPanel");
 
     const auto styles = QStyleFactory::keys();
@@ -4035,7 +4040,6 @@ void tst_QGraphicsView::scrollBarRanges()
     if (isPlatformEGLFS())
         QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
 
-    QFETCH(QString, style);
     QFETCH(QSize, viewportSize);
     QFETCH(QRectF, sceneRect);
     QFETCH(ScrollBarCount, sceneRectOffsetFactors);
@@ -4046,12 +4050,12 @@ void tst_QGraphicsView::scrollBarRanges()
     QFETCH(ExpectedValueDescription, hmax);
     QFETCH(ExpectedValueDescription, vmin);
     QFETCH(ExpectedValueDescription, vmax);
+    QFETCH(const std::shared_ptr<QStyle>, stylePtr);
     QFETCH(bool, useStyledPanel);
 
-    if (useStyledPanel && style == "macOS" && platformName == QStringLiteral("cocoa"))
+    if (useStyledPanel && stylePtr->inherits("QMacStyle") && platformName == QStringLiteral("cocoa"))
         QSKIP("Insignificant on OSX");
 
-    QScopedPointer<QStyle> stylePtr;
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
@@ -4059,8 +4063,7 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setTransform(transform);
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
-    stylePtr.reset(QStyleFactory::create(style));
-    view.setStyle(stylePtr.data());
+    view.setStyle(stylePtr.get());
     view.setStyleSheet(" "); // enables style propagation ;-)
 
     int adjust = 0;
