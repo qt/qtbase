@@ -5,6 +5,7 @@
 #include <qpa/qplatformintegrationfactory_p.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformwindow.h>
 
 #include <QTest>
 #include <QJsonArray>
@@ -64,6 +65,7 @@ private slots:
     void setGlobalFactorEmits();
     void setScreenFactorEmits();
     void moveWindowBetweenScreens();
+    void resizeWithPendingScreenChange();
 };
 
 /// Offscreen platform plugin test setup
@@ -978,6 +980,39 @@ void tst_QHighDpi::moveWindowBetweenScreens()
     w.setGeometry(r);
     QCOMPARE(w.geometry(), r);
     QCOMPARE(w.screen(), screens[2]);
+}
+
+void tst_QHighDpi::resizeWithPendingScreenChange()
+{
+    QJsonObject config {
+        {"synchronousWindowSystemEvents", false},
+        {"windowFrameMargins", false},
+        {"screens", createStandardScreens({ 96, 96, 192 })},
+    };
+    std::unique_ptr<QGuiApplication> app(createOffscreenApplication(QJsonDocument(config).toJson()));
+
+    const auto screens = app->screens();
+    QScreen *lowDpiScreen = screens.at(1);
+    QScreen *highDpiScreen = screens.at(2);
+    QCOMPARE(QHighDpiScaling::factor(highDpiScreen), 2);
+
+    QWindow window;
+    window.setGeometry(QRect(lowDpiScreen->geometry().center(), QSize(20, 20)));
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCOMPARE(window.screen(), lowDpiScreen);
+
+    const QRect highDpiGeometry(highDpiScreen->geometry().center(), QSize(20, 20));
+    window.setGeometry(highDpiGeometry);
+    QCOMPARE(window.screen(), lowDpiScreen);
+
+    const QPoint nativePosition = window.handle()->geometry().topLeft();
+    window.resize(30, 30);
+    QCOMPARE(window.handle()->geometry(), QRect(nativePosition, QSize(60, 60)));
+
+    QTRY_COMPARE(window.screen(), highDpiScreen);
+    QCOMPARE(window.geometry(), QRect(highDpiGeometry.topLeft(), QSize(30, 30)));
+    QCOMPARE(window.handle()->geometry(), QRect(nativePosition, QSize(60, 60)));
 }
 
 #include "tst_qhighdpi.moc"

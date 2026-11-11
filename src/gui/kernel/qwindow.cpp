@@ -6,6 +6,7 @@
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen.h>
 #ifndef QT_NO_CONTEXTMENU
 #include <qpa/qplatformtheme.h>
 #endif
@@ -2128,8 +2129,20 @@ void QWindow::resize(const QSize &newSize)
 
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(
-            QHighDpi::toNativeWindowGeometry(QRect(position(), newSize), this));
+        if (isTopLevel()) {
+            // The window may have been moved to a screen with a different scale
+            // factor while the corresponding screen change is still pending, in
+            // which case screen() and position() would map through the wrong factor.
+            // Resolve the screen from the native geometry instead, and keep the
+            // native position as is.
+            const QRect nativeGeometry = d->platformWindow->geometry();
+            const QPlatformScreen *targetScreen = screen()->handle()->screenForPosition(nativeGeometry.center());
+            d->platformWindow->setGeometry(QRect(nativeGeometry.topLeft(),
+                QHighDpi::toNativePixels(newSize, targetScreen->screen())));
+        } else {
+            d->platformWindow->setGeometry(
+                QHighDpi::toNativeWindowGeometry(QRect(position(), newSize), this));
+        }
     } else {
         d->geometry.setSize(newSize);
         if (newSize.width() != oldSize.width())
