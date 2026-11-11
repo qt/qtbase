@@ -140,27 +140,58 @@ static void waitForProcessDeath(const Hdc &hdc, const QString &bundleName,
             "force-stop wait — proceeding anyway\n", static_cast<long long>(timeout.count()));
 }
 
-static bool waitForProcessStart(const Hdc &hdc, const QString &bundleName,
-                                const QString &shellExitCodePath,
-                                std::chrono::seconds timeout = 30s)
+// aa start prints errors (screen locked, ability not found, ...) to stdout.
+static bool runAaStart(const Hdc &hdc, const QStringList &aaStartCommand)
+{
+    const std::optional<QString> aaOut = answeredShell(hdc, aaStartCommand);
+    if (!aaOut) {
+        fprintf(stderr, "harmonyostestrunner: warning: hdc did not answer aa start\n");
+        return false;
+    }
+    if (!aaOut->startsWith(u"start ability successfully"_s))
+        fprintf(stderr, "harmonyostestrunner: aa start: %s\n", qPrintable(*aaOut));
+    return true;
+}
+
+static q23::expected<void, QString> startAbility(const Hdc &hdc,
+                                                 const QStringList &aaStartCommand,
+                                                 const QString &bundleName,
+                                                 const QString &shellExitCodePath,
+                                                 std::chrono::seconds timeout = 30s)
 {
     constexpr auto pollInterval = 250ms;
+    constexpr auto aaStartRetryInterval = 5s;
     const qint64 maxIterations = timeout / pollInterval;
+    std::optional<QDeadlineTimer> aaStartRetry;
+    if (!runAaStart(hdc, aaStartCommand))
+        aaStartRetry = QDeadlineTimer(aaStartRetryInterval);
     const QDeadlineTimer hdcOutageDeadline(hdcOutageTolerance);
     for (qint64 i = 0; i < maxIterations && !hdcOutageDeadline.hasExpired(); ++i) {
         if (g_interrupted.load())
-            return false;
-        if (queryProcessState(hdc, bundleName) == ProcessState::Running)
-            return true;
+            return q23::unexpected(u"interrupted"_s);
+        const ProcessState processState = queryProcessState(hdc, bundleName);
+        if (processState == ProcessState::Running)
+            return {};
         // Fast test may have finished before pidof could see it.
         const QString exitContent = readDeviceFile(hdc, shellExitCodePath);
         bool ok = false;
         exitContent.trimmed().toInt(&ok);
         if (ok)
-            return true;
+            return {};
+        if (aaStartRetry && aaStartRetry->hasExpired()
+            && processState == ProcessState::NotRunning
+            && queryDeviceFileState(hdc, shellExitCodePath) == DeviceFileState::Absent) {
+            fprintf(stderr, "harmonyostestrunner: the app did not start, retrying aa start\n");
+            if (runAaStart(hdc, aaStartCommand))
+                aaStartRetry.reset();
+            else
+                aaStartRetry = QDeadlineTimer(aaStartRetryInterval);
+        }
         QThread::sleep(pollInterval);
     }
-    return false;
+    if (aaStartRetry)
+        return q23::unexpected(u"hdc did not answer aa start"_s);
+    return q23::unexpected(u"timed out waiting for process to start"_s);
 }
 
 static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
@@ -382,18 +413,11 @@ int main(int argc, char *argv[])
         aaStartCommand += {u"--ps"_s, u"io.qt.envVarsJson"_s, shellSingleQuote(json)};
     }
 
-    // aa start prints errors (screen locked, ability not found, ...) to stdout.
-    {
-        const QString aaOut = hdc.shell(aaStartCommand);
-        if (aaOut.contains(u"error"_s, Qt::CaseInsensitive)
-            || aaOut.contains(u"failed"_s, Qt::CaseInsensitive)) {
-            fprintf(stderr, "harmonyostestrunner: aa start: %s\n", qPrintable(aaOut.trimmed()));
-        }
-    }
-
-    if (!waitForProcessStart(hdc, bundleName, shellExitCodePath)) {
-        fprintf(stderr, "harmonyostestrunner: %s: timed out waiting for process to start\n",
-                qPrintable(testLibName));
+    const q23::expected<void, QString> started =
+            startAbility(hdc, aaStartCommand, bundleName, shellExitCodePath);
+    if (!started) {
+        fprintf(stderr, "harmonyostestrunner: %s: %s\n", qPrintable(testLibName),
+                qPrintable(started.error()));
 #if QT_CONFIG(systemsemaphore)
         runnerLock.release();
 #endif
