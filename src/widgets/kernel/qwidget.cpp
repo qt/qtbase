@@ -7313,24 +7313,33 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         }
     }
 
-    if (q->isVisible()) {
-        if (!q->testAttribute(Qt::WA_DontShowOnScreen) && !q->testAttribute(Qt::WA_OutsideWSRange)) {
-            if (QWindow *win = q->windowHandle()) {
-                if (q->isWindow()) {
-                    if (isResize && !isMove)
-                        win->resize(w, h);
-                    else if (isMove && !isResize)
-                        win->setPosition(x, y);
-                    else
-                        win->setGeometry(q->geometry());
-                } else {
-                    QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
-                    win->setGeometry(QRect(posInNativeParent,r.size()));
-                }
+    const bool hasOnScreenWindow = !q->testAttribute(Qt::WA_DontShowOnScreen)
+                                && !q->testAttribute(Qt::WA_OutsideWSRange);
 
-                if (needsShow)
-                    show_sys();
+    if (hasOnScreenWindow) {
+        // Unconditionally reflect geometry to QWindow,
+        // even when the widget is hidden, to mirror that
+        // we reflect geometry back from the platform in
+        // QWidgetWindow's resize/move event handlers.
+        if (QWindow *win = q->windowHandle()) {
+            if (q->isWindow()) {
+                if (isResize && !isMove)
+                    win->resize(w, h);
+                else if (isMove && !isResize)
+                    win->setPosition(x, y);
+                else
+                    win->setGeometry(q->geometry());
+            } else {
+                QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
+                win->setGeometry(QRect(posInNativeParent,r.size()));
             }
+        }
+    }
+
+    if (q->isVisible()) {
+        if (hasOnScreenWindow) {
+            if (needsShow && q->windowHandle())
+                show_sys();
 
             if (!q->isWindow()) {
                 if (renderToTexture) {

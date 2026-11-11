@@ -223,6 +223,8 @@ private slots:
     void normalGeometry();
     void setGeometry();
     void setGeometryHidden();
+    void setGeometryHiddenPropagatesToWindow_data();
+    void setGeometryHiddenPropagatesToWindow();
     void windowOpacity();
     void raise();
     void lower();
@@ -4017,6 +4019,81 @@ void tst_QWidget::setGeometryHidden()
     tlw.resize(cr.size());
     QVERIFY(!tlw.testAttribute(Qt::WA_PendingMoveEvent));
     QVERIFY(!tlw.testAttribute(Qt::WA_PendingResizeEvent));
+}
+
+void tst_QWidget::setGeometryHiddenPropagatesToWindow_data()
+{
+    QTest::addColumn<bool>("showBeforeHiding");
+
+    QTest::newRow("created, never shown") << false;
+    QTest::newRow("shown, then hidden") << true;
+}
+
+/*
+    Verify that geometry changes to a hidden widget with a QWindow
+    are reflected to the QWindow, mirroring how geometry changes
+    to the QWindow are reflected back to the widget regardless of
+    the widget's visibility.
+*/
+void tst_QWidget::setGeometryHiddenPropagatesToWindow()
+{
+    if (QGuiApplication::styleHints()->showIsMaximized())
+        QSKIP("Platform does not support QWidget::setGeometry() - skipping");
+    if (m_platform.startsWith("wayland"_L1))
+        QSKIP("Wayland: Clients can't position top level windows");
+
+    QFETCH(bool, showBeforeHiding);
+
+    QWidget tlw;
+    tlw.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    QWidget nativeChild(&tlw);
+    nativeChild.setAttribute(Qt::WA_NativeWindow);
+
+    const QRect initialGeometry(m_availableTopLeft + QPoint(100, 100), 2 * m_testWidgetSize);
+    tlw.setGeometry(initialGeometry);
+    nativeChild.setGeometry(QRect(QPoint(10, 10), m_testWidgetSize / 2));
+
+    if (showBeforeHiding) {
+        tlw.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&tlw));
+        tlw.hide();
+        QTRY_VERIFY(!tlw.windowHandle()->isVisible());
+    } else {
+        tlw.winId();
+    }
+
+    QVERIFY(tlw.isHidden());
+    QWindow *window = tlw.windowHandle();
+    QVERIFY(window);
+    QVERIFY(!window->isVisible());
+    QWindow *childWindow = nativeChild.windowHandle();
+    QVERIFY(childWindow);
+    QVERIFY(!nativeChild.isVisible());
+
+    // Resize only
+    const QSize newSize = initialGeometry.size() + QSize(20, 30);
+    tlw.resize(newSize);
+    QCOMPARE(tlw.size(), newSize);
+    QCOMPARE(window->size(), newSize);
+
+    // Move only
+    const QPoint newPos = initialGeometry.topLeft() + QPoint(20, 30);
+    tlw.move(newPos);
+    QCOMPARE(window->position(), tlw.geometry().topLeft());
+    QCOMPARE(window->size(), newSize);
+
+    // Move and resize
+    const QRect newGeometry(initialGeometry.topLeft() + QPoint(40, 50),
+                            initialGeometry.size() + QSize(40, 50));
+    tlw.setGeometry(newGeometry);
+    QCOMPARE(tlw.geometry(), newGeometry);
+    QCOMPARE(window->geometry(), newGeometry);
+
+    // Native child of hidden window
+    const QRect newChildGeometry(QPoint(20, 30), m_testWidgetSize / 2 + QSize(10, 10));
+    nativeChild.setGeometry(newChildGeometry);
+    QCOMPARE(nativeChild.geometry(), newChildGeometry);
+    QCOMPARE(childWindow->geometry(), newChildGeometry);
 }
 
 void tst_QWidget::windowOpacity()
