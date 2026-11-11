@@ -20,6 +20,7 @@ public:
 
     QString shell(const QStringList &command) const;
     QString receiveFile(const QString &devicePath, const QString &localPath) const;
+    QString version() const;
 
     QString connectKey() const;
 
