@@ -3,6 +3,7 @@
 
 #include "hdc.h"
 
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qprocess.h>
 
 #include <chrono>
@@ -40,22 +41,41 @@ QString Hdc::run(const QStringList &args) const
 {
     static constexpr std::chrono::milliseconds startTimeout = 5s;
     static constexpr std::chrono::milliseconds finishTimeout = 30s;
+    static constexpr std::chrono::milliseconds killTimeout = 1s;
+    static constexpr std::chrono::milliseconds slowCall = 5s;
+    static constexpr qsizetype loggedStdoutBytes = 80;
+
+    QElapsedTimer timer;
+    timer.start();
 
     QProcess process;
     const QStringList allArgs = arguments(args);
     process.start(m_hdcPath, allArgs);
     if (!process.waitForStarted(int(startTimeout.count()))) {
-        fprintf(stderr, "harmonyostestrunner: failed to start hdc: %s\n",
-            qPrintable(m_hdcPath));
+        fprintf(stderr, "harmonyostestrunner: failed to start hdc '%s' after %lld ms: %s\n",
+            qPrintable(m_hdcPath), static_cast<long long>(timer.durationElapsed() / 1ms),
+            qPrintable(process.errorString()));
         return {};
     }
-    process.waitForFinished(int(finishTimeout.count()));
-    const QByteArray standardError = process.readAllStandardError();
-    if (!standardError.isEmpty()) {
-        fprintf(stderr, "hdc %s stderr: %s\n", qPrintable(allArgs.join(u' ')),
-            standardError.constData());
+    const std::chrono::nanoseconds startedAfter = timer.durationElapsed();
+    const bool finished = process.waitForFinished(int(finishTimeout.count()));
+    const std::chrono::nanoseconds callDuration = timer.durationElapsed();
+    if (!finished) {
+        process.kill();
+        process.waitForFinished(int(killTimeout.count()));
     }
-    return QString::fromUtf8(process.readAllStandardOutput());
+    const QByteArray standardOutput = process.readAllStandardOutput();
+    const QByteArray standardError = process.readAllStandardError();
+    if (!finished || callDuration >= slowCall || !standardError.isEmpty()) {
+        fprintf(stderr, "harmonyostestrunner: hdc %s %s after %lld ms (started after %lld ms), "
+            "stdout %lld bytes [%s], stderr: %s\n", qPrintable(allArgs.join(u' ')),
+            finished ? "finished" : "timed out", static_cast<long long>(callDuration / 1ms),
+            static_cast<long long>(startedAfter / 1ms),
+            static_cast<long long>(standardOutput.size()),
+            standardOutput.left(loggedStdoutBytes).simplified().constData(),
+            standardError.trimmed().constData());
+    }
+    return QString::fromUtf8(standardOutput);
 }
 
 QString Hdc::shell(const QStringList &command) const
