@@ -18,13 +18,13 @@ class Hdc
 public:
     Hdc(QString hdcPath, QString connectKey);
 
-    QString shell(const QStringList &command, bool printOnFailure = false) const;
+    QString shell(const QStringList &command) const;
     QString receiveFile(const QString &devicePath, const QString &localPath) const;
 
     QString connectKey() const;
 
 private:
-    QString run(const QStringList &args, bool printOnFailure) const;
+    QString run(const QStringList &args) const;
     QStringList arguments(const QStringList &args) const;
 
     QString m_hdcPath;
