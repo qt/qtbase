@@ -398,6 +398,7 @@ int main(int argc, char *argv[])
     // hdc shell always returns 0; can't use `test -f`. Cat the file and check
     // whether the contents parse as int.
     constexpr auto pollInterval = 500ms;
+    constexpr auto loopStallThreshold = 30s;
     constexpr auto heartbeatInterval = 30s;
 
     QElapsedTimer elapsed;
@@ -408,10 +409,19 @@ int main(int argc, char *argv[])
     std::optional<std::chrono::nanoseconds> lastTestProgressAt;
     std::chrono::nanoseconds lastSuccessfulCopyAt {};
     std::chrono::seconds lastHeartbeatAt {};
+    std::chrono::nanoseconds lastLoopPassAt {};
     BlockingTestDialogs blockingTestDialogs(parser.value(testConfigOpt), hdc);
     std::chrono::nanoseconds lastOutputAt {};
 
     while (!g_interrupted.load() && elapsed.durationElapsed() < timeout) {
+        const std::chrono::nanoseconds loopPassAt = elapsed.durationElapsed();
+        if (loopPassAt - lastLoopPassAt > loopStallThreshold) {
+            fprintf(stderr, "harmonyostestrunner: %s: poll loop stalled for %lld ms\n",
+                    qPrintable(testLibName),
+                    static_cast<long long>((loopPassAt - lastLoopPassAt) / 1ms));
+        }
+        lastLoopPassAt = loopPassAt;
+
         {
             const q23::expected<QByteArray, QString> chunk = outputForwarder.forwardAvailable();
             if (chunk) {
@@ -471,9 +481,11 @@ int main(int argc, char *argv[])
             && lastSuccessfulCopyAt - *lastTestProgressAt > noProgressTimeout)
         {
             fprintf(stderr,
-                    "harmonyostestrunner: %s: no test case progress for %lld seconds "
+                    "harmonyostestrunner: %s: no test case progress for %lld seconds (limit %lld) "
                     "— main thread likely deadlocked, force-stopping\n",
-                    qPrintable(testLibName), static_cast<long long>(noProgressTimeout.count()));
+                    qPrintable(testLibName),
+                    static_cast<long long>((lastSuccessfulCopyAt - *lastTestProgressAt) / 1s),
+                    static_cast<long long>(noProgressTimeout.count()));
             forceStopBundle(hdc, bundleName);
             testExitCode = EXIT_CRASH;
             completed = true;
