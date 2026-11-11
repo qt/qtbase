@@ -15,6 +15,7 @@
 
 #include <qtextlayout.h>
 #include <qdebug.h>
+#include <qnumeric.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2185,8 +2186,19 @@ QTextTable *QTextCursor::insertTable(int rows, int cols)
 */
 QTextTable *QTextCursor::insertTable(int rows, int cols, const QTextTableFormat &format)
 {
-    if (!d || !d->priv || rows == 0 || cols == 0)
+    if (!d || !d->priv || rows <= 0 || cols <= 0)
         return nullptr;
+
+    // Sanity check input data
+    int cellCount;
+    int newLength;
+    if (qMulOverflow(rows, cols, &cellCount)
+        || qAddOverflow(d->priv->length(), cellCount, &newLength)
+        || qAddOverflow(newLength, 1, &newLength)) {
+        qWarning("QTextCursor::insertTable: Table with %d rows and %d columns is too large",
+                 rows, cols);
+        return nullptr;
+    }
 
     int pos = d->position;
     QTextTable *t = QTextTablePrivate::createTable(d->priv, d->position, rows, cols, format);

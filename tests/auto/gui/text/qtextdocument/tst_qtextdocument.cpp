@@ -188,6 +188,9 @@ private slots:
     void restoreStrokeFromHtml();
     void restoreForegroundGradientFromHtml();
 
+    void tooLargeTableFromHtml_data();
+    void tooLargeTableFromHtml();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -4360,6 +4363,41 @@ void tst_QTextDocument::restoreForegroundGradientFromHtml()
         QCOMPARE(static_cast<const QConicalGradient *>(brush.gradient())->center(), cg.center());
         QCOMPARE(static_cast<const QConicalGradient *>(brush.gradient())->angle(), cg.angle());
     }
+}
+
+void tst_QTextDocument::tooLargeTableFromHtml_data()
+{
+    QTest::addColumn<QString>("html");
+
+    // rows * columns overflows int
+    QTest::newRow("merge-holes")
+            << QString("<table><tr><td colspan=20480>A</td></tr>")
+               + QString("<tr>").repeated(104858 - 1) + QString("</table>after");
+    QTest::newRow("cell-count-overflow")
+            << QString("<table border=1><tr><td colspan=20480>A</td><td colspan=20480>B</td>"
+                       "<td colspan=20480>C</td><td colspan=4096>D</td></tr>")
+               + QString("<tr>").repeated(32768 - 1) + QString("</table>after");
+
+    // columns in a single row overflows int
+    QTest::newRow("columns-overflow")
+            << QString("<table><tr>") + QString("<td colspan=20480></td>").repeated(110000)
+               + QString("</tr></table>after");
+
+    QTest::newRow("too-many-cells")
+            << QString("<table><tr><td colspan=1024>A</td></tr>")
+               + QString("<tr>").repeated(1024) + QString("</table>after");
+}
+
+void tst_QTextDocument::tooLargeTableFromHtml()
+{
+    QFETCH(QString, html);
+
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("Table exceeds \\d+ cells"));
+    QTextDocument doc;
+    doc.setHtml(html);
+
+    QVERIFY(doc.rootFrame()->childFrames().isEmpty());
+    QVERIFY(doc.toPlainText().endsWith("after"));
 }
 
 QTEST_MAIN(tst_QTextDocument)
