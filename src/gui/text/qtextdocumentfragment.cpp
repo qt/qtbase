@@ -908,6 +908,10 @@ bool QTextHtmlImporter::closeTag()
     return blockTagClosed;
 }
 
+#ifndef QT_TEXTHTMLIMPORTER_MAX_CELL_COUNT
+#  define QT_TEXTHTMLIMPORTER_MAX_CELL_COUNT 1 << 20
+#endif
+
 QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
 {
     Table table;
@@ -941,6 +945,12 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
     QList<RowColSpanInfo> rowColSpans;
     QList<RowColSpanInfo> rowColSpanForColumn;
 
+    constexpr qint64 MaxImportedTableCells = QT_TEXTHTMLIMPORTER_MAX_CELL_COUNT;
+    const auto exceedsCellLimit = [](int columns, int rows) {
+        return qint64(columns) * rows > MaxImportedTableCells;
+    };
+    bool tooLarge = false;
+
     int effectiveRow = 0;
     for (int row : std::as_const(rowNodes)) {
         int colsInRow = 0;
@@ -961,6 +971,13 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
                 const QTextHtmlParserNode &c = at(cell);
                 const int currentColumn = colsInRow;
                 colsInRow += c.tableCellColSpan;
+
+                // Check per cell, so that colsInRow cannot overflow and columnWidths
+                // is never resized to an absurd size.
+                if (exceedsCellLimit(qMax(table.columns, colsInRow), effectiveRow + 1)) {
+                    tooLarge = true;
+                    break;
+                }
 
                 RowColSpanInfo spanInfo;
                 spanInfo.row = effectiveRow;
@@ -986,9 +1003,21 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
 
         table.columns = qMax(table.columns, colsInRow);
 
+        // Empty rows add no cells to the loop above, but still add a full row
+        if (tooLarge || exceedsCellLimit(table.columns, effectiveRow + 1)) {
+            tooLarge = true;
+            break;
+        }
+
         ++effectiveRow;
     }
     table.rows = effectiveRow;
+
+    if (tooLarge) {
+        qWarning("QTextHtmlImporter: Table exceeds %lld cells, ignoring it",
+                 MaxImportedTableCells);
+        table.columns = 0; // handled as an empty table below
+    }
 
     table.lastIndent = indent;
     indent = 0;
