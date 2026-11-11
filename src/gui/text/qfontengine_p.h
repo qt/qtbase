@@ -519,7 +519,7 @@ public:
     static uchar highByte(glyph_t glyph); // Used for determining engine
 
     inline QFontEngine *engine(int at) const
-    { Q_ASSERT(at < m_engines.size()); return m_engines.at(at); }
+    { Q_ASSERT(at < m_engines.size()); return m_engines.value(at); }
 
     void ensureEngineAt(int at);
 
