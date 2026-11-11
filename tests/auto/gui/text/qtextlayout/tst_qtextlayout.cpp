@@ -95,6 +95,8 @@ private slots:
     void boundingRectForSetLineWidth();
     void glyphLessItems();
     void justifyTrailingSpaces();
+    void justifyRightToLeftTrailingSpaces_data();
+    void justifyRightToLeftTrailingSpaces();
     void layoutWithCustomTabStops();
 
     // QTextLine stuff
@@ -2322,6 +2324,57 @@ void tst_QTextLayout::justifyTrailingSpaces()
     layout.endLayout();
 
     QVERIFY(qFuzzyIsNull(layout.lineAt(0).cursorToX(0)));
+}
+
+void tst_QTextLayout::justifyRightToLeftTrailingSpaces_data()
+{
+    QTest::addColumn<QChar>("character");
+
+    // Characters which are shaped into multiple glyphs by some fonts
+    QTest::newRow("khmer") << QChar(0x17C0);
+    QTest::newRow("sinhala") << QChar(0x0DDD);
+    QTest::newRow("tamil") << QChar(0x0BCA);
+    QTest::newRow("bengali") << QChar(0x09CB);
+}
+
+void tst_QTextLayout::justifyRightToLeftTrailingSpaces()
+{
+    QFETCH(QChar, character);
+
+    const qreal width = 20000;
+
+    // Whether shaping the trailing spaces has to grow the glyph buffer depends
+    // on the font, so try a range of text lengths
+    for (int n = 1; n <= 120; ++n) {
+        QTextDocument document;
+        document.setTextWidth(width);
+
+        QTextCursor cursor(&document);
+        QTextBlockFormat blockFormat;
+        blockFormat.setAlignment(Qt::AlignJustify);
+        blockFormat.setLayoutDirection(Qt::RightToLeft);
+        cursor.setBlockFormat(blockFormat);
+
+        const QString word(n, character);
+        cursor.insertText(word + QStringLiteral("x y") + word);
+
+        QTextCharFormat spaceFormat;
+        spaceFormat.setFontPointSize(30);
+        cursor.insertText(QString(60, u' '), spaceFormat);
+
+        QTextImageFormat imageFormat;
+        imageFormat.setWidth(width);
+        imageFormat.setHeight(1);
+        cursor.insertImage(imageFormat);
+
+        document.size();
+        QTextLayout *layout = document.firstBlock().layout();
+        QCOMPARE(layout->lineCount(), 2);
+
+        QTextLine line = layout->lineAt(0);
+        const qreal spaceWidth = qAbs(line.cursorToX(n + 2) - line.cursorToX(n + 1));
+        QVERIFY2(spaceWidth > width / 2, qPrintable(QString::number(n)));
+    }
 }
 
 void tst_QTextLayout::nbsp()

@@ -2664,6 +2664,9 @@ void QTextEngine::justify(const QScriptLine &line)
     // justify line
     int maxJustify = 0;
 
+    // May shape the trailing spaces, so do it before taking the glyph views below
+    const QFixed leading = leadingSpaceWidth(line);
+
     // don't include trailing white spaces when doing justification
     int line_length = line.length;
     const QCharAttributes *a = attributes();
@@ -2766,7 +2769,6 @@ void QTextEngine::justify(const QScriptLine &line)
         }
     }
 
-    QFixed leading = leadingSpaceWidth(line);
     QFixed need = line.width - line.textWidth - leading;
     if (need < 0) {
         // line overflows already!
