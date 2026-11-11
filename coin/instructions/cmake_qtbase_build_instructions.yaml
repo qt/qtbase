@@ -76,19 +76,6 @@ instructions:
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: ""
-  - type: SignPackage
-    enable_if:
-      condition: and
-      conditions:
-        - condition: property
-          property: host.os
-          equals_value: Windows
-        - condition: property
-          property: features
-          contains_value: Packaging
-    directory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
-    maxTimeInSeconds: 1200
-    maxTimeBetweenOutput: 1200
   # Signal that qtbase should always build the doc tools (if all other requirements are met).
   - type: EnvironmentVariable
     variableName: QT_CI_BUILD_DOC_TOOLS
