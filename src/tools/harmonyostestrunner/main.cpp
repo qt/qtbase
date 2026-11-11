@@ -377,7 +377,7 @@ int main(int argc, char *argv[])
 
     // aa start prints errors (screen locked, ability not found, ...) to stdout.
     {
-        const QString aaOut = hdc.shell(aaStartCommand, /*printOnFailure=*/true);
+        const QString aaOut = hdc.shell(aaStartCommand);
         if (aaOut.contains(u"error"_s, Qt::CaseInsensitive)
             || aaOut.contains(u"failed"_s, Qt::CaseInsensitive)) {
             fprintf(stderr, "harmonyostestrunner: aa start: %s\n", qPrintable(aaOut.trimmed()));

@@ -36,7 +36,7 @@ QStringList Hdc::arguments(const QStringList &args) const
     return allArgs + args;
 }
 
-QString Hdc::run(const QStringList &args, bool printOnFailure) const
+QString Hdc::run(const QStringList &args) const
 {
     static constexpr std::chrono::milliseconds startTimeout = 5s;
     static constexpr std::chrono::milliseconds finishTimeout = 30s;
@@ -45,31 +45,27 @@ QString Hdc::run(const QStringList &args, bool printOnFailure) const
     const QStringList allArgs = arguments(args);
     process.start(m_hdcPath, allArgs);
     if (!process.waitForStarted(int(startTimeout.count()))) {
-        if (printOnFailure) {
-            fprintf(stderr, "harmonyostestrunner: failed to start hdc: %s\n",
-                qPrintable(m_hdcPath));
-        }
+        fprintf(stderr, "harmonyostestrunner: failed to start hdc: %s\n",
+            qPrintable(m_hdcPath));
         return {};
     }
     process.waitForFinished(int(finishTimeout.count()));
-    if (printOnFailure) {
-        const QByteArray standardError = process.readAllStandardError();
-        if (!standardError.isEmpty()) {
-            fprintf(stderr, "hdc %s stderr: %s\n", qPrintable(allArgs.join(u' ')),
-                standardError.constData());
-        }
+    const QByteArray standardError = process.readAllStandardError();
+    if (!standardError.isEmpty()) {
+        fprintf(stderr, "hdc %s stderr: %s\n", qPrintable(allArgs.join(u' ')),
+            standardError.constData());
     }
     return QString::fromUtf8(process.readAllStandardOutput());
 }
 
-QString Hdc::shell(const QStringList &command, bool printOnFailure) const
+QString Hdc::shell(const QStringList &command) const
 {
-    return run(shellCommandArgs(command), printOnFailure);
+    return run(shellCommandArgs(command));
 }
 
 QString Hdc::receiveFile(const QString &devicePath, const QString &localPath) const
 {
-    return run({ u"file"_s, u"recv"_s, devicePath, localPath }, true);
+    return run({ u"file"_s, u"recv"_s, devicePath, localPath });
 }
 
 QT_END_NAMESPACE
