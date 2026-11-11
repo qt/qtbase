@@ -88,4 +88,9 @@ QString Hdc::receiveFile(const QString &devicePath, const QString &localPath) co
     return run({ u"file"_s, u"recv"_s, devicePath, localPath });
 }
 
+QString Hdc::version() const
+{
+    return run({ u"version"_s });
+}
+
 QT_END_NAMESPACE

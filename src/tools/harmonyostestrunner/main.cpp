@@ -293,6 +293,11 @@ int main(int argc, char *argv[])
     const QString bundleName = parser.value(bundleNameOpt);
     const QString abilityName = parser.value(abilityNameOpt);
     const Hdc hdc(parser.value(hdcOpt), parser.value(deviceOpt));
+    if (hdc.version().isEmpty()) {
+        fprintf(stderr, "harmonyostestrunner: cannot run hdc '%s', set --hdc or "
+                "QT_HARMONYOS_HDC\n", qPrintable(parser.value(hdcOpt)));
+        return EXIT_ERROR;
+    }
     const std::chrono::seconds timeout{ parser.value(timeoutOpt).toInt() };
     const std::chrono::seconds noProgressTimeout{ parser.value(noProgressTimeoutOpt).toInt() };
 
