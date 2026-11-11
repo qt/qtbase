@@ -7,6 +7,15 @@ instructions:
         # when forwarded by androidtestrunner.
         variableName: QT_IM_MODULE
         variableValue: ""
+      # Modules can set ANDROID_EMULATOR_EXTRA_ARGS to append extra arguments to the
+      # emulator runner command.
+      - type: AppendToEnvironmentVariable
+        variableName: ANDROID_EMULATOR_RUNNER
+        variableValue: " {{.Env.ANDROID_EMULATOR_EXTRA_ARGS}}"
+        enable_if:
+          condition: runtime
+          env_var: ANDROID_EMULATOR_EXTRA_ARGS
+          not_equals_value: null
       - type: ExecuteCommand
         command: "{{.Env.ANDROID_EMULATOR_RUNNER}}"
         maxTimeInSeconds: 600
