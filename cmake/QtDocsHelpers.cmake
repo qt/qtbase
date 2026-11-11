@@ -43,6 +43,10 @@ endfunction()
 #
 # SHOW_INTERNAL - if set, the --showinternal option is passed to qdoc.
 #
+# ATTRIBUTION_FILE_PATHS - paths to extra qt_attribution.json files to scan for attributions, in
+# addition to the project source directory. Useful for attribution files generated at build time.
+# The caller needs to make sure they exist before the qattributionsscanner_${target} target runs.
+#
 # Additional environment variables considered:
 # QT_INSTALL_DOCS - directory path where the qt docs were expected to be installed, used for
 # linking to other built docs. If not set, defaults to the qtbase or qt5 build directory, or the
@@ -97,6 +101,7 @@ function(qt_internal_add_docs)
         QDOC_EXTRA_ARGS
         QDOC_PREPARE_EXTRA_ARGS
         QDOC_GENERATE_EXTRA_ARGS
+        ATTRIBUTION_FILE_PATHS
     )
     cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
@@ -210,6 +215,7 @@ function(qt_internal_add_docs)
     add_custom_target(qattributionsscanner_${target}
         COMMAND ${qtattributionsscanner_bin}
         ${PROJECT_SOURCE_DIR}
+        ${arg_ATTRIBUTION_FILE_PATHS}
         --basedir "${PROJECT_SOURCE_DIR}/.."
         --filter "QDocModule=${doc_target}"
         -o "${target_bin_dir}/codeattributions.qdoc"
