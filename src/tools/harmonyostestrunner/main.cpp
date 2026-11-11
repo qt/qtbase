@@ -168,11 +168,11 @@ static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
 {
     constexpr auto pollInterval = 100ms;
     const qint64 maxIterations = timeout / pollInterval;
-    for (qint64 i = 0; i < maxIterations; ++i) {
+    const QDeadlineTimer hdcOutageDeadline(hdcOutageTolerance);
+    for (qint64 i = 0; i < maxIterations && !hdcOutageDeadline.hasExpired(); ++i) {
         if (g_interrupted.load())
             return false;
-        const QString out = readDeviceFile(hdc, shellStdoutPath);
-        if (!out.contains(u"No such file or directory"_s))
+        if (queryDeviceFileState(hdc, shellStdoutPath) == DeviceFileState::Present)
             return true;
         QThread::sleep(pollInterval);
     }
