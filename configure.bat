@@ -12,6 +12,7 @@ set QTDIR=%CD%
 rem Parse command line
 
 set TOPLEVEL=false
+set HELP_SHOWN=false
 set TOPQTSRC=%QTSRC%
 set TOPQTDIR=%QTDIR%
 if /i not "%~1" == "-top-level" goto notoplevel
@@ -29,7 +30,8 @@ exit /b 1
 :wastoplevel
 
 call :doargs %ARGS%
-if errorlevel 1 exit /b
+if errorlevel 1 exit /b 1
+if %HELP_SHOWN% == true exit /b 0
 goto doneargs
 
 :doargs
@@ -51,8 +53,9 @@ goto doneargs
     goto doargs
 
 :help
+    set HELP_SHOWN=true
     type %QTSRC%\config_help.txt
-    if %TOPLEVEL% == false exit /b 1
+    if %TOPLEVEL% == false exit /b 0
     for /d %%p in ("%TOPQTSRC%"\qt*) do (
         if not "%%p" == "%QTSRC%" (
             if exist "%%p\config_help.txt" (
@@ -61,7 +64,7 @@ goto doneargs
             )
         )
     )
-    exit /b 1
+    exit /b 0
 
 :redo
     if not exist "%TOPQTDIR%\config.opt" goto redoerr
