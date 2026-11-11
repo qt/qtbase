@@ -2045,6 +2045,8 @@ void QFontEngineMulti::ensureEngineAt(int at)
     if (!m_fallbackFamiliesQueried && at > 0)
         ensureFallbackFamiliesQueried();
     Q_ASSERT(at < m_engines.size());
+    if (at < 0 || at >= m_engines.size())
+        return;
     if (!m_engines.at(at)) {
         QFontEngine *engine = loadEngine(at);
         if (!engine)
