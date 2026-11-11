@@ -69,6 +69,28 @@ DeviceFileState queryDeviceFileState(const Hdc &hdc, const QString &devicePath)
     return DeviceFileState::Unknown;
 }
 
+std::optional<QString> answeredShell(const Hdc &hdc, const QStringList &command)
+{
+    const QString answeredMarker = u"HARMONYOSTESTRUNNER_ANSWERED"_s;
+
+    const QString output =
+        hdc.shell(command + QStringList{ u";"_s, u"echo"_s, answeredMarker }).trimmed();
+    if (!output.endsWith(answeredMarker))
+        return std::nullopt;
+    return output.chopped(answeredMarker.size()).trimmed();
+}
+
+BundleState queryBundleState(const Hdc &hdc, const QString &bundleName)
+{
+    const std::optional<QString> dump =
+        answeredShell(hdc, { u"bm"_s, u"dump"_s, u"-n"_s, bundleName });
+    if (!dump)
+        return BundleState::Unknown;
+    if (dump->startsWith(bundleName))
+        return BundleState::Installed;
+    return BundleState::NotInstalled;
+}
+
 QString readDeviceFile(const Hdc &hdc, const QString &devicePath)
 {
     return hdc.shell({ u"cat"_s, devicePath });

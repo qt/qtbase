@@ -322,10 +322,12 @@ int main(int argc, char *argv[])
     TestOutputForwarder outputForwarder(
             hdc, shellStdoutPath, localCopyDir.filePath(u"stdout.txt"_s));
 
-    const QString bundleCheckOutput =
-        hdc.shell({u"bm"_s, u"dump"_s, u"-n"_s, bundleName});
-    if (bundleCheckOutput.contains(u"error"_s, Qt::CaseInsensitive)
-        || bundleCheckOutput.trimmed().isEmpty()) {
+    const BundleState bundleState = queryBundleState(hdc, bundleName);
+    if (bundleState == BundleState::Unknown) {
+        fprintf(stderr, "harmonyostestrunner: warning: hdc did not answer the bundle check, "
+                "continuing without it\n");
+    }
+    if (bundleState == BundleState::NotInstalled) {
         fprintf(stderr,
                 "harmonyostestrunner: bundle '%s' is not installed on the device.\n"
                 "  Build and sign the test HAP, then install it with:\n"

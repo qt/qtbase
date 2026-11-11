@@ -10,8 +10,11 @@
 #include <QtCore/qstring.h>
 #include <QtCore/private/qexpected_p.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
+enum class BundleState { Installed, NotInstalled, Unknown };
 enum class DeviceFileState { Present, Absent, Unknown };
 enum class ProcessState { Running, NotRunning, Unknown };
 
@@ -21,6 +24,8 @@ QString readDeviceFile(const Hdc &hdc, const QString &devicePath);
 q23::expected<QByteArray, QString> copyDeviceFile(
         const Hdc &hdc, const QString &devicePath, const QString &localPath);
 DeviceFileState queryDeviceFileState(const Hdc &hdc, const QString &devicePath);
+std::optional<QString> answeredShell(const Hdc &hdc, const QStringList &command);
+BundleState queryBundleState(const Hdc &hdc, const QString &bundleName);
 
 QT_END_NAMESPACE
 
