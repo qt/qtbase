@@ -131,6 +131,8 @@ public:
         QOhosConsumer<QOhosWindowProxy::RectChangeOptions> onWindowRectChange;
         QOhosConsumer<QOhosWindowProxy::RectChangeOptions> onWindowRectChangeInGlobalDisplay;
         QOhosConsumer<QOhosDisplayInfo::JsDisplayId> onWindowDisplayIdChange;
+        QOhosConsumer<QSize> onWindowResizeRejected;
+        QOhosConsumer<QPoint> onWindowMoveRejected;
     };
 
     using MainWindowCreateInfo = QOhosWindowProxyMainWindowCreateInfo;

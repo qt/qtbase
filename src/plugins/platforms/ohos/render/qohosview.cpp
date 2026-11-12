@@ -518,6 +518,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
                     .onWindowRectChangeInGlobalDisplay = makeViewConditionalSignalEmitter(
                         viewPtr, shouldEmitSignalPredicate, &QOhosView::windowRectChangedInGlobalDisplay),
                     .onWindowDisplayIdChange = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowDisplayIdChanged),
+                    .onWindowResizeRejected = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowResizeRejected),
+                    .onWindowMoveRejected = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowMoveRejected),
                 }));
 
         result->setNonClientAreaMouseWindowCallbackReceiver(
