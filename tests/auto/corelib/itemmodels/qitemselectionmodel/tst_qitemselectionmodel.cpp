@@ -14,6 +14,7 @@
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qitemselectionmodel.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qrect.h>
 #if QT_CONFIG(proxymodel)
 #include <QtCore/qsortfilterproxymodel.h>
 #endif
@@ -72,6 +73,8 @@ private slots:
     void isColumnSelectedManyRanges();
     void isRowSelected();
     void isColumnSelected();
+    void isRowAndColumnSelectedGaps_data();
+    void isRowAndColumnSelectedGaps();
     void childrenDeselectionSignal();
 #if QT_CONFIG(proxymodel)
     void layoutChangedWithAllSelected1();
@@ -2314,6 +2317,236 @@ void tst_QItemSelectionModel::isColumnSelected()
     sel.select(QItemSelection(model.index(0, 0), model.index(1, 0)), QItemSelectionModel::Deselect);
     QVERIFY(!sel.isColumnSelected(0));
     QVERIFY(!sel.isColumnSelected(1));
+}
+
+void tst_QItemSelectionModel::isRowAndColumnSelectedGaps_data()
+{
+    // 6 rows x 3 columns. QRects are (column, row, columnSpan, rowSpan).
+    // Rows/columns without any selectable item are never "selected";
+    // otherwise all selectable items must be selected.
+    QTest::addColumn<QList<QRect>>("unselectable"); // areas made non-selectable or disabled
+    QTest::addColumn<QList<QRect>>("committed");    // selected first (committed)
+    QTest::addColumn<QList<QRect>>("current");      // selected second (still the current selection)
+    QTest::addColumn<QList<bool>>("expectedRows");
+    QTest::addColumn<QList<bool>>("expectedColumns");
+
+    const QList<QRect> none;
+
+    QTest::newRow("no-selection")
+        << none << none << none
+        << QList<bool>{false, false, false, false, false, false}
+        << QList<bool>{false, false, false};
+
+    // gaps before, between and after the (unordered) ranges are unselectable:
+    QTest::newRow("unselectable-gaps-before-between-after-unordered")
+        << QList<QRect>{{0, 0, 3, 1}, {0, 3, 3, 1}, {0, 5, 3, 1}}
+        << QList<QRect>{{0, 4, 3, 1}, {0, 1, 3, 2}}
+        << none
+        << QList<bool>{false, true, true, false, true, false}
+        << QList<bool>{true, true, true};
+
+    // same, but one selectable item in the gap between the ranges:
+    QTest::newRow("selectable-item-in-gap-between")
+        << QList<QRect>{{0, 0, 3, 1}, {0, 3, 1, 1}, {2, 3, 1, 1}, {0, 5, 3, 1}}
+        << QList<QRect>{{0, 4, 3, 1}, {0, 1, 3, 2}}
+        << none
+        << QList<bool>{false, true, true, false, true, false}
+        << QList<bool>{true, false, true};
+
+    QTest::newRow("unselectable-gap-after")
+        << QList<QRect>{{0, 4, 3, 2}}
+        << QList<QRect>{{0, 0, 3, 4}}
+        << none
+        << QList<bool>{true, true, true, true, false, false}
+        << QList<bool>{true, true, true};
+
+    QTest::newRow("selectable-item-in-gap-after")
+        << QList<QRect>{{0, 4, 3, 1}, {0, 5, 2, 1}}
+        << QList<QRect>{{0, 0, 3, 4}}
+        << none
+        << QList<bool>{true, true, true, true, false, false}
+        << QList<bool>{true, true, false};
+
+    QTest::newRow("selectable-item-in-gap-before")
+        << QList<QRect>{{0, 0, 3, 1}, {0, 1, 1, 1}}
+        << QList<QRect>{{0, 2, 3, 4}}
+        << none
+        << QList<bool>{false, false, true, true, true, true}
+        << QList<bool>{true, false, false};
+
+    QTest::newRow("all-unselectable")
+        << QList<QRect>{{0, 0, 3, 6}}
+        << QList<QRect>{{0, 0, 3, 6}}
+        << none
+        << QList<bool>{false, false, false, false, false, false}
+        << QList<bool>{false, false, false};
+
+    QTest::newRow("all-unselectable-no-selection")
+        << QList<QRect>{{0, 0, 3, 6}}
+        << none << none
+        << QList<bool>{false, false, false, false, false, false}
+        << QList<bool>{false, false, false};
+
+    // a whole column of unselectable items, selection covers the rest:
+    QTest::newRow("unselectable-column")
+        << QList<QRect>{{2, 0, 1, 6}}
+        << QList<QRect>{{0, 0, 2, 6}}
+        << none
+        << QList<bool>{true, true, true, true, true, true}
+        << QList<bool>{true, true, false};
+
+    // range nested in an earlier one (current selection inside committed one):
+    QTest::newRow("nested-range")
+        << QList<QRect>{{0, 0, 3, 1}, {0, 5, 3, 1}}
+        << QList<QRect>{{0, 1, 3, 4}}
+        << QList<QRect>{{0, 2, 3, 1}}
+        << QList<bool>{false, true, true, true, true, false}
+        << QList<bool>{true, true, true};
+
+    // overlapping ranges, the current one lying before the committed one:
+    QTest::newRow("overlapping-ranges-out-of-order")
+        << QList<QRect>{{0, 5, 3, 1}}
+        << QList<QRect>{{0, 3, 3, 2}}
+        << QList<QRect>{{0, 0, 3, 4}}
+        << QList<bool>{true, true, true, true, true, false}
+        << QList<bool>{true, true, true};
+
+    // selectable gap between committed and current range:
+    QTest::newRow("selectable-gap-between-committed-and-current")
+        << QList<QRect>{{0, 5, 3, 1}}
+        << QList<QRect>{{0, 0, 3, 2}}
+        << QList<QRect>{{0, 3, 3, 2}}
+        << QList<bool>{true, true, false, true, true, false}
+        << QList<bool>{false, false, false};
+
+    // Transposed variants of the unordered-range cases: several column
+    // ranges per row, given right-to-left, all of which are needed to
+    // cover the row.
+    QTest::newRow("column-ranges-right-to-left")
+        << none
+        << QList<QRect>{{2, 0, 1, 6}, {0, 0, 2, 6}}
+        << none
+        << QList<bool>{true, true, true, true, true, true}
+        << QList<bool>{true, true, true};
+
+    QTest::newRow("column-ranges-right-to-left-unselectable-gap")
+        << QList<QRect>{{1, 0, 1, 6}}
+        << QList<QRect>{{2, 0, 1, 6}, {0, 0, 1, 6}}
+        << none
+        << QList<bool>{true, true, true, true, true, true}
+        << QList<bool>{true, false, true};
+
+    QTest::newRow("column-ranges-right-to-left-selectable-gap")
+        << none
+        << QList<QRect>{{2, 0, 1, 6}, {0, 0, 1, 6}}
+        << none
+        << QList<bool>{false, false, false, false, false, false}
+        << QList<bool>{true, false, true};
+
+    // a column range nested in an enclosing one, ending before the
+    // enclosing one does:
+    QTest::newRow("nested-column-range")
+        << none
+        << QList<QRect>{{1, 0, 1, 6}}
+        << QList<QRect>{{0, 0, 3, 6}}
+        << QList<bool>{true, true, true, true, true, true}
+        << QList<bool>{true, true, true};
+
+    // a nested range sharing the leading edge of the enclosing one is
+    // found first, but the enclosing one is still needed:
+    QTest::newRow("nested-range-same-top")
+        << QList<QRect>{{0, 5, 3, 1}}
+        << QList<QRect>{{0, 0, 3, 5}}
+        << QList<QRect>{{0, 0, 3, 2}}
+        << QList<bool>{true, true, true, true, true, false}
+        << QList<bool>{true, true, true};
+
+    QTest::newRow("nested-column-range-same-left")
+        << none
+        << QList<QRect>{{0, 0, 3, 6}}
+        << QList<QRect>{{0, 0, 1, 6}}
+        << QList<bool>{true, true, true, true, true, true}
+        << QList<bool>{true, true, true};
+
+    // unselectable items inside a selected range:
+    QTest::newRow("unselectable-inside-range")
+        << QList<QRect>{{1, 0, 1, 1}, {0, 2, 3, 1}, {2, 5, 1, 1}}
+        << QList<QRect>{{0, 0, 3, 6}}
+        << none
+        << QList<bool>{true, true, false, true, true, true}
+        << QList<bool>{true, true, true};
+}
+
+void tst_QItemSelectionModel::isRowAndColumnSelectedGaps()
+{
+    QFETCH(const QList<QRect>, unselectable);
+    QFETCH(const QList<QRect>, committed);
+    QFETCH(const QList<QRect>, current);
+    QFETCH(const QList<bool>, expectedRows);
+    QFETCH(const QList<bool>, expectedColumns);
+
+    constexpr int numRows = 6;
+    constexpr int numColumns = 3;
+    QCOMPARE(expectedRows.size(), numRows);
+    QCOMPARE(expectedColumns.size(), numColumns);
+
+    QStandardItemModel model(numRows, numColumns);
+    for (int row = 0; row < numRows; ++row) {
+        for (int column = 0; column < numColumns; ++column)
+            model.setItem(row, column, new QStandardItem);
+    }
+    for (const QRect &r : unselectable) {
+        for (int row = r.top(); row <= r.bottom(); ++row) {
+            for (int column = r.left(); column <= r.right(); ++column) {
+                // isSelectableAndEnabled() needs both flags, so knock out either one:
+                model.item(row, column)->setFlags((row + column) % 2 ? Qt::ItemIsEnabled
+                                                                    : Qt::ItemIsSelectable);
+            }
+        }
+    }
+
+    const auto toSelection = [&model](const QList<QRect> &rects) {
+        QItemSelection sel;
+        for (const QRect &r : rects)
+            sel.select(model.index(r.top(), r.left()), model.index(r.bottom(), r.right()));
+        return sel;
+    };
+
+    QItemSelectionModel sm(&model);
+    // A select() without Current commits the previous selection, so the 1st
+    // call yields the committed selection, the 2nd the current selection:
+    sm.select(toSelection(committed), QItemSelectionModel::Select);
+    sm.select(toSelection(current), QItemSelectionModel::Select);
+
+    // reference implementation: all selectable items selected, and at least one exists
+    const auto reference = [&](int count, auto indexFor) {
+        bool anySelectable = false;
+        for (int i = 0; i < count; ++i) {
+            const QModelIndex idx = indexFor(i);
+            if (!(idx.flags() & Qt::ItemIsSelectable) || !(idx.flags() & Qt::ItemIsEnabled))
+                continue;
+            anySelectable = true;
+            if (!sm.isSelected(idx))
+                return false;
+        }
+        return anySelectable;
+    };
+
+    QList<bool> actualRows, referenceRows;
+    for (int row = 0; row < numRows; ++row) {
+        actualRows.append(sm.isRowSelected(row, QModelIndex()));
+        referenceRows.append(reference(numColumns, [&](int c) { return model.index(row, c); }));
+    }
+    QCOMPARE(referenceRows, expectedRows); // validates the test data
+    QCOMPARE(actualRows, expectedRows);
+
+    QList<bool> actualColumns, referenceColumns;
+    for (int column = 0; column < numColumns; ++column) {
+        actualColumns.append(sm.isColumnSelected(column, QModelIndex()));
+        referenceColumns.append(reference(numRows, [&](int r) { return model.index(r, column); }));
+    }
+    QCOMPARE(referenceColumns, expectedColumns); // validates the test data
+    QCOMPARE(actualColumns, expectedColumns);
 }
 
 void tst_QItemSelectionModel::childrenDeselectionSignal()
