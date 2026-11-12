@@ -3,6 +3,7 @@
 
 #include <QTest>
 #include <QtSql/QtSql>
+#include <QtCore/qtimezone.h>
 
 #include "../../../../auto/sql/kernel/qsqldatabase/tst_databases.h"
 
@@ -24,6 +25,8 @@ private slots:
     void benchmark();
     void benchmarkSelectPrepared_data() { generic_data(); }
     void benchmarkSelectPrepared();
+    void benchmarkSelectTimeZone_data() { generic_data(); }
+    void benchmarkSelectTimeZone();
 
 private:
     // returns all database connections
@@ -110,6 +113,51 @@ void tst_QSqlQuery::benchmarkSelectPrepared()
 
         while (q.next())
             sum += q.value(0).toInt();
+
+        QCOMPARE(sum, expectedSum);
+    }
+}
+
+// Reads a TIMESTAMP WITH TIME ZONE column whose values all carry the same
+// named zone, so each one needs a QTimeZone when it is decoded.
+void tst_QSqlQuery::benchmarkSelectTimeZone()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType != QSqlDriver::Interbase && dbType != QSqlDriver::FirebirdSQL)
+        QSKIP("Implemented only for the Firebird/Interbase family");
+    if (tst_Databases::getIbaseEngineVersion(db).majorVersion() < 4)
+        QSKIP("Time zone support only implemented for firebird engine version 4 and greater");
+
+    QSqlQuery q(db);
+    TableScope ts(db, "benchmark", __FILE__);
+
+    QVERIFY_SQL(q, exec("CREATE TABLE " + ts.tableName()
+                        + "(id INT NOT NULL, ts TIMESTAMP WITH TIME ZONE)"));
+
+    // One row per minute, starting at noon in Berlin.
+    const int NUM_ROWS = 5000;
+    QVERIFY_SQL(q, exec("EXECUTE BLOCK AS DECLARE i INT = 0; BEGIN "
+                        "WHILE (i < " + QString::number(NUM_ROWS) + ") DO BEGIN "
+                        "INSERT INTO " + ts.tableName() + " VALUES (:i, DATEADD(:i MINUTE TO "
+                        "TIMESTAMP '2024-01-15 12:00:00 Europe/Berlin')); "
+                        "i = i + 1; END END"));
+
+    const qint64 firstMSecs = QDateTime(QDate(2024, 1, 15), QTime(12, 0),
+                                        QTimeZone("Europe/Berlin")).toMSecsSinceEpoch();
+    const qint64 n = NUM_ROWS;
+    const qint64 expectedSum = n * firstMSecs + 60000 * (n * (n - 1) / 2);
+
+    q.setForwardOnly(true);
+    QVERIFY_SQL(q, prepare("SELECT ts FROM " + ts.tableName() + " ORDER BY id"));
+    QBENCHMARK {
+        QVERIFY_SQL(q, exec());
+        qint64 sum = 0;
+
+        while (q.next())
+            sum += q.value(0).toDateTime().toMSecsSinceEpoch();
 
         QCOMPARE(sum, expectedSum);
     }

@@ -5,6 +5,7 @@
 #include "qsql_firebird_helpers_p.h"
 
 #include <QtCore/qtimezone.h>
+#include <QtCore/private/qflatmap_p.h>
 
 #include <firebird/impl/blr.h>   // BLR type constants for array element types
 
@@ -342,6 +343,26 @@ static QTimeZone fromFirebirdZoneId(const QByteArray &id)
     return QTimeZone(id);
 }
 
+/*! \internal
+    QTimeZone for the zone of a decoded TIMESTAMP/TIME WITH TIME ZONE value.
+    Constructing a QTimeZone from its id is a lookup in the system's zone
+    database and by far the most expensive step of decoding such a value, while
+    a result set typically carries only a handful of distinct zones. Firebird's
+    numeric zone id identifies the zone process-wide (region ids are fixed,
+    offset ids encode the displacement), so resolve each id once per thread.
+    tzName is the name fbclient decoded for zoneId.
+*/
+static QTimeZone zoneForFirebirdId(ISC_USHORT zoneId, const char *tzName)
+{
+    static thread_local QVarLengthFlatMap<ISC_USHORT, QTimeZone, 8> zones;
+    const auto it = zones.find(zoneId);
+    if (it != zones.end())
+        return it.value();
+    const QTimeZone zone = fromFirebirdZoneId(QByteArray(tzName));
+    zones.insert(zoneId, zone);
+    return zone;
+}
+
 ISC_TIMESTAMP_TZ encodeQDateTimeTz(IStatus *iStatus, IUtil *util, const QDateTime &dt)
 {
     ThrowStatusWrapper st(iStatus);
@@ -427,7 +448,7 @@ QDateTime decodeFirebirdTimestampTz(IStatus *iStatus, IUtil *util,
     char tzName[64] = {};
     util->decodeTimeStampTz(&st, &tstz, &year, &month, &day, &hour, &minute, &sec, &frac,
                             sizeof(tzName), tzName);
-    const QTimeZone tz = fromFirebirdZoneId(QByteArray(tzName));
+    const QTimeZone tz = zoneForFirebirdId(tstz.time_zone, tzName);
     return QDateTime(QDate(static_cast<int>(year), static_cast<int>(month), static_cast<int>(day)),
                      QTime(static_cast<int>(hour), static_cast<int>(minute),
                            static_cast<int>(sec), static_cast<int>(frac / 10)),
@@ -444,7 +465,7 @@ QDateTime decodeFirebirdTimeTz(IStatus *iStatus, IUtil *util,
     unsigned frac = 0;
     char tzName[64] = {};
     util->decodeTimeTz(&st, &ttz, &hour, &minute, &sec, &frac, sizeof(tzName), tzName);
-    const QTimeZone tz = fromFirebirdZoneId(QByteArray(tzName));
+    const QTimeZone tz = zoneForFirebirdId(ttz.time_zone, tzName);
     return QDateTime(QDate(1970, 1, 1),
                      QTime(static_cast<int>(hour), static_cast<int>(minute),
                            static_cast<int>(sec), static_cast<int>(frac / 10)),
