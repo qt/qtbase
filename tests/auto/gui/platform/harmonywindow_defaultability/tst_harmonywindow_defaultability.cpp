@@ -1,27 +1,15 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtCore/qcoreapplication.h>
-#include <QtCore/qharmonyappjscontext.h>
-#include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsobjectref.h>
 #include <QtGui/qwindow.h>
 #include <QtTest/qtest.h>
 
-using QHarmonyApplication = QNativeInterface::QHarmonyApplication;
+#include "../../../../shared/harmonytestutils.h"
+
+using namespace QTestHarmony;
+
 using QHarmonyWindow = QNativeInterface::QHarmonyWindow;
-
-namespace {
-
-QHarmonyJsObjectRef fetchDefaultAbility()
-{
-    return QHarmonyApplication::runOnJsThreadAndWait(
-        [](QHarmonyJsContext &jsContext) {
-            return QHarmonyJsObjectRef::fromValue(jsContext, QHarmonyAppJsContext::fromJsContext(jsContext).defaultAbility());
-        });
-}
-
-}
 
 class tst_HarmonyWindowDefaultAbility : public QObject
 {
