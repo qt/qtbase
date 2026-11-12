@@ -1336,7 +1336,6 @@ void tst_QWindow::setGeometryRejectedForMaximizedWindow()
     const auto maximizedGeometry = window.geometry();
 
     window.setGeometry(QRect(m_availableTopLeft + QPoint(130, 130), m_testWindowSize / 2));
-    QEXPECT_FAIL("", "QTBUG-151625: a rejected geometry update isn't reported back", Continue);
     QTRY_COMPARE(window.geometry(), maximizedGeometry);
 
     QTestHarmony::verifyNoNapiCallFailures();
