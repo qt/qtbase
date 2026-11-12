@@ -14,6 +14,14 @@
 
 #include <string.h>
 
+#if QT_CONFIG(icu) || defined(Q_OS_ANDROID) || defined(Q_OS_WASM) || defined(Q_OS_WIN)
+// Generally OK support, give or take some idiosyncracies.
+#elif defined(Q_OS_MACOS) // Q_OS_DARWIN ? But qcollator_p.h tests Q_OS_MACOS.
+// Doesn't support C locale.
+#else
+#  define POSIX_BACKEND // Supports only C and system locales.
+#endif
+
 using namespace Qt::StringLiterals;
 
 class tst_QCollator : public QObject
@@ -61,10 +69,8 @@ void tst_QCollator::basics()
     c3 = c2;
     QCOMPARE(c3.locale(), de_AT);
 
-    // posix implementation supports only C and default locale,
-    // so update it for Android and INTEGRITY builds
-#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
-    c3.setLocale(QLocale());
+#ifdef POSIX_BACKEND // Set a supported locale:
+    c3.setLocale(QLocale::system());
 #endif
     QCollatorSortKey key1 = c3.sortKey("test");
 
@@ -98,10 +104,8 @@ void tst_QCollator::moveSemantics()
     QCOMPARE(c2, QCollator());
 
     // test QCollatorSortKey move assignment
-    // posix implementation supports only C and default locale,
-    // so update it for Android and INTEGRITY builds
-#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
-    c1.setLocale(QLocale());
+#ifdef POSIX_BACKEND // Set a supported locale:
+    c1.setLocale(QLocale::system());
 #endif
     QCollatorSortKey key1 = c1.sortKey("1");
     QCollatorSortKey key2 = c1.sortKey("2");
@@ -740,7 +744,7 @@ void tst_QCollator::compare()
     if (tag.startsWith("en-9:19") || tag.startsWith("en-.19:,19"))
         QSKIP("Some en-us locale tests have issues on WASM");
 #endif // Q_OS_WASM
-#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM)
+#ifdef POSIX_BACKEND
     if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
         QSKIP("POSIX implementation of collation only supports C and system collation locales");
 #elif QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
@@ -840,6 +844,10 @@ void tst_QCollator::detach()
         QCOMPARE(c1.options(), options);
     }
 }
+
+#ifdef POSIX_BACKEND
+#  undef POSIX_BACKEND
+#endif
 
 QTEST_APPLESS_MAIN(tst_QCollator)
 
