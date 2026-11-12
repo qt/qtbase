@@ -280,6 +280,8 @@ private slots:
     void firebirdCancelQuery();
     void firebirdNaiveTimestamp_data() { generic_data("QFIREBIRD"); }
     void firebirdNaiveTimestamp();
+    void firebirdSmallBlobCapacity_data() { generic_data("QFIREBIRD"); }
+    void firebirdSmallBlobCapacity();
 
     void QTBUG_128493_data() { generic_data("QIBASE"); }
     void QTBUG_128493();
@@ -5474,6 +5476,42 @@ void tst_QSqlQuery::firebirdNaiveTimestamp()
         QCOMPARE(got.date(), dt.date()); // wall clock preserved verbatim ...
         QCOMPARE(got.time(), dt.time()); // ... guards against any zone conversion
     }
+}
+
+// A BLOB value must not hold on to more memory than its size warrants: an
+// application keeping many small BLOBs (a model, a cache) would otherwise pay
+// for a read buffer behind each of them. QFIREBIRD-specific.
+void tst_QSqlQuery::firebirdSmallBlobCapacity()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    TableScope ts(db, "fbsmallblob", __FILE__);
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + ts.tableName()
+                        + " (id int, data BLOB SUB_TYPE 0)"));
+
+    const int blobCount = 50;
+    const QByteArray payload(24, 'x');
+    QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 (id, data) VALUES (?, ?)")
+                               .arg(ts.tableName())));
+    for (int i = 0; i < blobCount; ++i) {
+        q.bindValue(0, i);
+        q.bindValue(1, payload);
+        QVERIFY_SQL(q, exec());
+    }
+
+    QVERIFY_SQL(q, exec("SELECT data FROM " + ts.tableName() + " ORDER BY id"));
+    int rows = 0;
+    while (q.next()) {
+        const QByteArray value = q.value(0).toByteArray();
+        QCOMPARE(value, payload);
+        // Allow for the allocator's rounding, not for a fixed read buffer.
+        QCOMPARE_LE(value.capacity(), payload.size() * 4);
+        ++rows;
+    }
+    QCOMPARE(rows, blobCount);
 }
 
 // Opt-in client-side row cache (FB_SCROLLABLE_CACHE connection option): enables

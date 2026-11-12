@@ -75,6 +75,10 @@ static QByteArray readBlob(IAttachment *att, ITransaction *tra, IStatus *st,
         result.append(reinterpret_cast<const char *>(seg), segLen);
     } while (code == IStatus::RESULT_OK || code == IStatus::RESULT_SEGMENT);
     blob.closeWith([&](IBlob *b) { b->close(&tsw); });
+    /* The result is handed to the application as is: release the capacity
+       beyond its size, or the reserved buffer would stay pinned behind every
+       value, however small the BLOB. */
+    result.squeeze();
     return result;
 }
 
