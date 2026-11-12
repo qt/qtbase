@@ -1013,6 +1013,10 @@ bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags fla
        outside \a size, preserving the aspect ratio.
     \endlist
 
+    \warning Care should be taken if using Qt::KeepAspectRatioByExpanding mode on untrusted
+    pixmaps. For an input with extreme aspect ratio, it can easily result in a huge output pixmap,
+    causing memory exhaustion.
+
     If the given \a size is empty, this function returns a null
     pixmap.
 
@@ -1036,6 +1040,11 @@ QPixmap Q_TRACE_INSTRUMENT(qtgui) QPixmap::scaled(const QSize& s, Qt::AspectRati
         return QPixmap();
 
     QSize newSize = size();
+    if (aspectMode == Qt::KeepAspectRatioByExpanding) {
+        const QSizeF fs = QSizeF(newSize).scaled(s, aspectMode);
+        if (std::max(fs.width(), fs.height()) > INT_MAX)
+            return QPixmap();
+    }
     newSize.scale(s, aspectMode);
     newSize.rwidth() = qMax(newSize.width(), 1);
     newSize.rheight() = qMax(newSize.height(), 1);
@@ -1058,6 +1067,9 @@ QPixmap Q_TRACE_INSTRUMENT(qtgui) QPixmap::scaled(const QSize& s, Qt::AspectRati
     to the given \a width using the specified transformation \a mode.
     The height of the pixmap is automatically calculated so that the
     aspect ratio of the pixmap is preserved.
+
+    \warning Care should be taken if using this function on untrusted pixmaps. For an input with
+    extreme aspect ratio, it can easily result in a huge output pixmap, causing memory exhaustion.
 
     If \a width is 0 or negative, a null pixmap is returned.
 
@@ -1088,6 +1100,9 @@ QPixmap Q_TRACE_INSTRUMENT(qtgui) QPixmap::scaledToWidth(int w, Qt::Transformati
     to the given \a height using the specified transformation \a mode.
     The width of the pixmap is automatically calculated so that the
     aspect ratio of the pixmap is preserved.
+
+    \warning Care should be taken if using this function on untrusted pixmaps. For an input with
+    extreme aspect ratio, it can easily result in a huge output pixmap, causing memory exhaustion.
 
     If \a height is 0 or negative, a null pixmap is returned.
 

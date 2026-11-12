@@ -196,6 +196,7 @@ private slots:
     void convertOverUnPreMul();
 
     void scaled_QTBUG35972();
+    void scaledExpandingOverflow();
 
     void convertToPixelFormat();
     void convertToImageFormat_data();
@@ -3742,6 +3743,14 @@ void tst_QImage::scaled_QTBUG35972()
     int size = dest.width()*dest.height();
     for (int i = 0; i < size; ++i)
         QCOMPARE(pixels[i], 0xffffffff);
+}
+
+void tst_QImage::scaledExpandingOverflow()
+{
+    QImage src(1000, 1, QImage::Format_ARGB32);
+    src.fill(Qt::white);
+    // Resulting width would not fit in int
+    QVERIFY(src.scaled(QSize(10, 3000000), Qt::KeepAspectRatioByExpanding).isNull());
 }
 
 void tst_QImage::convertToPixelFormat()

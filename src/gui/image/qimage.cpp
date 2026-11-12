@@ -3051,6 +3051,10 @@ bool QImage::isGrayscale() const
        outside \a size, preserving the aspect ratio.
     \endlist
 
+    \warning Care should be taken if using Qt::KeepAspectRatioByExpanding mode on untrusted images.
+    For an input with extreme aspect ratio, it can easily result in a huge output image, causing
+    memory exhaustion.
+
     If the given \a size is empty, this function returns a null image.
 
     \sa isNull(), {QImage#Image Transformations}{Image
@@ -3066,6 +3070,11 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::scaled(const QSize& s, Qt::AspectRatioM
         return QImage();
 
     QSize newSize = size();
+    if (aspectMode == Qt::KeepAspectRatioByExpanding) {
+        const QSizeF fs = QSizeF(newSize).scaled(s, aspectMode);
+        if (std::max(fs.width(), fs.height()) > INT_MAX)
+            return QImage();
+    }
     newSize.scale(s, aspectMode);
     newSize.rwidth() = qMax(newSize.width(), 1);
     newSize.rheight() = qMax(newSize.height(), 1);
@@ -3088,6 +3097,9 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::scaled(const QSize& s, Qt::AspectRatioM
 
     This function automatically calculates the height of the image so
     that its aspect ratio is preserved.
+
+    \warning Care should be taken if using this function on untrusted images. For an input with
+    extreme aspect ratio, it can easily result in a huge output image, causing memory exhaustion.
 
     If the given \a width is 0 or negative, a null image is returned.
 
@@ -3118,6 +3130,9 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::scaledToWidth(int w, Qt::Transformation
 
     This function automatically calculates the width of the image so that
     the ratio of the image is preserved.
+
+    \warning Care should be taken if using this function on untrusted images. For an input with
+    extreme aspect ratio, it can easily result in a huge output image, causing memory exhaustion.
 
     If the given \a height is 0 or negative, a null image is returned.
 
