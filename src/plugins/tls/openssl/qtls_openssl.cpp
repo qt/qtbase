@@ -1170,7 +1170,7 @@ void TlsCryptographOpenSSL::transmit()
 void TlsCryptographOpenSSL::disconnectFromHost()
 {
     if (ssl) {
-        if (!shutdown && !q_SSL_in_init(ssl) && !systemOrSslErrorDetected) {
+        if (!shutdown && q->isEncrypted() && !q_SSL_in_init(ssl) && !systemOrSslErrorDetected) {
             if (q_SSL_shutdown(ssl) != 1) {
                 // Some error may be queued, clear it.
                 QTlsBackendOpenSSL::clearErrorQueue();
