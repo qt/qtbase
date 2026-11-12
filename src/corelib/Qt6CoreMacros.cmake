@@ -2132,10 +2132,8 @@ function(_qt_internal_generate_win32_rc_file_and_manifest target)
     </security>
 </trustInfo>
 <application xmlns="urn:schemas-microsoft-com:asm.v3">
-    <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings"
-                     xmlns:ws3="http://schemas.microsoft.com/SMI/2020/WindowsSettings">
+    <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
         <ws2:longPathAware>true</ws2:longPathAware>
-        <ws3:heapType>SegmentHeap</ws3:heapType>
     </windowsSettings>
 </application>
 </assembly>]=])
