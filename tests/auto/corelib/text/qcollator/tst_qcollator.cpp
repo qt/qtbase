@@ -748,6 +748,8 @@ void tst_QCollator::compare()
 #ifdef POSIX_BACKEND
     if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
         QSKIP("POSIX implementation of collation only supports C and system collation locales");
+    if (options != Opts{})
+        QSKIP("POSIX implementation of collation supports none of QCollator's CollationOptions");
 #endif
 
     [[maybe_unused]] int keyCompareResult = result;
