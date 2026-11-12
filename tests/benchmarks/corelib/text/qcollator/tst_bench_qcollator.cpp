@@ -95,7 +95,7 @@ void tst_QCollator::sortKeyViewList()
     QList<Pair> test;
     for (const char16_t *el : s_elements) {
         const QStringView str(el);
-        test << Pair(collator.sortKey(str.toString()), str);
+        test << Pair(collator.sortKey(str), str);
     }
     const auto elements = test;
     QBENCHMARK {

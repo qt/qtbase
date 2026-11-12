@@ -93,6 +93,11 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+    return sortKey(QStringView{string});
+}
+
+QCollatorSortKey QCollator::sortKey(QStringView string) const
+{
     if (!d)
         d = new QCollatorPrivate(QLocale().collation());
 

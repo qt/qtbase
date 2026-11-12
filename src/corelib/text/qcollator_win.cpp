@@ -99,6 +99,11 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+    return sortKey(QStringView{string});
+}
+
+QCollatorSortKey QCollator::sortKey(QStringView string) const
+{
     if (string.isEmpty()) {
         // empty strings sort before everything and LCMapString doesn't
         // like them

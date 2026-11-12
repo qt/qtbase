@@ -100,6 +100,7 @@ public:
     bool operator()(QStringView s1, QStringView s2) const
     { return compare(s1, s2) < 0; }
 
+    QCollatorSortKey sortKey(QStringView string) const;
     QCollatorSortKey sortKey(const QString &string) const;
 
     static int defaultCompare(QStringView s1, QStringView s2);

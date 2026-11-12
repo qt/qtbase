@@ -564,20 +564,22 @@ int QCollator::defaultCompare(QStringView s1, QStringView s2)
 */
 QCollatorSortKey QCollator::defaultSortKey(QStringView key)
 {
-    return defaultCollator->localData().collator().sortKey(key.toString());
+    return defaultCollator->localData().collator().sortKey(key);
 }
 
 /*!
     \fn QCollatorSortKey QCollator::sortKey(const QString &string) const
+    \fn QCollatorSortKey QCollator::sortKey(QStringView string) const
 
     Returns a sortKey for \a string.
 
-    Creating the sort key is usually somewhat slower, than using the compare()
+    Creating the sort key is usually somewhat slower than using the compare()
     methods directly. But if the string is compared repeatedly (e.g. when
     sorting a whole list of strings), it's usually faster to create the sort
     keys for each string and then sort using the keys.
 
     \note Not supported with the C (a.k.a. POSIX) locale on Darwin.
+
     \note Does not provide a performance improvement on Qt for WebAssembly
     due to native API limitations.
 */

@@ -918,11 +918,11 @@ void tst_QCollator::sorting()
         QList<Pair> expect;
         for (const char16_t *el : elements) {
             const QStringView str(el);
-            test << Pair(collator.sortKey(str.toString()), str);
+            test << Pair(collator.sortKey(str), str);
         }
         for (const char16_t *el : sorted) {
             const QStringView str(el);
-            expect << Pair(collator.sortKey(str.toString()), str);
+            expect << Pair(collator.sortKey(str), str);
         }
         std::sort(test.begin(), test.end(), [](const Pair &lhs, const Pair &rhs) {
                 return lhs.first < rhs.first;

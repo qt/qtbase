@@ -100,6 +100,11 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     return QCollatorPrivate::sortKeyFromData(std::move(key));
 }
 
+QCollatorSortKey QCollator::sortKey(QStringView string) const
+{
+    return sortKey(string.toString());
+}
+
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const noexcept
 {
     return compareImpl(d->m_key.collator, d->m_key.string, otherKey.d->m_key.string, Qt::CaseSensitive);
