@@ -564,6 +564,7 @@ void QOhosFloatingWindow::handleWindowResizeRejected(const QSize &rejectedSize)
 
     m_optSizeBeforeResizeRequest.reset();
     startAsyncWaitForNodeResizeIfNeeded();
+    reportWindowStatesAfterRejectedGeometryUpdateIfNeeded();
 }
 
 void QOhosFloatingWindow::handleWindowMoveRejected(const QPoint &rejectedPosition)
@@ -574,6 +575,16 @@ void QOhosFloatingWindow::handleWindowMoveRejected(const QPoint &rejectedPositio
         return;
 
     startAsyncWaitForNodeResizeIfNeeded();
+    reportWindowStatesAfterRejectedGeometryUpdateIfNeeded();
+}
+
+void QOhosFloatingWindow::reportWindowStatesAfterRejectedGeometryUpdateIfNeeded()
+{
+    // HACK
+    // QWidget clears Maximized and FullScreen on a move or resize and restores them only from a
+    // reported window state.
+    if (windowStates().testAnyFlags(Qt::WindowMaximized | Qt::WindowFullScreen))
+        QWindowSystemInterface::handleWindowStateChanged(window(), windowStates());
 }
 
 bool QOhosFloatingWindow::windowEvent(QEvent *event)
