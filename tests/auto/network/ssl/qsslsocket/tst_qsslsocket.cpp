@@ -269,6 +269,8 @@ private slots:
     void concurrentServerSideHandshakes();
 
     void closeNoWriteOnClosedPlainSocket();
+    void noReadyReadAfterFailedVerification_data();
+    void noReadyReadAfterFailedVerification();
 
     void disconnectFromHostNoWriteOnInvalidSocket();
 
@@ -5289,6 +5291,69 @@ void tst_QSslSocket::closeNoWriteOnClosedPlainSocket()
 
     QTest::failOnWarning(QRegularExpression("device not open"));
     client.close();
+}
+
+void tst_QSslSocket::noReadyReadAfterFailedVerification_data()
+{
+    QTest::addColumn<bool>("closeOnSslErrors");
+    QTest::addColumn<bool>("useClose");
+
+    QTest::addRow("close-on-errorOccurred") << false << true;
+    QTest::addRow("disconnectFromHost-on-errorOccurred") << false << false;
+    QTest::addRow("close-on-sslErrors") << true << true;
+    QTest::addRow("disconnectFromHost-on-sslErrors") << true << false;
+}
+
+void tst_QSslSocket::noReadyReadAfterFailedVerification()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QFETCH(const bool, closeOnSslErrors);
+    QFETCH(const bool, useClose);
+
+    // TLS 1.2: the server's Finished goes last, so the data arrives with it.
+    SslServer server;
+    server.protocol = QSsl::TlsV1_2;
+    QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+    connect(&server, &SslServer::socketEncrypted, &server, [](QSslSocket *socket) {
+        socket->write("application data from the server");
+        socket->flush();
+    });
+
+    QSslSocket client;
+    bool readyReadEmitted = false;
+    bool sslErrorsEmitted = false;
+    QAbstractSocket::SocketError error = QAbstractSocket::UnknownSocketError;
+    const auto closeClient = [&] {
+        if (useClose)
+            client.close();
+        else
+            client.disconnectFromHost();
+    };
+    connect(&client, &QSslSocket::readyRead, &client, [&] { readyReadEmitted = true; });
+    connect(&client, &QSslSocket::sslErrors, &client, [&] {
+        sslErrorsEmitted = true;
+        if (closeOnSslErrors)
+            closeClient();
+    });
+    connect(&client, &QSslSocket::errorOccurred, &client, [&](QAbstractSocket::SocketError e) {
+        if (error != QAbstractSocket::UnknownSocketError)
+            return;
+        error = e;
+        if (!closeOnSslErrors)
+            closeClient();
+    });
+
+    client.connectToHostEncrypted("127.0.0.1", server.serverPort());
+    QTRY_COMPARE(client.state(), QAbstractSocket::UnconnectedState);
+
+    QVERIFY(sslErrorsEmitted);
+    QCOMPARE(error, QAbstractSocket::SslHandshakeFailedError);
+    QVERIFY(!client.isEncrypted());
+    QVERIFY(!readyReadEmitted);
+    QCOMPARE(client.bytesAvailable(), 0);
 }
 
 #endif // QT_CONFIG(ssl)
