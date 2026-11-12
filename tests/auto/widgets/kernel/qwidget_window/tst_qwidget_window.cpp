@@ -1480,7 +1480,6 @@ void tst_QWidget_window::moveRejectedForMaximizedWidget()
 
     widget.move(widget.pos() + QPoint(50, 50));
     QVERIFY(!widget.windowState().testFlag(Qt::WindowMaximized));
-    QEXPECT_FAIL("", "QTBUG-151384: no window state is reported after a rejected move", Abort);
     QTRY_VERIFY(widget.windowState().testFlag(Qt::WindowMaximized));
 
     widget.showNormal();
