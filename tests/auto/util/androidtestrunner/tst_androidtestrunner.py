@@ -996,7 +996,7 @@ class DeviceRunTests(unittest.TestCase):
 
     @unittest.skipUnless(
         ARGS.testapp_aab and ARGS.bundletool,
-        "multi-module build (-DQT_ANDROID_GRADLE_MULTI_MODULE=ON + bundletool) not configured")
+        "-DQT_ANDROID_TEST_APK_SPLITS=ON not configured")
     def test_aab_install_and_run(self):
         # bundletool builds a .apks, install-apks pushes it, then am start runs the testapp.
         argv = self._argv(use_aab=True) + ["--", "alwaysPasses"]
