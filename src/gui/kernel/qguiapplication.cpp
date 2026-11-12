@@ -3115,10 +3115,12 @@ void QGuiApplicationPrivate::processPlatformPanelEvent(QWindowSystemInterfacePri
 #ifndef QT_NO_CONTEXTMENU
 void QGuiApplicationPrivate::processContextMenuEvent(QWindowSystemInterfacePrivate::ContextMenuEvent *e)
 {
-    // Widgets do not care about mouse triggered context menu events. Also, do not forward event
-    // to a window blocked by a modal window.
-    if (!e->window || e->mouseTriggered || e->window->d_func()->blockedByModalWindow)
+    // Widgets do not care about mouse triggered context menu events.
+    // Also, do not forward event to a window blocked by a modal window.
+    if (!e->window || e->mouseTriggered || e->window->d_func()->blockedByModalWindow) {
+        e->eventAccepted = false;
         return;
+    }
 
     QContextMenuEvent ev(QContextMenuEvent::Keyboard, e->pos, e->globalPos, e->modifiers);
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &ev);
