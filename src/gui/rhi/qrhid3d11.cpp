@@ -3523,7 +3523,7 @@ static inline DXGI_FORMAT toD3DDepthTextureSRVFormat(QRhiTexture::Format format)
 {
     switch (format) {
     case QRhiTexture::Format::D16:
-        return DXGI_FORMAT_R16_FLOAT;
+        return DXGI_FORMAT_R16_UNORM;
     case QRhiTexture::Format::D24:
         return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
     case QRhiTexture::Format::D24S8:
