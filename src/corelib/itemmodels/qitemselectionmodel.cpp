@@ -1565,18 +1565,21 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
 
-    // check ranges and currentSelection
+    // each cell in the row must be either unselectable or selected:
     int unselectable = 0;
     for (int column = 0; column < colCount; ++column) {
+        // cheap check first: if unselectable, we don't need to scan the cache
         if (!isSelectable(row, column)) {
             ++unselectable;
             continue;
         }
+        // cell selectable, so must be selected:
         bool foundSelection = false;
         for (auto &curSel : cache) {
             if (curSel.contains(row, column, parent)) {
                 const auto right = curSel.right();
                 for (int i = column + 1; i <= right; ++i) {
+                    // a cell in a QItemSelectionRange may yet be unselectable:
                     if (!isSelectable(row, i))
                         ++unselectable;
                 }
@@ -1589,6 +1592,7 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
         if (!foundSelection)
             return false;
     }
+    // row is selected if not all cells were unselectable:
     return unselectable < colCount;
 }
 
@@ -1654,18 +1658,21 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
 
-    // check ranges and currentSelection
+    // each cell in the column must be either unselectable or selected:
     int unselectable = 0;
     for (int row = 0; row < rowCount; ++row) {
+        // cheap check first: if unselectable, we don't need to scan the cache
         if (!isSelectable(row, column)) {
             ++unselectable;
             continue;
         }
+        // cell selectable, so must be selected:
         bool foundSelection = false;
         for (auto &curSel : cache) {
             if (curSel.contains(row, column, parent)) {
                 const auto bottom = curSel.bottom();
                 for (int i = row + 1; i <= bottom; ++i) {
+                    // a cell in a QItemSelectionRange may yet be unselectable:
                     if (!isSelectable(i, column))
                         ++unselectable;
                 }
@@ -1678,6 +1685,7 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
         if (!foundSelection)
             return false;
     }
+    // column is selected if not all cells were unselectable:
     return unselectable < rowCount;
 }
 
