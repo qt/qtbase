@@ -1582,6 +1582,8 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
                     // a cell in a QItemSelectionRange may yet be unselectable:
                     if (!isSelectable(row, i))
                         ++unselectable;
+                    else
+                        break; // selected cell found; we don't care about the rest
                 }
                 column = right;
                 foundSelection = true;
@@ -1675,6 +1677,8 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
                     // a cell in a QItemSelectionRange may yet be unselectable:
                     if (!isSelectable(i, column))
                         ++unselectable;
+                    else
+                        break; // selected cell found; we don't care about the rest
                 }
                 row = bottom;
                 foundSelection = true;
