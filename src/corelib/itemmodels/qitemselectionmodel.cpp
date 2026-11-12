@@ -26,7 +26,6 @@ struct QItemSelectionRangeRefCache
     QItemSelectionRangeRefCache(const QItemSelectionRange &range)
         : m_range(range)
     {}
-    inline void invalidate() { m_top = m_left = m_bottom = m_right = -1; }
     inline bool contains(int row, int column, const QModelIndex &parentIndex)
     {
         populate();
@@ -1566,36 +1565,22 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
 
     // each cell in the row must be either unselectable or selected:
-    int unselectable = 0;
+    bool foundSelectedCell = false;
+    const auto end = cache.end();
     for (int column = 0; column < colCount; ++column) {
         // cheap check first: if unselectable, we don't need to scan the cache
-        if (!isSelectable(row, column)) {
-            ++unselectable;
+        if (!isSelectable(row, column))
             continue;
-        }
         // cell selectable, so must be selected:
-        bool foundSelection = false;
-        for (auto &curSel : cache) {
-            if (curSel.contains(row, column, parent)) {
-                const auto right = curSel.right();
-                for (int i = column + 1; i <= right; ++i) {
-                    // a cell in a QItemSelectionRange may yet be unselectable:
-                    if (!isSelectable(row, i))
-                        ++unselectable;
-                    else
-                        break; // selected cell found; we don't care about the rest
-                }
-                column = right;
-                foundSelection = true;
-                curSel.invalidate();
-                break;
-            }
-        }
-        if (!foundSelection)
-            return false;
+        const auto it = std::find_if(cache.begin(), end,
+                                     [&](auto &e) { return e.contains(row, column, parent); });
+        if (it == end)
+            return false; // no range contains this cell, so it's not selected
+        foundSelectedCell = true; // 'column' was selectable and is selected
+        column = it->right();
     }
     // row is selected if not all cells were unselectable:
-    return unselectable < colCount;
+    return foundSelectedCell;
 }
 
 /*!
@@ -1661,36 +1646,22 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
 
     // each cell in the column must be either unselectable or selected:
-    int unselectable = 0;
+    bool foundSelectedCell = false;
+    const auto end = cache.end();
     for (int row = 0; row < rowCount; ++row) {
         // cheap check first: if unselectable, we don't need to scan the cache
-        if (!isSelectable(row, column)) {
-            ++unselectable;
+        if (!isSelectable(row, column))
             continue;
-        }
         // cell selectable, so must be selected:
-        bool foundSelection = false;
-        for (auto &curSel : cache) {
-            if (curSel.contains(row, column, parent)) {
-                const auto bottom = curSel.bottom();
-                for (int i = row + 1; i <= bottom; ++i) {
-                    // a cell in a QItemSelectionRange may yet be unselectable:
-                    if (!isSelectable(i, column))
-                        ++unselectable;
-                    else
-                        break; // selected cell found; we don't care about the rest
-                }
-                row = bottom;
-                foundSelection = true;
-                curSel.invalidate();
-                break;
-            }
-        }
-        if (!foundSelection)
-            return false;
+        const auto it = std::find_if(cache.begin(), end,
+                                     [&](auto &e) { return e.contains(row, column, parent); });
+        if (it == end)
+            return false; // no range contains this cell, so it's not selected
+        foundSelectedCell = true; // 'row' was selectable and is selected
+        row = it->bottom();
     }
     // column is selected if not all cells were unselectable:
-    return unselectable < rowCount;
+    return foundSelectedCell;
 }
 
 /*!
