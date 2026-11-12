@@ -34,6 +34,7 @@
 #endif
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 
 // QTest-based test processes may exit with up to 127 for normal test failures
@@ -155,9 +156,10 @@ static QStringList adbArgsWithSerial(const QStringList &args)
     return QStringList{ "-s"_L1, g_options.serial } + args;
 }
 
-static QByteArray execAdbCommand(const QStringList &args, bool verbose = true)
+static QByteArray execAdbCommand(const QStringList &args, bool verbose = true,
+                                 std::chrono::milliseconds timeout = 30s)
 {
-    return execCommand(g_options.adbCommand, adbArgsWithSerial(args), verbose);
+    return execCommand(g_options.adbCommand, adbArgsWithSerial(args), verbose, timeout);
 }
 
 static QByteArray execBundletoolCommand(const QStringList &args, bool verbose = true)
@@ -1257,7 +1259,7 @@ int main(int argc, char *argv[])
 
     if (g_options.packagePath.endsWith(".apk"_L1)) {
         const QStringList installArgs = { "install"_L1, "-r"_L1, g_options.packagePath };
-        if (execAdbCommand(installArgs).isNull())
+        if (execAdbCommand(installArgs, true, 5min).isNull())
             return EXIT_ERROR;
     } else if (g_options.packagePath.endsWith(".aab"_L1)) {
         QFileInfo aab(g_options.packagePath);
