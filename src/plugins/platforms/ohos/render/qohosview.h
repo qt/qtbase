@@ -176,6 +176,8 @@ Q_SIGNALS:
     void windowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId);
     void externalContentInteractionDetected();
     void nodeAreaChanged(QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo areaChangeEvt);
+    void windowResizeRejected(QSize rejectedSize);
+    void windowMoveRejected(QPoint rejectedPosition);
 
 private:
     using JsCallBatch = QtOhos::JsCallBatch;

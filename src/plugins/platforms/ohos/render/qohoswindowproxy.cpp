@@ -482,8 +482,18 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
                     "moveWindowToGlobalDisplay(*)", {point.x(), point.y()});
             }
 
+            const char *errorMessagePrefix = !isDisplayMainOrExtended
+                ? "Got error from moveWindowToGlobal()"
+                : "Got error from moveWindowToGlobalDisplay()";
+            auto weakWindowCallbackReceiver = QtOhos::makeWeakPtr(m_jsScopeData->windowCallbackReceiver);
             promise
-                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+                .onCatch(
+                    [weakWindowCallbackReceiver, errorMessagePrefix, point](const QtOhos::CallbackInfo &cbInfo) {
+                        QtOhos::logJsCallbackError(cbInfo, errorMessagePrefix);
+                        auto windowCallbackReceiver = weakWindowCallbackReceiver.lock();
+                        if (windowCallbackReceiver)
+                            windowCallbackReceiver->onWindowMoveRejected(point);
+                    })
                 .onFinally(std::move(taskPromise));
         },
         Q_FUNC_INFO);
@@ -509,8 +519,15 @@ void QOhosWindowProxy::setSize(const QSize &size, JsCallBatch &jsCallBatch)
 
             auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
                 "resizeAsync(*)", {size.width(), size.height()});
+            auto weakWindowCallbackReceiver = QtOhos::makeWeakPtr(m_jsScopeData->windowCallbackReceiver);
             promise
-                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+                .onCatch(
+                    [weakWindowCallbackReceiver, size](const QtOhos::CallbackInfo &cbInfo) {
+                        QtOhos::logJsCallbackError(cbInfo, "Got error from resizeAsync()");
+                        auto windowCallbackReceiver = weakWindowCallbackReceiver.lock();
+                        if (windowCallbackReceiver)
+                            windowCallbackReceiver->onWindowResizeRejected(size);
+                    })
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
@@ -615,6 +632,8 @@ void QOhosWindowProxy::setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks
             .onWindowRectChange = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChange, sharedWindowCallbackReceiver),
             .onWindowRectChangeInGlobalDisplay = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChangeInGlobalDisplay, sharedWindowCallbackReceiver),
             .onWindowDisplayIdChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowDisplayIdChange, sharedWindowCallbackReceiver),
+            .onWindowResizeRejected = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowResizeRejected, sharedWindowCallbackReceiver),
+            .onWindowMoveRejected = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowMoveRejected, sharedWindowCallbackReceiver),
         });
     },
     Q_FUNC_INFO);
