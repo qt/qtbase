@@ -16,8 +16,9 @@
 
 #if QT_CONFIG(icu) || defined(Q_OS_ANDROID) || defined(Q_OS_WASM) || defined(Q_OS_WIN)
 // Generally OK support, give or take some idiosyncracies.
+#  define SORTKEY_WORKS // Same for QSortKey
 #elif defined(Q_OS_MACOS) // Q_OS_DARWIN ? But qcollator_p.h tests Q_OS_MACOS.
-// Doesn't support C locale.
+// Doesn't support C locale, has some QSortKey quirks.
 #else
 #  define POSIX_BACKEND // Supports only C and system locales.
 #endif
@@ -747,8 +748,6 @@ void tst_QCollator::compare()
 #ifdef POSIX_BACKEND
     if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
         QSKIP("POSIX implementation of collation only supports C and system collation locales");
-#elif QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
-#  define SORTKEY_WORKS
 #endif
 
     [[maybe_unused]] int keyCompareResult = result;
@@ -845,6 +844,9 @@ void tst_QCollator::detach()
     }
 }
 
+#ifdef SORTKEY_WORKS
+#  undef SORTKEY_WORKS
+#endif
 #ifdef POSIX_BACKEND
 #  undef POSIX_BACKEND
 #endif
