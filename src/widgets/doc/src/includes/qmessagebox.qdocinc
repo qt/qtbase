@@ -1,0 +1,55 @@
+//! [static-intro]
+Opens \1 message box with the given \a title and \a text in front of
+the specified \a parent widget.
+//! [static-intro]
+
+//! [text-format]
+The text is interpreted according to \a textFormat.
+//! [text-format]
+
+//! [rich-text-note]
+\note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
+outside the trust boundary of the application should be pre-processed through a function
+such as QString::toHtmlEscaped().
+//! [rich-text-note]
+
+//! [static-buttons]
+The standard \a buttons are added to the message box.
+\a defaultButton specifies the button used when \uicontrol Enter is pressed.
+\a defaultButton must refer to a button that was given in \a buttons.
+If \a defaultButton is QMessageBox::NoButton, QMessageBox
+chooses a suitable default automatically.
+
+Returns the identity of the standard button that was clicked. If
+\uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
+{escape button} is returned.
+
+The message box is an \l{Qt::ApplicationModal}{application modal}
+dialog box.
+
+\warning Do not delete \a parent during the execution of the dialog.
+         If you want to do this, you should create the dialog
+         yourself using one of the QMessageBox constructors.
+//! [static-buttons]
+
+//! [about-intro]
+Displays a simple about box with title \a title and text \a
+text. The about box's parent is \a parent.
+//! [about-intro]
+
+//! [about-details]
+about() looks for a suitable icon in four locations:
+
+\list 1
+\li It prefers \l{QWidget::windowIcon()}{parent->icon()}
+if that exists.
+\li If not, it tries the top-level widget containing \a parent.
+\li If that fails, it tries the \l{QApplication::activeWindow()}{active window.}
+\li As a last resort it uses the Information icon.
+\endlist
+
+The about box has a single button labelled "OK".
+
+On \macos, the about box is popped up as a modeless window; on
+other platforms, it is currently application modal.
+//! [about-details]

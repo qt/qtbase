@@ -1747,10 +1747,12 @@ void QMessageBox::showEvent(QShowEvent *e)
 
 
 static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
-    QMessageBox::Icon icon,
-    const QString& title, const QString& text,
-    QMessageBox::StandardButtons buttons,
-    QMessageBox::StandardButton defaultButton)
+                                                     QMessageBox::Icon icon,
+                                                     const QString& title,
+                                                     const QString& text,
+                                                     QMessageBox::StandardButtons buttons,
+                                                     QMessageBox::StandardButton defaultButton,
+                                                     std::optional<Qt::TextFormat> textFormat = std::nullopt)
 {
     // necessary for source compatibility with Qt 4.0 and 4.1
     // handles (Yes, No) and (Yes|Default, No)
@@ -1764,7 +1766,8 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
     }
 
     QMessageBox msgBox(icon, title, text, QMessageBox::NoButton, parent);
-    msgBox.setTextFormat(Qt::AutoText);
+    if (textFormat)
+        msgBox.setTextFormat(textFormat.value());
     QDialogButtonBox *buttonBox = msgBox.findChild<QDialogButtonBox*>();
     Q_ASSERT(buttonBox != nullptr);
 
@@ -1788,29 +1791,38 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
 }
 
 /*!
-    Opens an information message box with the given \a title and
-    \a text in front of the specified \a parent widget.
+    \overload
+    \since 6.13
 
-    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
-    outside the trust boundary of the application should be pre-processed through a function
-    such as QString::toHtmlEscaped().
+    \include qmessagebox.qdocinc {static-intro} {an information}
+    \include qmessagebox.qdocinc text-format
 
-    The standard \a buttons are added to the message box.
-    \a defaultButton specifies the button used when \uicontrol Enter is pressed.
-    \a defaultButton must refer to a button that was given in \a buttons.
-    If \a defaultButton is QMessageBox::NoButton, QMessageBox
-    chooses a suitable default automatically.
+    \include qmessagebox.qdocinc static-buttons
 
-    Returns the identity of the standard button that was clicked. If
-    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
-    {escape button} is returned.
+    \sa question(), warning(), critical()
+*/
+QMessageBox::StandardButton QMessageBox::information(QWidget *parent,
+                                                     const QString &title,
+                                                     const QString& text,
+                                                     Qt::TextFormat textFormat,
+                                                     StandardButtons buttons,
+                                                     StandardButton defaultButton)
+{
+    return showNewMessageBox(parent,
+                             Information,
+                             title,
+                             text,
+                             buttons,
+                             defaultButton,
+                             textFormat);
+}
 
-    The message box is an \l{Qt::ApplicationModal}{application modal}
-    dialog box.
+/*!
+    \include qmessagebox.qdocinc {static-intro} {an information}
 
-    \warning Do not delete \a parent during the execution of the dialog.
-             If you want to do this, you should create the dialog
-             yourself using one of the QMessageBox constructors.
+    \include qmessagebox.qdocinc rich-text-note
+
+    \include qmessagebox.qdocinc static-buttons
 
     \sa question(), warning(), critical()
 */
@@ -1822,31 +1834,39 @@ QMessageBox::StandardButton QMessageBox::information(QWidget *parent, const QStr
                              defaultButton);
 }
 
+/*!
+    \overload
+    \since 6.13
+
+    \include qmessagebox.qdocinc {static-intro} {a question}
+    \include qmessagebox.qdocinc text-format
+
+    \include qmessagebox.qdocinc static-buttons
+
+    \sa information(), warning(), critical()
+*/
+QMessageBox::StandardButton QMessageBox::question(QWidget *parent,
+                                                  const QString &title,
+                                                  const QString &text,
+                                                  Qt::TextFormat textFormat,
+                                                  StandardButtons buttons,
+                                                  StandardButton defaultButton)
+{
+    return showNewMessageBox(parent,
+                             Question,
+                             title,
+                             text,
+                             buttons,
+                             defaultButton,
+                             textFormat);
+}
 
 /*!
-    Opens a question message box with the given \a title and \a
-    text in front of the specified \a parent widget.
+    \include qmessagebox.qdocinc {static-intro} {a question}
 
-    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
-    outside the trust boundary of the application should be pre-processed through a function
-    such as QString::toHtmlEscaped().
+    \include qmessagebox.qdocinc rich-text-note
 
-    The standard \a buttons are added to the message box. \a
-    defaultButton specifies the button used when \uicontrol Enter is
-    pressed. \a defaultButton must refer to a button that was given in \a buttons.
-    If \a defaultButton is QMessageBox::NoButton, QMessageBox
-    chooses a suitable default automatically.
-
-    Returns the identity of the standard button that was clicked. If
-    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
-    {escape button} is returned.
-
-    The message box is an \l{Qt::ApplicationModal} {application modal}
-    dialog box.
-
-    \warning Do not delete \a parent during the execution of the dialog.
-             If you want to do this, you should create the dialog
-             yourself using one of the QMessageBox constructors.
+    \include qmessagebox.qdocinc static-buttons
 
     \sa information(), warning(), critical()
 */
@@ -1858,29 +1878,38 @@ QMessageBox::StandardButton QMessageBox::question(QWidget *parent, const QString
 }
 
 /*!
-    Opens a warning message box with the given \a title and \a
-    text in front of the specified \a parent widget.
+    \overload
+    \since 6.13
 
-    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
-    outside the trust boundary of the application should be pre-processed through a function
-    such as QString::toHtmlEscaped().
+    \include qmessagebox.qdocinc {static-intro} {a warning}
+    \include qmessagebox.qdocinc text-format
 
-    The standard \a buttons are added to the message box. \a
-    defaultButton specifies the button used when \uicontrol Enter is
-    pressed. \a defaultButton must refer to a button that was given in \a buttons.
-    If \a defaultButton is QMessageBox::NoButton, QMessageBox
-    chooses a suitable default automatically.
+    \include qmessagebox.qdocinc static-buttons
 
-    Returns the identity of the standard button that was clicked. If
-    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
-    {escape button} is returned.
+    \sa question(), information(), critical()
+*/
+QMessageBox::StandardButton QMessageBox::warning(QWidget *parent,
+                                                 const QString &title,
+                                                 const QString &text,
+                                                 Qt::TextFormat textFormat,
+                                                 StandardButtons buttons,
+                                                 StandardButton defaultButton)
+{
+    return showNewMessageBox(parent,
+                             Warning,
+                             title,
+                             text,
+                             buttons,
+                             defaultButton,
+                             textFormat);
+}
 
-    The message box is an \l{Qt::ApplicationModal} {application modal}
-    dialog box.
+/*!
+    \include qmessagebox.qdocinc {static-intro} {a warning}
 
-    \warning Do not delete \a parent during the execution of the dialog.
-             If you want to do this, you should create the dialog
-             yourself using one of the QMessageBox constructors.
+    \include qmessagebox.qdocinc rich-text-note
+
+    \include qmessagebox.qdocinc static-buttons
 
     \sa question(), information(), critical()
 */
@@ -1892,29 +1921,38 @@ QMessageBox::StandardButton QMessageBox::warning(QWidget *parent, const QString 
 }
 
 /*!
-    Opens a critical message box with the given \a title and \a
-    text in front of the specified \a parent widget.
+    \overload
+    \since 6.13
 
-    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
-    outside the trust boundary of the application should be pre-processed through a function
-    such as QString::toHtmlEscaped().
+    \include qmessagebox.qdocinc {static-intro} {a critical}
+    \include qmessagebox.qdocinc text-format
 
-    The standard \a buttons are added to the message box. \a
-    defaultButton specifies the button used when \uicontrol Enter is
-    pressed. \a defaultButton must refer to a button that was given in \a buttons.
-    If \a defaultButton is QMessageBox::NoButton, QMessageBox
-    chooses a suitable default automatically.
+    \include qmessagebox.qdocinc static-buttons
 
-    Returns the identity of the standard button that was clicked. If
-    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
-    {escape button} is returned.
+    \sa question(), warning(), information()
+*/
+QMessageBox::StandardButton QMessageBox::critical(QWidget *parent,
+                                                  const QString &title,
+                                                  const QString &text,
+                                                  Qt::TextFormat textFormat,
+                                                  StandardButtons buttons,
+                                                  StandardButton defaultButton)
+{
+    return showNewMessageBox(parent,
+                             Critical,
+                             title,
+                             text,
+                             buttons,
+                             defaultButton,
+                             textFormat);
+}
 
-    The message box is an \l{Qt::ApplicationModal} {application modal}
-    dialog box.
+/*!
+    \include qmessagebox.qdocinc {static-intro} {a critical}
 
-    \warning Do not delete \a parent during the execution of the dialog.
-             If you want to do this, you should create the dialog
-             yourself using one of the QMessageBox constructors.
+    \include qmessagebox.qdocinc rich-text-note
+
+    \include qmessagebox.qdocinc static-buttons
 
     \sa question(), warning(), information()
 */
@@ -1925,37 +1963,16 @@ QMessageBox::StandardButton QMessageBox::critical(QWidget *parent, const QString
     return showNewMessageBox(parent, Critical, title, text, buttons, defaultButton);
 }
 
-/*!
-    Displays a simple about box with title \a title and text \a
-    text. The about box's parent is \a parent.
-
-    \note The \a text will be parsed as rich text if it contains HTML tags. Any content originating
-    outside the trust boundary of the application should be pre-processed through a function
-    such as QString::toHtmlEscaped().
-
-    about() looks for a suitable icon in four locations:
-
-    \list 1
-    \li It prefers \l{QWidget::windowIcon()}{parent->icon()}
-    if that exists.
-    \li If not, it tries the top-level widget containing \a parent.
-    \li If that fails, it tries the \l{QApplication::activeWindow()}{active window.}
-    \li As a last resort it uses the Information icon.
-    \endlist
-
-    The about box has a single button labelled "OK".
-
-    On \macos, the about box is popped up as a modeless window; on
-    other platforms, it is currently application modal.
-
-    \sa QWidget::windowIcon(), QApplication::activeWindow()
-*/
-void QMessageBox::about(QWidget *parent, const QString &title, const QString &text)
+static void showAboutBox(QWidget *parent,
+                         const QString &title,
+                         const QString &text,
+                         std::optional<Qt::TextFormat> textFormat = std::nullopt)
 {
 #ifdef Q_OS_MACOS
     static QPointer<QMessageBox> oldMsgBox;
 
-    if (oldMsgBox && oldMsgBox->text() == text) {
+    if (oldMsgBox && oldMsgBox->text() == text
+        && (!textFormat || oldMsgBox->textFormat() == textFormat.value())) {
         oldMsgBox->show();
         oldMsgBox->raise();
         oldMsgBox->activateWindow();
@@ -1963,7 +1980,8 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     }
 #endif
 
-    QMessageBox *msgBox = new QMessageBox(Information, title, text, NoButton, parent
+    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, title, text,
+                                          QMessageBox::NoButton, parent
 #ifdef Q_OS_MACOS
                                           , Qt::WindowTitleHint | Qt::WindowSystemMenuHint
 #endif
@@ -1971,13 +1989,15 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     QIcon icon = msgBox->windowIcon();
     msgBox->setIconPixmap(icon.pixmap(QSize(64, 64), msgBox->devicePixelRatio()));
-    msgBox->setTextFormat(Qt::AutoText);
+    if (textFormat)
+        msgBox->setTextFormat(textFormat.value());
 
     // should perhaps be a style hint
 #ifdef Q_OS_MACOS
     oldMsgBox = msgBox;
-    auto *d = msgBox->d_func();
-    d->buttonBox->setCenterButtons(true);
+    QDialogButtonBox *buttonBox = msgBox->findChild<QDialogButtonBox *>();
+    Q_ASSERT(buttonBox != nullptr);
+    buttonBox->setCenterButtons(true);
 #ifdef Q_OS_IOS
     msgBox->setModal(true);
 #else
@@ -1987,6 +2007,39 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
 #else
     msgBox->exec();
 #endif
+}
+
+/*!
+    \overload
+    \since 6.13
+
+    \include qmessagebox.qdocinc about-intro
+    \include qmessagebox.qdocinc text-format
+
+    \include qmessagebox.qdocinc about-details
+
+    \sa QWidget::windowIcon(), QApplication::activeWindow()
+*/
+void QMessageBox::about(QWidget *parent,
+                        const QString &title,
+                        const QString &text,
+                        Qt::TextFormat textFormat)
+{
+    showAboutBox(parent, title, text, textFormat);
+}
+
+/*!
+    \include qmessagebox.qdocinc about-intro
+
+    \include qmessagebox.qdocinc rich-text-note
+
+    \include qmessagebox.qdocinc about-details
+
+    \sa QWidget::windowIcon(), QApplication::activeWindow()
+*/
+void QMessageBox::about(QWidget *parent, const QString &title, const QString &text)
+{
+    showAboutBox(parent, title, text);
 }
 
 /*!

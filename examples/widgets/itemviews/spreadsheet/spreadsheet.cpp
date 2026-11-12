@@ -571,7 +571,7 @@ const char *htmlText =
 
 void SpreadSheet::showAbout()
 {
-    QMessageBox::about(this, "About Spreadsheet", htmlText);
+    QMessageBox::about(this, "About Spreadsheet", htmlText, Qt::RichText);
 }
 
 void decode_pos(const QString &pos, int *row, int *col)

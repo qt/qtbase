@@ -180,6 +180,7 @@ void MainWindow::about()
 {
     QMessageBox::about(this, tr("About Undo"),
                        tr("The <b>Undo</b> example demonstrates how to "
-                          "use Qt's undo framework."));
+                          "use Qt's undo framework."),
+                       Qt::RichText);
 }
 //! [15]

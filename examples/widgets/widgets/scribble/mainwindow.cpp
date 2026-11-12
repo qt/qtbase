@@ -100,7 +100,8 @@ void MainWindow::about()
                "close event handler to intercept the close events before "
                "terminating the application.</p><p> The example also demonstrates "
                "how to use QPainter to draw an image in real time, as well as "
-               "to repaint widgets.</p>"));
+               "to repaint widgets.</p>"),
+            Qt::RichText);
 }
 //! [12]
 

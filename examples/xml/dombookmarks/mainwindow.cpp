@@ -85,7 +85,8 @@ void MainWindow::about()
    QMessageBox::about(this, tr("About DOM Bookmarks"),
                       tr("The <b>DOM Bookmarks</b> example demonstrates how to "
                          "use Qt's DOM classes to read and write XML "
-                         "documents."));
+                         "documents."),
+                      Qt::RichText);
 }
 //! [3]
 

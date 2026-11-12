@@ -198,5 +198,6 @@ void BookWindow::about()
 {
     QMessageBox::about(this, tr("About Books"),
             tr("<p>The <b>Books</b> example shows how to use Qt SQL classes "
-               "with a model/view framework."));
+               "with a model/view framework."),
+            Qt::RichText);
 }

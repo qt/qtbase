@@ -24,7 +24,8 @@ void MainWindow::about()
                 tr("<p>The <b>Syntax Highlighter</b> example shows how " \
                    "to perform simple syntax highlighting by subclassing " \
                    "the QSyntaxHighlighter class and describing " \
-                   "highlighting rules using regular expressions.</p>"));
+                   "highlighting rules using regular expressions.</p>"),
+                Qt::RichText);
 }
 
 void MainWindow::newFile()

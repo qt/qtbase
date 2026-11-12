@@ -166,6 +166,13 @@ public:
     void setOptions(Options options);
     Options options() const;
 
+    static StandardButton information(QWidget *parent,
+                                      const QString &title,
+                                      const QString &text,
+                                      Qt::TextFormat textFormat,
+                                      StandardButtons buttons = Ok,
+                                      StandardButton defaultButton = NoButton);
+
     static StandardButton information(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
@@ -175,6 +182,13 @@ public:
                                   StandardButton button0, StandardButton button1 = NoButton)
     { return information(parent, title, text, StandardButtons(button0), button1); }
 #endif
+
+    static StandardButton question(QWidget *parent,
+                                   const QString &title,
+                                   const QString &text,
+                                   Qt::TextFormat textFormat,
+                                   StandardButtons buttons = StandardButtons(Yes | No),
+                                   StandardButton defaultButton = NoButton);
 
     static StandardButton question(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = StandardButtons(Yes | No),
@@ -186,6 +200,13 @@ public:
     { return question(parent, title, text, StandardButtons(button0), button1); }
 #endif
 
+    static StandardButton warning(QWidget *parent,
+                                  const QString &title,
+                                  const QString &text,
+                                  Qt::TextFormat textFormat,
+                                  StandardButtons buttons = Ok,
+                                  StandardButton defaultButton = NoButton);
+
     static StandardButton warning(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
@@ -195,6 +216,13 @@ public:
                               StandardButton button0, StandardButton button1)
     { return warning(parent, title, text, StandardButtons(button0), button1); }
 #endif
+
+    static StandardButton critical(QWidget *parent,
+                                   const QString &title,
+                                   const QString &text,
+                                   Qt::TextFormat textFormat,
+                                   StandardButtons buttons = Ok,
+                                   StandardButton defaultButton = NoButton);
 
     static StandardButton critical(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
@@ -206,7 +234,12 @@ public:
     { return critical(parent, title, text, StandardButtons(button0), button1); }
 #endif
 
+    static void about(QWidget *parent,
+                      const QString &title,
+                      const QString &text,
+                      Qt::TextFormat textFormat);
     static void about(QWidget *parent, const QString &title, const QString &text);
+
     static void aboutQt(QWidget *parent, const QString &title = QString());
 
 #if QT_DEPRECATED_SINCE(6,2)

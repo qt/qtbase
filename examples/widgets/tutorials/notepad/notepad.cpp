@@ -174,5 +174,6 @@ void Notepad::about()
 {
     QMessageBox::about(this, tr("About Notepad"),
                        tr("The <b>Notepad</b> example demonstrates how to code a basic "
-                          "text editor using QtWidgets"));
+                          "text editor using QtWidgets"),
+                       Qt::RichText);
 }

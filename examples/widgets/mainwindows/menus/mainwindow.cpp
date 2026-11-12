@@ -148,7 +148,8 @@ void MainWindow::about()
     infoLabel->setText(tr("Invoked <b>Help|About</b>"));
     QMessageBox::about(this, tr("About Menu"),
             tr("The <b>Menu</b> example shows how to create "
-               "menu-bar menus and context menus."));
+               "menu-bar menus and context menus."),
+            Qt::RichText);
 }
 
 void MainWindow::aboutQt()

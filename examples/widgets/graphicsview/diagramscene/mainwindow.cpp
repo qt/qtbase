@@ -279,7 +279,8 @@ void MainWindow::about()
 {
     QMessageBox::about(this, tr("About Diagram Scene"),
                        tr("The <b>Diagram Scene</b> example shows "
-                          "use of the graphics framework."));
+                          "use of the graphics framework."),
+                       Qt::RichText);
 }
 //! [20]
 

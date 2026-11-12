@@ -146,6 +146,7 @@ void MainWindow::about()
 {
     QMessageBox::about(this, tr("About QXmlStream Bookmarks"),
                        tr("The <b>QXmlStream Bookmarks</b> example demonstrates how to use Qt's "
-                          "QXmlStream classes to read and write XML documents."));
+                          "QXmlStream classes to read and write XML documents."),
+                       Qt::RichText);
 }
 //! [5]

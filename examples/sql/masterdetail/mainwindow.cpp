@@ -393,5 +393,6 @@ void MainWindow::about()
                "in an XML file. </p><p>The example also shows how to add as "
                "well as remove data from both the database and the "
                "associated XML file using the API provided by the Qt SQL and "
-               "Qt XML modules, respectively.</p>"));
+               "Qt XML modules, respectively.</p>"),
+            Qt::RichText);
 }
