@@ -239,6 +239,7 @@ struct QGles2ShaderResourceBindings : public QRhiShaderResourceBindings
     void updateResources(UpdateFlags flags) override;
 
     bool hasDynamicOffset = false;
+    bool hasStorageBinding = false;
     uint generation = 0;
     friend class QRhiGles2;
 };

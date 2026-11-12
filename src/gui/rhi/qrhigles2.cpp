@@ -2292,6 +2292,41 @@ void QRhiGles2::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
     }
 }
 
+// Whether a storage image or buffer that was already used in the pass needs a
+// barrier before the next use: after an earlier write (read-after-write,
+// write-after-write), or when a write follows an earlier read.
+static inline bool storageAccessNeedsBarrier(QRhiPassResourceTracker::TextureAccess prev,
+                                             QRhiPassResourceTracker::TextureAccess next)
+{
+    const bool nextWrites = next == QRhiPassResourceTracker::TexStorageStore
+            || next == QRhiPassResourceTracker::TexStorageLoadStore;
+    switch (prev) {
+    case QRhiPassResourceTracker::TexStorageStore:
+    case QRhiPassResourceTracker::TexStorageLoadStore:
+        return true;
+    case QRhiPassResourceTracker::TexStorageLoad:
+        return nextWrites;
+    default:
+        return false;
+    }
+}
+
+static inline bool storageAccessNeedsBarrier(QRhiPassResourceTracker::BufferAccess prev,
+                                             QRhiPassResourceTracker::BufferAccess next)
+{
+    const bool nextWrites = next == QRhiPassResourceTracker::BufStorageStore
+            || next == QRhiPassResourceTracker::BufStorageLoadStore;
+    switch (prev) {
+    case QRhiPassResourceTracker::BufStorageStore:
+    case QRhiPassResourceTracker::BufStorageLoadStore:
+        return true;
+    case QRhiPassResourceTracker::BufStorageLoad:
+        return nextWrites;
+    default:
+        return false;
+    }
+}
+
 void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBindings *srb,
                                    int dynamicOffsetCount,
                                    const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
@@ -2309,8 +2344,14 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     }
 
     QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, srb);
-    if (cbD->passNeedsResourceTracking) {
+    // The storage images and buffers are tracked also in a pass begun with
+    // DoNotTrackResourcesForCompute, so that the barriers between dependent
+    // draws do not depend on the flag. Everything else is tracked only for
+    // compute.
+    const bool trackAll = cbD->passNeedsResourceTracking;
+    if (trackAll || (caps.compute && srbD->hasStorageBinding)) {
         QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+        GLbitfield barriers = 0;
         for (int i = 0, ie = srbD->m_bindings.size(); i != ie; ++i) {
             const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
             switch (b->type()) {
@@ -2319,6 +2360,8 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
             case QRhiShaderResourceBinding::Texture:
+                if (!trackAll)
+                    break;
                 for (const auto &texSampler : b->stex().texSamplers) {
                     QGles2Texture *texD = QRHI_RES(QGles2Texture, texSampler.tex);
                     sanityCheckResourceOwnership(texD);
@@ -2341,6 +2384,13 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                     access = QRhiPassResourceTracker::TexStorageStore;
                 else
                     access = QRhiPassResourceTracker::TexStorageLoadStore;
+                if (gfxPsD) {
+                    const auto prev = passResTracker.textures().find(texD);
+                    if (prev != passResTracker.textures().end()
+                            && storageAccessNeedsBarrier(prev->second.access, access)) {
+                        barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+                    }
+                }
                 trackedRegisterTexture(&passResTracker, texD, access,
                                        QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
             }
@@ -2358,6 +2408,13 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                     access = QRhiPassResourceTracker::BufStorageStore;
                 else
                     access = QRhiPassResourceTracker::BufStorageLoadStore;
+                if (gfxPsD) {
+                    const auto prev = passResTracker.buffers().find(bufD);
+                    if (prev != passResTracker.buffers().end()
+                            && storageAccessNeedsBarrier(prev->second.access, access)) {
+                        barriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+                    }
+                }
                 trackedRegisterBuffer(&passResTracker, bufD, access,
                                       QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
             }
@@ -2365,6 +2422,18 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             default:
                 break;
             }
+        }
+
+        // Nothing orders the storage image and buffer accesses of the draws
+        // in a render pass, so generate the barrier here based on what the
+        // earlier setShaderResources() calls in the pass registered. Draws
+        // that depend on each other must therefore have a
+        // setShaderResources() call in between, also when the srb is the same.
+        // Dispatches in a compute pass are handled in dispatch().
+        if (barriers) {
+            QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QGles2CommandBuffer::Command::Barrier;
+            cmd.args.barrier.barriers = barriers;
         }
     }
 
@@ -7808,13 +7877,24 @@ bool QGles2ShaderResourceBindings::create()
         return false;
 
     hasDynamicOffset = false;
+    hasStorageBinding = false;
     for (int i = 0, ie = m_bindings.size(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(m_bindings.at(i));
-        if (b->type() == QRhiShaderResourceBinding::UniformBuffer) {
-            if (b->ubuf().hasDynamicOffset) {
+        switch (b->type()) {
+        case QRhiShaderResourceBinding::UniformBuffer:
+            if (b->ubuf().hasDynamicOffset)
                 hasDynamicOffset = true;
-                break;
-            }
+            break;
+        case QRhiShaderResourceBinding::ImageLoad:
+        case QRhiShaderResourceBinding::ImageStore:
+        case QRhiShaderResourceBinding::ImageLoadStore:
+        case QRhiShaderResourceBinding::BufferLoad:
+        case QRhiShaderResourceBinding::BufferStore:
+        case QRhiShaderResourceBinding::BufferLoadStore:
+            hasStorageBinding = true;
+            break;
+        default:
+            break;
         }
     }
 

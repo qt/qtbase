@@ -63,3 +63,5 @@ qsb --glsl "310 es,430" --msl 12 --hlsl 50 -o pushconstants.comp.qsb pushconstan
 qsb --glsl "310 es,430" --msl 12 -o pushconstants_std430.comp.qsb pushconstants_std430.comp
 qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o fragmentstorage.vert.qsb fullscreenquad.vert
 qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o fragmentstorage.frag.qsb fragmentstorage.frag
+qsb --glsl "310 es,430" --hlsl 50 -o storageimage_fill.frag.qsb storageimage_fill.frag
+qsb --glsl "310 es,430" --hlsl 50 -o storageimage_check.frag.qsb storageimage_check.frag

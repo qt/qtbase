@@ -277,6 +277,8 @@ private slots:
     void storageBufferRuntimeSizeGraphics();
     void storageBufferWritesInRenderPass_data();
     void storageBufferWritesInRenderPass();
+    void storageImageWritesInRenderPass_data();
+    void storageImageWritesInRenderPass();
     void storageBufferWritesInSwapchainPass_data();
     void storageBufferWritesInSwapchainPass();
 
@@ -14927,6 +14929,132 @@ void tst_QRhi::storageBufferWritesInRenderPass()
     quint32 counter = 0;
     memcpy(&counter, readResult.data.constData(), sizeof(quint32));
     QCOMPARE(counter, quint32(2 * size.width() * size.height()));
+}
+
+void tst_QRhi::storageImageWritesInRenderPass_data()
+{
+    bool trackResourcesModes[] = { true, false };
+    rhiTestDataWithParam("trackResources", QSpan(trackResourcesModes), [](bool trackResources) {
+        return trackResources ? QStringLiteral("tracked") : QStringLiteral("untracked");
+    });
+}
+
+// The first draw stores a value to an r32ui image with imageStore(). The
+// second draw reads the same texels with imageLoad() and outputs green when it
+// sees the stored value. The second draw needs a barrier inside the render
+// pass for the stores made by the first one. The barrier is generated in
+// setShaderResources(), which is called before both draws. The test is run
+// also with a pass begun with DoNotTrackResourcesForCompute, since the barrier
+// must not depend on that flag.
+void tst_QRhi::storageImageWritesInRenderPass()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+    QFETCH(bool, trackResources);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Metal)
+        QSKIP("The test shaders have no Metal shading language variants, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::Compute)) // also indicates storage buffers and image load/store
+        QSKIP("Image load/store is not supported with this graphics API, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::FragmentStoresAndAtomics))
+        QSKIP("Fragment shader storage writes and atomics are not supported, skipping test");
+    if (!rhi->isTextureFormatSupported(QRhiTexture::R32UI, QRhiTexture::UsedWithLoadStore))
+        QSKIP("R32UI image load/store is not supported, skipping test");
+
+#ifdef TST_VK
+    QStringList validationErrors;
+    vkValidationErrors = &validationErrors;
+    const auto errorCollectionGuard = qScopeGuard([this] { vkValidationErrors = nullptr; });
+#endif
+
+    const QSize size(64, 64);
+    std::unique_ptr<QRhiTexture> colorTexture(rhi->newTexture(QRhiTexture::RGBA8, size, 1,
+                                                              QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(colorTexture->create());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ colorTexture.get() }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    std::unique_ptr<QRhiTexture> image(rhi->newTexture(QRhiTexture::R32UI, size, 1, QRhiTexture::UsedWithLoadStore));
+    QVERIFY(image->create());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({ QRhiShaderResourceBinding::imageLoadStore(0, QRhiShaderResourceBinding::FragmentStage, image.get(), 0) });
+    QVERIFY(srb->create());
+
+    const QShader vs = loadShader(":/data/fragmentstorage.vert.qsb");
+    QVERIFY(vs.isValid());
+    auto createPipeline = [&](const char *fragmentShaderName) {
+        std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+        const QShader fs = loadShader(fragmentShaderName);
+        if (!fs.isValid())
+            return std::unique_ptr<QRhiGraphicsPipeline>();
+        pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        pipeline->setShaderResourceBindings(srb.get());
+        pipeline->setRenderPassDescriptor(rpDesc.get());
+        return pipeline->create() ? std::move(pipeline) : std::unique_ptr<QRhiGraphicsPipeline>();
+    };
+    std::unique_ptr<QRhiGraphicsPipeline> fillPipeline = createPipeline(":/data/storageimage_fill.frag.qsb");
+    QVERIFY(fillPipeline);
+    std::unique_ptr<QRhiGraphicsPipeline> checkPipeline = createPipeline(":/data/storageimage_check.frag.qsb");
+    QVERIFY(checkPipeline);
+
+    QRhiCommandBuffer *cb = nullptr;
+    QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiCommandBuffer::BeginPassFlags passFlags;
+    if (!trackResources)
+        passFlags |= QRhiCommandBuffer::DoNotTrackResourcesForCompute;
+    cb->beginPass(rt.get(), Qt::black, { 1.0f, 0 }, nullptr, passFlags);
+    cb->setGraphicsPipeline(fillPipeline.get());
+    cb->setViewport({ 0, 0, float(size.width()), float(size.height()) });
+    cb->setShaderResources(srb.get());
+    cb->draw(3);
+    cb->setGraphicsPipeline(checkPipeline.get());
+    cb->setShaderResources(srb.get());
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ colorTexture.get() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    frameGuard.endFrame();
+
+#ifdef TST_VK
+    QVERIFY2(validationErrors.isEmpty(), qPrintable(validationErrors.join(u'\n')));
+#endif
+
+    QCOMPARE(result.size(), size);
+
+    // cannot check rendering results with Null, because there is no rendering there
+    if (impl == QRhi::Null)
+        return;
+
+    int wrongPixels = 0;
+    for (int y = 0; y < result.height(); ++y) {
+        for (int x = 0; x < result.width(); ++x) {
+            if (result.pixel(x, y) != qRgb(0, 255, 0))
+                ++wrongPixels;
+        }
+    }
+    QVERIFY2(wrongPixels == 0,
+             qPrintable(QStringLiteral("%1 of %2 pixels did not see the stored value")
+                        .arg(wrongPixels).arg(size.width() * size.height())));
 }
 
 void tst_QRhi::storageBufferWritesInSwapchainPass_data()
