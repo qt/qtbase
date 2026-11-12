@@ -182,6 +182,16 @@ void QOhosFloatingWindow::initialize()
         qWindow,
         [this](bool visible) { handleWindowVisibilityChange(visible); });
 
+    QObject::connect(
+        m_view.get(), &QOhosView::windowResizeRejected,
+        qWindow,
+        [this](QSize rejectedSize) { handleWindowResizeRejected(rejectedSize); });
+
+    QObject::connect(
+        m_view.get(), &QOhosView::windowMoveRejected,
+        qWindow,
+        [this](QPoint rejectedPosition) { handleWindowMoveRejected(rejectedPosition); });
+
     bool monitorAvoidAreaChange =
         !(isHandheldDeviceType() && m_view->viewType() == QOhosView::ViewType::SubWindow);
 
@@ -543,6 +553,27 @@ void QOhosFloatingWindow::handleWindowRectChanged(
 
     if (needsCloseAllActivePopups)
         QOhosPlatformWindow::closeAllActivePopups();
+}
+
+void QOhosFloatingWindow::handleWindowResizeRejected(const QSize &rejectedSize)
+{
+    qCDebug(QtForOhos) << "window resize rejected, window:" << window() << "size:" << rejectedSize;
+
+    if (rejectedSize != lastRequestedWindowFrameGeometry().size())
+        return;
+
+    m_optSizeBeforeResizeRequest.reset();
+    startAsyncWaitForNodeResizeIfNeeded();
+}
+
+void QOhosFloatingWindow::handleWindowMoveRejected(const QPoint &rejectedPosition)
+{
+    qCDebug(QtForOhos) << "window move rejected, window:" << window() << "position:" << rejectedPosition;
+
+    if (rejectedPosition != lastRequestedWindowFrameGeometry().topLeft())
+        return;
+
+    startAsyncWaitForNodeResizeIfNeeded();
 }
 
 bool QOhosFloatingWindow::windowEvent(QEvent *event)

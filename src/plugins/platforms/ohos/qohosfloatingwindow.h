@@ -66,6 +66,8 @@ private:
                                 const QOhosWindowProxy::AvoidArea &systemAvoidArea);
     void updateSafeAreaMargins();
     void handleWindowRectChanged(const QOhosWindowProxy::RectChangeOptions &rectChangeOptions);
+    void handleWindowResizeRejected(const QSize &rejectedSize);
+    void handleWindowMoveRejected(const QPoint &rejectedPosition);
     void handleSurfaceStatusChanged(const std::optional<QSize> &optSurfaceSize);
     void handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId);
 
