@@ -2,58 +2,21 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/qcoreapplication.h>
-#include <QtCore/qharmonyappjscontext.h>
 #include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsobjectref.h>
 #include <QtGui/qwindow.h>
 #include <QtTest/qtest.h>
-#include <mutex>
 #include <napi/native_api.h>
 #include <optional>
-#include <string>
-#include <vector>
+
+#include "../../../../shared/harmonytestutils.h"
+
+using namespace QTestHarmony;
 
 using QHarmonyApplication = QNativeInterface::QHarmonyApplication;
 using QHarmonyWindow = QNativeInterface::QHarmonyWindow;
 
 namespace {
-
-std::mutex napiCallFailuresMutex;
-std::vector<std::string> napiCallFailures;
-
-void checkNapiStatus(napi_status status, const char *callName)
-{
-    if (status != napi_ok) {
-        std::lock_guard<std::mutex> napiCallFailuresLock(napiCallFailuresMutex);
-        napiCallFailures.push_back(std::string(callName) + ": " + std::to_string(static_cast<int>(status)));
-    }
-}
-
-std::vector<std::string> takeNapiCallFailures()
-{
-    std::lock_guard<std::mutex> napiCallFailuresLock(napiCallFailuresMutex);
-    return std::exchange(napiCallFailures, {});
-}
-
-napi_valuetype jsTypeOf(napi_env env, napi_value value)
-{
-    if (!value)
-        return napi_undefined;
-
-    napi_valuetype type = napi_undefined;
-    checkNapiStatus(napi_typeof(env, value, &type), "napi_typeof");
-    return type;
-}
-
-napi_value getJsProperty(napi_env env, napi_value objectValue, const char *name)
-{
-    if (!objectValue)
-        return nullptr;
-
-    napi_value propertyValue = nullptr;
-    checkNapiStatus(napi_get_named_property(env, objectValue, name, &propertyValue), "napi_get_named_property");
-    return propertyValue;
-}
 
 napi_value callJsMethod(napi_env env, napi_value objectValue, const char *name)
 {
@@ -110,14 +73,6 @@ MainWindowIds fetchMainWindowIds(QHarmonyWindow *harmonyWindow)
     };
 }
 
-QHarmonyJsObjectRef fetchDefaultAbility()
-{
-    return QHarmonyApplication::runOnJsThreadAndWait(
-        [](QHarmonyJsContext &jsContext) {
-            return QHarmonyJsObjectRef::fromValue(jsContext, QHarmonyAppJsContext::fromJsContext(jsContext).defaultAbility());
-        });
-}
-
 }
 
 class tst_HarmonyWindow : public QObject
@@ -159,15 +114,7 @@ void tst_HarmonyWindow::initTestCase()
 
 void tst_HarmonyWindow::cleanup()
 {
-    const auto failures = takeNapiCallFailures();
-    std::string failuresText;
-    for (const auto &failure : failures) {
-        if (!failuresText.empty())
-            failuresText += ", ";
-        failuresText += failure;
-    }
-    const auto message = "Node-API calls failed: " + failuresText;
-    QVERIFY2(failures.empty(), message.c_str());
+    verifyNoNapiCallFailures();
 }
 
 void tst_HarmonyWindow::window_ability_firstWindowIsDefaultAbility()

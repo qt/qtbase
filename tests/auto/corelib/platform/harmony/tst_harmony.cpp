@@ -18,7 +18,6 @@
 #include <functional>
 #include <future>
 #include <memory>
-#include <mutex>
 #include <napi/native_api.h>
 #include <optional>
 #include <sstream>
@@ -28,7 +27,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "../../../../shared/harmonytestutils.h"
+
 using namespace std::chrono_literals;
+using namespace QTestHarmony;
 
 using QHarmonyApplication = QNativeInterface::QHarmonyApplication;
 
@@ -100,23 +102,6 @@ QJsonObject nestedJsonObject()
         {"emptyObject", QJsonObject()},
         {"emptyArray", QJsonArray()},
     };
-}
-
-std::mutex napiCallFailuresMutex;
-std::vector<std::string> napiCallFailures;
-
-void checkNapiStatus(napi_status status, const char *callName)
-{
-    if (status != napi_ok) {
-        std::lock_guard<std::mutex> napiCallFailuresLock(napiCallFailuresMutex);
-        napiCallFailures.push_back(std::string(callName) + ": " + std::to_string(static_cast<int>(status)));
-    }
-}
-
-std::vector<std::string> takeNapiCallFailures()
-{
-    std::lock_guard<std::mutex> napiCallFailuresLock(napiCallFailuresMutex);
-    return std::exchange(napiCallFailures, {});
 }
 
 napi_value makeJsUndefined(napi_env env)
@@ -198,16 +183,6 @@ napi_value getJsGlobal(napi_env env)
     return globalValue;
 }
 
-napi_value getJsProperty(napi_env env, napi_value objectValue, const char *name)
-{
-    if (!objectValue)
-        return nullptr;
-
-    napi_value propertyValue = nullptr;
-    checkNapiStatus(napi_get_named_property(env, objectValue, name, &propertyValue), "napi_get_named_property");
-    return propertyValue;
-}
-
 napi_value makeJsObjectWithPrototype(napi_env env, napi_value prototypeValue)
 {
     const auto objectClassValue = getJsProperty(env, getJsGlobal(env), "Object");
@@ -264,16 +239,6 @@ void callJsFunction(napi_env env, napi_value functionValue)
 {
     napi_value resultValue = nullptr;
     checkNapiStatus(napi_call_function(env, makeJsUndefined(env), functionValue, 0, nullptr, &resultValue), "napi_call_function");
-}
-
-napi_valuetype jsTypeOf(napi_env env, napi_value value)
-{
-    if (!value)
-        return napi_undefined;
-
-    napi_valuetype type = napi_undefined;
-    checkNapiStatus(napi_typeof(env, value, &type), "napi_typeof");
-    return type;
 }
 
 bool isJsArray(napi_env env, napi_value value)
@@ -596,15 +561,7 @@ void tst_Harmony::initTestCase()
 
 void tst_Harmony::cleanup()
 {
-    const auto failures = takeNapiCallFailures();
-    std::string failuresText;
-    for (const auto &failure : failures) {
-        if (!failuresText.empty())
-            failuresText += ", ";
-        failuresText += failure;
-    }
-    const auto message = "Node-API calls failed: " + failuresText;
-    QVERIFY2(failures.empty(), message.c_str());
+    verifyNoNapiCallFailures();
 }
 
 void tst_Harmony::application_nativeInterface_available()
