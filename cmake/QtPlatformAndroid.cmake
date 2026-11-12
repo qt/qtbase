@@ -127,6 +127,9 @@ option(QT_ANDROID_POST_BUILD_GRADLE_CLEANUP
 option(QT_ANDROID_CREATE_SYMLINKS_ONLY
     "Only create symlinks instead of copy when preparing the Gradle build directory." OFF)
 
+# Install test apps from an AAB through bundletool (APK splits). Internal.
+option(QT_ANDROID_TEST_APK_SPLITS "Install Android tests from APK splits using bundletool." OFF)
+
 # Returns test execution arguments for Android targets
 function(qt_internal_android_test_runner_arguments target out_test_runner out_test_arguments)
     qt_internal_get_host_info_var_prefix(host_info_var_prefix)
@@ -148,7 +151,11 @@ function(qt_internal_android_test_runner_arguments target out_test_runner out_te
             "--manifest" "${target_deployment_dir}/AndroidManifest.xml")
     endif()
 
-    if(EXISTS "${Bundletool_EXECUTABLE}" AND QT_ANDROID_GRADLE_MULTI_MODULE)
+    if(QT_ANDROID_TEST_APK_SPLITS)
+        if(NOT EXISTS "${Bundletool_EXECUTABLE}" OR NOT QT_ANDROID_GRADLE_MULTI_MODULE)
+            message(FATAL_ERROR
+                "QT_ANDROID_TEST_APK_SPLITS requires QT_ANDROID_GRADLE_MULTI_MODULE and bundletool.")
+        endif()
         list(APPEND test_arguments
             "--make" "\"${CMAKE_COMMAND}\" --build ${CMAKE_BINARY_DIR} --target ${target}_make_aab"
             "--aab" "${android_build_dir}/${target}.aab"
