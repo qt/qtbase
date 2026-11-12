@@ -1245,6 +1245,7 @@ void QWidgetWindow::handleContextMenuEvent(QContextMenuEvent *e)
     if (receiver) {
         QContextMenuEvent widgetEvent(e->reason(), pos, globalPos, e->modifiers());
         QGuiApplication::forwardEvent(receiver, &widgetEvent, e);
+        e->setAccepted(widgetEvent.isAccepted());
     }
 }
 #endif // QT_NO_CONTEXTMENU
