@@ -798,6 +798,78 @@ void tst_QRangeModelAdapter::frontBack()
     }
 }
 
+void tst_QRangeModelAdapter::reverseIterate()
+{
+    { // list
+        std::vector<int> data = {0, 1, 2, 3, 4};
+        QRangeModelAdapter adapter(std::ref(data));
+        const std::vector<int> expected(data.rbegin(), data.rend());
+
+        QCOMPARE(adapter.crend() - adapter.crbegin(), adapter.size());
+        QCOMPARE(adapter.rend() - adapter.rbegin(), adapter.size());
+        QCOMPARE(*adapter.crbegin(), adapter.back());
+        QCOMPARE(*std::prev(adapter.crend()), adapter.front());
+
+        QCOMPARE(std::vector<int>(adapter.crbegin(), adapter.crend()), expected);
+        QCOMPARE(std::vector<int>(std::as_const(adapter).rbegin(),
+                                  std::as_const(adapter).rend()), expected);
+
+        // a mutable reverse iterator writes through to the model
+        QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+        int value = 0;
+        for (auto it = adapter.rbegin(); it != adapter.rend(); ++it)
+            *it = value++;
+        QCOMPARE(dataChangedSpy.size(), adapter.size());
+        QCOMPARE(data, expected);
+
+        // conversion from mutable to const reverse iterator
+        decltype(adapter)::const_reverse_iterator cit = adapter.rbegin();
+        QCOMPARE(cit, adapter.crbegin());
+
+        // empty
+        QRangeModelAdapter emptyAdapter(std::vector<int>{});
+        QCOMPARE(emptyAdapter.crbegin(), emptyAdapter.crend());
+        QCOMPARE(emptyAdapter.rbegin(), emptyAdapter.rend());
+    }
+
+    { // read-only list
+        const QList<int> data = {0, 1, 2};
+        QRangeModelAdapter adapter(std::ref(data));
+        QCOMPARE(QList<int>(adapter.rbegin(), adapter.rend()), (QList<int>{2, 1, 0}));
+    }
+
+    { // table
+        auto data = m_data->tableOfNumbers;
+        QRangeModelAdapter adapter(std::ref(data));
+
+        auto expectedRow = data.crbegin();
+        for (auto it = adapter.crbegin(); it != adapter.crend(); ++it, ++expectedRow)
+            QCOMPARE(*it, *expectedRow);
+        QCOMPARE(expectedRow, data.crend());
+
+        // modify the last row via reverse iterator
+        auto last = adapter.rbegin();
+        (*last)[0] = 42.0;
+        QCOMPARE(data.back().front(), 42.0);
+    }
+
+    { // tree
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+
+        QStringList values;
+        for (auto it = adapter.crbegin(); it != adapter.crend(); ++it)
+            values << (*it)->value();
+        QCOMPARE(values, (QStringList{"5", "4", "3", "2", "1"}));
+
+        values.clear();
+        auto branch = adapter.at(1).children();
+        for (auto it = branch.rbegin(); it != branch.rend(); ++it)
+            values << (*it)->value();
+        QCOMPARE(values, (QStringList{"2.3", "2.2", "2.1"}));
+    }
+}
+
 void tst_QRangeModelAdapter::insertRow()
 {
     {

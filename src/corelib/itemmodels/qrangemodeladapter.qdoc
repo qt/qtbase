@@ -312,6 +312,26 @@
 */
 
 /*!
+    \typedef QRangeModelAdapter::reverse_iterator
+    \since 6.13
+
+    The \c{std::reverse_iterator} for \l{QRangeModelAdapter::}{iterator},
+    provided for STL compatibility.
+
+    \sa rbegin(), rend()
+*/
+
+/*!
+    \typedef QRangeModelAdapter::const_reverse_iterator
+    \since 6.13
+
+    The \c{std::reverse_iterator} for \l{QRangeModelAdapter::}{const_iterator},
+    provided for STL compatibility.
+
+    \sa crbegin(), crend()
+*/
+
+/*!
     \typedef QRangeModelAdapter::value_type
     \since 6.13
 
@@ -555,6 +575,54 @@
     \constraints \c Range is mutable.
 
     \sa front(), at(), isEmpty()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::const_reverse_iterator QRangeModelAdapter<Range, Protocol, Model>::crbegin() const
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::const_reverse_iterator QRangeModelAdapter<Range, Protocol, Model>::rbegin() const
+    \since 6.13
+
+    \return a const reverse iterator pointing to the last row, i.e. the first
+    row when iterating in reverse order.
+
+    \sa crend(), {Iterator API}
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::const_reverse_iterator QRangeModelAdapter<Range, Protocol, Model>::crend() const
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::const_reverse_iterator QRangeModelAdapter<Range, Protocol, Model>::rend() const
+    \since 6.13
+
+    \return a const reverse iterator pointing to the position before the first
+    row, i.e. past the last row when iterating in reverse order.
+
+    \sa crbegin(), {Iterator API}
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> QRangeModelAdapter<Range, Protocol, Model>::reverse_iterator QRangeModelAdapter<Range, Protocol, Model>::rbegin()
+    \since 6.13
+    \overload
+
+    \return a reverse iterator pointing to the last row, i.e. the first row
+    when iterating in reverse order.
+
+    \constraints \c Range is mutable.
+
+    \sa rend(), {Iterator API}
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> QRangeModelAdapter<Range, Protocol, Model>::reverse_iterator QRangeModelAdapter<Range, Protocol, Model>::rend()
+    \since 6.13
+    \overload
+
+    \return a reverse iterator pointing to the position before the first row,
+    i.e. past the last row when iterating in reverse order.
+
+    \constraints \c Range is mutable.
+
+    \sa rbegin(), {Iterator API}
 */
 
 /*!

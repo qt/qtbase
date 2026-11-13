@@ -1039,6 +1039,8 @@ public:
 
     using const_iterator = ConstRowIterator;
     using iterator = RowIterator;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
 #ifdef Q_QDOC
     using value_type = typename Range::value_type;
     using reference = RowReference;
@@ -1143,6 +1145,16 @@ public:
     {
         return RowIterator{ rowCount(), storage.root(), this };
     }
+
+    const_reverse_iterator crbegin() const { return const_reverse_iterator(cend()); }
+    const_reverse_iterator rbegin() const { return crbegin(); }
+    const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
+    const_reverse_iterator rend() const { return crend(); }
+
+    template <typename I = Impl, if_writable<I> = true>
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    template <typename I = Impl, if_writable<I> = true>
+    reverse_iterator rend() { return reverse_iterator(begin()); }
 
     int size() const
     {
