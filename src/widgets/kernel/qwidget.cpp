@@ -1449,7 +1449,7 @@ QWidget::~QWidget()
     d->gestureContext.clear();
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     // remove all actions from this widget
     for (auto action : std::as_const(d->actions)) {
         QActionPrivate *apriv = action->d_func();
@@ -3103,7 +3103,7 @@ bool QWidget::isEnabledTo(const QWidget *ancestor) const
     return !w->testAttribute(Qt::WA_ForceDisabled);
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 /*!
     Appends the action \a action to this widget's list of actions.
 
@@ -9346,7 +9346,7 @@ bool QWidget::event(QEvent *event)
         d->topData()->frameStrut.setCoords(0 ,0, 0, 0);
         data->fstrut_dirty = false;
         break;
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     case QEvent::ActionAdded:
     case QEvent::ActionRemoved:
     case QEvent::ActionChanged:
@@ -9881,7 +9881,7 @@ void QWidget::resizeEvent(QResizeEvent * /* event */)
 {
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 /*!
     \fn void QWidget::actionEvent(QActionEvent *event)
 

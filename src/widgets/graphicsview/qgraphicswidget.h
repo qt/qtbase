@@ -111,7 +111,7 @@ public:
     void setShortcutAutoRepeat(int id, bool enabled = true);
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     //actions
     void addAction(QAction *action);
     void addActions(const QList<QAction*> &actions);

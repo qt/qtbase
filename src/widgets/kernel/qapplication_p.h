@@ -79,7 +79,7 @@ public:
     void notifyWindowIconChanged() override;
     bool compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents) final;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QActionPrivate *createActionPrivate() const override;
 #endif
 #ifndef QT_NO_SHORTCUT

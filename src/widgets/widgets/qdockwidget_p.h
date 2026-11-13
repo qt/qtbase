@@ -87,7 +87,7 @@ public:
 
     QFont font;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QAction *toggleViewAction = nullptr;
 #endif
 
