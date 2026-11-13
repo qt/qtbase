@@ -5,11 +5,13 @@
 
 #include <QtCore/qprocess.h>
 
+#include <chrono>
 #include <cstdio>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 static QStringList shellCommandArgs(const QStringList &command)
 {
@@ -36,20 +38,20 @@ QStringList Hdc::arguments(const QStringList &args) const
 
 QString Hdc::run(const QStringList &args, bool printOnFailure) const
 {
-    static constexpr int startTimeoutMs = 5000;
-    static constexpr int finishTimeoutMs = 30000;
+    static constexpr std::chrono::milliseconds startTimeout = 5s;
+    static constexpr std::chrono::milliseconds finishTimeout = 30s;
 
     QProcess process;
     const QStringList allArgs = arguments(args);
     process.start(m_hdcPath, allArgs);
-    if (!process.waitForStarted(startTimeoutMs)) {
+    if (!process.waitForStarted(int(startTimeout.count()))) {
         if (printOnFailure) {
             fprintf(stderr, "harmonyostestrunner: failed to start hdc: %s\n",
                 qPrintable(m_hdcPath));
         }
         return {};
     }
-    process.waitForFinished(finishTimeoutMs);
+    process.waitForFinished(int(finishTimeout.count()));
     if (printOnFailure) {
         const QByteArray standardError = process.readAllStandardError();
         if (!standardError.isEmpty()) {
