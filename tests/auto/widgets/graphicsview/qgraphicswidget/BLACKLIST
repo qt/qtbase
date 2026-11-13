@@ -1,6 +1,7 @@
 [initStyleOption]
-android
 b2qt
+[initStyleOption:all]
+android
 # QTBUG-100930
 [updateFocusChainWhenChildDie]
 b2qt

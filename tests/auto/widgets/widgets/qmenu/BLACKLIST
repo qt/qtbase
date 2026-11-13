@@ -19,7 +19,13 @@ wayland
 [QTBUG8122_widgetActionCrashOnClose]
 android
 wayland
-[menuSize_Scrolling]
+[menuSize_Scrolling:data4]
+android
+[menuSize_Scrolling:data5]
+android
+[menuSize_Scrolling:data6]
+android
+[menuSize_Scrolling:data7]
 android
 [QTBUG_89082_actionTipsHide]
 macos ci # Can't move cursor (QTBUG-76312)

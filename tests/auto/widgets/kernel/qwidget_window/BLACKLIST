@@ -10,9 +10,13 @@ android
 android
 [tst_resize_count]
 android
-[setWindowState]
+[setWindowState:fullscreen]
 android
-[mouseMoveWithPopup]
+[setWindowState:minimized]
+android
+[setWindowState:nostate]
+android
+[mouseMoveWithPopup:Dialog]
 android
 [setWindowState:maximized]
 xcb ubuntu-24.04 # QTBUG-129026
