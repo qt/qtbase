@@ -81,14 +81,16 @@ static bool lookupArrayDesc(IAttachment *att, ITransaction *tra, IStatus *iStatu
             stmtG.closeWith([&](IStatement *s) { s->free(&st); });
         };
 
-        /* Query 1: field type/scale/length and dimension count. TRIM for
-           matching — preserves original case for quoted identifiers. */
+        /* Query 1: field type/scale/length and dimension count. The names are
+           compared against the bare CHAR columns — a CHAR comparison ignores
+           the padding and keeps the case of quoted identifiers, and unlike a
+           TRIM() around the column it lets the engine use the system index. */
         const QByteArray sql1 = QByteArrayLiteral(
             "SELECT f.RDB$FIELD_TYPE, f.RDB$FIELD_SCALE, f.RDB$FIELD_LENGTH, "
             "f.RDB$DIMENSIONS "
             "FROM RDB$RELATION_FIELDS rf "
             "JOIN RDB$FIELDS f ON f.RDB$FIELD_NAME = rf.RDB$FIELD_SOURCE "
-            "WHERE TRIM(rf.RDB$RELATION_NAME) = ? AND TRIM(rf.RDB$FIELD_NAME) = ?");
+            "WHERE rf.RDB$RELATION_NAME = ? AND rf.RDB$FIELD_NAME = ?");
 
         bool found = false;
         runQuery(sql1, [&](const QByteArray &buf, IMessageMetadata *meta) {
@@ -122,7 +124,7 @@ static bool lookupArrayDesc(IAttachment *att, ITransaction *tra, IStatus *iStatu
             "FROM RDB$RELATION_FIELDS rf "
             "JOIN RDB$FIELDS f ON f.RDB$FIELD_NAME = rf.RDB$FIELD_SOURCE "
             "JOIN RDB$FIELD_DIMENSIONS fd ON fd.RDB$FIELD_NAME = f.RDB$FIELD_NAME "
-            "WHERE TRIM(rf.RDB$RELATION_NAME) = ? AND TRIM(rf.RDB$FIELD_NAME) = ? "
+            "WHERE rf.RDB$RELATION_NAME = ? AND rf.RDB$FIELD_NAME = ? "
             "ORDER BY fd.RDB$DIMENSION");
 
         runQuery(sql2, [&](const QByteArray &buf, IMessageMetadata *meta) {

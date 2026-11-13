@@ -23,6 +23,8 @@ public slots:
 private slots:
     void benchmark_data() { generic_data(); }
     void benchmark();
+    void benchmarkMetadata_data() { generic_data(); }
+    void benchmarkMetadata();
     void benchmarkSelectPrepared_data() { generic_data(); }
     void benchmarkSelectPrepared();
     void benchmarkSelectTimeZone_data() { generic_data(); }
@@ -84,6 +86,44 @@ void tst_QSqlQuery::benchmark()
         const QString num = QString::number(i);
         QVERIFY_SQL(q, exec("INSERT INTO " + ts.tableName() + " VALUES(" + num + ", 'Value" + num + "')"));
         i++;
+    }
+}
+
+// Looks up record() and primaryIndex() for every table of a schema large
+// enough to tell a scan of the system tables from an index lookup.
+void tst_QSqlQuery::benchmarkMetadata()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    const int NUM_TABLES = 150;
+    const int NUM_COLUMNS = 40;
+
+    QStringList tables;
+    for (int i = 0; i < NUM_TABLES; ++i)
+        tables << qTableName("metadata" + QString::number(i), __FILE__, db);
+    tst_Databases::safeDropTables(db, tables);
+    const auto dropTables = qScopeGuard([&] { tst_Databases::safeDropTables(db, tables); });
+
+    QString columns = "id INT NOT NULL PRIMARY KEY";
+    for (int i = 1; i < NUM_COLUMNS; ++i)
+        columns += ", c" + QString::number(i) + " INT";
+    QSqlQuery q(db);
+    for (const QString &table : std::as_const(tables))
+        QVERIFY_SQL(q, exec("CREATE TABLE " + table + " (" + columns + ')'));
+
+    QBENCHMARK {
+        int fields = 0;
+        int keyFields = 0;
+
+        for (const QString &table : std::as_const(tables)) {
+            fields += db.record(table).count();
+            keyFields += db.primaryIndex(table).count();
+        }
+
+        QCOMPARE(fields, NUM_TABLES * NUM_COLUMNS);
+        QCOMPARE(keyFields, NUM_TABLES);
     }
 }
 

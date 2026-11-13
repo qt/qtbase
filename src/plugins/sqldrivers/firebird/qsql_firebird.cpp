@@ -651,14 +651,16 @@ QSqlRecord QFirebirdDriver::record(const QString &tableName) const
     const QString table = stripDelimiters(tableName, QSqlDriver::TableName);
 
     /* RDB$FIELDS.RDB$FIELD_TYPE stores the BLR type codes (blr_short, blr_long, …).
-       Map them to Qt types. */
+       Map them to Qt types. The relation name is compared against the bare
+       CHAR column: the comparison ignores its padding, and wrapping the column
+       in TRIM() would keep the engine from using the index on it. */
     const QString sql =
         u"SELECT TRIM(f.RDB$FIELD_NAME), fld.RDB$FIELD_TYPE, fld.RDB$FIELD_SUB_TYPE,"
         u" fld.RDB$FIELD_SCALE, fld.RDB$CHARACTER_LENGTH, f.RDB$NULL_FLAG,"
         u" fld.RDB$FIELD_PRECISION, fld.RDB$FIELD_LENGTH"
         u" FROM RDB$RELATION_FIELDS f"
         u" JOIN RDB$FIELDS fld ON fld.RDB$FIELD_NAME = f.RDB$FIELD_SOURCE"
-        u" WHERE TRIM(f.RDB$RELATION_NAME) = ?"
+        u" WHERE f.RDB$RELATION_NAME = ?"
         u" ORDER BY f.RDB$FIELD_POSITION"_s;
 
     QSqlQuery q = execMetadataQuery(sql, {table});
@@ -705,7 +707,7 @@ QSqlIndex QFirebirdDriver::primaryIndex(const QString &tableName) const
         u" FROM RDB$RELATION_CONSTRAINTS c"
         u" JOIN RDB$INDEX_SEGMENTS s ON s.RDB$INDEX_NAME = c.RDB$INDEX_NAME"
         u" WHERE c.RDB$CONSTRAINT_TYPE = 'PRIMARY KEY'"
-        u"   AND TRIM(c.RDB$RELATION_NAME) = ?"
+        u"   AND c.RDB$RELATION_NAME = ?"
         u" ORDER BY s.RDB$FIELD_POSITION"_s;
 
     QSqlQuery q = execMetadataQuery(sql, {table});
