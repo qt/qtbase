@@ -18,11 +18,6 @@ harmonyos
 [modalWindowPosition]
 # QTBUG-69161
 android
-# QTBUG-87392
-[paintEvent]
-android
-[isActive]
-android
 [modalWindowModality]
 android
 [enterLeaveOnWindowShowHide]

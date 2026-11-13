@@ -5,8 +5,6 @@ b2qt
 android
 [forwardTouchEvent]
 android
-[touchEventPropagation]
-android
 [windowOpacity]
 macos # QTBUG-139950
 [bypassGraphicsProxyWidget]
