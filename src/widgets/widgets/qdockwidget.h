@@ -74,7 +74,7 @@ public:
     friend Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QDockWidget *dockWidget);
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QAction *toggleViewAction() const;
 #endif
 

@@ -622,7 +622,7 @@ void QDockWidgetPrivate::init()
 
     font = QApplication::font("QDockWidgetTitle");
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     toggleViewAction = new QAction(q);
     toggleViewAction->setCheckable(true);
     toggleViewAction->setMenuRole(QAction::NoRole);
@@ -1578,7 +1578,7 @@ void QDockWidget::changeEvent(QEvent *event)
         Q_FALLTHROUGH();
     case QEvent::ModifiedChange:
         update(layout->titleArea());
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
         d->fixedWindowTitle = qt_setWindowTitle_helperHelper(windowTitle(), this);
         d->toggleViewAction->setText(d->fixedWindowTitle);
 #endif
@@ -1657,7 +1657,7 @@ bool QDockWidget::event(QEvent *event)
     QMainWindowLayout *layout = qt_mainwindow_layout_from_dock(this);
 
     switch (event->type()) {
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     case QEvent::Hide:
         if (layout != nullptr)
             layout->keepSize(this);
@@ -1751,7 +1751,7 @@ bool QDockWidget::event(QEvent *event)
     return QWidget::event(event);
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 /*!
   Returns a checkable action that can be added to menus and toolbars so that
   the user can show or close this dock widget.
@@ -1771,7 +1771,7 @@ QAction * QDockWidget::toggleViewAction() const
     Q_D(const QDockWidget);
     return d->toggleViewAction;
 }
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 
 /*!
     \fn void QDockWidget::featuresChanged(QDockWidget::DockWidgetFeatures features)

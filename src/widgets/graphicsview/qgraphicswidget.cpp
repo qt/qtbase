@@ -11,7 +11,7 @@
 #include "qgraphicsscene.h"
 #include "qgraphicssceneevent.h"
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 #include <private/qaction_p.h>
 #endif
 #include <private/qapplication_p.h>
@@ -198,7 +198,7 @@ Q_GLOBAL_STATIC(QGraphicsWidgetStyles, widgetStyles)
 QGraphicsWidget::~QGraphicsWidget()
 {
     Q_D(QGraphicsWidget);
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     // Remove all actions from this widget
     for (auto action : std::as_const(d->actions)) {
         QActionPrivate *apriv = action->d_func();
@@ -1933,7 +1933,7 @@ void QGraphicsWidget::setShortcutAutoRepeat(int id, bool enabled)
 }
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 /*!
     \since 4.5
 

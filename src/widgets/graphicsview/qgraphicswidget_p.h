@@ -163,7 +163,7 @@ public:
     mutable std::unique_ptr<QMarginsF> windowFrameMargins;
     void ensureWindowFrameMargins() const;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QList<QAction *> actions;
 #endif
 };

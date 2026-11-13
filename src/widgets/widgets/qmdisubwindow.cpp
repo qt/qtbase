@@ -906,7 +906,7 @@ void QMdiSubWindowPrivate::_q_updateStaysOnTopHint()
 */
 void QMdiSubWindowPrivate::_q_enterInteractiveMode()
 {
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     Q_Q(QMdiSubWindow);
     QAction *action = qobject_cast<QAction *>(q->sender());
     if (!action)
@@ -1231,7 +1231,7 @@ void QMdiSubWindowPrivate::setMinimizeMode()
     isShadeRequestFromMinimizeMode = false;
 
     moveEnabled = false;
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     setEnabled(MoveAction, moveEnabled);
 #endif
 
@@ -1295,7 +1295,7 @@ void QMdiSubWindowPrivate::setNormalMode()
     setSizeGripVisible(true);
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     setEnabled(MoveAction, true);
     setEnabled(MaximizeAction, true);
     setEnabled(MinimizeAction, true);
@@ -1397,7 +1397,7 @@ void QMdiSubWindowPrivate::setMaximizeMode()
     resizeEnabled = false;
     moveEnabled = false;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     setEnabled(MoveAction, moveEnabled);
     setEnabled(MaximizeAction, false);
     setEnabled(MinimizeAction, true);
@@ -2056,7 +2056,7 @@ void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
     windowFlags &= ~Qt::WindowFullscreenButtonHint;
     windowFlags |= Qt::SubWindow;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     if (QAction *stayOnTopAction = actions[QMdiSubWindowPrivate::StayOnTopAction]) {
         if (windowFlags & Qt::WindowStaysOnTopHint)
             stayOnTopAction->setChecked(true);
@@ -2082,7 +2082,7 @@ void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
 
 void QMdiSubWindowPrivate::setVisible(WindowStateAction action, bool visible)
 {
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     if (actions[action])
         actions[action]->setVisible(visible);
 #endif
@@ -2098,7 +2098,7 @@ void QMdiSubWindowPrivate::setVisible(WindowStateAction action, bool visible)
     q->update();
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 void QMdiSubWindowPrivate::setEnabled(WindowStateAction action, bool enable)
 {
     if (actions[action])
@@ -2624,7 +2624,7 @@ void QMdiSubWindow::showShaded()
     d->updateDirtyRegions();
     d->updateMask();
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     d->setEnabled(QMdiSubWindowPrivate::MinimizeAction, false);
     d->setEnabled(QMdiSubWindowPrivate::ResizeAction, d->resizeEnabled);
     d->setEnabled(QMdiSubWindowPrivate::MaximizeAction, true);
@@ -2873,7 +2873,7 @@ bool QMdiSubWindow::event(QEvent *event)
                     QStyle::CC_TitleBar, d->hoveredSubControl);
         break;
 #endif
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     case QEvent::ActionAdded:
     case QEvent::ActionChanged:
     case QEvent::ActionRemoved:

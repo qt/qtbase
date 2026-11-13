@@ -181,7 +181,7 @@ public:
     Qt::FocusReason focusInReason;
     QEnumIndexedArray<QRegion, Operation, NumOperations> regions;
     QPointer<QMenu> systemMenu;
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QEnumIndexedArrayFor<QPointer<QAction>, NumWindowStateActions> actions;
 #endif
     QMdiSubWindow::SubWindowOptions options;
@@ -240,7 +240,7 @@ public:
     void setWindowFlags(Qt::WindowFlags windowFlags) override;
     using QWidgetPrivate::setVisible;
     void setVisible(WindowStateAction, bool visible = true);
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     void setEnabled(WindowStateAction, bool enable = true);
 #if QT_CONFIG(menu)
     void addToSystemMenu(WindowStateAction, const QString &text, const char *slot);

@@ -712,7 +712,7 @@ public:
     QSizePolicy size_policy;
     QLocale locale;
     QPoint redirectOffset;
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QList<QAction*> actions;
 #endif
 #ifndef QT_NO_GESTURES
