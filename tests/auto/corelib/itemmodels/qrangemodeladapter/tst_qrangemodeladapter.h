@@ -58,6 +58,8 @@ private slots:
     void tableAccess();
     void tableWriteAccess();
 
+    void frontBack();
+
     void treeIterate();
     void treeAccess();
     void treeWriteAccess();

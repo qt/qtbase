@@ -711,6 +711,93 @@ void tst_QRangeModelAdapter::tableWriteAccess()
     }
 }
 
+void tst_QRangeModelAdapter::frontBack()
+{
+    { // list
+        std::vector<int> data = {0, 1, 2, 3, 4};
+        QRangeModelAdapter adapter(std::ref(data));
+        QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+
+        QVERIFY(!adapter.empty());
+        QVERIFY(!adapter.isEmpty());
+        QCOMPARE(adapter.front(), 0);
+        QCOMPARE(adapter.back(), 4);
+        QCOMPARE(std::as_const(adapter).front(), 0);
+        QCOMPARE(std::as_const(adapter).back(), 4);
+        QCOMPARE(dataChangedSpy.size(), 0);
+
+        adapter.front() = 10;
+        QCOMPARE(dataChangedSpy.size(), 1);
+        adapter.back() = 40;
+        QCOMPARE(dataChangedSpy.size(), 2);
+        QCOMPARE(data.front(), 10);
+        QCOMPARE(data.back(), 40);
+        QCOMPARE(adapter.front(), adapter.at(0));
+        QCOMPARE(adapter.back(), adapter.at(adapter.size() - 1));
+
+        QRangeModelAdapter emptyAdapter(std::vector<int>{});
+        QVERIFY(emptyAdapter.empty());
+        QVERIFY(emptyAdapter.isEmpty());
+        QVERIFY(std::as_const(emptyAdapter).empty());
+        QVERIFY(std::as_const(emptyAdapter).isEmpty());
+    }
+
+    { // read-only list
+        const std::vector<int> data = {0, 1, 2};
+        QRangeModelAdapter adapter(std::ref(data));
+        QVERIFY(!adapter.empty());
+        QCOMPARE(adapter.front(), 0);
+        QCOMPARE(adapter.back(), 2);
+    }
+
+    { // table
+        auto data = m_data->tableOfNumbers;
+        const auto expectedFront = data.front();
+        const auto expectedBack = data.back();
+        QRangeModelAdapter adapter(std::ref(data));
+        QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+
+        QVERIFY(!adapter.empty());
+        QCOMPARE(std::as_const(adapter).front(), expectedFront);
+        QCOMPARE(std::as_const(adapter).back(), expectedBack);
+        QCOMPARE(adapter.front(), expectedFront);
+        QCOMPARE(adapter.back(), expectedBack);
+
+        // writing through the row reference updates the model
+        adapter.front() = expectedBack;
+        QCOMPARE(dataChangedSpy.size(), 1);
+        QCOMPARE(data.front(), expectedBack);
+        adapter.back()[0] = 42.0;
+        QCOMPARE(dataChangedSpy.size(), 2);
+        QCOMPARE(data.back().front(), 42.0);
+    }
+
+    { // tree
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+
+        QVERIFY(!adapter.empty());
+        QCOMPARE(adapter.front()->value(), "1");
+        QCOMPARE(adapter.back()->value(), "5");
+        QCOMPARE(std::as_const(adapter).front().value(), "1");
+        QCOMPARE(std::as_const(adapter).back().value(), "5");
+
+        // the front and back of a branch
+        auto branch = adapter.at(1).children();
+        QVERIFY(!branch.empty());
+        QVERIFY(!branch.isEmpty());
+        QCOMPARE(branch.front()->value(), "2.1");
+        QCOMPARE(branch.back()->value(), "2.3");
+        QVERIFY(branch.back().hasChildren());
+        QCOMPARE(branch.back().children().front()->value(), "2.3.1");
+        QCOMPARE(branch.back().children().back()->value(), "2.3.2");
+
+        // a row without children
+        QVERIFY(adapter.front().children().empty());
+        QVERIFY(adapter.front().children().isEmpty());
+    }
+}
+
 void tst_QRangeModelAdapter::insertRow()
 {
     {

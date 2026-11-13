@@ -481,6 +481,83 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> bool QRangeModelAdapter<Range, Protocol, Model>::isEmpty() const
+    \since 6.13
+
+    \return whether the model has no rows. If the \c Range represents a tree,
+    then this returns whether there are no top-level rows. If the adapter
+    operates on the children of a tree row, then this returns whether that row
+    has no children.
+
+    \sa rowCount()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> bool QRangeModelAdapter<Range, Protocol, Model>::empty() const
+    \since 6.13
+
+    This function is provided for STL compatibility. It is equivalent to
+    isEmpty(), returning \c true if the model has no rows; otherwise it
+    returns \c false.
+
+    \sa isEmpty(), rowCount()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::front() const
+    \since 6.13
+
+    \return the first row. This is the same as calling \c{at(0)}.
+
+    \include qrangemodeladapter.qdoc front-back-empty
+
+    \sa back(), at(), isEmpty()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::front()
+    \since 6.13
+    \overload
+
+    \return a reference wrapper for the first row. This is the same as calling
+    \c{at(0)}.
+
+//! [front-back-empty]
+    \note The model must not be empty.
+//! [front-back-empty]
+
+    \constraints \c Range is mutable.
+
+    \sa back(), at(), isEmpty()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::back() const
+    \since 6.13
+
+    \return the last row. This is the same as calling \c{at(size() - 1)}.
+
+    \include qrangemodeladapter.qdoc front-back-empty
+
+    \sa front(), at(), isEmpty()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::back()
+    \since 6.13
+    \overload
+
+    \return a reference wrapper for the last row. This is the same as calling
+    \c{at(size() - 1)}.
+
+    \include qrangemodeladapter.qdoc front-back-empty
+
+    \constraints \c Range is mutable.
+
+    \sa front(), at(), isEmpty()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> int QRangeModelAdapter<Range, Protocol, Model>::rowCount(int row) const
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> int QRangeModelAdapter<Range, Protocol, Model>::rowCount(QSpan<const int> row) const
     \overload

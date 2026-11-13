@@ -1149,6 +1149,42 @@ public:
         return rowCount();
     }
 
+    bool isEmpty() const
+    {
+        return rowCount() == 0;
+    }
+
+    bool empty() const
+    {
+        return isEmpty();
+    }
+
+    decltype(auto) front() const
+    {
+        Q_PRE(!empty());
+        return at(0);
+    }
+
+    template <typename I = Impl, if_writable<I> = true>
+    auto front()
+    {
+        Q_PRE(!empty());
+        return at(0);
+    }
+
+    decltype(auto) back() const
+    {
+        Q_PRE(!empty());
+        return at(size() - 1);
+    }
+
+    template <typename I = Impl, if_writable<I> = true>
+    auto back()
+    {
+        Q_PRE(!empty());
+        return at(size() - 1);
+    }
+
     template <typename I = Impl, if_list<I> = true>
     QModelIndex index(int row) const
     {
