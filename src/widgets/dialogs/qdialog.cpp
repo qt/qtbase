@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline int themeDialogType(const QDialog *dialog)
+static inline std::optional<QPlatformTheme::DialogType> themeDialogType(const QDialog *dialog)
 {
 #if QT_CONFIG(filedialog)
     if (qobject_cast<const QFileDialog *>(dialog))
@@ -69,7 +69,7 @@ static inline int themeDialogType(const QDialog *dialog)
     !QT_CONFIG(messagebox) && !QT_CONFIG(errormessage)
     Q_UNUSED(dialog);
 #endif
-    return -1;
+    return std::nullopt;
 }
 
 QDialogPrivate::~QDialogPrivate()
@@ -85,10 +85,10 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
         m_platformHelperCreated = true;
         QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
         QDialog *dialog = ncThis->q_func();
-        const int type = themeDialogType(dialog);
-        if (type >= 0) {
-            m_platformHelper = QGuiApplicationPrivate::platformTheme()
-                    ->createPlatformDialogHelper(static_cast<QPlatformTheme::DialogType>(type));
+        const auto type = themeDialogType(dialog);
+        if (type) {
+            m_platformHelper =
+                    QGuiApplicationPrivate::platformTheme()->createPlatformDialogHelper(*type);
             if (m_platformHelper) {
                 QObject::connect(m_platformHelper, SIGNAL(accept()), dialog, SLOT(accept()));
                 QObject::connect(m_platformHelper, SIGNAL(reject()), dialog, SLOT(reject()));
@@ -106,10 +106,9 @@ bool QDialogPrivate::canBeNativeDialog() const
 
     QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
     QDialog *dialog = ncThis->q_func();
-    const int type = themeDialogType(dialog);
-    if (type >= 0)
-        return QGuiApplicationPrivate::platformTheme()
-                ->usePlatformNativeDialog(static_cast<QPlatformTheme::DialogType>(type));
+    const auto type = themeDialogType(dialog);
+    if (type)
+        return QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(*type);
     return false;
 }
 
@@ -426,9 +425,8 @@ void QDialogPrivate::setDefault(QPushButton *pushButton)
 {
     Q_Q(QDialog);
     bool hasMain = false;
-    QList<QPushButton*> list = q->findChildren<QPushButton*>();
-    for (int i=0; i<list.size(); ++i) {
-        QPushButton *pb = list.at(i);
+    const auto pbList = q->findChildren<QPushButton *>();
+    for (QPushButton *pb : pbList) {
         if (pb->window() == q) {
             if (pb == mainDef)
                 hasMain = true;
@@ -461,10 +459,9 @@ void QDialogPrivate::setMainDefault(QPushButton *pushButton)
 void QDialogPrivate::hideDefault()
 {
     Q_Q(QDialog);
-    QList<QPushButton*> list = q->findChildren<QPushButton*>();
-    for (int i=0; i<list.size(); ++i) {
-        list.at(i)->setDefault(false);
-    }
+    const auto pbList = q->findChildren<QPushButton *>();
+    for (QPushButton *pb : pbList)
+        pb->setDefault(false);
 }
 #endif
 
@@ -715,9 +712,8 @@ void QDialog::keyPressEvent(QKeyEvent *e)
 #if QT_CONFIG(pushbutton)
         case Qt::Key_Enter:
         case Qt::Key_Return: {
-            QList<QPushButton*> list = findChildren<QPushButton*>();
-            for (int i=0; i<list.size(); ++i) {
-                QPushButton *pb = list.at(i);
+            const auto pbList = findChildren<QPushButton *>();
+            for (QPushButton *pb : pbList) {
                 if (pb->isDefault() && pb->isVisible()) {
                     if (pb->isEnabled())
                         pb->click();
@@ -904,15 +900,16 @@ void QDialog::adjustPosition(QWidget* w)
     if (scrn)
         desk = scrn->availableGeometry();
 
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = 0; (extraw == 0 || extrah == 0) && i < list.size(); ++i) {
-        QWidget * current = list.at(i);
+    const QWidgetList tlwList = QApplication::topLevelWidgets();
+    for (const QWidget *current : tlwList) {
         if (current->isVisible()) {
             int framew = current->geometry().x() - current->x();
             int frameh = current->geometry().y() - current->y();
 
             extraw = qMax(extraw, framew);
             extrah = qMax(extrah, frameh);
+            if (extraw != 0 && extrah != 0)
+                break;
         }
     }
 
