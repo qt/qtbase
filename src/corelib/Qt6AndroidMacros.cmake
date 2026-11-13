@@ -1692,6 +1692,11 @@ function(_qt_internal_configure_android_multiabi_target target)
             "-DQT_ANDROID_CREATE_SYMLINKS_ONLY=${QT_ANDROID_CREATE_SYMLINKS_ONLY}")
     endif()
 
+    if(DEFINED QT_ANDROID_TEST_APK_SPLITS)
+        list(APPEND extra_cmake_args
+            "-DQT_ANDROID_TEST_APK_SPLITS=${QT_ANDROID_TEST_APK_SPLITS}")
+    endif()
+
     unset(user_cmake_args)
     foreach(var IN LISTS QT_ANDROID_MULTI_ABI_FORWARD_VARS)
         string(REPLACE ";" "$<SEMICOLON>" var_value "${${var}}")
