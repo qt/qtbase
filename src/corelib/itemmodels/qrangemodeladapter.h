@@ -102,6 +102,14 @@ class QT_TECH_PREVIEW_API QRangeModelAdapter
     template <typename R>
     using if_assignable_range = std::enable_if_t<std::is_assignable_v<range_type, R>, bool>;
 
+    // Without arguments, the model creates the row, respecting the protocol
+    // and the number of columns.
+    template <typename ...Args>
+    static constexpr bool is_emplaceable = sizeof...(Args) == 0
+                            || std::is_constructible_v<std::remove_cv_t<row_type>, Args...>;
+    template <typename ...Args>
+    using if_emplaceable = std::enable_if_t<is_emplaceable<Args...>, bool>;
+
     template <typename It>
     static constexpr bool is_compatible_row_iterator
         = QRangeModelDetails::is_compatible_forward_iterator<It, const_row_reference>::value;
@@ -1664,6 +1672,32 @@ public:
         });
     }
 
+    template <typename ...Args, typename I = Impl, if_canInsertRows<I> = true,
+              if_emplaceable<Args...> = true>
+    iterator emplace(const_iterator pos, Args &&...args)
+    {
+        return insertAt(pos, 1, [this, &args...](int row) {
+            if constexpr (sizeof...(Args) == 0)
+                return storage->insertRows(row, 1, storage.root());
+            else
+                return insertRowImpl(row, storage.root(), std::forward<Args>(args)...);
+        });
+    }
+
+    template <typename ...Args, typename I = Impl, if_canInsertRows<I> = true,
+              if_emplaceable<Args...> = true>
+    reference emplace_back(Args &&...args)
+    {
+        return *emplace(cend(), std::forward<Args>(args)...);
+    }
+
+    template <typename ...Args, typename I = Impl, if_canInsertRows<I> = true,
+              if_emplaceable<Args...> = true>
+    reference emplace_front(Args &&...args)
+    {
+        return *emplace(cbegin(), std::forward<Args>(args)...);
+    }
+
     template <typename I = Impl, if_canRemoveRows<I> = true>
     bool removeRow(int row)
     {
@@ -1938,14 +1972,15 @@ private:
         });
     }
 
-    template <typename D>
-    bool insertRowImpl(int before, const QModelIndex &parent, D &&data)
+    template <typename ...Args>
+    bool insertRowImpl(int before, const QModelIndex &parent, Args &&...args)
     {
-        return storage.implementation()->doInsertRows(before, 1, parent, [&data, this]
+        return storage.implementation()->doInsertRows(before, 1, parent, [&args..., this]
                                         (range_type &range, auto *parentRow, int row, int count) {
             Q_UNUSED(this);
             const auto oldSize = range.size();
-            auto newRow = range.emplace(QRangeModelDetails::pos(range, row), std::forward<D>(data));
+            auto newRow = range.emplace(QRangeModelDetails::pos(range, row),
+                                        std::forward<Args>(args)...);
             setParentRow(storage->protocol(), QRangeModelDetails::refTo(*newRow),
                                               QRangeModelDetails::pointerTo(parentRow));
             return range.size() == oldSize + count;

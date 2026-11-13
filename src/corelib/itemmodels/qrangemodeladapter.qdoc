@@ -1197,6 +1197,69 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename ...Args, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_emplaceable<Args...>> QRangeModelAdapter<Range, Protocol, Model>::iterator QRangeModelAdapter<Range, Protocol, Model>::emplace(const_iterator pos, Args &&...args)
+    \since 6.13
+
+    Inserts a new row before the row at \a pos, and returns an iterator
+    pointing to the new row. The row is constructed in place from \a args.
+
+//! [emplace-default-row]
+    If no \a args are given, then the model creates the new row in the same
+    way as insertRow() does. For example, if the rows of a table are
+    themselves ranges with a dynamic size, then the new row will have
+    columnCount() elements, and if the rows are pointers, then the model
+    allocates the new row.
+//! [emplace-default-row]
+
+    \include qrangemodeladapter.qdoc insert-at-iterator
+
+    \constraints \c Range supports insertion of elements, and the row type can
+    be constructed from \a args.
+
+    \sa emplace_back(), emplace_front(), insert(), insertRow()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename ...Args, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_emplaceable<Args...>> QRangeModelAdapter<Range, Protocol, Model>::reference QRangeModelAdapter<Range, Protocol, Model>::emplace_back(Args &&...args)
+    \since 6.13
+
+    Appends a new row constructed in place from \a args, and returns a
+    reference wrapper for the new row.
+
+    \include qrangemodeladapter.qdoc emplace-default-row
+
+    The model() emits the \l{QAbstractItemModel::}{rowsAboutToBeInserted()}
+    and \l{QAbstractItemModel::}{rowsInserted()} signals. If the adapter
+    operates on a tree, then the new row is appended to the level of the tree
+    that the adapter operates on.
+
+    \constraints \c Range supports insertion of elements, and the row type can
+    be constructed from \a args.
+
+    \sa emplace(), emplace_front()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename ...Args, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_emplaceable<Args...>> QRangeModelAdapter<Range, Protocol, Model>::reference QRangeModelAdapter<Range, Protocol, Model>::emplace_front(Args &&...args)
+    \since 6.13
+
+    Prepends a new row constructed in place from \a args, and returns a
+    reference wrapper for the new row.
+
+    \include qrangemodeladapter.qdoc emplace-default-row
+
+    The model() emits the \l{QAbstractItemModel::}{rowsAboutToBeInserted()}
+    and \l{QAbstractItemModel::}{rowsInserted()} signals. If the adapter
+    operates on a tree, then the new row is prepended to the level of the
+    tree that the adapter operates on.
+
+    \constraints \c Range supports insertion of elements, and the row type can
+    be constructed from \a args.
+
+    \sa emplace(), emplace_back()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canRemoveRows<I>> bool QRangeModelAdapter<Range, Protocol, Model>::removeRow(int row)
     \overload
 

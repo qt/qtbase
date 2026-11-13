@@ -1268,6 +1268,86 @@ void tst_QRangeModelAdapter::insertAtIterator()
     }
 }
 
+void tst_QRangeModelAdapter::emplace()
+{
+    { // list
+        std::vector<int> data = {1, 3};
+        QRangeModelAdapter adapter(std::ref(data));
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+        QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+
+        auto it = adapter.emplace(adapter.begin() + 1, 2);
+        QCOMPARE(it, adapter.begin() + 1);
+        QCOMPARE(*it, 2);
+        QCOMPARE(insertedSpy.size(), 1);
+
+        // default-constructed row
+        it = adapter.emplace(adapter.cend());
+        QCOMPARE(it, adapter.end() - 1);
+        QCOMPARE(*it, 0);
+        QCOMPARE(insertedSpy.size(), 2);
+
+        // the returned reference writes through to the model
+        adapter.emplace_back(5) = 4;
+        QCOMPARE(dataChangedSpy.size(), 1);
+        adapter.emplace_front() = 0;
+        QCOMPARE(data, (std::vector<int>{0, 1, 2, 3, 0, 4}));
+        QCOMPARE(insertedSpy.size(), 4);
+        QCOMPARE(insertedSpy.at(3).at(1).toInt(), 0);
+    }
+
+    { // table with fixed columns, constructed in place
+        std::list<std::tuple<int, QString>> data;
+        QRangeModelAdapter adapter(std::ref(data));
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        auto row = adapter.emplace_back(2, u"two"_s);
+        QCOMPARE(row[1], u"two"_s);
+        adapter.emplace_front(1, u"one"_s);
+        adapter.emplace(adapter.cend(), 3, u"three"_s);
+        QCOMPARE(insertedSpy.size(), 3);
+        QCOMPARE(data, (std::list<std::tuple<int, QString>>{
+            {1, u"one"_s}, {2, u"two"_s}, {3, u"three"_s}
+        }));
+    }
+
+    { // table with dynamic columns; a default row has the right number of columns
+        auto data = m_data->tableOfNumbers;
+        const auto columnCount = data.front().size();
+        QRangeModelAdapter adapter(std::ref(data));
+
+        auto it = adapter.emplace(adapter.cbegin());
+        QCOMPARE(it, adapter.begin());
+        QCOMPARE(data.front().size(), columnCount);
+        QCOMPARE(adapter.emplace_back().size(), int(columnCount));
+        QCOMPARE(data.back().size(), columnCount);
+    }
+
+    { // tree
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        auto branch = adapter.at(1).children();
+        auto row = branch.emplace_back(u"2.4"_s, u"two.four"_s);
+        QCOMPARE(row->value(), u"2.4"_s);
+        QCOMPARE(branch.size(), 4);
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(insertedSpy.at(0).at(0).value<QModelIndex>(), adapter.index(1, 0));
+        QCOMPARE(tree[1].childRows()->back().parentRow(), &tree[1]);
+
+        // default row created by the model
+        auto it = branch.emplace(branch.cbegin());
+        QCOMPARE(it, branch.begin());
+        QVERIFY((*it)->value().isEmpty());
+        QCOMPARE(tree[1].childRows()->front().parentRow(), &tree[1]);
+
+        adapter.emplace_front(u"0"_s, u"zero"_s);
+        QCOMPARE(adapter.front()->value(), u"0"_s);
+        QCOMPARE(insertedSpy.size(), 3);
+    }
+}
+
 void tst_QRangeModelAdapter::removeRow()
 {
     QList<int> data = {0, 1, 2, 3, 4};

@@ -73,6 +73,9 @@ API_TEST(insertAtIterator, insert(std::declval<typename AdapterType<Range, Proto
 API_TEST(insertCopiesAtIterator,
          insert(std::declval<typename AdapterType<Range, Protocol>::const_iterator>(), 2,
                 std::declval<const typename AdapterType<Range, Protocol>::value_type &>()))
+API_TEST(emplaceDefault, emplace(std::declval<typename AdapterType<Range, Protocol>::const_iterator>()))
+API_TEST(emplaceBack, emplace_back())
+API_TEST(emplaceFront, emplace_front())
 API_TEST(removeRow, removeRow(0))
 API_TEST(removeRows, removeRows(0, 0))
 API_TEST(sort, sort())
@@ -229,6 +232,15 @@ void tst_QRangeModelAdapter::insertRow_API()
     // no copies of owning row pointers, or of move-only rows
     static_assert(!has_insertCopiesAtIterator(d.tableOfRowPointers));
     static_assert(!has_insertCopiesAtIterator(d.m_tree));
+
+    static_assert(!has_emplaceDefault(d.fixedArrayOfNumbers));
+    static_assert(!has_emplaceDefault(d.constListOfNumbers));
+    static_assert(has_emplaceDefault(d.vectorOfFixedColumns));
+    static_assert(has_emplaceDefault(d.m_tree));
+    static_assert(!has_emplaceBack(d.fixedArrayOfNumbers));
+    static_assert(has_emplaceBack(d.tableOfNumbers));
+    static_assert(!has_emplaceFront(d.constListOfNumbers));
+    static_assert(has_emplaceFront(d.listOfMultiRoleGadgets));
 }
 
 void tst_QRangeModelAdapter::indexOfCell_API()

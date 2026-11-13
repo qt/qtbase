@@ -80,6 +80,7 @@ private slots:
     void insertRow();
     void insertRows();
     void insertAtIterator();
+    void emplace();
     void removeRow();
     void removeRows();
     void moveRow();
