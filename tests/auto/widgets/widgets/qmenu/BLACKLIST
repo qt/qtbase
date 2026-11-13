@@ -7,8 +7,6 @@ macos
 macos # Can't move cursor (QTBUG-76312)
 wayland
 # QTBUG-87424
-[focus]
-android
 [activeSubMenuPosition]
 android
 [activeSubMenuPositionExec]
@@ -21,8 +19,6 @@ wayland
 [QTBUG8122_widgetActionCrashOnClose]
 android
 wayland
-[click_while_dismissing_submenu]
-android
 [menuSize_Scrolling]
 android
 [QTBUG_89082_actionTipsHide]

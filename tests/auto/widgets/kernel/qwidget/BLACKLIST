@@ -10,34 +10,23 @@ android
 android
 [optimizedResizeMove]
 android
-[update]
-android
 [scroll]
 android
 [moveChild]
 android
 [multipleToplevelFocusCheck]
-android
 wayland
 [renderInvisible]
 android
 [updateWhileMinimized]
 android
-[doubleRepaint]
-android
-[setMaskInResizeEvent]
-android
 [activateWindow]
-android
 wayland
 [optimizedResize_topLevel]
 android
 [hoverPosition]
 macos-14 x86
 macos-26 # QTBUG-142157
-# QTBUG-124291
-[setParentChangesFocus:make dialog parentless, after]
-android
 [enterLeaveOnWindowShowHide]
 macos-26 # QTBUG-142157
 macos-27 # QTBUG-142157

@@ -3,8 +3,6 @@ osx
 # QTBUG-87397
 [itemsAtPoint]
 android
-[itemsInRect_cosmeticAdjust]
-android
 [itemAt]
 android
 [mapToScenePath]
@@ -13,24 +11,12 @@ android
 android
 [mapFromScenePath]
 android
-[viewportUpdateMode]
-android
 [scrollBarRanges]
 android
 xcb ubuntu-24.04 # QTBUG-149402
 [moveItemWhileScrolling]
 android
-[exposeRegion]
-android
-[update2]
-android
-[update_ancestorClipsChildrenToShape]
-android
-[update_ancestorClipsChildrenToShape2]
-android
 [QTBUG_70255_scrollTo]
 android # QTBUG-87397
 [embeddedViewsWithFocus]
-android # QTBUG-87397
-[viewportUpdateMode2]
 android # QTBUG-87397
