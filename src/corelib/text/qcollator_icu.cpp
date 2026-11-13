@@ -235,12 +235,13 @@ QCollatorSortKey QCollator::sortKey(QStringView string) const
         }
         result.truncate(size);
         return QCollatorPrivate::sortKeyFromData(std::move(result));
-    }
 #if !QT_CONFIG(icu) && defined(Q_OS_ANDROID)
-    else if (d->fallbackCollator.isValid()) {
-        return QCollatorPrivate::sortKeyFromData(QtJniTypes::QtCollator::callStaticMethod<QByteArray>("getCollationKey", d->fallbackCollator, string));
-    }
+    } else if (d->fallbackCollator.isValid()) {
+        return QCollatorPrivate::sortKeyFromData(
+            QtJniTypes::QtCollator::callStaticMethod<QByteArray>(
+                "getCollationKey", d->fallbackCollator, string));
 #endif
+    }
 
     return QCollatorPrivate::sortKeyFromData(QByteArray());
 }
