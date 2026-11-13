@@ -174,6 +174,7 @@ void tst_inputcontext::selectingTextInputProtocol()
     });
 
     qunsetenv("QT_IM_MODULE");
+    qunsetenv("QT_IM_MODULES");
 
     if (clientProtocol.isNull())
         qunsetenv("QT_WAYLAND_TEXT_INPUT_PROTOCOL");
