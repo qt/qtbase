@@ -7,7 +7,7 @@
 #if QT_CONFIG(scrollarea)
 
 #include "qscrollbar.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qevent.h"
@@ -19,20 +19,13 @@
 #include "qheaderview.h"
 #endif
 
-#include <QDebug>
-
 #include "qabstractscrollarea_p.h"
 #include "qscrollbar_p.h"
-#include <qwidget.h>
 
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 
 #include <private/qapplication_p.h>
-
-#ifdef Q_OS_WIN
-#  include <qt_windows.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
