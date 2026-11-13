@@ -21,7 +21,6 @@
 #include "private/qwidget_p.h"
 #include "QtWidgets/qlineedit.h"
 #include "QtGui/qtextlayout.h"
-#include "QtWidgets/qstyleoption.h"
 #include "QtCore/qpointer.h"
 #include "QtGui/qclipboard.h"
 #include "QtGui/qinputmethod.h"
@@ -30,7 +29,6 @@
 #include "QtWidgets/qcompleter.h"
 #endif
 #include "QtCore/qbasictimer.h"
-#include "QtCore/qthread.h"
 #include "QtGui/private/qinputcontrol_p.h"
 
 #include "qplatformdefs.h"
@@ -38,9 +36,6 @@
 #include <vector>
 #include <memory>
 
-#ifdef Q_OS_WIN
-# include <qt_windows.h>
-#endif
 #ifdef DrawText
 #  undef DrawText
 #endif
