@@ -1105,9 +1105,11 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                     pen = QPen(option->palette.windowText().color(), 2);
                 else
                     pen = Qt::NoPen;
-                drawRoundedRect(painter, rect, pen, WINUI3Colors[colorSchemeIndex][menuPanelFill]);
-            } else
-                drawRoundedRect(painter, rect, Qt::NoPen, option->palette.brush(QPalette::Base));
+                drawRoundedRect(painter, rect, pen, winUI3Color(menuPanelFill));
+            } else if (qobject_cast<const QTextEdit *>(widget)
+                       || qobject_cast<const QPlainTextEdit *>(widget)) {
+                drawRoundedRect(painter, rect, Qt::NoPen, inputFillBrush(option, widget));
+            }
 
             if (frame->frameShape == QFrame::NoFrame)
                 break;
@@ -2701,6 +2703,7 @@ void QWindows11Style::polish(QWidget* widget)
                 vp->setProperty("_q_original_autofill_background", isAutoFillBackground);
                 vp->setAutoFillBackground(false);
             }
+            widget->setAttribute(Qt::WA_Hover, true);
         }
     } else if (auto table = qobject_cast<QTableView *>(widget)) {
         // QTreeView & QListView are already set in the base windowsvista style
