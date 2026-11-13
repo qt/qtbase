@@ -26,6 +26,7 @@
 #include <chrono>
 #include <csignal>
 #include <cstdio>
+#include <optional>
 
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
@@ -54,6 +55,9 @@ static constexpr auto quietBeforeDialogCheckWhileStarting = 1s;
 static constexpr auto dialogsExpectedWhileStarting = 10s;
 
 #if QT_CONFIG(systemsemaphore)
+static constexpr auto semaphoreAcquireTimeout = 30s;
+static constexpr auto semaphoreResetWait = 5s;
+
 struct TestRunnerSystemSemaphore
 {
     explicit TestRunnerSystemSemaphore(const QString &key)
@@ -71,13 +75,13 @@ struct TestRunnerSystemSemaphore
             acquireResult.store(semaphore.acquire());
         });
         worker->start();
-        if (!worker->wait(30000)) {
+        if (!worker->wait(semaphoreAcquireTimeout)) {
             fprintf(stderr, "harmonyostestrunner: semaphore stuck (previous runner "
                     "may have crashed) — resetting\n");
             {
                 QSystemSemaphore reset{ nativeKey, 1, QSystemSemaphore::Create };
             } // destructor unblocks the worker
-            worker->wait(5000);
+            worker->wait(semaphoreResetWait);
         }
         delete worker;
         isAcquired.store(acquireResult.load());
@@ -121,28 +125,29 @@ static void sigHandler(int sig)
 // Without this, OHOS may deliver the new test's Want to the still-dying
 // previous process via onNewWant instead of creating a fresh one.
 static void waitForProcessDeath(const Hdc &hdc, const QString &bundleName,
-                                int timeoutSecs = 15)
+                                std::chrono::seconds timeout = 15s)
 {
-    const int pollMs = 200;
-    const QDeadlineTimer deadline(std::chrono::seconds{ timeoutSecs });
+    constexpr auto pollInterval = 200ms;
+    const QDeadlineTimer deadline(timeout);
     while (!deadline.hasExpired()) {
         if (g_interrupted.load())
             return;
         if (queryProcessState(hdc, bundleName) == ProcessState::NotRunning)
             return;
-        QThread::msleep(pollMs);
+        QThread::sleep(pollInterval);
     }
-    fprintf(stderr, "harmonyostestrunner: warning: bundle process still alive after %d s "
-            "force-stop wait — proceeding anyway\n", timeoutSecs);
+    fprintf(stderr, "harmonyostestrunner: warning: bundle process still alive after %lld s "
+            "force-stop wait — proceeding anyway\n", static_cast<long long>(timeout.count()));
 }
 
 static bool waitForProcessStart(const Hdc &hdc, const QString &bundleName,
-                                const QString &shellExitCodePath, int timeoutSecs = 30)
+                                const QString &shellExitCodePath,
+                                std::chrono::seconds timeout = 30s)
 {
-    const int pollMs = 250;
-    const int maxIterations = (timeoutSecs * 1000) / pollMs;
+    constexpr auto pollInterval = 250ms;
+    const qint64 maxIterations = timeout / pollInterval;
     const QDeadlineTimer hdcOutageDeadline(hdcOutageTolerance);
-    for (int i = 0; i < maxIterations && !hdcOutageDeadline.hasExpired(); ++i) {
+    for (qint64 i = 0; i < maxIterations && !hdcOutageDeadline.hasExpired(); ++i) {
         if (g_interrupted.load())
             return false;
         if (queryProcessState(hdc, bundleName) == ProcessState::Running)
@@ -153,23 +158,23 @@ static bool waitForProcessStart(const Hdc &hdc, const QString &bundleName,
         exitContent.trimmed().toInt(&ok);
         if (ok)
             return true;
-        QThread::msleep(pollMs);
+        QThread::sleep(pollInterval);
     }
     return false;
 }
 
 static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
-                              int timeoutSecs = 10)
+                              std::chrono::seconds timeout = 10s)
 {
-    const int pollMs = 100;
-    const int maxIterations = (timeoutSecs * 1000) / pollMs;
-    for (int i = 0; i < maxIterations; ++i) {
+    constexpr auto pollInterval = 100ms;
+    const qint64 maxIterations = timeout / pollInterval;
+    for (qint64 i = 0; i < maxIterations; ++i) {
         if (g_interrupted.load())
             return false;
         const QString out = readDeviceFile(hdc, shellStdoutPath);
         if (!out.contains(u"No such file or directory"_s))
             return true;
-        QThread::msleep(pollMs);
+        QThread::sleep(pollInterval);
     }
     return false;
 }
@@ -288,8 +293,8 @@ int main(int argc, char *argv[])
     const QString bundleName = parser.value(bundleNameOpt);
     const QString abilityName = parser.value(abilityNameOpt);
     const Hdc hdc(parser.value(hdcOpt), parser.value(deviceOpt));
-    const int timeoutSecs = parser.value(timeoutOpt).toInt();
-    const int noProgressTimeoutSecs = parser.value(noProgressTimeoutOpt).toInt();
+    const std::chrono::seconds timeout{ parser.value(timeoutOpt).toInt() };
+    const std::chrono::seconds noProgressTimeout{ parser.value(noProgressTimeoutOpt).toInt() };
 
     // Unique per-run ID: shell can't delete files from the app sandbox (SELinux),
     // so uniqueness is the only way to avoid matching stale files.
@@ -392,26 +397,25 @@ int main(int argc, char *argv[])
 
     // hdc shell always returns 0; can't use `test -f`. Cat the file and check
     // whether the contents parse as int.
-    const int pollIntervalMs = 500;
+    constexpr auto pollInterval = 500ms;
+    constexpr auto heartbeatInterval = 30s;
 
     QElapsedTimer elapsed;
     elapsed.start();
     int testExitCode = -1;
     bool completed = false;
     int aliveCheckCounter = 0;
-    qint64 lastTestProgressAt = -1;
-    qint64 lastSuccessfulCopyAt = -1;
-    qint64 lastHeartbeatSecs = 0;
+    std::optional<std::chrono::nanoseconds> lastTestProgressAt;
+    std::chrono::nanoseconds lastSuccessfulCopyAt {};
+    std::chrono::seconds lastHeartbeatAt {};
     BlockingTestDialogs blockingTestDialogs(parser.value(testConfigOpt), hdc);
     std::chrono::nanoseconds lastOutputAt {};
 
-    while (!g_interrupted.load()
-           && elapsed.elapsed() < qint64(timeoutSecs) * 1000)
-    {
+    while (!g_interrupted.load() && elapsed.durationElapsed() < timeout) {
         {
             const q23::expected<QByteArray, QString> chunk = outputForwarder.forwardAvailable();
             if (chunk) {
-                lastSuccessfulCopyAt = elapsed.elapsed();
+                lastSuccessfulCopyAt = elapsed.durationElapsed();
             } else {
                 fprintf(stderr, "harmonyostestrunner: warning: could not copy the test output "
                         "(%s)\n", qPrintable(chunk.error()));
@@ -423,7 +427,7 @@ int main(int argc, char *argv[])
                 lastOutputAt = elapsed.durationElapsed();
                 if (chunk->contains("PASS   :") || chunk->contains("FAIL!  :")
                     || chunk->contains("Totals:"))
-                    lastTestProgressAt = elapsed.elapsed();
+                    lastTestProgressAt = elapsed.durationElapsed();
             }
         }
 
@@ -463,28 +467,28 @@ int main(int argc, char *argv[])
             break;
         }
 
-        if (noProgressTimeoutSecs > 0 && lastTestProgressAt >= 0
-            && lastSuccessfulCopyAt - lastTestProgressAt
-               > qint64(noProgressTimeoutSecs) * 1000)
+        if (noProgressTimeout > 0s && lastTestProgressAt
+            && lastSuccessfulCopyAt - *lastTestProgressAt > noProgressTimeout)
         {
             fprintf(stderr,
-                    "harmonyostestrunner: %s: no test case progress for %d seconds "
+                    "harmonyostestrunner: %s: no test case progress for %lld seconds "
                     "— main thread likely deadlocked, force-stopping\n",
-                    qPrintable(testLibName), noProgressTimeoutSecs);
+                    qPrintable(testLibName), static_cast<long long>(noProgressTimeout.count()));
             forceStopBundle(hdc, bundleName);
             testExitCode = EXIT_CRASH;
             completed = true;
             break;
         }
 
-        const qint64 elapsedSecs = elapsed.elapsed() / 1000;
-        if (elapsedSecs >= lastHeartbeatSecs + 30) {
+        const auto elapsedSeconds =
+                std::chrono::duration_cast<std::chrono::seconds>(elapsed.durationElapsed());
+        if (elapsedSeconds >= lastHeartbeatAt + heartbeatInterval) {
             fprintf(stderr, "harmonyostestrunner: %s still running (%lld s elapsed)\n",
-                    qPrintable(testLibName), static_cast<long long>(elapsedSecs));
-            lastHeartbeatSecs = elapsedSecs;
+                    qPrintable(testLibName), static_cast<long long>(elapsedSeconds.count()));
+            lastHeartbeatAt = elapsedSeconds;
         }
 
-        QThread::msleep(pollIntervalMs);
+        QThread::sleep(pollInterval);
     }
 
     const bool interrupted = g_interrupted.load();
@@ -492,8 +496,8 @@ int main(int argc, char *argv[])
     if (!completed) {
         if (!interrupted) {
             fprintf(stderr,
-                    "harmonyostestrunner: TIMEOUT — %s did not complete within %d seconds\n",
-                    qPrintable(testLibName), timeoutSecs);
+                    "harmonyostestrunner: TIMEOUT — %s did not complete within %lld seconds\n",
+                    qPrintable(testLibName), static_cast<long long>(timeout.count()));
         }
         forceStopBundle(hdc, bundleName);
     }
