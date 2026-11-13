@@ -107,6 +107,37 @@ void tst_QRangeModelAdapter::construct_API()
     static_assert(!qxp::is_detected_v<construct_test, int>);
 }
 
+void tst_QRangeModelAdapter::typedefs_API()
+{
+    { // list
+        using Adapter = QRangeModelAdapter<std::vector<int>>;
+        static_assert(std::is_same_v<Adapter::value_type, int>);
+        static_assert(std::is_same_v<Adapter::reference, Adapter::DataReference>);
+        static_assert(std::is_same_v<Adapter::const_reference, Adapter::const_iterator::reference>);
+        static_assert(std::is_same_v<Adapter::size_type, int>);
+        static_assert(std::is_same_v<Adapter::difference_type, int>);
+        static_assert(std::is_same_v<Adapter::iterator, Adapter::RowIterator>);
+        static_assert(std::is_same_v<Adapter::const_iterator, Adapter::ConstRowIterator>);
+    }
+    { // read-only list
+        using Adapter = QRangeModelAdapter<const std::vector<int>>;
+        static_assert(std::is_same_v<Adapter::value_type, int>);
+    }
+    { // table
+        using Row = std::vector<QString>;
+        using Adapter = QRangeModelAdapter<QList<Row>>;
+        static_assert(std::is_same_v<Adapter::value_type, Row>);
+        static_assert(std::is_same_v<Adapter::reference, Adapter::RowReference>);
+        static_assert(std::is_same_v<Adapter::const_reference, Adapter::ConstRowReference>);
+    }
+    { // tree
+        using Adapter = AdapterType<value_tree>;
+        static_assert(std::is_same_v<Adapter::value_type, tree_row>);
+        static_assert(std::is_same_v<Adapter::reference, Adapter::RowReference>);
+        static_assert(std::is_same_v<Adapter::const_reference, Adapter::ConstRowReference>);
+    }
+}
+
 void tst_QRangeModelAdapter::assign_API()
 {
     Data d;

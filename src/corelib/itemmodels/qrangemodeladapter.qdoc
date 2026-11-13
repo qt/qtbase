@@ -296,6 +296,69 @@
 */
 
 /*!
+    \typedef QRangeModelAdapter::iterator
+    \since 6.13
+
+    Synonym for \l{QRangeModelAdapter::}{RowIterator}, provided for
+    STL compatibility.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::const_iterator
+    \since 6.13
+
+    Synonym for \l{QRangeModelAdapter::}{ConstRowIterator}, provided for
+    STL compatibility.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::value_type
+    \since 6.13
+
+    The type of the rows stored in \c Range, without any \c const qualification.
+    For a list, this is the type of the items in the list. For tables and trees,
+    this is the type of the row.
+
+    Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::reference
+    \since 6.13
+
+    The type returned when dereferencing an \l{QRangeModelAdapter::}{iterator}.
+    For a list, this is a \l{QRangeModelAdapter::}{DataReference}; for tables
+    and trees, this is a \l{QRangeModelAdapter::}{RowReference}.
+
+    Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::const_reference
+    \since 6.13
+
+    The type returned when dereferencing a \l{QRangeModelAdapter::}{const_iterator}.
+    For a list, this is the const item type; for tables and trees, this is a
+    \l{QRangeModelAdapter::}{ConstRowReference}.
+
+    Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::size_type
+    \since 6.13
+
+    Typedef for \c int. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::difference_type
+    \since 6.13
+
+    Typedef for \c int. Provided for STL compatibility.
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::QRangeModelAdapter(Range &&range, Protocol &&protocol)
     \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::QRangeModelAdapter(Range &&range)
 

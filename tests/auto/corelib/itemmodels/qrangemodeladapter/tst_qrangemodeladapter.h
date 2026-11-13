@@ -13,6 +13,7 @@ public:
 
     // compile tests
     void construct_API();
+    void typedefs_API();
 
     void assign_API();
 

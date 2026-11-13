@@ -1039,6 +1039,17 @@ public:
 
     using const_iterator = ConstRowIterator;
     using iterator = RowIterator;
+#ifdef Q_QDOC
+    using value_type = typename Range::value_type;
+    using reference = RowReference;
+    using const_reference = ConstRowReference;
+#else
+    using value_type = std::remove_cv_t<row_type>;
+    using reference = typename iterator::reference;
+    using const_reference = typename const_iterator::reference;
+#endif
+    using size_type = int;
+    using difference_type = int;
 
     template <typename R,
               typename P,
