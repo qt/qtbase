@@ -102,6 +102,7 @@ namespace QtAndroidMenu
 
     void setMenuBar(QAndroidPlatformMenuBar *menuBar, QWindow *window)
     {
+        QMutexLocker lock(&menuBarMutex);
         if (activeTopLevelWindow == window && visibleMenuBar != menuBar) {
             visibleMenuBar = menuBar;
             resetMenuBar();
