@@ -1,5 +1,7 @@
 # QTBUG-87432
-[replaceWidget]
+[replaceWidget:visible, collapsed]
 android
-[replaceWidgetWithSplitterChild]
+[replaceWidget:visible, not collapsed]
+android
+[replaceWidgetWithSplitterChild:replace with sibling, before recalc]
 android
