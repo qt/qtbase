@@ -2834,12 +2834,10 @@ void QAbstractItemView::updateEditorGeometries()
 
     //we hide and release the editor outside of the loop because it might change the focus and try
     //to change the editors hashes.
-    for (int i = 0; i < editorsToHide.size(); ++i) {
-        editorsToHide.at(i)->hide();
-    }
-    for (int i = 0; i < editorsToRelease.size(); ++i) {
-        d->releaseEditor(editorsToRelease.at(i));
-    }
+    for (QWidget *editor : std::as_const(editorsToHide))
+        editor->hide();
+    for (QWidget *editor : std::as_const(editorsToRelease))
+        d->releaseEditor(editor);
 }
 
 /*!
@@ -4565,26 +4563,24 @@ void QAbstractItemViewPrivate::clearOrRemove()
 {
 #if QT_CONFIG(draganddrop)
     const QItemSelection selection = selectionModel->selection();
-    QList<QItemSelectionRange>::const_iterator it = selection.constBegin();
 
     if (!overwrite) {
-        for (; it != selection.constEnd(); ++it) {
-            QModelIndex parent = (*it).parent();
-            if ((*it).left() != 0)
+        for (const auto &selected : selection) {
+            if (selected.left() != 0)
                 continue;
-            if ((*it).right() != (model->columnCount(parent) - 1))
+            const QModelIndex parent = selected.parent();
+            if (selected.right() != (model->columnCount(parent) - 1))
                 continue;
-            int count = (*it).bottom() - (*it).top() + 1;
-            model->removeRows((*it).top(), count, parent);
+            int count = selected.bottom() - selected.top() + 1;
+            model->removeRows(selected.top(), count, parent);
         }
     } else {
         // we can't remove the rows so reset the items (i.e. the view is like a table)
-        QModelIndexList list = selection.indexes();
-        for (int i=0; i < list.size(); ++i) {
-            QModelIndex index = list.at(i);
+        const QModelIndexList selectedIndexes = selection.indexes();
+        for (const auto &index : selectedIndexes) {
             QMap<int, QVariant> roles = model->itemData(index);
-            for (QMap<int, QVariant>::Iterator it = roles.begin(); it != roles.end(); ++it)
-                it.value() = QVariant();
+            for (auto &val : roles)
+                val = QVariant();
             model->setItemData(index, roles);
         }
     }
@@ -4732,7 +4728,7 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
 {
     Q_Q(const QAbstractItemView);
     Q_ASSERT(r);
-    QItemViewPaintPairs paintPairs = draggablePaintPairs(indexes, r);
+    const QItemViewPaintPairs paintPairs = draggablePaintPairs(indexes, r);
     if (paintPairs.isEmpty())
         return QPixmap();
 
@@ -4748,9 +4744,9 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     QStyleOptionViewItem option;
     q->initViewItemOption(&option);
     option.state |= QStyle::State_Selected;
-    for (int j = 0; j < paintPairs.size(); ++j) {
-        option.rect = paintPairs.at(j).rect.translated(-r->topLeft());
-        const QModelIndex &current = paintPairs.at(j).index;
+    for (const auto &paintPair : paintPairs) {
+        option.rect = paintPair.rect.translated(-r->topLeft());
+        const QModelIndex &current = paintPair.index;
         adjustViewOptionsForIndex(&option, current);
         q->itemDelegateForIndex(current)->paint(&painter, option, current);
     }
@@ -4764,12 +4760,11 @@ void QAbstractItemViewPrivate::selectAll(QItemSelectionModel::SelectionFlags com
     if (!model->hasChildren(root))
         return;
 
-    QItemSelection selection;
     QModelIndex tl = model->index(0, 0, root);
     QModelIndex br = model->index(model->rowCount(root) - 1,
                                   model->columnCount(root) - 1,
                                   root);
-    selection.append(QItemSelectionRange(tl, br));
+    QItemSelection selection({ QItemSelectionRange(tl, br) });
     selectionModel->select(selection, command);
 }
 
