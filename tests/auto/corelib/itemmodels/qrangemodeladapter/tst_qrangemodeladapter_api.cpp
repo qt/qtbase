@@ -76,6 +76,7 @@ API_TEST(insertCopiesAtIterator,
 API_TEST(emplaceDefault, emplace(std::declval<typename AdapterType<Range, Protocol>::const_iterator>()))
 API_TEST(emplaceBack, emplace_back())
 API_TEST(emplaceFront, emplace_front())
+API_TEST(pushBack, push_back(std::declval<typename AdapterType<Range, Protocol>::value_type>()))
 API_TEST(removeRow, removeRow(0))
 API_TEST(removeRows, removeRows(0, 0))
 API_TEST(sort, sort())
@@ -241,6 +242,11 @@ void tst_QRangeModelAdapter::insertRow_API()
     static_assert(has_emplaceBack(d.tableOfNumbers));
     static_assert(!has_emplaceFront(d.constListOfNumbers));
     static_assert(has_emplaceFront(d.listOfMultiRoleGadgets));
+
+    static_assert(!has_pushBack(d.fixedArrayOfNumbers));
+    static_assert(!has_pushBack(d.constListOfNumbers));
+    static_assert(has_pushBack(d.vectorOfFixedColumns));
+    static_assert(has_pushBack(d.m_tree));
 }
 
 void tst_QRangeModelAdapter::indexOfCell_API()

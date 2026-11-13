@@ -1348,6 +1348,52 @@ void tst_QRangeModelAdapter::emplace()
     }
 }
 
+void tst_QRangeModelAdapter::pushBack()
+{
+    { // list
+        QList<QString> data;
+        QRangeModelAdapter adapter(&data);
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        const QString one = u"one"_s;
+        adapter.push_back(one);
+        QString two = u"two"_s;
+        adapter.push_back(std::move(two));
+        QVERIFY(two.isEmpty());
+        QCOMPARE(data, (QList<QString>{u"one"_s, u"two"_s}));
+        QCOMPARE(insertedSpy.size(), 2);
+        QCOMPARE(insertedSpy.at(1).at(1).toInt(), 1);
+
+        // use with std::back_inserter
+        const QStringList more = {u"three"_s, u"four"_s};
+        std::copy(more.begin(), more.end(), std::back_inserter(adapter));
+        QCOMPARE(data, (QList<QString>{u"one"_s, u"two"_s, u"three"_s, u"four"_s}));
+        QCOMPARE(insertedSpy.size(), 4);
+    }
+
+    { // table
+        auto data = m_data->vectorOfFixedColumns;
+        const auto oldSize = data.size();
+        QRangeModelAdapter adapter(std::ref(data));
+        adapter.push_back({6, u"six"_s});
+        QCOMPARE(data.size(), oldSize + 1);
+        QCOMPARE(std::get<QString>(data.back()), u"six"_s);
+    }
+
+    { // tree branch, move-only rows
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        auto branch = adapter.at(1).children();
+        branch.push_back(tree_row{u"2.4"_s, u"two.four"_s});
+        QCOMPARE(branch.back()->value(), u"2.4"_s);
+        QCOMPARE(tree[1].childRows()->back().parentRow(), &tree[1]);
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(insertedSpy.at(0).at(0).value<QModelIndex>(), adapter.index(1, 0));
+    }
+}
+
 void tst_QRangeModelAdapter::removeRow()
 {
     QList<int> data = {0, 1, 2, 3, 4};
