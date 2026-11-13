@@ -1394,6 +1394,45 @@ void tst_QRangeModelAdapter::pushBack()
     }
 }
 
+void tst_QRangeModelAdapter::pushFront()
+{
+    { // list
+        std::vector<QString> data;
+        QRangeModelAdapter adapter(&data);
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        const QString two = u"two"_s;
+        adapter.push_front(two);
+        QString one = u"one"_s;
+        adapter.push_front(std::move(one));
+        QVERIFY(one.isEmpty());
+        QCOMPARE(data, (std::vector<QString>{u"one"_s, u"two"_s}));
+        QCOMPARE(insertedSpy.size(), 2);
+        QCOMPARE(insertedSpy.at(1).at(1).toInt(), 0);
+
+        // use with std::front_inserter
+        const QStringList more = {u"zero"_s, u"minus one"_s};
+        std::copy(more.begin(), more.end(), std::front_inserter(adapter));
+        QCOMPARE(data, (std::vector<QString>{u"minus one"_s, u"zero"_s, u"one"_s, u"two"_s}));
+        QCOMPARE(insertedSpy.size(), 4);
+    }
+
+    { // tree branch, move-only rows
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        auto branch = adapter.at(1).children();
+        branch.push_front(tree_row{u"2.0"_s, u"two.zero"_s});
+        QCOMPARE(branch.front()->value(), u"2.0"_s);
+        QCOMPARE(branch.size(), 4);
+        QCOMPARE(tree[1].childRows()->front().parentRow(), &tree[1]);
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(insertedSpy.at(0).at(0).value<QModelIndex>(), adapter.index(1, 0));
+        QCOMPARE(insertedSpy.at(0).at(1).toInt(), 0);
+    }
+}
+
 void tst_QRangeModelAdapter::removeRow()
 {
     QList<int> data = {0, 1, 2, 3, 4};

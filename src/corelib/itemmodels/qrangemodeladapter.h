@@ -1696,6 +1696,18 @@ public:
         insert(cend(), std::move(value));
     }
 
+    template <typename I = Impl, if_canInsertRows<I> = true>
+    void push_front(const value_type &value)
+    {
+        insert(cbegin(), value);
+    }
+
+    template <typename I = Impl, if_canInsertRows<I> = true>
+    void push_front(value_type &&value)
+    {
+        insert(cbegin(), std::move(value));
+    }
+
     template <typename ...Args, typename I = Impl, if_canInsertRows<I> = true,
               if_emplaceable<Args...> = true>
     reference emplace_back(Args &&...args)

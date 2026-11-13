@@ -1218,6 +1218,29 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>> void QRangeModelAdapter<Range, Protocol, Model>::push_front(const value_type &value)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>> void QRangeModelAdapter<Range, Protocol, Model>::push_front(value_type &&value)
+    \since 6.13
+
+    Prepends \a value as a new row. This is the same as calling
+    \c{insert(cbegin(), value)}.
+
+    The model() emits the \l{QAbstractItemModel::}{rowsAboutToBeInserted()}
+    and \l{QAbstractItemModel::}{rowsInserted()} signals. If the adapter
+    operates on a tree, then the new row is prepended to the level of the
+    tree that the adapter operates on.
+
+    Provided for STL compatibility; for example, this makes it possible to use
+    \c{std::front_inserter} with a QRangeModelAdapter. Unlike the standard
+    containers, this function is available for all ranges that support
+    insertion of elements, such as \c{std::vector}.
+
+    \constraints \c Range supports insertion of elements.
+
+    \sa push_back(), emplace_front(), insert(), insertRow()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename ...Args, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_emplaceable<Args...>> QRangeModelAdapter<Range, Protocol, Model>::iterator QRangeModelAdapter<Range, Protocol, Model>::emplace(const_iterator pos, Args &&...args)
     \since 6.13
 
