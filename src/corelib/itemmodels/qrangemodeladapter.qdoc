@@ -1117,6 +1117,86 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>> QRangeModelAdapter<Range, Protocol, Model>::iterator QRangeModelAdapter<Range, Protocol, Model>::insert(const_iterator pos, const value_type &value)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>> QRangeModelAdapter<Range, Protocol, Model>::iterator QRangeModelAdapter<Range, Protocol, Model>::insert(const_iterator pos, value_type &&value)
+    \since 6.13
+
+    Inserts \a value before the row at \a pos, and returns an iterator
+    pointing to the inserted row. If \a pos is end(), then the row is appended.
+
+//! [insert-at-iterator]
+    The model() emits the \l{QAbstractItemModel::}{rowsAboutToBeInserted()}
+    and \l{QAbstractItemModel::}{rowsInserted()} signals. If the insertion
+    fails, then this function returns end().
+
+    \a pos must be a valid iterator into this adapter's rows. If the adapter
+    operates on a tree, then the rows are inserted as siblings of the row at
+    \a pos. To insert child rows, use the adapter returned by
+    \l{QRangeModelAdapter::RowReference::}{children()}.
+
+    Iterators into the adapter refer to a row number, not to an element of
+    \c Range, and the insertion doesn't invalidate them. However, after the
+    insertion, an iterator to a row at or after \a pos refers to the row that
+    now has that row number, which is a different element than before. This
+    is also the case if \c Range is a \c{std::list}.
+//! [insert-at-iterator]
+
+    \constraints \c Range supports insertion of elements.
+
+    \sa insertRow()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertCopies<I>> QRangeModelAdapter<Range, Protocol, Model>::iterator QRangeModelAdapter<Range, Protocol, Model>::insert(const_iterator pos, size_type count, const value_type &value)
+    \since 6.13
+    \overload
+
+    Inserts \a count copies of \a value before the row at \a pos, and returns
+    an iterator pointing to the first inserted row, or \a pos if \a count is 0.
+
+    \include qrangemodeladapter.qdoc insert-at-iterator
+
+    \constraints \c Range supports insertion of elements, and the row type is
+    copyable, but not a raw pointer.
+
+    \sa insertRows()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename InputIterator, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_row_iterator<InputIterator>> QRangeModelAdapter<Range, Protocol, Model>::iterator QRangeModelAdapter<Range, Protocol, Model>::insert(const_iterator pos, InputIterator first, InputIterator last)
+    \since 6.13
+    \overload
+
+    Inserts the rows in the range [\a first, \a last) before the row at \a pos,
+    and returns an iterator pointing to the first inserted row, or \a pos if the
+    range is empty.
+
+    \include qrangemodeladapter.qdoc insert-at-iterator
+
+    \constraints \c Range supports insertion of elements, and \c InputIterator
+    is a forward iterator that dereferences to a type convertible to the row
+    type.
+
+    \sa insertRows()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>> QRangeModelAdapter<Range, Protocol, Model>::iterator QRangeModelAdapter<Range, Protocol, Model>::insert(const_iterator pos, std::initializer_list<value_type> values)
+    \since 6.13
+    \overload
+
+    Inserts the rows in \a values before the row at \a pos, and returns an
+    iterator pointing to the first inserted row, or \a pos if \a values is
+    empty.
+
+    \include qrangemodeladapter.qdoc insert-at-iterator
+
+    \constraints \c Range supports insertion of elements.
+
+    \sa insertRows()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canRemoveRows<I>> bool QRangeModelAdapter<Range, Protocol, Model>::removeRow(int row)
     \overload
 

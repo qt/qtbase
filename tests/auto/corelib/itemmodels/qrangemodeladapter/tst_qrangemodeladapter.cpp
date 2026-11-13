@@ -1143,6 +1143,131 @@ void tst_QRangeModelAdapter::insertRows()
 #endif
 }
 
+void tst_QRangeModelAdapter::insertAtIterator()
+{
+    { // list, single values
+        std::vector<int> data = {1, 3};
+        QRangeModelAdapter adapter(std::ref(data));
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        auto it = adapter.insert(adapter.begin() + 1, 2);
+        QCOMPARE(it, adapter.begin() + 1);
+        QCOMPARE(*it, 2);
+        QCOMPARE(data, (std::vector<int>{1, 2, 3}));
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(insertedSpy.at(0).at(1).toInt(), 1);
+        QCOMPARE(insertedSpy.at(0).at(2).toInt(), 1);
+
+        // append, using a const_iterator
+        it = adapter.insert(adapter.cend(), 4);
+        QCOMPARE(it, adapter.end() - 1);
+        QCOMPARE(*it, 4);
+
+        // prepend, lvalue
+        const int zero = 0;
+        it = adapter.insert(adapter.cbegin(), zero);
+        QCOMPARE(it, adapter.begin());
+        QCOMPARE(data, (std::vector<int>{0, 1, 2, 3, 4}));
+        QCOMPARE(insertedSpy.size(), 3);
+    }
+
+    { // iterators refer to row numbers, not to elements
+        std::list<int> data = {1, 2, 3};
+        QRangeModelAdapter adapter(std::ref(data));
+        const auto second = adapter.cbegin() + 1;
+        const auto last = adapter.cend() - 1;
+        adapter.insert(adapter.begin(), 0);
+        QCOMPARE(*second, 1);
+        QCOMPARE(*last, 2);
+        QCOMPARE(last + 1, adapter.cend() - 1);
+        QCOMPARE(*(last + 1), 3);
+    }
+
+    { // list, count copies
+        QList<QString> data = {u"a"_s, u"d"_s};
+        QRangeModelAdapter adapter(&data);
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        auto it = adapter.insert(adapter.begin() + 1, 2, u"x"_s);
+        QCOMPARE(it, adapter.begin() + 1);
+        QCOMPARE(data, (QList<QString>{u"a"_s, u"x"_s, u"x"_s, u"d"_s}));
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(insertedSpy.at(0).at(1).toInt(), 1);
+        QCOMPARE(insertedSpy.at(0).at(2).toInt(), 2);
+
+        // inserting no copies doesn't emit signals
+        it = adapter.insert(adapter.begin() + 1, 0, u"y"_s);
+        QCOMPARE(it, adapter.begin() + 1);
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(data.size(), 4);
+    }
+
+    { // list, count copies with count and value of the same type
+        std::vector<int> data = {0, 3};
+        QRangeModelAdapter adapter(std::ref(data));
+        auto it = adapter.insert(adapter.cbegin() + 1, 2, 7);
+        QCOMPARE(it, adapter.begin() + 1);
+        QCOMPARE(data, (std::vector<int>{0, 7, 7, 3}));
+    }
+
+    { // list, iterator range and initializer_list
+        std::list<int> data = {0, 5};
+        QRangeModelAdapter adapter(&data);
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        const std::vector<int> values = {1, 2};
+        auto it = adapter.insert(adapter.begin() + 1, values.begin(), values.end());
+        QCOMPARE(it, adapter.begin() + 1);
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(insertedSpy.at(0).at(1).toInt(), 1);
+        QCOMPARE(insertedSpy.at(0).at(2).toInt(), 2);
+
+        it = adapter.insert(adapter.begin() + 3, {3, 4});
+        QCOMPARE(it, adapter.begin() + 3);
+        QCOMPARE(insertedSpy.size(), 2);
+        QCOMPARE(data, (std::list<int>{0, 1, 2, 3, 4, 5}));
+
+        // inserting an empty range doesn't emit signals
+        it = adapter.insert(adapter.end(), values.end(), values.end());
+        QCOMPARE(it, adapter.end());
+        QCOMPARE(insertedSpy.size(), 2);
+    }
+
+    { // table, moving in a row
+        auto data = m_data->vectorOfFixedColumns;
+        const auto oldSize = data.size();
+        QRangeModelAdapter adapter(std::ref(data));
+
+        std::tuple<int, QString> row = {6, u"six"_s};
+        auto it = adapter.insert(adapter.begin(), std::move(row));
+        QCOMPARE(it, adapter.begin());
+        QVERIFY(std::get<QString>(row).isEmpty());
+        QCOMPARE(data.size(), oldSize + 1);
+        QCOMPARE(std::get<QString>(data.front()), u"six"_s);
+    }
+
+    { // tree, insert into a branch through the children() adapter
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+        QSignalSpy insertedSpy(adapter.model(), &QAbstractItemModel::rowsInserted);
+
+        auto branch = adapter.at(1).children();
+        auto it = branch.insert(branch.begin() + 1, tree_row{u"2.x"_s, u"two.x"_s});
+        QCOMPARE((*it)->value(), u"2.x"_s);
+        QCOMPARE(branch.size(), 4);
+        QCOMPARE(insertedSpy.size(), 1);
+        QCOMPARE(insertedSpy.at(0).at(0).value<QModelIndex>(), adapter.index(1, 0));
+        QCOMPARE(insertedSpy.at(0).at(1).toInt(), 1);
+        QCOMPARE(tree[1].childRows()->at(1).parentRow(), &tree[1]);
+
+        it = adapter.insert(adapter.cend(), tree_row{u"6"_s, u"six"_s});
+        QCOMPARE(it, adapter.end() - 1);
+        QCOMPARE(adapter.back()->value(), u"6"_s);
+        QCOMPARE(insertedSpy.size(), 2);
+        QVERIFY(!insertedSpy.at(1).at(0).value<QModelIndex>().isValid());
+    }
+}
+
 void tst_QRangeModelAdapter::removeRow()
 {
     QList<int> data = {0, 1, 2, 3, 4};

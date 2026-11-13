@@ -102,6 +102,21 @@ class QT_TECH_PREVIEW_API QRangeModelAdapter
     template <typename R>
     using if_assignable_range = std::enable_if_t<std::is_assignable_v<range_type, R>, bool>;
 
+    template <typename It>
+    static constexpr bool is_compatible_row_iterator
+        = QRangeModelDetails::is_compatible_forward_iterator<It, const_row_reference>::value;
+    template <typename It>
+    using if_compatible_row_iterator = std::enable_if_t<is_compatible_row_iterator<It>, bool>;
+
+    // Inserting count copies of a raw pointer row would leave the model with
+    // multiple owning pointers to the same row.
+    template <typename I> static constexpr bool canInsertCopies = I::canInsertRows()
+                                                                && range_features::has_insert
+                                                                && std::is_copy_constructible_v<row_type>
+                                                                && !std::is_pointer_v<row_type>;
+    template <typename I>
+    using if_canInsertCopies = std::enable_if_t<canInsertCopies<I>, bool>;
+
     friend class QRangeModel;
     template <typename T>
     static constexpr bool is_adapter = QRangeModelDetails::is_any_of<q20::remove_cvref_t<T>,
@@ -965,6 +980,7 @@ public:
         }
 
     protected:
+        friend class QRangeModelAdapter;
         ~RowIteratorBase() = default;
         int m_row = -1;
         Adapter *m_adapter = nullptr;
@@ -1606,6 +1622,48 @@ public:
         return insertRowsImpl(before, parent, std::forward<C>(data));
     }
 
+    template <typename I = Impl, if_canInsertRows<I> = true>
+    iterator insert(const_iterator pos, const value_type &value)
+    {
+        return insertAt(pos, 1, [this, &value](int row) {
+            return insertRowImpl(row, storage.root(), value);
+        });
+    }
+
+    template <typename I = Impl, if_canInsertRows<I> = true>
+    iterator insert(const_iterator pos, value_type &&value)
+    {
+        return insertAt(pos, 1, [this, &value](int row) {
+            return insertRowImpl(row, storage.root(), std::move(value));
+        });
+    }
+
+    template <typename I = Impl, if_canInsertCopies<I> = true>
+    iterator insert(const_iterator pos, size_type count, const value_type &value)
+    {
+        return insertAt(pos, count, [this, count, &value](int row) {
+            return insertCopiesImpl(row, count, storage.root(), value);
+        });
+    }
+
+    template <typename InputIterator, typename I = Impl, if_canInsertRows<I> = true,
+              if_compatible_row_iterator<InputIterator> = true>
+    iterator insert(const_iterator pos, InputIterator first, InputIterator last)
+    {
+        const QRangeModelDetails::IteratorRange<InputIterator> range{first, last};
+        return insertAt(pos, q26::saturating_cast<int>(range.size()), [this, &range](int row) {
+            return insertRowsImpl(row, storage.root(), range);
+        });
+    }
+
+    template <typename I = Impl, if_canInsertRows<I> = true>
+    iterator insert(const_iterator pos, std::initializer_list<value_type> values)
+    {
+        return insertAt(pos, int(values.size()), [this, &values](int row) {
+            return insertRowsImpl(row, storage.root(), values);
+        });
+    }
+
     template <typename I = Impl, if_canRemoveRows<I> = true>
     bool removeRow(int row)
     {
@@ -1845,6 +1903,39 @@ private:
     {
         static_assert(!protocol_traits::has_setParentRow,
                       "Internal error, wrong setParentRow overload called");
+    }
+
+    template <typename Inserter>
+    iterator insertAt(const_iterator pos, int count, Inserter &&inserter)
+    {
+        Q_PRE(pos.m_adapter && pos.m_adapter->model() == model());
+        Q_PRE(pos.root() == storage.root());
+        const int row = pos.m_row;
+        Q_PRE(row >= 0 && row <= rowCount());
+        if (count > 0 && !std::forward<Inserter>(inserter)(row))
+            return end();
+        return iterator{row, storage.root(), this};
+    }
+
+    bool insertCopiesImpl(int before, int count, const QModelIndex &parent,
+                          const row_type &value)
+    {
+        return storage->doInsertRows(before, count, parent, [&value, this]
+                                     (range_type &range, auto *parentRow, int row, int n) {
+            Q_UNUSED(parentRow);
+            Q_UNUSED(this);
+            const auto oldSize = range.size();
+            auto newRow = range.insert(QRangeModelDetails::pos(range, row), n, value);
+            if constexpr (protocol_traits::has_setParentRow) {
+                for (int i = 0; i < n; ++i, ++newRow) {
+                    setParentRow(storage->protocol(), QRangeModelDetails::refTo(*newRow),
+                                 QRangeModelDetails::pointerTo(parentRow));
+                }
+            } else {
+                Q_UNUSED(newRow);
+            }
+            return range.size() == oldSize + n;
+        });
     }
 
     template <typename D>

@@ -381,6 +381,35 @@ static inline Type dataAtIndex(const QModelIndex &index, int role)
         return variant.value<Type>();
 }
 
+// Whether It is a forward iterator that dereferences to something convertible
+// to Reference. SFINAE-friendly for types that are not iterators, e.g. when
+// called with insert(pos, int, int).
+template <typename It, typename Reference, typename = void>
+struct is_compatible_forward_iterator : std::false_type {};
+
+template <typename It, typename Reference>
+struct is_compatible_forward_iterator<It, Reference,
+            std::void_t<typename std::iterator_traits<It>::iterator_category,
+                        typename std::iterator_traits<It>::reference>>
+    : std::conjunction<
+        std::is_base_of<std::forward_iterator_tag,
+                        typename std::iterator_traits<It>::iterator_category>,
+        std::is_convertible<typename std::iterator_traits<It>::reference, Reference>
+      >
+{};
+
+// A minimal range over an iterator pair, so that we can reuse the helpers
+// that operate on ranges.
+template <typename It>
+struct IteratorRange
+{
+    It first;
+    It last;
+    It begin() const { return first; }
+    It end() const { return last; }
+    std::size_t size() const { return std::size_t(std::distance(first, last)); }
+};
+
 template <bool isTree = false>
 struct ParentIndex
 {
