@@ -197,6 +197,7 @@ void tst_inputcontext::selectingTextInputProtocol()
 void tst_inputcontext::inputContextReconfigurationWhenTogglingTextInputExtension()
 {
     qunsetenv("QT_IM_MODULE");
+    qunsetenv("QT_IM_MODULES");
 
     ensurePresentOnCompositor<TextInputManager>();
     int argc = 0;
