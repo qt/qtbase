@@ -388,14 +388,20 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
     // view system never lays out an intermediate state. Guarded by this.
     private int m_x, m_y, m_width, m_height;
     private boolean m_visible;
-    private boolean m_needsSurface, m_surfaceOnTop, m_surfaceOpaque;
+    private boolean m_needsSurface, m_surfaceOnTop, m_surfaceOpaque, m_surfaceConfigChanged;
     private int m_surfaceContainerType;
     private final Runnable m_applyUpdate = this::applyUpdate;
+    private boolean m_surfaceContainerShown;
 
     @UsedFromNativeCode
     void configureSurface(boolean onTop, boolean isOpaque, int containerType)
     {
         synchronized (this) {
+            final boolean configDiffers = onTop != m_surfaceOnTop || isOpaque != m_surfaceOpaque
+                    || containerType != m_surfaceContainerType;
+            // First call has no previous config to compare against
+            if (m_needsSurface && configDiffers)
+                m_surfaceConfigChanged = true;
             m_needsSurface = true;
             m_surfaceOnTop = onTop;
             m_surfaceOpaque = isOpaque;
@@ -420,8 +426,10 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
     private void applyUpdate()
     {
         final int x, y, width, height, containerType;
-        final boolean visible, needsSurface, onTop, isOpaque;
+        final boolean visible, needsSurface, onTop, isOpaque, configChanged;
         synchronized (this) {
+            configChanged = m_surfaceConfigChanged;
+            m_surfaceConfigChanged = false;
             x = m_x;
             y = m_y;
             width = m_width;
@@ -434,11 +442,19 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         }
         if (getContext() instanceof QtActivityBase && !hasLayoutGeometry(x, y, width, height))
             setLayoutParams(new QtLayout.LayoutParams(width, height, x, y));
+        // Settings applied at show time, as before the container was attached early.
+        if (configChanged && m_surfaceContainer != null && !m_surfaceContainerShown) {
+            removeView(m_surfaceContainer);
+            m_surfaceContainer = null;
+        }
         // Added after the geometry, so the first Surface has the final size.
-        if (visible && needsSurface && m_surfaceContainer == null)
+        // Hidden until shown, so it creates no Surface early.
+        if (needsSurface && m_surfaceContainer == null)
             addSurfaceContainer(onTop, isOpaque, containerType);
         final boolean shown = visible && getVisibility() != View.VISIBLE;
         setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+        if (visible && m_surfaceContainer != null)
+            m_surfaceContainerShown = true;
         // A hidden view reports nothing, so report once when shown.
         if (shown)
             requestLayout();
@@ -460,6 +476,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
             m_surfaceContainer = new QtTextureView(getContext(), QtWindow.this, isOpaque);
         m_surfaceContainer.setLayoutParams(new QtLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        m_surfaceContainerShown = false;
         // The surface container of this window will be added as the first of the stack.
         // All other views are stacked based on the order they are created.
         addView(m_surfaceContainer, 0);

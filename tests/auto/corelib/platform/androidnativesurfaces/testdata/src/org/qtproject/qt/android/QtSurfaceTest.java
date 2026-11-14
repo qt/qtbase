@@ -9,6 +9,7 @@ import android.graphics.PixelFormat;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -240,6 +241,31 @@ public final class QtSurfaceTest
             return "A destroyed Surface kept its prime";
         if (unconsumed.getBoolean(view))
             return "A destroyed Surface left a prime for the next redraw";
+        return "";
+    }
+
+    public static String surfaceConfigBeforeShow(Context context)
+            throws ReflectiveOperationException
+    {
+        Window window = new Window(context);
+        final Field container = field(QtWindow.class, "m_surfaceContainer");
+        final Method apply = method(QtWindow.class, "applyUpdate");
+        window.configureSurface(false, true, 1);
+        window.updateWindow(0, 0, 64, 64, false);
+        apply.invoke(window);
+        final View hidden = (View) container.get(window);
+        if (!(hidden instanceof TextureView) || !((TextureView) hidden).isOpaque())
+            return "A hidden window did not attach its configured container";
+        window.configureSurface(false, false, 1);
+        window.updateWindow(0, 0, 64, 64, true);
+        apply.invoke(window);
+        final View shown = (View) container.get(window);
+        if (!(shown instanceof TextureView) || ((TextureView) shown).isOpaque())
+            return "Showing kept a container with settings from before the show";
+        window.configureSurface(false, true, 1);
+        apply.invoke(window);
+        if (container.get(window) != shown)
+            return "A shown container was rebuilt";
         return "";
     }
 
