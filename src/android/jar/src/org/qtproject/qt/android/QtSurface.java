@@ -28,6 +28,7 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
     private final int m_format;
     private final QtSurfaceInterface m_surfaceCallback;
     private boolean m_backgroundPrimed = false;
+    private boolean m_primeUnconsumed = false;
     private SurfaceControl m_renderControl;
     private Surface m_renderSurface;
 
@@ -47,11 +48,14 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
-        // Prime before Qt gets the Surface so the two producers never collide.
+        // A shared producer must be primed before Qt gets the Surface. With a
+        // separate render Surface, priming follows the callback so Qt's own GPU
+        // setup starts without waiting for it.
         final Rect frame = holder.getSurfaceFrame();
-        m_backgroundPrimed = frame != null && frame.width() > 0 && frame.height() > 0
-                && paintBackgroundColor(holder.getSurface());
-        if (Build.VERSION.SDK_INT >= 29) {
+        final boolean canPrime = frame != null && frame.width() > 0 && frame.height() > 0;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && canPrime)
+            m_backgroundPrimed = paintBackgroundColor(holder.getSurface());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // The holder forcibly disconnects its queue when this view disappears.
             final SurfaceControl control = new SurfaceControl.Builder()
                     .setName("QtSurface")
@@ -73,6 +77,8 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
         if (m_surfaceCallback != null)
             m_surfaceCallback.onSurfaceCreated(
                 m_renderSurface != null ? m_renderSurface : holder.getSurface());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && canPrime)
+            m_backgroundPrimed = m_primeUnconsumed = paintBackgroundColor(holder.getSurface());
     }
 
     private void initializeRenderSurface(SurfaceControl control, Surface surface)
@@ -101,7 +107,7 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
         }
         // Only an independent holder can be primed after Qt has its producer.
         if (!m_backgroundPrimed && m_renderSurface != null && width > 0 && height > 0)
-            m_backgroundPrimed = paintBackgroundColor(holder.getSurface());
+            m_backgroundPrimed = m_primeUnconsumed = paintBackgroundColor(holder.getSurface());
     }
 
     @Override
@@ -114,8 +120,12 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
     public void surfaceRedrawNeededAsync(SurfaceHolder holder, Runnable drawingFinished)
     {
         // SurfaceView's redraw synchronization still consumes a holder buffer.
-        if (m_renderSurface != null)
-            paintBackgroundColor(holder.getSurface());
+        if (m_renderSurface != null) {
+            if (m_primeUnconsumed)
+                m_primeUnconsumed = false;
+            else
+                paintBackgroundColor(holder.getSurface());
+        }
         if (m_surfaceCallback != null)
             m_surfaceCallback.onSurfaceRedrawNeeded(drawingFinished);
         else
@@ -125,6 +135,8 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
+        // The next Surface has fresh buffers, so it needs its own prime.
+        m_backgroundPrimed = m_primeUnconsumed = false;
         final Surface surface = m_renderSurface;
         final SurfaceControl control = m_renderControl;
         m_renderSurface = null;
