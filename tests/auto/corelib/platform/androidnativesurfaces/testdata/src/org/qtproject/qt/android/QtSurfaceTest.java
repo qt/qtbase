@@ -228,6 +228,21 @@ public final class QtSurfaceTest
                 ? "A failed buffer submission was marked primed" : "";
     }
 
+    public static String primeResetOnDestroy(Context context) throws ReflectiveOperationException
+    {
+        QtSurface view = new QtSurface(context, null, false, 32);
+        final Field primed = field(QtSurface.class, "m_backgroundPrimed");
+        final Field unconsumed = field(QtSurface.class, "m_primeUnconsumed");
+        primed.setBoolean(view, true);
+        unconsumed.setBoolean(view, true);
+        view.surfaceDestroyed(view.getHolder());
+        if (primed.getBoolean(view))
+            return "A destroyed Surface kept its prime";
+        if (unconsumed.getBoolean(view))
+            return "A destroyed Surface left a prime for the next redraw";
+        return "";
+    }
+
     public static String failedDetach(Context context) throws ReflectiveOperationException
     {
         return failedDetach(context, false);
