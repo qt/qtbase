@@ -338,6 +338,7 @@ void tst_AndroidNativeSurfaces::surfaceFailureHandling_data()
     QTest::newRow("completion-accounting") << QByteArray("retirementAccounting");
     QTest::newRow("removal-and-release-errors") << QByteArray("retirementRemovalFailure");
     QTest::newRow("prime-reset-on-destroy") << QByteArray("primeResetOnDestroy");
+    QTest::newRow("surface-config-before-show") << QByteArray("surfaceConfigBeforeShow");
 }
 
 // Checks that failures preserve exception details and complete every release once.

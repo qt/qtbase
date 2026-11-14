@@ -102,6 +102,13 @@ void QAndroidPlatformWindow::initialize()
     }
     qCDebug(lcQpaWindow) << "Window" << m_nativeViewId << "using surface container type"
                          << static_cast<int>(m_surfaceContainerType);
+
+    // Attach the container now so showing the window needs no extra layout pass.
+    m_nativeQtWindow.callMethod<void>(
+            "configureSurface", bool(window->flags() & Qt::WindowStaysOnTopHint),
+            !format().hasAlpha() && qFuzzyCompare(window->opacity(), qreal(1.0)),
+            m_surfaceContainerType);
+    updateNativeWindow(window->isVisible());
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
