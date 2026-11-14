@@ -54,3 +54,8 @@ qt_internal_extend_target(tst_qwindow CONDITION WIN32
     LIBRARIES
         dwmapi
 )
+
+qt_internal_extend_target(tst_qwindow CONDITION OHOS
+    LIBRARIES
+        ace_napi.z
+)

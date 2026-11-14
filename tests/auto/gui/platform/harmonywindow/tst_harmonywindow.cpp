@@ -27,17 +27,6 @@ using namespace std::chrono_literals;
 // Stays below the HarmonyOS app-freeze limit for a blocked JS thread.
 constexpr auto jsThreadBlockTimeout = 3s;
 
-napi_value callJsMethod(napi_env env, napi_value objectValue, const char *name)
-{
-    const auto functionValue = getJsProperty(env, objectValue, name);
-    if (jsTypeOf(env, functionValue) != napi_function)
-        return nullptr;
-
-    napi_value resultValue = nullptr;
-    checkNapiStatus(napi_call_function(env, objectValue, functionValue, 0, nullptr, &resultValue), "napi_call_function");
-    return resultValue;
-}
-
 std::optional<double> getJsWindowId(napi_env env, napi_value windowValue)
 {
     const auto idValue = getJsProperty(env, callJsMethod(env, windowValue, "getWindowProperties"), "id");

@@ -30,6 +30,10 @@
 
 #include <QtWidgets/private/qapplication_p.h>
 
+#if defined(Q_OS_HARMONY)
+#  include "../../../../shared/harmonywindowtestutils.h"
+#endif
+
 using namespace QTestPrivate;
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
@@ -105,6 +109,9 @@ private slots:
 
     void setWindowState_data();
     void setWindowState();
+#if defined(Q_OS_HARMONY)
+    void moveRejectedForMaximizedWidget();
+#endif
 
     void nativeShow();
 
@@ -1444,6 +1451,44 @@ void tst_QWidget_window::setWindowState()
     QCOMPARE(w.windowState(), state | Qt::WindowMinimized);
     QCOMPARE(w.windowHandle()->windowStates(), state | Qt::WindowMinimized);
 }
+
+#if defined(Q_OS_HARMONY)
+// QTBUG-151384: QWidget drops Maximized on move() and gets it back only from a reported state,
+// so the plugin must report the state when the system rejects the move of a maximized window.
+void tst_QWidget_window::moveRejectedForMaximizedWidget()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("ohos"), Qt::CaseInsensitive))
+        QSKIP("HarmonyOS-specific test");
+
+    QWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.setGeometry(QRect(QPoint(80, 80), m_testWidgetSize));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    auto *harmonyWindow = widget.windowHandle()->nativeInterface<QNativeInterface::QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto optInFreeWindowMode = QTestHarmony::tryFetchJsWindowIsInFreeWindowMode(harmonyWindow->jsWindow());
+    QVERIFY(optInFreeWindowMode);
+    if (!*optInFreeWindowMode)
+        QSKIP("Runs only in free window mode, in which main windows can float");
+    QCOMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    QTestHarmony::WindowStateReportCounter stateReportCounter(widget.windowHandle());
+    widget.showMaximized();
+    // The system's own report would otherwise restore the state after the move.
+    QTRY_COMPARE(stateReportCounter.maximizedReportCount(), 1);
+
+    widget.move(widget.pos() + QPoint(50, 50));
+    QVERIFY(!widget.windowState().testFlag(Qt::WindowMaximized));
+    QEXPECT_FAIL("", "QTBUG-151384: no window state is reported after a rejected move", Abort);
+    QTRY_VERIFY(widget.windowState().testFlag(Qt::WindowMaximized));
+
+    widget.showNormal();
+    QTRY_COMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    QTestHarmony::verifyNoNapiCallFailures();
+}
+#endif
 
 void tst_QWidget_window::nativeShow()
 {

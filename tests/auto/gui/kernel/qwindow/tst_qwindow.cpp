@@ -23,6 +23,8 @@
 #  include <QtCore/qregularexpression.h>
 #  include <QtCore/qscopeguard.h>
 #  include <dwmapi.h>
+#elif defined(Q_OS_HARMONY)
+#  include "../../../../shared/harmonywindowtestutils.h"
 #endif
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
@@ -68,6 +70,9 @@ private slots:
     void activateTopLevelOnClickWhenFocusInDescendant();
     void framelessMaximizeWindowStateSync();
     void darkFrameAfterReparentToTopLevel();
+#endif
+#if defined(Q_OS_HARMONY)
+    void setGeometryRejectedForMaximizedWindow();
 #endif
     void testInputEvents();
     void touchToMouseTranslation();
@@ -1295,6 +1300,46 @@ void tst_QWindow::darkFrameAfterReparentToTopLevel()
 
     child.setParent(&parent);
     QVERIFY(QTest::qWaitForWindowExposed(&child));
+}
+#endif
+
+#if defined(Q_OS_HARMONY)
+// QTBUG-151625: the system rejects a geometry update of a window that isn't floating.
+// QWindow must then get the actual geometry back instead of keeping the requested one.
+void tst_QWindow::setGeometryRejectedForMaximizedWindow()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("ohos"), Qt::CaseInsensitive))
+        QSKIP("HarmonyOS-specific test");
+
+    QWindow window;
+    window.setTitle(QLatin1String(QTest::currentTestFunction()));
+    window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    auto *harmonyWindow = window.nativeInterface<QNativeInterface::QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto optInFreeWindowMode = QTestHarmony::tryFetchJsWindowIsInFreeWindowMode(harmonyWindow->jsWindow());
+    QVERIFY(optInFreeWindowMode);
+    if (!*optInFreeWindowMode)
+        QSKIP("Runs only in free window mode, in which main windows can float");
+    QCOMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    QTestHarmony::WindowStateReportCounter stateReportCounter(&window);
+    const auto floatingSize = window.geometry().size();
+    window.showMaximized();
+    QTRY_COMPARE(stateReportCounter.maximizedReportCount(), 1);
+    // The maximized geometry arrives up to a few hundred milliseconds after the state.
+    QTRY_VERIFY(window.geometry().size() != floatingSize);
+    // The system's own rect change for the maximize can arrive after the geometry, and the
+    // report it causes would hide a missing report of the rejected update.
+    QTest::qWait(500);
+    const auto maximizedGeometry = window.geometry();
+
+    window.setGeometry(QRect(m_availableTopLeft + QPoint(130, 130), m_testWindowSize / 2));
+    QEXPECT_FAIL("", "QTBUG-151625: a rejected geometry update isn't reported back", Continue);
+    QTRY_COMPARE(window.geometry(), maximizedGeometry);
+
+    QTestHarmony::verifyNoNapiCallFailures();
 }
 #endif
 

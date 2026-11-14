@@ -23,3 +23,8 @@ qt_internal_add_test(tst_qwidget_window
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+qt_internal_extend_target(tst_qwidget_window CONDITION OHOS
+    LIBRARIES
+        ace_napi.z
+)
