@@ -358,15 +358,17 @@ void tst_QStackedLayout::widgetAdded()
     QSignalSpy addSpy(&stackedLayout, &QStackedLayout::widgetAdded);
     QVERIFY(addSpy.isValid());
 
-    stackedLayout.addWidget(new QWidget);
+    QWidget widgets[3];
+
+    stackedLayout.addWidget(&widgets[0]);
     QCOMPARE(addSpy.count(), 1);
     QCOMPARE(addSpy.at(0).at(0).toInt(), 0);
 
-    stackedLayout.insertWidget(1, new QWidget);
+    stackedLayout.insertWidget(1, &widgets[1]);
     QCOMPARE(addSpy.count(), 2);
     QCOMPARE(addSpy.at(1).at(0).toInt(), 1);
 
-    stackedLayout.insertWidget(100, new QWidget);
+    stackedLayout.insertWidget(100, &widgets[2]);
     QCOMPARE(addSpy.count(), 3);
     QCOMPARE(addSpy.at(2).at(0).toInt(), 2);
 }
