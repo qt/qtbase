@@ -102,7 +102,7 @@ constexpr const char *qtMainThreadStackSizeEnvVariableName = "IO__QT__OHOS__QT_M
 
 constexpr std::size_t defaultQtThreadStackSize = 8 * 1024 * 1024;
 
-constexpr auto minSupportedOhosSdkApiVersion = 23;
+constexpr auto minSupportedOhosSdkApiVersion = 26;
 constexpr auto defaultColorMode = QtOhosQpa::enums::ohos::app::ability::ConfigurationConstant::ColorMode::COLOR_MODE_NOT_SET;
 
 std::atomic<bool> experimentalEnableGlBackinStore{false};
