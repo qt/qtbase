@@ -15,6 +15,7 @@ qt_internal_add_test(tst_qfontcombobox
     SOURCES
         tst_qfontcombobox.cpp
     LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
 )
