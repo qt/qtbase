@@ -550,8 +550,8 @@ void tst_QLayout::setupDataSizeConstraint()
     };
 
     for (auto c : constraints) {
-        const QString desc = QLatin1String("Constraint_") + QTest::toString(c);
-        QTest::addRow("%s", qPrintable(desc)) << c;
+        const std::unique_ptr<char[]> desc{QTest::toString(c)};
+        QTest::addRow("Constraint_%s", desc.get()) << c;
     }
 }
 
