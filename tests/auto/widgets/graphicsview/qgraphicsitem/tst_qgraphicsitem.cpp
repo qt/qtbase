@@ -3260,7 +3260,7 @@ void tst_QGraphicsItem::graphicsitem_cast()
 
     // and some casts that _should_ fail:
     QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsEllipseItem *>(&pathItem),
-                dynamic_cast<QGraphicsEllipseItem *>(&pathItem));
+                nullptr);
     QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsTextItem *>(pPolygonItem),
                 dynamic_cast<const QGraphicsTextItem *>(pPolygonItem));
 
