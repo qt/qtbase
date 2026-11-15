@@ -2697,8 +2697,10 @@ void QWindows11Style::polish(QWidget* widget)
         if (scrollarea->frameShape() == QFrame::StyledPanel) {
             const auto vp = scrollarea->viewport();
             const bool isAutoFillBackground = vp->autoFillBackground();
-            vp->setProperty("_q_original_autofill_background", isAutoFillBackground);
-            vp->setAutoFillBackground(false);
+            if (isAutoFillBackground) {
+                vp->setProperty("_q_original_autofill_background", isAutoFillBackground);
+                vp->setAutoFillBackground(false);
+            }
         }
     } else if (auto table = qobject_cast<QTableView *>(widget)) {
         // QTreeView & QListView are already set in the base windowsvista style
@@ -2745,9 +2747,12 @@ void QWindows11Style::unpolish(QWidget *widget)
 #endif
         ) {
         const auto vp = scrollarea->viewport();
-        const auto wasAutoFillBackground = vp->property("_q_original_autofill_background").toBool();
-        vp->setAutoFillBackground(wasAutoFillBackground);
-        vp->setProperty("_q_original_autofill_background", QVariant());
+        const auto propertyVal = vp->property("_q_original_autofill_background");
+        if (!propertyVal.isNull()) {
+            const auto wasAutoFillBackground = propertyVal.toBool();
+            vp->setAutoFillBackground(wasAutoFillBackground);
+            vp->setProperty("_q_original_autofill_background", QVariant());
+        }
     }
     dwmSetWindowCornerPreference(widget, false);
 }
