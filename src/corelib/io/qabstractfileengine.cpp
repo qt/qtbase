@@ -986,6 +986,12 @@ QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
     Reimplement this function in a subclass to advance the iterator.
 */
 
+QAbstractFileEngine::IteratorUniquePtr
+QAbstractFileEngine::endEntryList()
+{
+    return {};
+}
+
 /*!
     Returns a QAbstractFileEngine::IteratorUniquePtr, that can be used
     to iterate over the entries in \a path, using \a filters for entry
