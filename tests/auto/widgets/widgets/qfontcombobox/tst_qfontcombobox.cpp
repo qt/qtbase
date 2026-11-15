@@ -8,6 +8,12 @@
 
 #include <qfontcombobox.h>
 
+#include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/qstringlistmodel.h>
+#include <QtCore/private/qcoreapplication_p.h>
+
+using namespace Qt::StringLiterals;
+
 class tst_QFontComboBox : public QObject
 {
     Q_OBJECT
@@ -25,6 +31,7 @@ private slots:
     void writingSystem_data();
     void writingSystem();
     void currentFontChanged();
+    void ignoresFontDatabaseChangesWhileAppIsClosingDown_QTBUG_98099();
     void emptyFont();
 };
 
@@ -237,21 +244,44 @@ void tst_QFontComboBox::writingSystem()
 // protected void currentFontChanged(QFont const& f)
 void tst_QFontComboBox::currentFontChanged()
 {
-    // The absence of this file does not affect the test results
-    QFontDatabase::addApplicationFont("ArianaVioleta-dz2K.ttf");
+    SubQFontComboBox box;
+    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont)));
 
-    SubQFontComboBox *box = new SubQFontComboBox;
-    QSignalSpy spy0(box, SIGNAL(currentFontChanged(QFont)));
-
-    if (box->model()->rowCount() > 2) {
-        QTest::keyPress(box, Qt::Key_Down);
+    if (box.model()->rowCount() > 2) {
+        QTest::keyPress(&box, Qt::Key_Down);
         QCOMPARE(spy0.size(), 1);
 
         QFont f( "Sans Serif" );
-        box->setCurrentFont(f);
+        box.setCurrentFont(f);
         QCOMPARE(spy0.size(), 2);
     } else
         qWarning("Not enough fonts installed on test system. Consider adding some");
+}
+
+void tst_QFontComboBox::ignoresFontDatabaseChangesWhileAppIsClosingDown_QTBUG_98099()
+{
+    QFontComboBox box;
+    auto *model = qobject_cast<QStringListModel *>(box.model());
+    QVERIFY(model);
+
+    // A list no font database would ever produce, so we can tell whether
+    // _q_updateModel() ran:
+    const QStringList sentinel = {u"QTBUG-98099"_s};
+
+    // sanity check: outside of shutdown, the combobox _does_ react
+    model->setStringList(sentinel);
+    emit qApp->fontDatabaseChanged();
+    QCOMPARE_NE(model->stringList(), sentinel);
+
+    {
+        const QScopedValueRollback closing(QCoreApplicationPrivate::is_app_closing, true);
+        QVERIFY(QCoreApplication::closingDown());
+
+        model->setStringList(sentinel);
+        emit qApp->fontDatabaseChanged();
+        QCOMPARE(model->stringList(), sentinel);
+    }
+    QVERIFY(!QCoreApplication::closingDown());
 }
 
 void tst_QFontComboBox::emptyFont()
