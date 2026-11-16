@@ -215,11 +215,14 @@ public:
     std::optional<bool> isFocused() const;
 
     QArkUi::WindowProperties getWindowProperties() const;
-    void setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks> receiver);
+    void setWindowCallbackReceiver(
+        std::unique_ptr<WindowCallbacks> receiver, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setNonClientAreaMouseWindowCallbackReceiver(
-        QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaMouseEvent>> mouseEventBatchConsumer);
+        QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaMouseEvent>> mouseEventBatchConsumer,
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setNonClientAreaTouchWindowCallbackReceiver(
-        QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaTouchEvent>> touchEventBatchConsumer);
+        QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaTouchEvent>> touchEventBatchConsumer,
+        JsCallBatch &jsCallBatch = JsCallBatch::immediate());
 
     std::shared_ptr<QOhosWindowProxy> createSubWindow(const SubWindowCreateInfo &createInfo);
 
