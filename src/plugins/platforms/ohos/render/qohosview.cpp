@@ -515,6 +515,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
     }
 
     if (result != nullptr) {
+        JsCallBatch jsCallBatch(Q_FUNC_INFO);
+
         auto viewPtr = QPointer<QOhosView>(this);
         std::weak_ptr<QOhosWindowProxy> weakWindowProxy = result;
         auto shouldEmitSignalPredicate = [weakWindowProxy](QOhosView &view) {
@@ -536,7 +538,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
                     .onWindowDisplayIdChange = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowDisplayIdChanged),
                     .onWindowResizeRejected = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowResizeRejected),
                     .onWindowMoveRejected = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowMoveRejected),
-                }));
+                }),
+            jsCallBatch);
 
         result->setNonClientAreaMouseWindowCallbackReceiver(
             this,
@@ -545,7 +548,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
                     auto *inputEventHandler = QOhosPlatformIntegration::instance()->inputMethodEventHandler();
                     inputEventHandler->onNonClientAreaMouseEvents(viewPtr->m_ownerWindow, std::move(batch));
                 }
-            });
+            },
+            jsCallBatch);
 
         result->setNonClientAreaTouchWindowCallbackReceiver(
             this,
@@ -554,7 +558,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
                     auto *inputEventHandler = QOhosPlatformIntegration::instance()->inputMethodEventHandler();
                     inputEventHandler->onNonClientAreaTouchEvents(viewPtr->m_ownerWindow, std::move(batch));
                 }
-            });
+            },
+            jsCallBatch);
 
         if (result->qtIsMainWindow() && result->isFocused().value_or(false)) {
             // HACK
