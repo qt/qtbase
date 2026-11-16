@@ -3369,11 +3369,11 @@ void tst_QGraphicsGridLayout::stretchAndHeightForWidth()
 
     QApplication::sendPostedEvents();
     QGraphicsScene scene;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    QGraphicsView view(&scene);
 
     scene.addItem(widget);
 
-    view->show();
+    view.show();
 
     widget->resize(500, 100);
     // w1 should stay at its preferred size
