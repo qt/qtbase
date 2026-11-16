@@ -3472,8 +3472,8 @@ static void setRetainSizeWhenHidden(bool retainSize, QGraphicsWidget **widgets)
 
 void tst_QGraphicsGridLayout::hiddenItems()
 {
-    QGraphicsWidget *widget = new QGraphicsWidget;
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(widget);
+    QGraphicsWidget widget;
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(&widget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(2);
 
