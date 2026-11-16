@@ -1514,7 +1514,7 @@ void tst_QGraphicsLinearLayout::task218400_insertStretchCrash()
     layout->addItem(b);
     layout->insertStretch(0); // inserts gap in item grid in the layout engine
 
-    QGraphicsWidget *form  = new QGraphicsWidget;
+    const auto form  = std::make_unique<QGraphicsWidget>(); // not in `scene`
     form->setLayout(layout); // crash
 }
 
