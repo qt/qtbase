@@ -17,7 +17,7 @@
 #include <memory>
 
 class tst_QGraphicsLinearLayout : public QObject {
-Q_OBJECT
+    Q_OBJECT
 
 private slots:
     void initTestCase();
@@ -75,7 +75,8 @@ private slots:
 };
 
 // Subclass that exposes the protected functions.
-class SubQGraphicsLinearLayout : public QGraphicsLinearLayout {
+class SubQGraphicsLinearLayout : public QGraphicsLinearLayout
+{
 public:
     SubQGraphicsLinearLayout(Qt::Orientation orientation = Qt::Horizontal) : QGraphicsLinearLayout(orientation),
         graphicsSceneResize(0),
@@ -1565,7 +1566,8 @@ void tst_QGraphicsLinearLayout::testAlignmentInLargerLayout()
     QCOMPARE(b->geometry(), QRectF(0,100,100,100));
 }
 
-void tst_QGraphicsLinearLayout::testOffByOneInLargerLayout() {
+void tst_QGraphicsLinearLayout::testOffByOneInLargerLayout()
+{
     const auto scene = std::make_unique<QGraphicsScene>();
     QGraphicsWidget *form = new QGraphicsWidget;
     scene->addItem(form);
@@ -1600,6 +1602,7 @@ void tst_QGraphicsLinearLayout::testOffByOneInLargerLayout() {
     QCOMPARE(a->geometry(), QRectF(0,0,99,99.5));
     QCOMPARE(b->geometry(), QRectF(0,99.5,99,99.5));
 }
+
 void tst_QGraphicsLinearLayout::testDefaultAlignment()
 {
     QGraphicsWidget widget;
