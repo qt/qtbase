@@ -616,30 +616,33 @@ QArkUi::WindowProperties QOhosWindowProxy::getWindowProperties() const
         Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks> callbackReceiver)
+void QOhosWindowProxy::setWindowCallbackReceiver(
+    std::unique_ptr<WindowCallbacks> callbackReceiver, JsCallBatch &jsCallBatch)
 {
     auto sharedWindowCallbackReceiver = std::shared_ptr<WindowCallbacks>(std::move(callbackReceiver));
     m_qtWindowCallbacksReceiverHandle = sharedWindowCallbackReceiver;
 
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsScopeData->windowCallbackReceiver = QtOhos::moveToSharedPtr(WindowCallbacks {
-            .onWindowEvent = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowEvent, sharedWindowCallbackReceiver),
-            .onWindowStatusChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowStatusChange, sharedWindowCallbackReceiver),
-            .onWindowVisibilityChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowVisibilityChange, sharedWindowCallbackReceiver),
-            .onTouchOutside = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onTouchOutside, sharedWindowCallbackReceiver),
-            .onAvoidAreaChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onAvoidAreaChange, sharedWindowCallbackReceiver),
-            .onWindowRectChange = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChange, sharedWindowCallbackReceiver),
-            .onWindowRectChangeInGlobalDisplay = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChangeInGlobalDisplay, sharedWindowCallbackReceiver),
-            .onWindowDisplayIdChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowDisplayIdChange, sharedWindowCallbackReceiver),
-            .onWindowResizeRejected = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowResizeRejected, sharedWindowCallbackReceiver),
-            .onWindowMoveRejected = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowMoveRejected, sharedWindowCallbackReceiver),
-        });
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, sharedWindowCallbackReceiver](QOhosJsState &) {
+            m_jsScopeData->windowCallbackReceiver = QtOhos::moveToSharedPtr(WindowCallbacks {
+                .onWindowEvent = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowEvent, sharedWindowCallbackReceiver),
+                .onWindowStatusChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowStatusChange, sharedWindowCallbackReceiver),
+                .onWindowVisibilityChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowVisibilityChange, sharedWindowCallbackReceiver),
+                .onTouchOutside = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onTouchOutside, sharedWindowCallbackReceiver),
+                .onAvoidAreaChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onAvoidAreaChange, sharedWindowCallbackReceiver),
+                .onWindowRectChange = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChange, sharedWindowCallbackReceiver),
+                .onWindowRectChangeInGlobalDisplay = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChangeInGlobalDisplay, sharedWindowCallbackReceiver),
+                .onWindowDisplayIdChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowDisplayIdChange, sharedWindowCallbackReceiver),
+                .onWindowResizeRejected = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowResizeRejected, sharedWindowCallbackReceiver),
+                .onWindowMoveRejected = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowMoveRejected, sharedWindowCallbackReceiver),
+            });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosWindowProxy::setNonClientAreaMouseWindowCallbackReceiver(
-    QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaMouseEvent>> mouseEventBatchConsumer)
+    QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaMouseEvent>> mouseEventBatchConsumer,
+    JsCallBatch &jsCallBatch)
 {
     auto qtConsumer = QtOhos::moveToSharedPtr(std::move(mouseEventBatchConsumer));
     auto weakQtConsumer = QtOhos::makeWeakPtr(qtConsumer);
@@ -654,14 +657,16 @@ void QOhosWindowProxy::setNonClientAreaMouseWindowCallbackReceiver(
 
     m_qtNonClientAreaMouseWindowCallbackReceiverHandle = qtConsumer;
 
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsScopeData->nonClientAreaEventsDispatcher->mouseEventsConsumer = std::move(jsConsumer);
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, jsConsumer = std::move(jsConsumer)](QOhosJsState &) mutable {
+            m_jsScopeData->nonClientAreaEventsDispatcher->mouseEventsConsumer = std::move(jsConsumer);
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosWindowProxy::setNonClientAreaTouchWindowCallbackReceiver(
-    QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaTouchEvent>> touchEventBatchConsumer)
+    QObject *contextObject, QOhosConsumer<std::vector<NonClientAreaTouchEvent>> touchEventBatchConsumer,
+    JsCallBatch &jsCallBatch)
 {
     auto qtConsumer = QtOhos::moveToSharedPtr(std::move(touchEventBatchConsumer));
     auto weakQtConsumer = QtOhos::makeWeakPtr(qtConsumer);
@@ -676,10 +681,11 @@ void QOhosWindowProxy::setNonClientAreaTouchWindowCallbackReceiver(
 
     m_qtNonClientAreaTouchWindowCallbackReceiverHandle = qtConsumer;
 
-    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsScopeData->nonClientAreaEventsDispatcher->touchEventsConsumer = std::move(jsConsumer);
-    },
-    Q_FUNC_INFO);
+    jsCallBatch.submit(
+        [this, jsConsumer = std::move(jsConsumer)](QOhosJsState &) mutable {
+            m_jsScopeData->nonClientAreaEventsDispatcher->touchEventsConsumer = std::move(jsConsumer);
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosWindowProxy::qtIsMainWindow() const
