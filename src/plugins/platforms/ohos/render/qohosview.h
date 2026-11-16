@@ -285,6 +285,7 @@ private:
     void setWindowDragResizable(bool dragResizable, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void showWindow(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void sendAsyncSyntheticWindowActiveEvent();
+    static bool canShiftSystemFocus(const QOhosView *fromHostView, const QOhosView *toHostView);
 
     std::shared_ptr<QOhosWindowProxy> tryCreateWindowProxyIfNeeded(ViewType viewType, QWindow *optLogicalParent);
 
@@ -305,6 +306,7 @@ private:
     bool m_windowDestroyed = false;
     std::optional<ViewType> m_viewType;
     QPointer<QWindow> m_optLogicalParent;
+    QPointer<QOhosView> m_embeddedViewToActivateOnActive;
     std::optional<WindowHideMethod> m_lastMainWindowHideMethod;
     ViewGeometryPersistencePolicy m_geometryPersistencePolicy = ViewGeometryPersistencePolicy::Ignore;
     std::shared_ptr<void> m_windowPropertiesProviderCallbacksHandle;

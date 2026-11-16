@@ -383,6 +383,16 @@ QOhosView *viewOrNull(QWindow *window)
     return QOhosPlatformWindow::fromQWindow(window)->ownedViewOrNull();
 }
 
+QOhosView *hostViewOrNull(QWindow *window)
+{
+    for (; window != nullptr; window = window->parent()) {
+        auto *view = viewOrNull(window);
+        if (view && view->viewType() != QOhosView::ViewType::EmbeddedWindow)
+            return view;
+    }
+    return nullptr;
+}
+
 }
 
 void QOhosView::handleSurfaceContentsUpdated()
@@ -599,6 +609,18 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
     connect(
         m_nativeNode.get(), &QNativeNode::externalContentClickDetected,
         this, &QOhosView::externalContentInteractionDetected);
+
+    connect(
+        this, &QOhosView::windowEvent,
+        this, [this](QOhosWindowProxy::WindowEvent event) {
+            if (event.type != QOhosWindowProxy::WindowEventType::WINDOW_ACTIVE
+                && event.type != QOhosWindowProxy::WindowEventType::WINDOW_INACTIVE) {
+                return;
+            }
+            auto embeddedView = std::exchange(m_embeddedViewToActivateOnActive, nullptr);
+            if (embeddedView != nullptr && event.type == QOhosWindowProxy::WindowEventType::WINDOW_ACTIVE)
+                embeddedView->sendAsyncSyntheticWindowActiveEvent();
+        });
 
     {
         JsCallBatch jsCallBatch(Q_FUNC_INFO);
@@ -1133,6 +1155,15 @@ void QOhosView::minimize()
         windowProxy->minimize(jsCallBatch);
 }
 
+bool QOhosView::canShiftSystemFocus(const QOhosView *fromHostView, const QOhosView *toHostView)
+{
+    return fromHostView
+        && toHostView
+        && fromHostView != toHostView
+        && fromHostView->m_ohosWindowProxy
+        && toHostView->m_ohosWindowProxy;
+}
+
 void QOhosView::requestActivate()
 {
     if (m_ohosWindowProxy != nullptr) {
@@ -1148,8 +1179,16 @@ void QOhosView::requestActivate()
             }
         }
     } else {
-        // for EmbeddedWindow
-        sendAsyncSyntheticWindowActiveEvent();
+        auto *hostView = hostViewOrNull(m_ownerWindow);
+        const auto *focusHostView = hostViewOrNull(QGuiApplicationPrivate::focus_window);
+        if (canShiftSystemFocus(focusHostView, hostView)) {
+            hostView->m_embeddedViewToActivateOnActive = this;
+            if (!focusHostView->m_ohosWindowProxy->tryShiftAppWindowFocus(*hostView->m_ohosWindowProxy))
+                hostView->m_embeddedViewToActivateOnActive = nullptr;
+        } else {
+            // for EmbeddedWindow
+            sendAsyncSyntheticWindowActiveEvent();
+        }
     }
 }
 
