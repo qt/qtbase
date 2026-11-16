@@ -281,6 +281,12 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     }
 #endif // QT_CONFIG(imageformatplugin)
 
+    if (!handler && !form.isEmpty() && !ignoresFormatAndExtension) {
+        // Format to use was explicitly specified, but no plugins or builtins support it
+        qCDebug(lcImageReader) << "No handler found for explicitly requested format" << form;
+        return nullptr;
+    }
+
     if (handler && device && !suffix.isEmpty()) {
         Q_ASSERT(qobject_cast<QFile *>(device));
         // We have a file claiming to be of a recognized format. Now confirm that
@@ -646,7 +652,7 @@ QByteArray QImageReader::format() const
     name, one at a time. It then uses the following approach to detect the
     image format:
 
-    \list
+    \list 1
 
     \li Image plugins are queried first, based on either the optional format
     string, or the file name suffix (if the source device is a file). No
@@ -655,6 +661,15 @@ QByteArray QImageReader::format() const
 
     \li If no plugin supports the image format, Qt's built-in handlers are
     checked based on either the optional format string, or the file name
+    suffix.
+
+    \li If a format string was specified, but no plugin or built-in handler
+    supports that format, reading fails. No content detection is done in
+    this case.
+
+    \li If a plugin or built-in handler was found based on the file name
+    suffix, but it cannot read the file contents, it is discarded and
+    detection continues as follows, since the file may just have the wrong
     suffix.
 
     \li If no capable plugins or built-in handlers are found, each plugin is

@@ -671,6 +671,29 @@ void tst_QImageReader::setFormat()
     reader.setDevice(&buf);
     QCOMPARE(reader.size(), QSize(2,2));
     buf.close();
+
+    // unsupported format must not fall back to content detection
+    reader.setFormat("nosuchformat");
+    reader.setDevice(&buf);
+    QVERIFY(reader.autoDetectImageFormat());
+    QVERIFY(!reader.canRead());
+    QVERIFY(reader.read().isNull());
+    QCOMPARE(reader.error(), QImageReader::UnsupportedFormatError);
+    buf.close();
+    QVERIFY(QImage::fromData(ppmImage, "nosuchformat").isNull());
+
+    // ...unless explicitly asked to decide from content
+    reader.setDecideFormatFromContent(true);
+    reader.setDevice(&buf);
+    QCOMPARE(reader.size(), QSize(2, 2));
+    buf.close();
+
+    // plugins must not claim other formats based on content
+    if (QImageReader::supportedImageFormats().contains("gif")) {
+        QImageReader gifReader(prefix + "earth.gif", "nosuchformat");
+        QVERIFY(!gifReader.canRead());
+        QVERIFY(gifReader.read().isNull());
+    }
 }
 
 void tst_QImageReader::imageFormat_data()

@@ -1248,6 +1248,11 @@ void tst_QImage::load()
     QVERIFY(dest.isNull());
     QVERIFY(dest.load(filePath));
     QVERIFY(!dest.isNull());
+
+    QImage dest2(filePath, "nosuchformat");
+    QVERIFY(dest2.isNull());
+    QVERIFY(!dest2.load(filePath, "nosuchformat"));
+    QVERIFY(dest2.isNull());
 }
 
 void tst_QImage::loadFromData()
