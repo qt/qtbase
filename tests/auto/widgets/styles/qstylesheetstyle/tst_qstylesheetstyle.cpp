@@ -1761,7 +1761,7 @@ void tst_QStyleSheetStyle::useProxyandStyleSheetStyleInTabBar()
     QSKIP("TabBar doesn't support scroll button in macOS");
 #endif
 
-    class CustomProxy : public QProxyStyle
+    struct : QProxyStyle
     {
         public:
             QRect subElementRect(SubElement subElement,
@@ -1772,13 +1772,13 @@ void tst_QStyleSheetStyle::useProxyandStyleSheetStyleInTabBar()
                     r.moveLeft(0);
                 return r;
             }
-    };
+    } customProxy;
 
     qApp->setStyleSheet("QTabBar::scroller { width: 50px; }");
 
     QTabBar tabBar;
     tabBar.setMaximumWidth(150);
-    tabBar.setStyle(new CustomProxy);
+    tabBar.setStyle(&customProxy);
     int totalWidth = 0;
     for (int tabIndex = 0; tabIndex < 10; ++tabIndex) {
         tabBar.addTab("Tab " + QString::number(tabIndex));
