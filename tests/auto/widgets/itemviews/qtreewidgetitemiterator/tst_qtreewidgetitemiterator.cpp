@@ -1171,7 +1171,7 @@ void tst_QTreeWidgetItemIterator::initializeIterator()
 
 void tst_QTreeWidgetItemIterator::sortingEnabled()
 {
-    QTreeWidget *tree = new QTreeWidget;
+    const auto tree = std::make_unique<QTreeWidget>();
     tree->setColumnCount(2);
     tree->headerItem()->setText(0, "Id");
     tree->headerItem()->setText(1, "Color");
@@ -1189,7 +1189,7 @@ void tst_QTreeWidgetItemIterator::sortingEnabled()
     tree->addTopLevelItem(second);
     tree->addTopLevelItem(first);
 
-    QTreeWidgetItemIterator it(tree);
+    QTreeWidgetItemIterator it(tree.get());
     QCOMPARE(*it, first);
     ++it;
     QCOMPARE(*it, second);
