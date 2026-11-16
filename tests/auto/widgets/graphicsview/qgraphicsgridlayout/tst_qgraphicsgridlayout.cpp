@@ -2984,7 +2984,7 @@ static QSizeF wfh(Qt::SizeHint /*which*/, const QSizeF &constraint)
 
 void tst_QGraphicsGridLayout::heightForWidth()
 {
-    QGraphicsWidget *widget = new QGraphicsWidget;
+    const auto widget = std::make_unique<QGraphicsWidget>();
     QGraphicsGridLayout *layout = new QGraphicsGridLayout;
     widget->setLayout(layout);
     layout->setContentsMargins(0, 0, 0, 0);
