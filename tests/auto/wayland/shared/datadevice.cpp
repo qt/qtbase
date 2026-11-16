@@ -78,14 +78,14 @@ void DataDevice::sendEnter(Surface *surface, const QPoint &position)
     uint serial = m_manager->m_compositor->nextSerial();
     Resource *resource = resourceMap().value(surface->resource()->client());
     if (m_offer)
-        wl_data_device::send_enter(resource->handle, serial, surface->resource()->handle, position.x(), position.y(), m_offer->resource()->handle);
+        wl_data_device::send_enter(resource->handle, serial, surface->resource()->handle, wl_fixed_from_int(position.x()), wl_fixed_from_int(position.y()), m_offer->resource()->handle);
 }
 
 void DataDevice::sendMotion(Surface *surface, const QPoint &position)
 {
     uint32_t time = m_manager->m_compositor->nextSerial();
     Resource *resource = resourceMap().value(surface->resource()->client());
-    wl_data_device::send_motion(resource->handle, time, position.x(), position.y());
+    wl_data_device::send_motion(resource->handle, time, wl_fixed_from_int(position.x()), wl_fixed_from_int(position.y()));
 }
 
 void DataDevice::sendDrop(Surface *surface)
@@ -110,6 +110,29 @@ void DataOffer::data_offer_receive(Resource *resource, const QString &mime_type,
 {
     Q_UNUSED(resource);
     emit receive(mime_type, fd);
+}
+
+void DataOffer::sendAction(uint32_t action)
+{
+    m_action = action;
+    wl_data_offer::send_action(action);
+}
+
+void DataOffer::data_offer_accept(Resource *resource, uint32_t serial, const QString &mime_type)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(serial);
+    m_acceptedMimeType = mime_type;
+}
+
+void DataOffer::data_offer_finish(Resource *resource)
+{
+    if (m_acceptedMimeType.isEmpty() || !m_action) {
+        wl_resource_post_error(resource->handle, WL_DATA_OFFER_ERROR_INVALID_FINISH,
+                               "finish without an accepted mime type and an action");
+        return;
+    }
+    emit finished();
 }
 
 void DataOffer::data_offer_destroy(QtWaylandServer::wl_data_offer::Resource *resource)
