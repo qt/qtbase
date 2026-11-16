@@ -1602,8 +1602,8 @@ void tst_QGraphicsLinearLayout::testOffByOneInLargerLayout() {
 }
 void tst_QGraphicsLinearLayout::testDefaultAlignment()
 {
-    QGraphicsWidget *widget = new QGraphicsWidget;
-    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, widget);
+    QGraphicsWidget widget;
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, &widget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
@@ -1635,8 +1635,8 @@ void tst_QGraphicsLinearLayout::testDefaultAlignment()
 
 void tst_QGraphicsLinearLayout::combineSizePolicies()
 {
-    QGraphicsWidget *widget = new QGraphicsWidget;
-    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, widget);
+    QGraphicsWidget widget;
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, &widget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
@@ -1660,8 +1660,8 @@ void tst_QGraphicsLinearLayout::combineSizePolicies()
 
 void tst_QGraphicsLinearLayout::hiddenItems()
 {
-    QGraphicsWidget *widget = new QGraphicsWidget;
-    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, widget);
+    QGraphicsWidget widget;
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, &widget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(2);
 
