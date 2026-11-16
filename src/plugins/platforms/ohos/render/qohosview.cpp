@@ -1337,7 +1337,7 @@ void QOhosView::tryDetachFromEmbeddedParent()
         showImmediate();
 }
 
-void QOhosView::setNativeNodeVisibility(bool visible)
+void QOhosView::updateNativeNodeVisibility(bool visible)
 {
     m_nativeNode->setVisibility(visible);
     m_lastMainWindowHideMethod = WindowHideMethod::NativeNodeVisibility;
@@ -1346,7 +1346,7 @@ void QOhosView::setNativeNodeVisibility(bool visible)
 void QOhosView::hideMainWindow()
 {
     if (m_ohosWindowProxy == nullptr) {
-        setNativeNodeVisibility(false);
+        updateNativeNodeVisibility(false);
         return;
     }
 
@@ -1356,7 +1356,7 @@ void QOhosView::hideMainWindow()
     }
 
     if (QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(m_ownerWindow)) {
-        setNativeNodeVisibility(false);
+        updateNativeNodeVisibility(false);
         return;
     }
 
