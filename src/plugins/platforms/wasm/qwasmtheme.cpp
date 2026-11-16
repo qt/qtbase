@@ -60,8 +60,8 @@ using namespace Qt::StringLiterals;
 
 QWasmTheme::QWasmTheme()
 {
-    m_colorScheme = getColorSchemeFromMedia();
-    qCDebug(lcQpaThemeWasm) << "Initializing Wasm theme. Color scheme: " << m_colorScheme;
+    m_systemColorScheme = getColorSchemeFromMedia();
+    qCDebug(lcQpaThemeWasm) << "Initializing Wasm theme. Color scheme: " << m_systemColorScheme;
     m_contrastPreference = getContrastPreferenceFromMedia();
     qCDebug(lcQpaThemeWasm) << "Initializing Wasm theme. Contrast preference: " << m_contrastPreference;
     m_motionPreference = getMotionPreferenceFromMedia();
@@ -109,14 +109,18 @@ const QPalette *QWasmTheme::palette(Palette type) const
 
 Qt::ColorScheme QWasmTheme::colorScheme() const
 {
-    return m_colorScheme;
+    // An explicitly requested scheme takes precedence over the browser setting.
+    if (m_colorSchemeOverride != Qt::ColorScheme::Unknown)
+        return m_colorSchemeOverride;
+    return m_systemColorScheme;
 }
 
 void QWasmTheme::requestColorScheme(Qt::ColorScheme scheme)
 {
-    if (m_colorScheme != scheme) {
+    const Qt::ColorScheme oldColorScheme = colorScheme();
+    m_colorSchemeOverride = scheme;
+    if (colorScheme() != oldColorScheme) {
         m_paletteIsDirty = true;
-        m_colorScheme = scheme;
         QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
     }
 }
@@ -164,10 +168,14 @@ QPlatformDialogHelper *QWasmTheme::createPlatformDialogHelper(DialogType type) c
 
 void QWasmTheme::onColorSchemeChange()
 {
-    auto colorScheme = getColorSchemeFromMedia();
-    if (m_colorScheme != colorScheme) {
-        qCDebug(lcQpaThemeWasm) << "Color scheme changed to " << colorScheme;
-        m_colorScheme = colorScheme;
+    const Qt::ColorScheme systemColorScheme = getColorSchemeFromMedia();
+    if (m_systemColorScheme == systemColorScheme)
+        return;
+
+    qCDebug(lcQpaThemeWasm) << "Color scheme changed to " << systemColorScheme;
+    const Qt::ColorScheme oldColorScheme = colorScheme();
+    m_systemColorScheme = systemColorScheme;
+    if (colorScheme() != oldColorScheme) {
         m_paletteIsDirty = true;
         QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
     }

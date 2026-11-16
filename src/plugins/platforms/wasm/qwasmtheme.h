@@ -72,7 +72,8 @@ public:
     void onMotionPreferenceChange();
 
 private:
-    Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
+    Qt::ColorScheme m_systemColorScheme = Qt::ColorScheme::Unknown;
+    Qt::ColorScheme m_colorSchemeOverride = Qt::ColorScheme::Unknown;
     QWasmEventHandler m_colorSchemeChangeCallback;
     std::unique_ptr<QPalette> m_palette;
     mutable bool m_paletteIsDirty = false;
