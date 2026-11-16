@@ -228,7 +228,6 @@ function(qt_internal_get_qt_build_private_helpers out_var)
         QtScopeFinalizerHelpers
         QtSeparateDebugInfo
         QtSimdHelpers
-        QtSingleRepoTargetSetBuildHelpers
         QtSyncQtHelpers
         QtTargetHelpers
         QtTestHelpers
