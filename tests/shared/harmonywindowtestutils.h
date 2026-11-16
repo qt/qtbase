@@ -44,6 +44,7 @@ public:
     explicit WindowStateReportCounter(QWindow *window);
 
     int maximizedReportCount() const;
+    int minimizedReportCount() const;
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -51,6 +52,7 @@ protected:
 private:
     QWindow *m_window;
     int m_maximizedReportCount = 0;
+    int m_minimizedReportCount = 0;
 };
 
 inline WindowStateReportCounter::WindowStateReportCounter(QWindow *window)
@@ -64,11 +66,18 @@ inline int WindowStateReportCounter::maximizedReportCount() const
     return m_maximizedReportCount;
 }
 
+inline int WindowStateReportCounter::minimizedReportCount() const
+{
+    return m_minimizedReportCount;
+}
+
 inline bool WindowStateReportCounter::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == m_window && event->type() == QEvent::WindowStateChange
-        && m_window->windowStates().testFlag(Qt::WindowMaximized)) {
-        ++m_maximizedReportCount;
+    if (watched == m_window && event->type() == QEvent::WindowStateChange) {
+        if (m_window->windowStates().testFlag(Qt::WindowMaximized))
+            ++m_maximizedReportCount;
+        if (m_window->windowStates().testFlag(Qt::WindowMinimized))
+            ++m_minimizedReportCount;
     }
     return false;
 }

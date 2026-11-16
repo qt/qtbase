@@ -23,6 +23,7 @@ public:
 
     void initialize() override;
     void setGeometry(const QRect &rect) override;
+    QRect normalGeometry() const override;
 
     void setVisible(bool visible) override;
 
@@ -52,6 +53,7 @@ private:
 
     void internalHijackSystemFocusAsPopup();
     void focusHijackingPopupHidden();
+    bool isFloatingAsRequestedAndReported() const;
     void startAsyncWaitForNodeResizeIfNeeded();
     void handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo &areaChangeEvent);
 
@@ -82,6 +84,9 @@ private:
     QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> m_avoidAreaCache;
     QBasicTimer m_geometryChangeTimer;
     std::optional<QSize> m_optSizeBeforeResizeRequest;
+    std::optional<QRect> m_optNormalGeometry;
+    std::optional<QRect> m_optConfirmedNormalGeometry;
+    bool m_lastRequestRecordedAsNormalGeometry = false;
     bool m_shownFromOhos = false;
 };
 

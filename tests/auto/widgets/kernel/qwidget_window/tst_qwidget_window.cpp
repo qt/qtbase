@@ -111,6 +111,12 @@ private slots:
     void setWindowState();
 #if defined(Q_OS_HARMONY)
     void moveRejectedForMaximizedWidget();
+    void normalGeometryOfMaximizedWidgetAfterRejectedMove();
+    void normalGeometryOfWidgetMaximizedRightAfterGeometryUpdate_data();
+    void normalGeometryOfWidgetMaximizedRightAfterGeometryUpdate();
+    void normalGeometryAfterRejectedGeometryUpdatesOfWidgetMinimizedFromMaximized();
+    void normalGeometryAfterRejectedMoveOfWidgetMinimizedFromMaximized();
+    void normalGeometryAfterGeometryUpdatesAroundMaximize();
 #endif
 
     void nativeShow();
@@ -1484,6 +1490,204 @@ void tst_QWidget_window::moveRejectedForMaximizedWidget()
 
     widget.showNormal();
     QTRY_COMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    QTestHarmony::verifyNoNapiCallFailures();
+}
+
+void tst_QWidget_window::normalGeometryOfMaximizedWidgetAfterRejectedMove()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("ohos"), Qt::CaseInsensitive))
+        QSKIP("HarmonyOS-specific test");
+
+    QWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.setGeometry(QRect(QPoint(80, 80), m_testWidgetSize));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    auto *harmonyWindow = widget.windowHandle()->nativeInterface<QNativeInterface::QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto optInFreeWindowMode = QTestHarmony::tryFetchJsWindowIsInFreeWindowMode(harmonyWindow->jsWindow());
+    QVERIFY(optInFreeWindowMode);
+    if (!*optInFreeWindowMode)
+        QSKIP("Runs only in free window mode, in which main windows can float");
+    QCOMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    const QRect floatingGeometry = widget.geometry();
+    QTestHarmony::WindowStateReportCounter stateReportCounter(widget.windowHandle());
+    widget.showMaximized();
+    QTRY_COMPARE(stateReportCounter.maximizedReportCount(), 1);
+
+    widget.move(widget.pos() + QPoint(50, 50));
+    QTRY_VERIFY(widget.windowState().testFlag(Qt::WindowMaximized));
+    QCOMPARE(widget.normalGeometry(), floatingGeometry);
+
+    widget.showNormal();
+    QTRY_COMPARE(widget.geometry(), floatingGeometry);
+
+    QTestHarmony::verifyNoNapiCallFailures();
+}
+
+void tst_QWidget_window::normalGeometryOfWidgetMaximizedRightAfterGeometryUpdate_data()
+{
+    QTest::addColumn<Qt::WindowStates>("statesBeforeRequest");
+    QTest::newRow("floating") << Qt::WindowStates();
+    QTest::newRow("minimized") << Qt::WindowStates(Qt::WindowMinimized);
+}
+
+void tst_QWidget_window::normalGeometryOfWidgetMaximizedRightAfterGeometryUpdate()
+{
+    QFETCH(Qt::WindowStates, statesBeforeRequest);
+
+    if (QGuiApplication::platformName().compare(QStringLiteral("ohos"), Qt::CaseInsensitive))
+        QSKIP("HarmonyOS-specific test");
+
+    QWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.setGeometry(QRect(QPoint(80, 80), m_testWidgetSize));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    auto *harmonyWindow = widget.windowHandle()->nativeInterface<QNativeInterface::QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto optInFreeWindowMode = QTestHarmony::tryFetchJsWindowIsInFreeWindowMode(harmonyWindow->jsWindow());
+    QVERIFY(optInFreeWindowMode);
+    if (!*optInFreeWindowMode)
+        QSKIP("Runs only in free window mode, in which main windows can float");
+    QCOMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    const QRect requestedGeometry(widget.pos() + QPoint(50, 50), widget.size() + QSize(100, 50));
+    QTestHarmony::WindowStateReportCounter stateReportCounter(widget.windowHandle());
+    widget.setWindowState(statesBeforeRequest);
+    if (statesBeforeRequest.testFlag(Qt::WindowMinimized))
+        QTRY_VERIFY(stateReportCounter.minimizedReportCount() > 0);
+
+    widget.setGeometry(requestedGeometry);
+    widget.showMaximized();
+    QTRY_VERIFY(widget.windowHandle()->isExposed());
+    QTRY_COMPARE_NE(widget.geometry().size(), requestedGeometry.size());
+
+    widget.move(widget.pos() + QPoint(50, 50));
+    QTRY_VERIFY(widget.windowState().testFlag(Qt::WindowMaximized));
+    QCOMPARE(widget.normalGeometry(), requestedGeometry);
+
+    widget.showNormal();
+    QTRY_COMPARE(widget.geometry(), requestedGeometry);
+
+    QTestHarmony::verifyNoNapiCallFailures();
+}
+
+void tst_QWidget_window::normalGeometryAfterRejectedGeometryUpdatesOfWidgetMinimizedFromMaximized()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("ohos"), Qt::CaseInsensitive))
+        QSKIP("HarmonyOS-specific test");
+
+    QWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.setGeometry(QRect(QPoint(80, 80), m_testWidgetSize));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    auto *harmonyWindow = widget.windowHandle()->nativeInterface<QNativeInterface::QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto optInFreeWindowMode = QTestHarmony::tryFetchJsWindowIsInFreeWindowMode(harmonyWindow->jsWindow());
+    QVERIFY(optInFreeWindowMode);
+    if (!*optInFreeWindowMode)
+        QSKIP("Runs only in free window mode, in which main windows can float");
+    QCOMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    const QRect floatingGeometry = widget.geometry();
+    QTestHarmony::WindowStateReportCounter stateReportCounter(widget.windowHandle());
+    widget.showMaximized();
+    QTRY_COMPARE(stateReportCounter.maximizedReportCount(), 1);
+    widget.setWindowState(Qt::WindowMinimized);
+    QTRY_VERIFY(stateReportCounter.minimizedReportCount() > 0);
+    QCOMPARE(widget.windowHandle()->windowStates(), Qt::WindowStates(Qt::WindowMinimized));
+
+    widget.setGeometry(QRect(floatingGeometry.topLeft() + QPoint(50, 50),
+                             floatingGeometry.size() + QSize(50, 50)));
+    widget.setGeometry(QRect(floatingGeometry.topLeft() + QPoint(100, 100),
+                             floatingGeometry.size() + QSize(100, 50)));
+    widget.showMaximized();
+    QTRY_COMPARE(widget.normalGeometry(), floatingGeometry);
+
+    widget.showNormal();
+    QTRY_COMPARE(widget.geometry(), floatingGeometry);
+
+    QTestHarmony::verifyNoNapiCallFailures();
+}
+
+void tst_QWidget_window::normalGeometryAfterRejectedMoveOfWidgetMinimizedFromMaximized()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("ohos"), Qt::CaseInsensitive))
+        QSKIP("HarmonyOS-specific test");
+
+    QWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.setGeometry(QRect(QPoint(80, 80), m_testWidgetSize));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    auto *harmonyWindow = widget.windowHandle()->nativeInterface<QNativeInterface::QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto optInFreeWindowMode = QTestHarmony::tryFetchJsWindowIsInFreeWindowMode(harmonyWindow->jsWindow());
+    QVERIFY(optInFreeWindowMode);
+    if (!*optInFreeWindowMode)
+        QSKIP("Runs only in free window mode, in which main windows can float");
+    QCOMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    const QRect floatingGeometry = widget.geometry();
+    QTestHarmony::WindowStateReportCounter stateReportCounter(widget.windowHandle());
+    widget.showMaximized();
+    QTRY_COMPARE(stateReportCounter.maximizedReportCount(), 1);
+    widget.setWindowState(Qt::WindowMinimized);
+    QTRY_VERIFY(stateReportCounter.minimizedReportCount() > 0);
+    QCOMPARE(widget.windowHandle()->windowStates(), Qt::WindowStates(Qt::WindowMinimized));
+
+    QWindow *window = widget.windowHandle();
+    if (QHighDpi::toNativeWindowGeometry(window->geometry(), window).size()
+        != window->handle()->geometry().size()) {
+        QSKIP("At this scaling the move also sends a resize, which the system rejects too");
+    }
+
+    widget.move(widget.pos() + QPoint(50, 50));
+    widget.showMaximized();
+    QTRY_COMPARE(widget.normalGeometry(), floatingGeometry);
+
+    widget.showNormal();
+    QTRY_COMPARE(widget.geometry(), floatingGeometry);
+
+    QTestHarmony::verifyNoNapiCallFailures();
+}
+
+void tst_QWidget_window::normalGeometryAfterGeometryUpdatesAroundMaximize()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("ohos"), Qt::CaseInsensitive))
+        QSKIP("HarmonyOS-specific test");
+
+    QWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.setGeometry(QRect(QPoint(80, 80), m_testWidgetSize));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    auto *harmonyWindow = widget.windowHandle()->nativeInterface<QNativeInterface::QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    const auto optInFreeWindowMode = QTestHarmony::tryFetchJsWindowIsInFreeWindowMode(harmonyWindow->jsWindow());
+    QVERIFY(optInFreeWindowMode);
+    if (!*optInFreeWindowMode)
+        QSKIP("Runs only in free window mode, in which main windows can float");
+    QCOMPARE(QTestHarmony::tryFetchIsJsWindowFloating(harmonyWindow->jsWindow()), true);
+
+    const QRect floatingGeometry = widget.geometry();
+    const QRect firstRequestedGeometry(floatingGeometry.topLeft() + QPoint(50, 50),
+                                       floatingGeometry.size() + QSize(50, 50));
+    const QRect secondRequestedGeometry(floatingGeometry.topLeft() + QPoint(100, 100),
+                                        floatingGeometry.size() + QSize(100, 50));
+    widget.setGeometry(firstRequestedGeometry);
+    widget.showMaximized();
+    widget.setGeometry(secondRequestedGeometry);
+    QVERIFY(!widget.windowState().testFlag(Qt::WindowMaximized));
+    QTRY_VERIFY(widget.windowState().testFlag(Qt::WindowMaximized));
+    QCOMPARE(widget.normalGeometry(), firstRequestedGeometry);
+
+    widget.showNormal();
+    QTRY_COMPARE(widget.geometry(), firstRequestedGeometry);
 
     QTestHarmony::verifyNoNapiCallFailures();
 }

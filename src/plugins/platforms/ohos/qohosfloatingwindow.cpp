@@ -70,6 +70,10 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
     auto *currentScreen = QOhosPlatformWindow::screen();
     QOhosPlatformWindow::setGeometry(rect);
+    m_lastRequestRecordedAsNormalGeometry =
+        !windowStates().testAnyFlags(Qt::WindowMaximized | Qt::WindowFullScreen);
+    if (m_lastRequestRecordedAsNormalGeometry)
+        m_optNormalGeometry = geometry();
     const auto frameGeometry = lastRequestedWindowFrameGeometry();
 
     auto *targetScreen = QOhosPlatformWindow::screenForGeometry(frameGeometry);
@@ -88,6 +92,11 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
         else
             m_optSizeBeforeResizeRequest.reset();
     }
+}
+
+QRect QOhosFloatingWindow::normalGeometry() const
+{
+    return m_optNormalGeometry.value_or(QRect());
 }
 
 void QOhosFloatingWindow::setVisible(bool visible)
@@ -155,6 +164,11 @@ void QOhosFloatingWindow::initialize()
         && !QOhosSettings::instance().isWindowPcModeEnabled()
         && !m_lastWindowStatusType.has_value()) {
         m_lastWindowStatusType = QOhosWindowProxy::WindowStatusType::FULL_SCREEN;
+    }
+
+    if (isFloatingAsRequestedAndReported()) {
+        m_optNormalGeometry = geometry();
+        m_optConfirmedNormalGeometry = m_optNormalGeometry;
     }
 
     QObject::connect(
@@ -563,6 +577,8 @@ void QOhosFloatingWindow::handleWindowResizeRejected(const QSize &rejectedSize)
         return;
 
     m_optSizeBeforeResizeRequest.reset();
+    if (m_lastRequestRecordedAsNormalGeometry)
+        m_optNormalGeometry = m_optConfirmedNormalGeometry;
     startAsyncWaitForNodeResizeIfNeeded();
     reportWindowStatesAfterRejectedGeometryUpdateIfNeeded();
 }
@@ -574,6 +590,8 @@ void QOhosFloatingWindow::handleWindowMoveRejected(const QPoint &rejectedPositio
     if (rejectedPosition != lastRequestedWindowFrameGeometry().topLeft())
         return;
 
+    if (m_lastRequestRecordedAsNormalGeometry)
+        m_optNormalGeometry = m_optConfirmedNormalGeometry;
     startAsyncWaitForNodeResizeIfNeeded();
     reportWindowStatesAfterRejectedGeometryUpdateIfNeeded();
 }
@@ -610,6 +628,16 @@ bool QOhosFloatingWindow::windowEvent(QEvent *event)
     return QOhosPlatformWindow::windowEvent(event);
 }
 
+bool QOhosFloatingWindow::isFloatingAsRequestedAndReported() const
+{
+    constexpr auto nonFloatingStates =
+        Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen;
+    const bool floatingRequested = !windowStates().testAnyFlags(nonFloatingStates);
+    const bool floatingReported = !m_lastWindowStatusType
+        || *m_lastWindowStatusType == QOhosWindowProxy::WindowStatusType::FLOATING;
+    return floatingRequested && floatingReported;
+}
+
 void QOhosFloatingWindow::startAsyncWaitForNodeResizeIfNeeded()
 {
     constexpr auto geometryChangeEventTimeoutMs = std::chrono::milliseconds(16);
@@ -639,6 +667,10 @@ void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowN
             const QRect nodeGeometry(areaChangeEvent.globalRelativeOffsetPixels, size);
             const bool isAlreadyReported =
                 nodeGeometry == lastReportedWindowGeometry() && nodeGeometry == geometry();
+            if (isFloatingAsRequestedAndReported()) {
+                m_optNormalGeometry = nodeGeometry;
+                m_optConfirmedNormalGeometry = nodeGeometry;
+            }
             if (!isAlreadyReported)
                 setWindowGeometryFromOhos(nodeGeometry);
         }
