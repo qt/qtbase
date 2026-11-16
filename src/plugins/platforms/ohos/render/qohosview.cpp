@@ -1262,9 +1262,12 @@ void QOhosView::hide()
 {
     switch (viewType()) {
     case ViewType::MainWindow:
-        hideMainWindow();
-        m_nativeNode->setVisibility(false);
+    {
+        JsCallBatch jsCallBatch(Q_FUNC_INFO);
+        hideMainWindow(jsCallBatch);
+        m_nativeNode->setVisibility(false, jsCallBatch);
         break;
+    }
     case ViewType::FloatWindow:
     case ViewType::SubWindow:
     {
@@ -1336,16 +1339,16 @@ void QOhosView::tryDetachFromEmbeddedParent()
         showImmediate();
 }
 
-void QOhosView::updateNativeNodeVisibility(bool visible)
+void QOhosView::updateNativeNodeVisibility(bool visible, JsCallBatch &jsCallBatch)
 {
-    m_nativeNode->setVisibility(visible);
+    m_nativeNode->setVisibility(visible, jsCallBatch);
     m_lastMainWindowHideMethod = WindowHideMethod::NativeNodeVisibility;
 }
 
-void QOhosView::hideMainWindow()
+void QOhosView::hideMainWindow(JsCallBatch &jsCallBatch)
 {
     if (m_ohosWindowProxy == nullptr) {
-        updateNativeNodeVisibility(false);
+        updateNativeNodeVisibility(false, jsCallBatch);
         return;
     }
 
@@ -1355,11 +1358,11 @@ void QOhosView::hideMainWindow()
     }
 
     if (QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(m_ownerWindow)) {
-        updateNativeNodeVisibility(false);
+        updateNativeNodeVisibility(false, jsCallBatch);
         return;
     }
 
-    m_ohosWindowProxy->minimize();
+    m_ohosWindowProxy->minimize(jsCallBatch);
     m_lastMainWindowHideMethod = WindowHideMethod::Minimize;
 
     auto *platformWindow = QOhosPlatformWindow::fromQWindow(m_ownerWindow);

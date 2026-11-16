@@ -272,8 +272,8 @@ private:
     void updateWindowMaximized(JsCallBatch &jsCallBatch);
     void setOrResetWindowProxy(std::shared_ptr<QOhosWindowProxy> windowProxy, QWindow *optLogicalParent);
     const QOhosView *ancestorViewWithWindowOrNull() const;
-    void updateNativeNodeVisibility(bool visible);
-    void hideMainWindow();
+    void updateNativeNodeVisibility(bool visible, JsCallBatch &jsCallBatch);
+    void hideMainWindow(JsCallBatch &jsCallBatch);
     void setWindowCornerRadius(double radius, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setPrivacyMode(bool privacyModeEnabled, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setBackgroundColor(const QColor &color);
