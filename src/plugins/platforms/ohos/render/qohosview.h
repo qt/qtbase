@@ -129,7 +129,6 @@ public:
     void setWindowMinMaxCloseButtonState(const WindowMinMaxCloseButtonsState &state);
     void setWindowStaysOnTop(bool staysOnTop);
     void setFramelessWindow(bool frameless);
-    void setNativeNodeVisibility(bool visible);
     QPixmap makeSnapshot() const;
     bool startMoving();
     void startDrag(
@@ -273,6 +272,7 @@ private:
     void updateWindowMaximized(JsCallBatch &jsCallBatch);
     void setOrResetWindowProxy(std::shared_ptr<QOhosWindowProxy> windowProxy, QWindow *optLogicalParent);
     const QOhosView *ancestorViewWithWindowOrNull() const;
+    void updateNativeNodeVisibility(bool visible);
     void hideMainWindow();
     void setWindowCornerRadius(double radius, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void setPrivacyMode(bool privacyModeEnabled, JsCallBatch &jsCallBatch = JsCallBatch::immediate());
