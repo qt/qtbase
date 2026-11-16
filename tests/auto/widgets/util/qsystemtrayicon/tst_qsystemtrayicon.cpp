@@ -89,13 +89,14 @@ void tst_QSystemTrayIcon::supportsMessages()
     if (QGuiApplication::platformName() == u"offscreen")
         QSKIP("Offscreen rendering. Might or might not have system tray icon.");
 
-    // ### fixme: Check platforms.
+    const QStringList platformsWithTrayMessages = {
+        QStringLiteral("xcb"),
+        QStringLiteral("windows"),
+        QStringLiteral("cocoa"),
+    };
     const QString platform = QGuiApplication::platformName();
-    if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive)
-        && platform.compare(QStringLiteral("windows"), Qt::CaseInsensitive)
-        && platform.compare(QStringLiteral("cocoa"), Qt::CaseInsensitive)) {
-            QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for this platform", Abort);
-    }
+    if (!platformsWithTrayMessages.contains(platform, Qt::CaseInsensitive))
+        QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for this platform", Abort);
     QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
 }
 
