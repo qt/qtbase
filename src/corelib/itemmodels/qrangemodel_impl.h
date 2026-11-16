@@ -2479,10 +2479,8 @@ public:
         // and create a mapping from old to new row
         auto sorted = std::move_iterator(tracked.begin());
         auto write = QRangeModelDetails::adl_begin(range);
-        qsizetype changedIndexCount = 0;
         for (int newIndex = 0; newIndex < rangeSize; ++write, ++sorted, ++newIndex) {
             auto &&tracker = *sorted;
-            changedIndexCount += (tracker.index != newIndex);
             *write = std::move(tracker.row);
             newRows[tracker.index] = newIndex;
         }
