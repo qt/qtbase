@@ -14,6 +14,8 @@
 
 #include <QtCore/qvarlengtharray.h>
 
+#include <memory>
+
 class tst_QGraphicsLinearLayout : public QObject {
 Q_OBJECT
 
@@ -1503,7 +1505,7 @@ void tst_QGraphicsLinearLayout::styleInfoLeak()
 
 void tst_QGraphicsLinearLayout::task218400_insertStretchCrash()
 {
-    QGraphicsScene *scene = new QGraphicsScene;
+    const auto scene = std::make_unique<QGraphicsScene>();
     QGraphicsWidget *a = scene->addWidget(new QWidget);
     QGraphicsWidget *b = scene->addWidget(new QWidget);
 
@@ -1518,7 +1520,7 @@ void tst_QGraphicsLinearLayout::task218400_insertStretchCrash()
 
 void tst_QGraphicsLinearLayout::testAlignmentInLargerLayout()
 {
-    QGraphicsScene *scene = new QGraphicsScene;
+    const auto scene = std::make_unique<QGraphicsScene>();
     QGraphicsWidget *form = new QGraphicsWidget;
     scene->addItem(form);
     QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, form);
@@ -1564,7 +1566,7 @@ void tst_QGraphicsLinearLayout::testAlignmentInLargerLayout()
 }
 
 void tst_QGraphicsLinearLayout::testOffByOneInLargerLayout() {
-    QGraphicsScene *scene = new QGraphicsScene;
+    const auto scene = std::make_unique<QGraphicsScene>();
     QGraphicsWidget *form = new QGraphicsWidget;
     scene->addItem(form);
     QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, form);
