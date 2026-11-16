@@ -1263,6 +1263,7 @@ void QOhosView::hide()
     switch (viewType()) {
     case ViewType::MainWindow:
         hideMainWindow();
+        m_nativeNode->setVisibility(false);
         break;
     case ViewType::FloatWindow:
     case ViewType::SubWindow:
@@ -1272,14 +1273,14 @@ void QOhosView::hide()
             .type = QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN,
         };
         Q_EMIT windowEvent(syntheticWindowHiddenEvent);
+        m_nativeNode->setVisibility(false);
         break;
     }
     case ViewType::EmbeddedWindow:
         Q_EMIT windowVisibilityChange(false);
+        m_nativeNode->setVisibility(false);
         break;
     }
-
-    m_nativeNode->setVisibility(false);
 }
 
 void QOhosView::handlePaletteChange()
