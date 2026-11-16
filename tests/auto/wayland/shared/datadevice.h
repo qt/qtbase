@@ -98,15 +98,22 @@ public:
         , m_dataDevice(dataDevice)
     {}
 
+    void send_action(uint32_t dnd_action) = delete;
+    void sendAction(uint32_t action);
+
     DataDevice *m_dataDevice = nullptr;
+    QString m_acceptedMimeType;
+    uint32_t m_action = 0;
 
 signals:
     void receive(QString mimeType, int fd);
+    void finished();
 
 protected:
     void data_offer_destroy_resource(Resource *resource) override;
     void data_offer_receive(Resource *resource, const QString &mime_type, int32_t fd) override;
-//    void data_offer_accept(Resource *resource, uint32_t serial, const QString &mime_type) override;
+    void data_offer_accept(Resource *resource, uint32_t serial, const QString &mime_type) override;
+    void data_offer_finish(Resource *resource) override;
     void data_offer_destroy(Resource *resource) override;
 };
 

@@ -6,6 +6,7 @@
 #include <QtGui/QRasterWindow>
 #include <QtGui/QClipboard>
 #include <QtGui/QDrag>
+#include <QtGui/QDropEvent>
 
 using namespace MockCompositor;
 
@@ -40,6 +41,7 @@ private slots:
     void pasteSingleUtf8MozUrl();
     void destroysPreviousSelection();
     void dragWithoutFocus();
+    void dropWithNestedEventLoop();
 };
 
 void tst_datadevicev1::initTestCase()
@@ -261,6 +263,81 @@ void tst_datadevicev1::dragWithoutFocus()
     QDrag drag(&window);
     drag.setMimeData(mimeData);
     drag.exec();
+}
+
+void tst_datadevicev1::dropWithNestedEventLoop()
+{
+    class Window : public QRasterWindow {
+    public:
+        bool event(QEvent *event) override
+        {
+            switch (event->type()) {
+            case QEvent::DragEnter:
+            case QEvent::DragMove:
+                event->accept();
+                return true;
+            case QEvent::DragLeave:
+                ++m_leaveCount;
+                return true;
+            case QEvent::Drop: {
+                auto *dropEvent = static_cast<QDropEvent *>(event);
+                // Keyboard enter is sent after the leave
+                m_focusedInDrop = QTest::qWaitFor([this] {
+                    return QGuiApplication::focusWindow() == this;
+                });
+                m_leaveCountInDrop = m_leaveCount;
+                m_text = dropEvent->mimeData()->text();
+                dropEvent->acceptProposedAction();
+                m_dropped = true;
+                return true;
+            }
+            default:
+                return QRasterWindow::event(event);
+            }
+        }
+        bool m_focusedInDrop = false;
+        int m_leaveCount = 0;
+        int m_leaveCountInDrop = -1;
+        QString m_text;
+        bool m_dropped = false;
+    };
+
+    Window window;
+    window.resize(64, 64);
+    window.show();
+    QCOMPOSITOR_TRY_VERIFY(xdgSurface() && xdgSurface()->m_committedConfigureSerial);
+
+    bool finished = false;
+    exec([&] {
+        auto *client = xdgSurface()->resource()->client();
+        auto *offer = dataDevice()->sendDataOffer(client, {"text/plain"});
+        offer->send_source_actions(WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
+        connect(offer, &DataOffer::receive, offer, [](QString mimeType, int fd) {
+            QFile file;
+            QVERIFY(file.open(fd, QIODevice::WriteOnly, QFile::FileHandleFlag::AutoCloseHandle));
+            QCOMPARE(mimeType, "text/plain");
+            file.write(QByteArray("dropped text"));
+            file.close();
+        }, Qt::DirectConnection);
+        connect(offer, &DataOffer::finished, offer, [&] { finished = true; }, Qt::DirectConnection);
+        auto *surface = xdgSurface()->m_surface;
+        dataDevice()->sendEnter(surface, {32, 32});
+        offer->sendAction(WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
+        dataDevice()->sendDrop(surface);
+        dataDevice()->sendLeave(surface);
+        keyboard()->sendEnter(surface);
+    });
+
+    QTRY_VERIFY(window.m_dropped);
+    QVERIFY(window.m_focusedInDrop);
+    QCOMPARE(window.m_leaveCountInDrop, 0);
+    QCOMPARE(window.m_text, "dropped text");
+    QCOMPARE(window.m_leaveCount, 0);
+    QCOMPOSITOR_TRY_VERIFY(finished);
+
+    exec([&] {
+        keyboard()->sendLeave(xdgSurface()->m_surface);
+    });
 }
 
 QCOMPOSITOR_TEST_MAIN(tst_datadevicev1)

@@ -199,7 +199,14 @@ void QWaylandDataDevice::data_device_drop()
         return;
     }
 
-    QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(m_dragWindow, dragData, m_dragPoint, supportedActions,
+    // A local event loop in the drop handler may dispatch the following leave.
+    // Clearing m_dragWindow stops data_device_leave() from sending DragLeave,
+    // and taking the offer keeps the dropped mime data alive.
+    const QPointer<QWindow> dropWindow = m_dragWindow;
+    m_dragWindow.clear();
+    const std::unique_ptr<QWaylandDataOffer> dropOffer = std::move(m_dragOffer);
+
+    QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(dropWindow, dragData, m_dragPoint, supportedActions,
                                                                           QGuiApplication::mouseButtons(),
                                                                           m_inputDevice->modifiers());
 
@@ -209,10 +216,10 @@ void QWaylandDataDevice::data_device_drop()
         auto platformDrag =  static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
         platformDrag->setDropResponse(response);
         platformDrag->finishDrag();
-    } else if (m_dragOffer
+    } else if (dropOffer
                && response.isAccepted()
-               && m_dragOffer->version() >= WL_DATA_OFFER_FINISH_SINCE_VERSION) {
-        m_dragOffer->finish();
+               && dropOffer->version() >= WL_DATA_OFFER_FINISH_SINCE_VERSION) {
+        dropOffer->finish();
     }
 }
 
