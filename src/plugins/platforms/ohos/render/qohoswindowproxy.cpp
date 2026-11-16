@@ -602,6 +602,7 @@ QArkUi::WindowProperties QOhosWindowProxy::getWindowProperties() const
 void QOhosWindowProxy::setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks> callbackReceiver)
 {
     auto sharedWindowCallbackReceiver = std::shared_ptr<WindowCallbacks>(std::move(callbackReceiver));
+    m_qtWindowCallbacksReceiverHandle = sharedWindowCallbackReceiver;
 
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsScopeData->windowCallbackReceiver = QtOhos::moveToSharedPtr(WindowCallbacks {
@@ -616,8 +617,6 @@ void QOhosWindowProxy::setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks
         });
     },
     Q_FUNC_INFO);
-
-    m_qtWindowCallbacksReceiverHandle = sharedWindowCallbackReceiver;
 }
 
 void QOhosWindowProxy::setNonClientAreaMouseWindowCallbackReceiver(
@@ -634,12 +633,12 @@ void QOhosWindowProxy::setNonClientAreaMouseWindowCallbackReceiver(
                 (*qtConsumer)(std::move(batch));
         });
 
+    m_qtNonClientAreaMouseWindowCallbackReceiverHandle = qtConsumer;
+
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsScopeData->nonClientAreaEventsDispatcher->mouseEventsConsumer = std::move(jsConsumer);
     },
     Q_FUNC_INFO);
-
-    m_qtNonClientAreaMouseWindowCallbackReceiverHandle = qtConsumer;
 }
 
 void QOhosWindowProxy::setNonClientAreaTouchWindowCallbackReceiver(
@@ -656,12 +655,12 @@ void QOhosWindowProxy::setNonClientAreaTouchWindowCallbackReceiver(
                 (*qtConsumer)(std::move(batch));
         });
 
+    m_qtNonClientAreaTouchWindowCallbackReceiverHandle = qtConsumer;
+
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsScopeData->nonClientAreaEventsDispatcher->touchEventsConsumer = std::move(jsConsumer);
     },
     Q_FUNC_INFO);
-
-    m_qtNonClientAreaTouchWindowCallbackReceiverHandle = qtConsumer;
 }
 
 bool QOhosWindowProxy::qtIsMainWindow() const
