@@ -3288,8 +3288,8 @@ void tst_QGraphicsGridLayout::spanningItem2x3()
 
 void tst_QGraphicsGridLayout::spanningItem()
 {
-    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+    const auto form = std::make_unique<QGraphicsWidget>(nullptr, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form.get());
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
