@@ -3402,13 +3402,12 @@ void tst_QGraphicsGridLayout::stretchAndHeightForWidth()
 
     QCOMPARE(w1->geometry(), QRectF(0, 0, 100, 100));
     QCOMPARE(w2->geometry(), QRectF(100, 0, 400, 50));
-
 }
 
 void tst_QGraphicsGridLayout::testDefaultAlignment()
 {
-    QGraphicsWidget *widget = new QGraphicsWidget;
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(widget);
+    QGraphicsWidget widget;
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(&widget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
