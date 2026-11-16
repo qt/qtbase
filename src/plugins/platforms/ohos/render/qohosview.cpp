@@ -378,6 +378,11 @@ std::optional<QColor> tryGetBackgroundColorFromWindow(QWindow *window)
     return std::nullopt;
 }
 
+QOhosView *viewOrNull(QWindow *window)
+{
+    return QOhosPlatformWindow::fromQWindow(window)->ownedViewOrNull();
+}
+
 }
 
 void QOhosView::handleSurfaceContentsUpdated()
@@ -1134,8 +1139,7 @@ void QOhosView::requestActivate()
 {
     if (m_ohosWindowProxy != nullptr) {
         if (QGuiApplicationPrivate::focus_window) {
-            const auto *focusPlatformWindow = QOhosPlatformWindow::fromQWindow(QGuiApplicationPrivate::focus_window);
-            const auto *focusView = focusPlatformWindow->ownedViewOrNull();
+            const auto *focusView = viewOrNull(QGuiApplicationPrivate::focus_window);
             if (focusView && focusView != this) {
                 if (focusView->m_ohosWindowProxy) {
                     focusView->m_ohosWindowProxy->shiftAppWindowFocus(*m_ohosWindowProxy);
