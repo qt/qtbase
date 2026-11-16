@@ -521,6 +521,16 @@ FurtherDerivedChild::~FurtherDerivedChild()
     CHECK_EQ(guardedConstParentPointer, guardedParentPointer);
     CHECK_EQ(guardedConstParentPointer, parentPointer);
 
+    // qobject_cast must see the demotion (QTBUG-152323)
+    CHECK_EQ(qobject_cast<QObject *>(guardedParentPointer), parentPointerAsQObject);
+    CHECK_EQ(qobject_cast<DerivedParent *>(guardedParentPointer), parentPointerAsDerived);
+    CHECK_EQ(qobject_cast<FurtherDerivedParent *>(guardedParentPointer), nullptr); // demoted
+    CHECK_EQ(qobject_cast<FurtherDerivedParent *>(DerivedChild::guardedParentPointer), nullptr);
+
+    CHECK_EQ(qobject_cast<const QObject *>(guardedConstParentPointer), parentPointerAsQObject);
+    CHECK_EQ(qobject_cast<const DerivedParent *>(guardedConstParentPointer), parentPointerAsDerived);
+    CHECK_EQ(qobject_cast<const FurtherDerivedParent *>(guardedConstParentPointer), nullptr);
+
 #undef CHECK_EQ
 #undef CHECK_NE
 }

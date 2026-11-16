@@ -36,6 +36,9 @@ class QPointer
     using QObjectType =
         typename std::conditional<std::is_const<T>::value, const QObject, QObject>::type;
     QWeakPointer<QObjectType> wp;
+
+    template <typename U>
+    using if_qobject_castable = std::enable_if_t<std::is_convertible_v<U*, QObjectType*>, bool>;
 public:
     using element_type = T;
 
@@ -137,6 +140,12 @@ private:
     friend bool comparesEqual(const QPointer &lhs, std::nullptr_t) noexcept
     { return lhs.isNull(); }
     Q_DECLARE_EQUALITY_COMPARABLE(QPointer, std::nullptr_t)
+
+    template <typename X, typename U = T, if_qobject_castable<U> = true>
+    friend X qobject_cast(const QPointer &p)
+    {
+        return qobject_cast<X>(p.internalData());
+    }
 };
 template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_RELOCATABLE_TYPE);
 
