@@ -1491,6 +1491,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
     submitSystemPropertyUpdate(
         m_updateData.windowTransparentForInput, windowFlags.testFlag(Qt::WindowTransparentForInput));
 
+    std::optional<QOhosDisplayInfo::JsDisplayId> optDisplayIdToSynchronize;
     {
         JsCallBatch jsCallBatch(Q_FUNC_INFO);
 
@@ -1532,22 +1533,22 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
             .tryGetProperty<bool, &QOhosPlatformWindow::windowDragResizableProperty>();
         if (windowDragResizable.has_value())
             setWindowDragResizable(windowDragResizable.value(), jsCallBatch);
+
+        // NOTE - when position automatic is set we do not control window position
+        // therefore no window callback about window position change will be sent
+        // and the screen that given window belongs to needs to be synchronized
+        bool shouldSynchronizeTargetDisplayIdWithQpa =
+            qt_window_private(m_ownerWindow)->positionAutomatic
+            && reason == WindowStateSyncReason::ViewTypeChanged
+            && m_ohosWindowProxy != nullptr;
+
+        if (shouldSynchronizeTargetDisplayIdWithQpa)
+            optDisplayIdToSynchronize = m_ohosWindowProxy->getWindowProperties().displayId;
     }
 
-    // NOTE - when position automatic is set we do not control window position
-    // therefore no window callback about window position change will be sent
-    // and the screen that given window belongs to needs to be synchronized
-    bool shouldSynchronizeTargetDisplayIdWithQpa =
-        qt_window_private(m_ownerWindow)->positionAutomatic
-        && reason == WindowStateSyncReason::ViewTypeChanged
-        && m_ohosWindowProxy != nullptr;
-
-    if (shouldSynchronizeTargetDisplayIdWithQpa) {
-        auto optTargetDisplayId = m_ohosWindowProxy->getWindowProperties().displayId;
-        if (optTargetDisplayId.has_value()) {
-            QOhosDisplayInfo::JsDisplayId syntheticDisplayIdChangeEvent = optTargetDisplayId.value();
-            Q_EMIT windowDisplayIdChanged(syntheticDisplayIdChangeEvent);
-        }
+    if (optDisplayIdToSynchronize) {
+        QOhosDisplayInfo::JsDisplayId syntheticDisplayIdChangeEvent = optDisplayIdToSynchronize.value();
+        Q_EMIT windowDisplayIdChanged(syntheticDisplayIdChangeEvent);
     }
 }
 
