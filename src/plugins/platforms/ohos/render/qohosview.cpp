@@ -327,7 +327,8 @@ ViewGeometryPersistencePolicy determineViewGeometryPersistencePolicy()
     return viewGeometryPersistencePolicy;
 }
 
-WindowGeometryPersistenceState syncWindowGeometryPersistenceState(QOhosWindowProxy *windowProxy)
+WindowGeometryPersistenceState syncWindowGeometryPersistenceState(
+    QOhosWindowProxy *windowProxy, QtOhos::JsCallBatch &jsCallBatch)
 {
     using WindowGeometryPersistencePolicy = QOhosPlatformIntegration::WindowGeometryPersistencePolicy;
 
@@ -335,15 +336,12 @@ WindowGeometryPersistenceState syncWindowGeometryPersistenceState(QOhosWindowPro
     auto policy = QOhosPlatformIntegration::getMainWindowGeometryPersistencePolicy();
     switch (policy) {
     case WindowGeometryPersistencePolicy::Disabled:
-        windowProxy->setWindowRectAutoSave(false);
+        windowProxy->setWindowRectAutoSave(false, jsCallBatch);
         break;
     case WindowGeometryPersistencePolicy::Enabled:
-    {
-        QtOhos::JsCallBatch jsCallBatch(Q_FUNC_INFO);
         windowProxy->setWindowRectAutoSave(true, jsCallBatch);
         geometryPersistenceEnabled = windowProxy->isWindowRectAutoSave();
         break;
-    }
     case WindowGeometryPersistencePolicy::FollowSystemSetting:
         geometryPersistenceEnabled = windowProxy->isWindowRectAutoSave();
         break;
@@ -1473,83 +1471,83 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
 
     submitSystemPropertyUpdate(m_updateData.title, m_ownerWindow->title());
 
-    auto windowGeometryPersistenceState =
-        viewType() == ViewType::MainWindow
-            && m_geometryPersistencePolicy != ViewGeometryPersistencePolicy::Ignore
-        ? syncWindowGeometryPersistenceState(m_ohosWindowProxy.get())
-        : WindowGeometryPersistenceState::Disabled;
-
-    auto currentRuntimeDeviceTypeAndMode = queryQOhosRuntimeDeviceAndMode();
-    bool windowGeometrySyncEnabled = false;
-    switch (currentRuntimeDeviceTypeAndMode) {
-    case QOhosRuntimeDeviceTypeAndMode::HandheldDeviceWindowPcMode:
-    case QOhosRuntimeDeviceTypeAndMode::_2in1:
-        windowGeometrySyncEnabled = true;
-        break;
-    case QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen:
-        windowGeometrySyncEnabled = viewType() != ViewType::MainWindow;
-        break;
-    }
-
-    std::optional<QOhosDisplayInfo::JsDisplayId> targetDisplayId;
-    switch (viewType()) {
-    case ViewType::SubWindow:
-        if (m_optLogicalParent == nullptr)
-            qOhosReportFatalErrorAndAbort("%s: logical parent for a subwindow is null", Q_FUNC_INFO);
-        targetDisplayId = tryGetSubWindowJsDisplayId(m_optLogicalParent, *m_ohosWindowProxy);
-        break;
-    case ViewType::MainWindow:
-    {
-        targetDisplayId = m_ohosWindowProxy->tryGetMainWindowJsDisplayId();
-        break;
-    }
-    case ViewType::FloatWindow:
-    case ViewType::EmbeddedWindow:
-        break;
-    }
-
-    auto targetGeometryToSet = platformWindow->lastRequestedWindowFrameGeometry();
-
-    if (windowGeometrySyncEnabled) {
-        submitSystemPropertyUpdate(m_updateData.sizeLimits, targetWindowLimitsToSet);
-        submitOrResetSystemPropertyUpdate(
-            m_updateData.size, targetGeometryToSet.size(), windowGeometryPersistenceState);
-
-        if (!qt_window_private(m_ownerWindow)->positionAutomatic) {
-            submitOrResetSystemPropertyUpdate(
-                m_updateData.position,
-                std::make_pair(targetGeometryToSet.topLeft(), targetDisplayId),
-                windowGeometryPersistenceState);
-        }
-    }
-
-    submitSystemPropertyUpdate(m_updateData.backgroundTransparent, isWindowTransparencyRequested());
-
-    if (currentRuntimeDeviceTypeAndMode == QOhosRuntimeDeviceTypeAndMode::_2in1)
-        submitSystemPropertyUpdate(m_updateData.focusable, focusable);
-
-    if (viewType() == ViewType::SubWindow)
-        submitSystemPropertyUpdate(m_updateData.modality, m_ownerWindow->modality());
-
-    submitSystemPropertyUpdate(
-        m_updateData.windowMinMaxCloseButtonsState,
-        WindowMinMaxCloseButtonsState{
-            .maxButtonShown = windowFlags.testFlag(Qt::WindowMaximizeButtonHint),
-            .minButtonShown = windowFlags.testFlag(Qt::WindowMinimizeButtonHint),
-            .closeButtonShown = windowFlags.testFlag(Qt::WindowCloseButtonHint),
-        });
-
-    submitSystemPropertyUpdate(
-        m_updateData.windowStaysOnTop, windowFlags.testFlag(Qt::WindowStaysOnTopHint));
-
-    submitSystemPropertyUpdate(m_updateData.frameless, windowFlags.testFlag(Qt::FramelessWindowHint));
-
-    submitSystemPropertyUpdate(
-        m_updateData.windowTransparentForInput, windowFlags.testFlag(Qt::WindowTransparentForInput));
-
     std::optional<QOhosDisplayInfo::JsDisplayId> optDisplayIdToSynchronize;
     {
         JsCallBatch jsCallBatch(Q_FUNC_INFO);
+
+        auto windowGeometryPersistenceState =
+            viewType() == ViewType::MainWindow
+                && m_geometryPersistencePolicy != ViewGeometryPersistencePolicy::Ignore
+            ? syncWindowGeometryPersistenceState(m_ohosWindowProxy.get(), jsCallBatch)
+            : WindowGeometryPersistenceState::Disabled;
+
+        auto currentRuntimeDeviceTypeAndMode = queryQOhosRuntimeDeviceAndMode();
+        bool windowGeometrySyncEnabled = false;
+        switch (currentRuntimeDeviceTypeAndMode) {
+        case QOhosRuntimeDeviceTypeAndMode::HandheldDeviceWindowPcMode:
+        case QOhosRuntimeDeviceTypeAndMode::_2in1:
+            windowGeometrySyncEnabled = true;
+            break;
+        case QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen:
+            windowGeometrySyncEnabled = viewType() != ViewType::MainWindow;
+            break;
+        }
+
+        std::optional<QOhosDisplayInfo::JsDisplayId> targetDisplayId;
+        switch (viewType()) {
+        case ViewType::SubWindow:
+            if (m_optLogicalParent == nullptr)
+                qOhosReportFatalErrorAndAbort("%s: logical parent for a subwindow is null", Q_FUNC_INFO);
+            targetDisplayId = tryGetSubWindowJsDisplayId(m_optLogicalParent, *m_ohosWindowProxy);
+            break;
+        case ViewType::MainWindow:
+        {
+            targetDisplayId = m_ohosWindowProxy->tryGetMainWindowJsDisplayId();
+            break;
+        }
+        case ViewType::FloatWindow:
+        case ViewType::EmbeddedWindow:
+            break;
+        }
+
+        auto targetGeometryToSet = platformWindow->lastRequestedWindowFrameGeometry();
+
+        if (windowGeometrySyncEnabled) {
+            submitSystemPropertyUpdate(m_updateData.sizeLimits, targetWindowLimitsToSet);
+            submitOrResetSystemPropertyUpdate(
+                m_updateData.size, targetGeometryToSet.size(), windowGeometryPersistenceState);
+
+            if (!qt_window_private(m_ownerWindow)->positionAutomatic) {
+                submitOrResetSystemPropertyUpdate(
+                    m_updateData.position,
+                    std::make_pair(targetGeometryToSet.topLeft(), targetDisplayId),
+                    windowGeometryPersistenceState);
+            }
+        }
+
+        submitSystemPropertyUpdate(m_updateData.backgroundTransparent, isWindowTransparencyRequested());
+
+        if (currentRuntimeDeviceTypeAndMode == QOhosRuntimeDeviceTypeAndMode::_2in1)
+            submitSystemPropertyUpdate(m_updateData.focusable, focusable);
+
+        if (viewType() == ViewType::SubWindow)
+            submitSystemPropertyUpdate(m_updateData.modality, m_ownerWindow->modality());
+
+        submitSystemPropertyUpdate(
+            m_updateData.windowMinMaxCloseButtonsState,
+            WindowMinMaxCloseButtonsState{
+                .maxButtonShown = windowFlags.testFlag(Qt::WindowMaximizeButtonHint),
+                .minButtonShown = windowFlags.testFlag(Qt::WindowMinimizeButtonHint),
+                .closeButtonShown = windowFlags.testFlag(Qt::WindowCloseButtonHint),
+            });
+
+        submitSystemPropertyUpdate(
+            m_updateData.windowStaysOnTop, windowFlags.testFlag(Qt::WindowStaysOnTopHint));
+
+        submitSystemPropertyUpdate(m_updateData.frameless, windowFlags.testFlag(Qt::FramelessWindowHint));
+
+        submitSystemPropertyUpdate(
+            m_updateData.windowTransparentForInput, windowFlags.testFlag(Qt::WindowTransparentForInput));
 
         flushSystemPropertyUpdatesImmediate(jsCallBatch);
 
