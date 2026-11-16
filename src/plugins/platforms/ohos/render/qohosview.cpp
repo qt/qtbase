@@ -664,13 +664,6 @@ void QOhosView::setPosition(const QPoint &position)
     setSystemUpdateProperty(&SystemUpdateData::position, {position, {}});
 }
 
-void QOhosView::setPositionOnScreenImmediate(
-    const QPoint &position, QOhosDisplayInfo::JsDisplayId jsDisplayId)
-{
-    setSystemUpdateProperty(&SystemUpdateData::position, {position, jsDisplayId});
-    flushSystemPropertyUpdatesImmediate();
-}
-
 void QOhosView::setSize(const QSize &size)
 {
     setSystemUpdateProperty(&SystemUpdateData::size, size);

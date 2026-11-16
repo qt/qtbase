@@ -103,7 +103,6 @@ public:
 
     void setSizeLimits(const QSize &minSize, const QSize &maxSize);
     void setPosition(const QPoint &position);
-    void setPositionOnScreenImmediate(const QPoint &position, QOhosDisplayInfo::JsDisplayId jsDisplayId);
     void setSize(const QSize &size);
     void setOpacity(qreal opacity);
     void setCursor(const QCursor &cursor);
@@ -267,7 +266,7 @@ private:
     void updateWindowShadowDisabled(JsCallBatch &jsCallBatch);
     void updateMainWindowRestored(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
-    void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch = JsCallBatch::immediate());
+    void flushSystemPropertyUpdatesImmediate(JsCallBatch &jsCallBatch);
     QOhosWindowProxy *windowProxyAfterPropertyUpdatesOrNull(JsCallBatch &jsCallBatch);
     void updateWindowFullScreen(JsCallBatch &jsCallBatch);
     void updateWindowMaximized(JsCallBatch &jsCallBatch);
