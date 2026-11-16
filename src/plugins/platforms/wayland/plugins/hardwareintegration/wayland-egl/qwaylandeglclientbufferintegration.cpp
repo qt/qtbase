@@ -83,6 +83,18 @@ void QWaylandEglClientBufferIntegration::initialize(QWaylandDisplay *display)
         return;
     }
 
+    const EGLint rgb888Attributes[] = {
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_NONE
+    };
+    EGLint rgb888ConfigCount = 0;
+    m_hasRgb888WindowConfig =
+            eglChooseConfig(m_eglDisplay, rgb888Attributes, nullptr, 0, &rgb888ConfigCount)
+            && rgb888ConfigCount > 0;
+
     m_supportsThreading = true;
     if (qEnvironmentVariableIsSet("QT_OPENGL_NO_SANITY_CHECK"))
         return;
@@ -113,8 +125,30 @@ QWaylandWindow *QWaylandEglClientBufferIntegration::createEglWindow(QWindow *win
 
 QPlatformOpenGLContext *QWaylandEglClientBufferIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
 {
-    QSurfaceFormat fmt = glFormat;
-    return new QWaylandGLContext(m_eglDisplay, m_display, fmt, share);
+    return new QWaylandGLContext(m_eglDisplay, m_display, adjustedFormat(glFormat), share);
+}
+
+// Returns the format with 8 bits requested for each color channel when no
+// color sizes have been specified.
+//
+// With unspecified color sizes, the EGL config sorting rules prefer the
+// smallest buffer size, which typically results in a 16-bit (RGB565) config.
+// Window surfaces used to request an alpha channel for the client-side
+// decorations, which implied a 32-bit config. Since the decorations are now
+// in subsurfaces, ask for 24-bit color explicitly instead. Explicitly
+// requested sizes are left untouched, and so is the format when the display
+// has no such config, as QEglConfigChooser never relaxes color sizes.
+QSurfaceFormat
+QWaylandEglClientBufferIntegration::adjustedFormat(const QSurfaceFormat &format) const
+{
+    QSurfaceFormat fmt = format;
+    if (m_hasRgb888WindowConfig && fmt.redBufferSize() <= 0 && fmt.greenBufferSize() <= 0
+        && fmt.blueBufferSize() <= 0) {
+        fmt.setRedBufferSize(8);
+        fmt.setGreenBufferSize(8);
+        fmt.setBlueBufferSize(8);
+    }
+    return fmt;
 }
 
 QOpenGLContext *QWaylandEglClientBufferIntegration::createOpenGLContext(EGLContext context, EGLDisplay contextDisplay, QOpenGLContext *shareContext) const

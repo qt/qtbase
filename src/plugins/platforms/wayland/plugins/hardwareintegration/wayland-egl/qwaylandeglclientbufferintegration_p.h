@@ -37,6 +37,8 @@ public:
 
     EGLDisplay eglDisplay() const;
 
+    QSurfaceFormat adjustedFormat(const QSurfaceFormat &format) const;
+
 private:
     Q_DISABLE_COPY(QWaylandEglClientBufferIntegration)
 
@@ -44,6 +46,7 @@ private:
 
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
     bool m_supportsThreading = false;
+    bool m_hasRgb888WindowConfig = false;
 };
 
 QT_END_NAMESPACE

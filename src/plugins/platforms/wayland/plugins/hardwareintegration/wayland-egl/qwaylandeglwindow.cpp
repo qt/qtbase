@@ -99,7 +99,8 @@ void QWaylandEglWindow::createSurface(const QSize &initialSize)
             return;
         }
 
-        QSurfaceFormat fmt = window()->requestedFormat();
+        const QSurfaceFormat fmt =
+                m_clientBufferIntegration->adjustedFormat(window()->requestedFormat());
         EGLConfig eglConfig = q_configFromGLFormat(m_clientBufferIntegration->eglDisplay(), fmt);
         setFormat(q_glFormatFromConfig(m_clientBufferIntegration->eglDisplay(), eglConfig, fmt));
 
