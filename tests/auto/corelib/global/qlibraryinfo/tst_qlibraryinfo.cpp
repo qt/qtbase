@@ -8,7 +8,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) && QT_CONFIG(process)
 #include <QProcess>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -34,14 +34,14 @@ private slots:
     void merge();
     void mergeRelativePrefix();
     void mergeUnlistedPaths();
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) && QT_CONFIG(process)
     void bundle_data();
     void bundle();
     void bundleWithExternalQt();
     void bundleWithExternalQtAndQtConf();
 #endif
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) && QT_CONFIG(process)
 private:
     void createBundle(const QString &bundlePath, const QString &packageType,
                       const QString &subBundlePath, const QString &qtConf,
@@ -222,7 +222,7 @@ void tst_QLibraryInfo::mergeUnlistedPaths()
     }
 }
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) && QT_CONFIG(process)
 void tst_QLibraryInfo::bundle_data()
 {
     QTest::addColumn<QString>("bundleName");
