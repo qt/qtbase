@@ -1002,9 +1002,12 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                          q, SLOT(replyPreSharedKeyAuthenticationRequiredSlot(QSslPreSharedKeyAuthenticator*)),
                          Qt::BlockingQueuedConnection);
 #endif
-        // This signal we will use to start the request.
-        QObject::connect(q, SIGNAL(startHttpRequest()), delegate, SLOT(startRequest()));
-        QObject::connect(q, SIGNAL(abortHttpRequest()), delegate, SLOT(abortRequest()));
+        // This signal we will use to start the request. A delegate serves exactly one
+        // request, so it must not start again when a later request (a redirect) is posted.
+        QObject::connect(q, &QNetworkReplyHttpImpl::startHttpRequest,
+                         delegate, &QHttpThreadDelegate::startRequest, Qt::SingleShotConnection);
+        QObject::connect(q, &QNetworkReplyHttpImpl::abortHttpRequest,
+                         delegate, &QHttpThreadDelegate::abortRequest);
 
         // To throttle the connection.
         QObject::connect(q, SIGNAL(readBufferSizeChanged(qint64)), delegate, SLOT(readBufferSizeChanged(qint64)));
