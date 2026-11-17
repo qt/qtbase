@@ -2019,7 +2019,8 @@ void tst_QTouchEvent::touchEventAcceptance()
 
 void tst_QTouchEvent::testMultiDevice()
 {
-    QPointingDevice *deviceTwo = QTest::createTouchDevice();
+    const auto reaper = std::unique_ptr<QPointingDevice>{QTest::createTouchDevice()};
+    QPointingDevice * const deviceTwo = reaper.get();
 
     QWindow w;
     w.setGeometry(100, 100, 100, 100);
