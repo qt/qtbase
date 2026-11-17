@@ -95,11 +95,20 @@ public:
   */
 
 /*!
+    \internal
+*/
+QPdfWriter::QPdfWriter()
+    : QObject(*new QPdfWriterPrivate),
+      QPagedPaintDevice(new QPdfPagedPaintDevicePrivate(d_func()))
+{
+
+}
+
+/*!
   Constructs a PDF writer that will write the pdf to \a filename.
   */
 QPdfWriter::QPdfWriter(const QString &filename)
-    : QObject(*new QPdfWriterPrivate),
-      QPagedPaintDevice(new QPdfPagedPaintDevicePrivate(d_func()))
+    : QPdfWriter()
 {
     Q_D(QPdfWriter);
 
@@ -110,8 +119,7 @@ QPdfWriter::QPdfWriter(const QString &filename)
   Constructs a PDF writer that will write the pdf to \a device.
   */
 QPdfWriter::QPdfWriter(QIODevice *device)
-    : QObject(*new QPdfWriterPrivate),
-      QPagedPaintDevice(new QPdfPagedPaintDevicePrivate(d_func()))
+    : QPdfWriter()
 {
     Q_D(QPdfWriter);
 

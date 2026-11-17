@@ -73,6 +73,7 @@ protected:
     int metric(PaintDeviceMetric id) const override;
 
 private:
+    QPdfWriter();
     Q_DISABLE_COPY(QPdfWriter)
     Q_DECLARE_PRIVATE(QPdfWriter)
 };
