@@ -19,7 +19,6 @@
 #include <QtCore/QStringList>
 #include <QtCore/QList>
 #include <QtGui/QFontDatabase>
-#include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -60,6 +59,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QSupportedWritingSystems &);
 #endif
 
 class QFontRequestPrivate;
+class QFontEngine;
 class QFontEngineMulti;
 
 class Q_GUI_EXPORT QPlatformFontDatabase

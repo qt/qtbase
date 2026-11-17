@@ -10,6 +10,7 @@
 #include <QtCore/private/qstdweb_p.h>
 #include <QtCore/private/qeventdispatcher_wasm_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qfont_p.h>
 
 #include <emscripten.h>
 #include <emscripten/val.h>

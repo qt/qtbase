@@ -21,6 +21,7 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qt_windows.h>
 

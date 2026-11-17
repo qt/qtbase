@@ -38,6 +38,8 @@
 #if QT_CONFIG(sessionmanager)
 #  include "qwindowssessionmanager.h"
 #endif
+#include <QtGui/qpainter.h>
+#include <QtGui/qpen.h>
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>

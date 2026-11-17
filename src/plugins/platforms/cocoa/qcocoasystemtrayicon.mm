@@ -22,6 +22,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoaintegration.h"
 #include "qcocoascreen.h"
+#include <QtGui/qpainter.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
 // NSUserNotification was deprecated in macOS 11.

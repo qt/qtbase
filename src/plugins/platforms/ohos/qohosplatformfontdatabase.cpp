@@ -6,6 +6,7 @@
 
 #include "qohosplatformfontdatabase_p.h"
 #include "qohosqpaenums.h"
+#include <QtCore/qset.h>
 #include <QtCore/private/qnapi_p.h>
 #include <fontconfig/fontconfig.h>
 

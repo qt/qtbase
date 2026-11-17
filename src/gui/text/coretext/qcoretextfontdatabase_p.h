@@ -16,6 +16,7 @@
 //
 
 #include <qglobal.h>
+#include <QtCore/qset.h>
 
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformtheme.h>

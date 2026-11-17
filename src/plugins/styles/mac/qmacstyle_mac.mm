@@ -26,6 +26,7 @@
 #include <QtGui/qstylehints.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qappleiconengine_p.h>
+#include <QtGui/private/qfontengine_p.h>
 #include <QtGui/qpa/qplatformfontdatabase.h>
 #include <QtGui/qpa/qplatformtheme.h>
 #include <QtGui/qpa/qplatformwindow_p.h>

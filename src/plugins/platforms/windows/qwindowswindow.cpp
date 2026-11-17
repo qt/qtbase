@@ -3,7 +3,10 @@
 // Qt-Security score:significant reason:default
 
 #include <QtCore/qt_windows.h>
+#include <QtGui/qpainter.h>
+#include <QtGui/qpen.h>
 #include <QtGui/qstylehints.h>
+#include <QtGui/qtextoption.h>
 
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"

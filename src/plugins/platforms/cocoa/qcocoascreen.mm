@@ -16,6 +16,7 @@
 
 #include <IOKit/graphics/IOGraphicsLib.h>
 
+#include <QtGui/qpainter.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 

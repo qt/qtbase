@@ -22,6 +22,7 @@ QT_REQUIRE_CONFIG(directwrite3);
 
 #include "qwindowsfontdatabase_p.h"
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qset.h>
 #include <dwrite_3.h>
 
 QT_BEGIN_NAMESPACE
