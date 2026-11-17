@@ -4169,7 +4169,7 @@ void QWindowsWindow::requestUpdate()
                                 self->m_vsyncUpdatePending.storeRelease(UpdateState::Ready);
                                 self->deliverUpdateRequest();
                             }
-                        });
+                        }, Qt::QueuedConnection); // the callback may run on this thread
                     }
                 }
             });

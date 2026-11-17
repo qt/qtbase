@@ -163,6 +163,11 @@ void QDxgiVSyncService::beginFrame(LUID)
     // needed. Keep the adapter IDs with their ref counts (one per QRhi) and
     // the registered windows, drop everything else, then start from scratch.
 
+    recreateDxgiIfStale(lock);
+}
+
+void QDxgiVSyncService::recreateDxgiIfStale(QMutexLocker<QMutex> &lock)
+{
     if (dxgiFactory && !dxgiFactory->IsCurrent()) {
         qCDebug(lcQpaScreenUpdates, "QDxgiVSyncService: DXGI Factory is no longer Current");
         recreateDxgi(lock);
@@ -174,15 +179,37 @@ void QDxgiVSyncService::recreateDxgi(QMutexLocker<QMutex> &lock)
     QVarLengthArray<std::pair<LUID, int>, 8> luids;
     for (auto it = adapters.begin(), end = adapters.end(); it != end; ++it)
         luids.append({ it->luid, it->ref });
-    for (auto it = windows.begin(), end = windows.end(); it != end; ++it)
+    CallbackWindowList windowsWithOutput;
+    for (auto it = windows.begin(), end = windows.end(); it != end; ++it) {
+        if (it->output)
+            windowsWithOutput.append(it.key());
         cleanupWindowData(&*it);
+    }
+    QVector<AdapterData> staleAdapters = std::exchange(adapters, {});
+    IDXGIFactory2 *staleFactory = std::exchange(dxgiFactory, nullptr);
     lock.unlock();
-    teardownDxgi();
+    for (AdapterData &a : staleAdapters)
+        cleanupAdapterData(&a);
+    staleFactory->Release();
     for (const auto &[luid, ref] : luids)
         refAdapter(luid, ref);
     lock.relock();
     for (auto it = windows.begin(), end = windows.end(); it != end; ++it)
         updateWindowData(it.key(), &*it);
+
+    CallbackWindowList windowsThatLostTheirOutput;
+    for (QWindow *window : std::as_const(windowsWithOutput)) {
+        const auto it = windows.constFind(window);
+        if (it != windows.cend() && !it->output)
+            windowsThatLostTheirOutput.append(window);
+    }
+    if (!windowsThatLostTheirOutput.isEmpty()) {
+        const qint64 noVBlankTimestamp = 0;
+        for (const Callback &cb : std::as_const(callbacks)) {
+            if (cb)
+                cb(windowsThatLostTheirOutput, noVBlankTimestamp);
+        }
+    }
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -422,6 +449,7 @@ void QDxgiVSyncService::registerWindow(QWindow *window)
     QObject::connect(window, &QWindow::screenChanged, window, [this, window](QScreen *screen) {
         qCDebug(lcQpaScreenUpdates) << "QDxgiVSyncService: screen changed for window:" << window << screen;
         QMutexLocker lock(&mutex);
+        recreateDxgiIfStale(lock);
         auto it = windows.find(window);
         if (it != windows.end())
             updateWindowData(window, &*it);
