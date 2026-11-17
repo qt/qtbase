@@ -8,11 +8,13 @@
 #include <qpa/qplatformwindow.h>
 
 #include <QTest>
+
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QStringView>
 #include <QSignalSpy>
+#include <QtCore/qvarlengtharray.h>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
@@ -301,11 +303,10 @@ void tst_QHighDpi::screenDpiChangeWithWindow()
 
     // Create windows for screens
     QList<QScreen *> screens = app->screens();
-    QList<QWindow *> windows;
+    QVarLengthArray<QWindow> windows(screens.size());
     for (int i = 0; i < screens.count(); ++i) {
         QScreen *screen = screens[i];
-        QWindow *window = new QWindow();
-        windows.append(window);
+        QWindow *window = &windows[i];
         window->setGeometry(QRect(screen->geometry().center(), QSize(10, 10)));
         window->create();
         QCOMPARE(window->devicePixelRatio(), dpiValues[i] / standardBaseDpi);
@@ -322,7 +323,7 @@ void tst_QHighDpi::screenDpiChangeWithWindow()
 
     // Verify that window DPR changes on Screen DPI change.
     for (int i = 0; i < screens.count(); ++i) {
-        QWindow *window = windows[i];
+        QWindow *window = &windows[i];
         QCOMPARE(window->devicePixelRatio(), newDpiValues[i] / standardBaseDpi);
     }
 }
