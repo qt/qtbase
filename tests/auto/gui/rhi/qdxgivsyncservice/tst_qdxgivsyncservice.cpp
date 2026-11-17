@@ -3,6 +3,8 @@
 
 #include <QTest>
 #include <QWindow>
+#include <QtCore/qscopeguard.h>
+#include <QtCore/qthread.h>
 #include <rhi/qrhi.h>
 #include <QtGui/private/qdxgivsyncservice_p.h>
 
@@ -85,6 +87,7 @@ private slots:
     void initTestCase();
     void closeOneOfTwoWindows_data();
     void closeOneOfTwoWindows();
+    void notifiesWindowThatLosesItsOutput();
 };
 
 void tst_QDxgiVSyncService::initTestCase()
@@ -142,6 +145,41 @@ void tst_QDxgiVSyncService::closeOneOfTwoWindows()
     counter.reset();
     QTRY_VERIFY(counter.count() > 0);
     QVERIFY(service->supportsWindow(&a.window));
+}
+
+void tst_QDxgiVSyncService::notifiesWindowThatLosesItsOutput()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Simulating a stale DXGI factory requires a developer build");
+#else
+    RhiWindow a;
+    QVERIFY(a.create(QPoint(100, 100)));
+
+    QDxgiVSyncService *service = QDxgiVSyncService::instance();
+
+    QWindow neverCreated;
+    neverCreated.setGeometry(a.window.geometry());
+    service->registerWindow(&neverCreated);
+    const auto unregisterWindow = qScopeGuard([&] { service->unregisterWindow(&neverCreated); });
+    if (!service->supportsWindow(&neverCreated))
+        QSKIP("No DXGI output for the window (e.g. WARP)");
+
+    const QThread *thisThread = QThread::currentThread();
+    int notificationsOnThisThread = 0;
+    const qsizetype callbackId = service->registerCallback(
+            [&](const QDxgiVSyncService::CallbackWindowList &windows, qint64) {
+                if (QThread::currentThread() == thisThread && windows.contains(&neverCreated))
+                    ++notificationsOnThisThread;
+            });
+    const auto unregisterCallback = qScopeGuard([&] { service->unregisterCallback(callbackId); });
+
+    const QPoint outsideEveryOutput(-100000, -100000);
+    neverCreated.setGeometry(QRect(outsideEveryOutput, neverCreated.size()));
+    service->simulateStaleFactory();
+
+    QVERIFY(!service->supportsWindow(&neverCreated));
+    QCOMPARE(notificationsOnThisThread, 1);
+#endif
 }
 
 QTEST_MAIN(tst_QDxgiVSyncService)

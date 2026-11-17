@@ -67,9 +67,11 @@ public:
     // For windows not registered the result is always false.
     bool supportsWindow(QWindow *window);
 
-    // Callbacks are invoked on a vsync watcher thread. Whatever is done in
-    // there, it must be fast and cheap. Ideally fire a notification for the
-    // main thread somehow, and nothing else.
+    // Callbacks are invoked on a vsync watcher thread, or, for windows that
+    // lost their output, on the thread that re-created the DXGI factory, which
+    // may be the main thread. Whatever is done in there, it must be fast and
+    // cheap. Ideally fire a notification for the main thread somehow, and
+    // nothing else.
     using CallbackWindowList = QVarLengthArray<QWindow *, 16>;
     using Callback = std::function<void(const CallbackWindowList &windowList, qint64 timestampNs)>;
     qsizetype registerCallback(Callback cb); // result is an id, always >= 1
@@ -81,6 +83,7 @@ private:
     void destroy();
     void teardownDxgi();
     void recreateDxgi(QMutexLocker<QMutex> &lock);
+    void recreateDxgiIfStale(QMutexLocker<QMutex> &lock);
     static void global_destroy();
 
     struct AdapterData {
