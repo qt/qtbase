@@ -153,8 +153,6 @@ QWasmWindow::QWasmWindow(QWindow *w,
             QObject::connect(
                 window(), &QWindow::modalityChanged,
                 window(), [this](Qt::WindowModality) { onModalityChanged(); });
-
-    setParent(parent());
 }
 
 void QWasmWindow::registerEventHandlers()
@@ -361,6 +359,10 @@ bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
 
 void QWasmWindow::initialize()
 {
+    // Adds the window to the window tree once QWindow::handle() is set,
+    // since adding it can activate the window synchronously.
+    setParent(parent());
+
     auto initialGeometry = QPlatformWindow::initialGeometry(window(),
             windowGeometry(), defaultWindowSize, defaultWindowSize);
     m_normalGeometry = initialGeometry;
