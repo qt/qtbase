@@ -93,20 +93,6 @@ void tst_QIcoImageFormat::canRead()
     QCOMPARE(reader.canRead(), (isValid == 0 ? false : true));
 }
 
-class QSequentialFile : public QFile
-{
-public:
-    QSequentialFile(const QString &name) : QFile(name) {}
-
-    virtual ~QSequentialFile() {}
-
-    virtual bool isSequential() const override
-    {
-        return true;
-    }
-
-};
-
 void tst_QIcoImageFormat::SequentialFile_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -124,7 +110,12 @@ void tst_QIcoImageFormat::SequentialFile()
     QFETCH(QString, fileName);
     QFETCH(int, isValid);
 
-    QSequentialFile file{m_IconPath + u'/' + fileName};
+    struct SequentialFile : QFile {
+        using QFile::QFile;
+        bool isSequential() const override { return true; }
+    };
+
+    SequentialFile file{m_IconPath + u'/' + fileName};
 
     QVERIFY2(file.open(QFile::ReadOnly), qPrintable(file.errorString()));
     QImageReader reader(&file);
