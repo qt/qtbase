@@ -1417,15 +1417,15 @@ qt_configure_add_summary_entry(ARGS "libcpp_hardening")
 qt_configure_add_summary_entry(ARGS "relro_now_linker")
 qt_configure_add_summary_entry(
     ARGS "wasm-simd128"
-    CONDITION ( TEST_architecture_arch STREQUAL wasm )
+    CONDITION WASM
 )
 qt_configure_add_summary_entry(
     ARGS "wasm-exceptions"
-    CONDITION ( TEST_architecture_arch STREQUAL wasm )
+    CONDITION WASM
 )
 qt_configure_add_summary_entry(
     ARGS "wasm-jspi"
-    CONDITION ( TEST_architecture_arch STREQUAL wasm )
+    CONDITION WASM
 )
 qt_configure_add_summary_section(NAME "Target compiler supports")
 qt_configure_add_summary_entry(

@@ -10,4 +10,8 @@ target_sources(architecture_test PRIVATE arch.cpp)
 
 if(EMSCRIPTEN)
     target_compile_options(architecture_test PRIVATE -O2 -msimd128 -msse -msse2)
+    if(WASM64)
+        target_compile_options(architecture_test PRIVATE "SHELL:-s MEMORY64=1")
+        target_link_options(architecture_test PRIVATE "SHELL:-s MEMORY64=1" -mwasm64)
+    endif()
 endif()

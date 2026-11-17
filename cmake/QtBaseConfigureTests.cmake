@@ -126,6 +126,9 @@ function(qt_run_config_test_architecture)
     # Compile test to find the target architecture and sub-architectures.
     qt_get_platform_try_compile_vars(platform_try_compile_vars)
     list(APPEND flags ${platform_try_compile_vars})
+    if(WASM64)
+        list(APPEND flags "-DWASM64:BOOL=ON")
+    endif()
 
     set(first_arch "")
     set(architectures "")

@@ -61,6 +61,10 @@ if(QT_FEATURE_permissions AND APPLE)
 endif()
 
 if(EMSCRIPTEN)
+    # Qt6WasmMacros.cmake checks WASM64, which projects using Qt don't set otherwise.
+    if(@WASM64@)
+        set(WASM64 1)
+    endif()
     include("${CMAKE_CURRENT_LIST_DIR}/@QT_CMAKE_EXPORT_NAMESPACE@WasmMacros.cmake")
 endif()
 
