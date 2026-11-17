@@ -2031,21 +2031,29 @@ std::optional<QOhosDisplayInfo::JsDisplayId> QOhosWindowProxy::tryGetMainWindowJ
             Q_FUNC_INFO);
 }
 
-void QOhosWindowProxy::shiftAppWindowFocus(QOhosWindowProxy &targetProxy)
+bool QOhosWindowProxy::tryShiftAppWindowFocus(QOhosWindowProxy &targetProxy)
 {
-    QOhosJsThreadGateway::invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             if (m_jsScopeData->isWindowClosing() || targetProxy.m_jsScopeData->isWindowClosing()) {
-                taskPromise();
+                evalPromise(false);
                 return;
             }
 
             auto srcWindowId = getWindowPropertiesFromJsWindow(m_jsScopeData->jsWindowRef->jsObject()).id;
             auto targetWindowId = getWindowPropertiesFromJsWindow(targetProxy.m_jsScopeData->jsWindowRef->jsObject()).id;
+            auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
                 "@ohos.window.shiftAppWindowFocus(*)", {srcWindowId.value(), targetWindowId.value()})
-            .onCatch(QtOhos::makeErrorLoggingJsCallback("@ohos.window.shiftAppWindowFocus()"))
-            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+            .onThen(
+                [thenPromise = std::move(thenCatchPromises.first)]() {
+                    thenPromise(true);
+                })
+            .onCatch(
+                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                    QtOhos::logJsCallbackError(cbInfo, "Got error from @ohos.window.shiftAppWindowFocus()");
+                    catchPromise(false);
+                });
         },
         Q_FUNC_INFO);
 }

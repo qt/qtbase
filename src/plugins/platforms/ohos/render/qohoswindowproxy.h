@@ -239,7 +239,7 @@ public:
         const std::function<bool(QOhosJsState &jsState, const QArkUi::JsWindowRef &)> &predicate);
 
     std::optional<QOhosDisplayInfo::JsDisplayId> tryGetMainWindowJsDisplayId() const;
-    void shiftAppWindowFocus(QOhosWindowProxy &targetProxy);
+    bool tryShiftAppWindowFocus(QOhosWindowProxy &targetProxy);
 
 private:
     enum class EventHandlerFlagBits

@@ -1142,7 +1142,7 @@ void QOhosView::requestActivate()
             const auto *focusView = viewOrNull(QGuiApplicationPrivate::focus_window);
             if (focusView && focusView != this) {
                 if (focusView->m_ohosWindowProxy) {
-                    focusView->m_ohosWindowProxy->shiftAppWindowFocus(*m_ohosWindowProxy);
+                    focusView->m_ohosWindowProxy->tryShiftAppWindowFocus(*m_ohosWindowProxy);
                 } else {
                     // If the previously focused window is an EmbeddedWindow.
                     sendAsyncSyntheticWindowActiveEvent();
