@@ -34,7 +34,11 @@ QGifPlugin::~QGifPlugin()
 
 QImageIOPlugin::Capabilities QGifPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
-    if (format == "gif" || (device && device->isReadable() && QGifHandler::canRead(device)))
+    if (format == "gif")
+        return Capabilities(CanRead);
+    if (!format.isEmpty())
+        return { };
+    if (device && device->isReadable() && QGifHandler::canRead(device))
         return Capabilities(CanRead);
     return { };
 }
