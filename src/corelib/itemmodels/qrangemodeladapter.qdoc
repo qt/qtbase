@@ -1693,6 +1693,17 @@
 
     For tables and trees, dereferencing the iterator returns a RowReference for
     the pointed-to row.
+
+    The \c value_type of the iterator is the type of the items or rows stored
+    in the range, not the wrapper type. Algorithms that store values in
+    temporaries, such as \c{std::ranges::max()}, therefore operate on copies,
+    and don't modify the model.
+
+    \note The implementations of \c{std::ranges::min()} and
+    \c{std::ranges::max()} in libstdc++ before GCC 16 store the wrapper instead
+    of a copy of the value, and modify the model when called with a mutable
+    adapter. Call them with a const adapter, for instance using
+    \c{std::as_const()}.
 */
 
 /*!
@@ -1720,7 +1731,7 @@
 
     The iterator models \c{std::random_access_iterator}. Dereferencing the iterator
     returns a DataReference wrapper for the value at the pointed-to item in
-    the model.
+    the model. The \c value_type of the iterator is the type of the item.
 */
 
 /*!

@@ -5,6 +5,14 @@
 
 #include "../qrangemodel/data.h"
 
+// std::ranges::min() and max() of a range store the result in a temporary.
+// libstdc++ before GCC 16 declares that temporary as auto, so with a mutable
+// adapter it is a copy of the proxy reference, and assigning to it modifies the
+// model (GCC bug 111861). Other implementations use the range's value_type.
+#if defined(__cpp_lib_ranges) && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 16)
+#  define QRMA_RANGES_MINMAX_USES_VALUE_TYPE
+#endif
+
 class tst_QRangeModelAdapter : public QRangeModelTest
 {
     Q_OBJECT
@@ -61,6 +69,7 @@ private slots:
 
     void frontBack();
     void reverseIterate();
+    void iteratorValueType();
 
     void treeIterate();
     void treeAccess();

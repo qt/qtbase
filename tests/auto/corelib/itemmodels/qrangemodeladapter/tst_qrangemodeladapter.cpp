@@ -13,6 +13,8 @@
 #include <QtCore/qrangemodeladapter.h>
 #include <QtCore/qregularexpression.h>
 
+#include <numeric>
+
 using namespace Qt::StringLiterals;
 
 void tst_QRangeModelAdapter::expectInvalidIndex(int count)
@@ -973,6 +975,71 @@ void tst_QRangeModelAdapter::referenceComparison()
         QVERIFY(*(adapter.cbegin() + 1) != *(adapter.cbegin() + 2));
         QVERIFY(adapter.at(1) == *(adapter.cbegin() + 1));
         QVERIFY(adapter.at(1) != *(adapter.cbegin() + 2));
+    }
+}
+
+void tst_QRangeModelAdapter::iteratorValueType()
+{
+    { // list
+        std::vector<int> data(50);
+        std::iota(data.rbegin(), data.rend(), 0);
+        const auto original = data;
+        QRangeModelAdapter adapter(std::ref(data));
+
+        // a copy of the value is independent of the model
+        auto it = adapter.begin();
+        typename std::iterator_traits<decltype(it)>::value_type value = *it;
+        *it = -1;
+        QCOMPARE(value, 49);
+        *it = value;
+        QCOMPARE(data, original);
+
+#ifdef QRMA_RANGES_MINMAX_USES_VALUE_TYPE
+        // which is what algorithms that hold elements in temporaries rely on
+        QCOMPARE(std::ranges::max(adapter), 49);
+        QCOMPARE(std::ranges::min(adapter), 0);
+        QCOMPARE(data, original);
+#endif
+#ifdef __cpp_lib_ranges
+        // the iterators of a const adapter don't return proxies
+        QCOMPARE(std::ranges::max(std::as_const(adapter)), 49);
+        QCOMPARE(std::ranges::min(std::as_const(adapter)), 0);
+        QCOMPARE(data, original);
+#endif
+    }
+
+    { // table
+        std::vector<std::vector<int>> data;
+        for (int i = 0; i < 40; ++i)
+            data.push_back({(i * 17) % 40, i, 40 - i});
+        const auto original = data;
+        QRangeModelAdapter adapter(std::ref(data));
+
+        auto it = adapter.begin();
+        typename std::iterator_traits<decltype(it)>::value_type row = *it;
+        *it = std::vector<int>{-1, -1, -1};
+        QCOMPARE(row, (std::vector<int>{0, 0, 40}));
+        *it = row;
+        QCOMPARE(data, original);
+
+#ifdef __cpp_lib_ranges
+        const auto byFirstColumn = [](const auto &lhs, const auto &rhs) {
+            return lhs.at(0) < rhs.at(0);
+        };
+#ifdef QRMA_RANGES_MINMAX_USES_VALUE_TYPE
+        QCOMPARE(std::ranges::max(adapter, byFirstColumn), (std::vector<int>{39, 7, 33}));
+        QCOMPARE(data, original);
+
+        // the columns of a row
+        QCOMPARE(std::ranges::max(*adapter.begin()), 40);
+        QCOMPARE(data, original);
+#endif
+        // assigning to a reference to a const row rebinds it
+        QCOMPARE(std::ranges::max(std::as_const(adapter), byFirstColumn),
+                 (std::vector<int>{39, 7, 33}));
+        QCOMPARE(std::ranges::max(*std::as_const(adapter).begin()), 40);
+        QCOMPARE(data, original);
+#endif
     }
 }
 

@@ -256,6 +256,36 @@ struct RowView
     using value_type = typename iterator::value_type;
     using difference_type = typename iterator::difference_type;
 
+    RowView() = default;
+    RowView(Iterator begin, Sentinel end)
+        : m_begin(std::move(begin)), m_end(std::move(end))
+    {}
+    RowView(const RowView &) = default;
+    RowView(RowView &&) = default;
+    RowView &operator=(const RowView &) = default;
+    RowView &operator=(RowView &&) = default;
+    ~RowView() = default;
+
+    template <typename Row>
+    using if_viewable_row = std::enable_if_t<std::conjunction_v<
+                std::negation<std::is_same<Row, RowView>>,
+                std::is_convertible<decltype(QRangeModelDetails::begin(std::declval<const Row &>())),
+                                    Iterator>,
+                std::is_convertible<decltype(QRangeModelDetails::end(std::declval<const Row &>())),
+                                    Sentinel>
+             >, bool>;
+
+    // A view of a row is implicitly constructible from the row; this makes the
+    // view the common reference type of the row type and the row reference
+    // type of QRangeModelAdapter's iterators.
+    template <typename Row, if_viewable_row<Row> = true>
+    RowView(const Row &row)
+        : m_begin(QRangeModelDetails::begin(row)), m_end(QRangeModelDetails::end(row))
+    {}
+    // The view would dangle if constructed from a temporary row.
+    template <typename Row, if_viewable_row<Row> = true>
+    RowView(const Row &&row) = delete;
+
     friend bool comparesEqual(const RowView &lhs, const RowView &rhs) noexcept
     {
         return lhs.m_begin == rhs.m_begin;

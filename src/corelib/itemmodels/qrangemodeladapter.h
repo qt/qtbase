@@ -449,7 +449,8 @@ public:
         using Base = ColumnIteratorBase<ColumnIterator, QRangeModelAdapter>;
     public:
         using difference_type = typename Base::difference_type;
-        using value_type = DataReference;
+        // not the proxy, see RowIterator::value_type
+        using value_type = data_type;
         using reference = DataReference;
         using pointer = reference;
 
@@ -1056,9 +1057,13 @@ public:
         using Base::Base;
 
         using difference_type = typename Base::difference_type;
+        // The value_type must not be the proxy type returned when
+        // dereferencing the iterator, otherwise algorithms that make copies of
+        // values (e.g. std::ranges::max) would write into the model through
+        // the proxy.
         using value_type = std::conditional_t<is_list<Impl>,
-                                              DataReference,
-                                              RowReference>;
+                                              data_type,
+                                              std::remove_cv_t<row_type>>;
         using reference = std::conditional_t<is_list<Impl>,
                                              DataReference,
                                              RowReference>;
@@ -2007,6 +2012,56 @@ template <typename Range,
           QRangeModelDetails::if_can_construct<Range> = true>
 QRangeModelAdapter(Range &&) -> QRangeModelAdapter<Range, void>;
 
+#if defined(__cpp_lib_concepts) && !defined(Q_QDOC)
+namespace QRangeModelDetails {
+// The reference types returned when dereferencing QRangeModelAdapter's
+// iterators are proxies that convert to a const version of the stored item
+// (const_value_type) or row (const_row_type).
+template <typename Proxy>
+struct proxy_const_type {};
+template <typename Proxy>
+    requires requires { typename Proxy::const_value_type; }
+struct proxy_const_type<Proxy>
+{ using type = typename Proxy::const_value_type; };
+template <typename Proxy>
+    requires requires { typename Proxy::const_row_type; }
+struct proxy_const_type<Proxy>
+{ using type = typename Proxy::const_row_type; };
+
+// If the stored type also converts to that const type, then that is the
+// common reference of proxy and stored type.
+template <typename Proxy, typename Value>
+concept proxy_for = !std::is_same_v<Proxy, Value>
+    && requires { typename proxy_const_type<Proxy>::type; }
+    && std::is_convertible_v<Proxy, typename proxy_const_type<Proxy>::type>
+    && std::is_convertible_v<Value &, typename proxy_const_type<Proxy>::type>
+    && std::is_convertible_v<const Value &, typename proxy_const_type<Proxy>::type>;
+}
+#endif
+
 QT_END_NAMESPACE
+
+#if defined(__cpp_lib_concepts) && !defined(Q_QDOC)
+// Make the const version of the item or row the common reference of the proxy
+// and the stored type, so that the iterators of QRangeModelAdapter model the
+// C++20 iterator concepts, even if the stored type can't be copied.
+namespace std {
+template <typename Proxy, typename Value,
+          template <typename> class ProxyQual, template <typename> class ValueQual>
+    requires QT_PREPEND_NAMESPACE(QRangeModelDetails)::proxy_for<Proxy, Value>
+struct basic_common_reference<Proxy, Value, ProxyQual, ValueQual>
+{
+    using type = typename QT_PREPEND_NAMESPACE(QRangeModelDetails)::proxy_const_type<Proxy>::type;
+};
+
+template <typename Value, typename Proxy,
+          template <typename> class ValueQual, template <typename> class ProxyQual>
+    requires QT_PREPEND_NAMESPACE(QRangeModelDetails)::proxy_for<Proxy, Value>
+struct basic_common_reference<Value, Proxy, ValueQual, ProxyQual>
+{
+    using type = typename QT_PREPEND_NAMESPACE(QRangeModelDetails)::proxy_const_type<Proxy>::type;
+};
+} // namespace std
+#endif
 
 #endif // QRANGEMODELADAPTER_H

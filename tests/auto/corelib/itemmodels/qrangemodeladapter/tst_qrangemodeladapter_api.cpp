@@ -332,6 +332,46 @@ static constexpr void iterator_API_helper()
 
 void tst_QRangeModelAdapter::iterator_API()
 {
+    // The value_type of the iterators is the stored type, not the proxy
+    // reference type, so that algorithms can make independent copies.
+    { // the const view of a row of pointers is constructible from the row,
+      // but not from a temporary, as the view would dangle
+        using Row = std::vector<Object *>;
+        using View = QRangeModelDetails::RowView<Row, Row::const_iterator, Row::const_iterator>;
+        static_assert(std::is_convertible_v<const Row &, View>);
+        static_assert(std::is_convertible_v<Row &, View>);
+        static_assert(!std::is_constructible_v<View, Row &&>);
+        static_assert(!std::is_constructible_v<View, const Row &&>);
+        static_assert(std::is_copy_constructible_v<View>);
+        static_assert(std::is_copy_assignable_v<View>);
+        static_assert(std::is_nothrow_move_constructible_v<View>);
+    }
+    {
+        using Adapter = AdapterType<std::vector<int>>;
+        static_assert(std::is_same_v<std::iterator_traits<Adapter::iterator>::value_type, int>);
+        static_assert(std::is_same_v<std::iterator_traits<Adapter::iterator>::reference,
+                                     Adapter::DataReference>);
+    }
+    {
+        using Row = std::vector<QString>;
+        using Adapter = AdapterType<QList<Row>>;
+        static_assert(std::is_same_v<std::iterator_traits<Adapter::iterator>::value_type, Row>);
+        static_assert(std::is_same_v<std::iterator_traits<Adapter::iterator>::reference,
+                                     Adapter::RowReference>);
+        static_assert(std::is_same_v<std::iterator_traits<Adapter::ColumnIterator>::value_type,
+                                     QString>);
+    }
+    {
+        using Adapter = AdapterType<value_tree>;
+        static_assert(std::is_same_v<std::iterator_traits<Adapter::iterator>::value_type,
+                                     tree_row>);
+#if defined (__cpp_concepts) && defined(__cpp_lib_concepts)
+        // tree_row is move-only
+        static_assert(!std::is_copy_constructible_v<tree_row>);
+        static_assert(std::random_access_iterator<Adapter::iterator>);
+        static_assert(std::random_access_iterator<Adapter::const_iterator>);
+#endif
+    }
 #if defined (__cpp_concepts)
     {
         using Row = std::array<int, 5>;
