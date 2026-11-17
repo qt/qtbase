@@ -214,9 +214,6 @@ void saveDataToFileInChunks(emscripten::val fileHandle, const QByteArray &data)
             };
 
             static constexpr size_t desiredChunkSize = 1024u;
-#if defined(__EMSCRIPTEN_SHARED_MEMORY__)
-            qstdweb::Uint8Array chunkArray(desiredChunkSize);
-#endif
 
             auto state = std::make_shared<State>();
             state->written = 0u;
@@ -240,10 +237,8 @@ void saveDataToFileInChunks(emscripten::val fileHandle, const QByteArray &data)
                     {
                         .thenFunc = state->continuation,
                     },
-                    chunkArray.copyFrom(data.constData() + state->written, currentChunkSize)
-                        .val()
-                        .call<emscripten::val>("subarray", emscripten::val(0),
-                                               emscripten::val(currentChunkSize)));
+                    Uint8Array::copyFrom(data.constData() + state->written, currentChunkSize)
+                        .val());
 #else
                 Promise::make(writable, QStringLiteral("write"),
                     {

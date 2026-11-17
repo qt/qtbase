@@ -22,23 +22,17 @@ void QWasmAccessibilityEnable()
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 
 namespace {
-EM_JS(emscripten::EM_VAL, getActiveElement_js, (emscripten::EM_VAL undefHandle), {
-    var activeEl = document.activeElement;
-    while (true) {
-        if (!activeEl) {
-            return undefHandle;
-        } else if (activeEl.shadowRoot) {
-            activeEl = activeEl.shadowRoot.activeElement;
-        } else {
-            return Emval.toHandle(activeEl);
-        }
-    }
-})
-
+// Returns the focused element, descending into shadow roots.
 static emscripten::val getActiveElement()
 {
-    return emscripten::val::take_ownership(
-        getActiveElement_js(emscripten::val::undefined().as_handle()));
+    emscripten::val activeElement = emscripten::val::global("document")["activeElement"];
+    while (!activeElement.isNull() && !activeElement.isUndefined()) {
+        const emscripten::val shadowRoot = activeElement["shadowRoot"];
+        if (shadowRoot.isNull() || shadowRoot.isUndefined())
+            return activeElement;
+        activeElement = shadowRoot["activeElement"];
+    }
+    return emscripten::val::undefined();
 }
 
 #ifndef QT_NO_DEBUG

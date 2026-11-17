@@ -6,7 +6,6 @@
 #include <emscripten/val.h>
 
 using emscripten::val;
-using emscripten::EM_VAL;
 
 
 val createInputElemet(std::string subtype)
@@ -17,11 +16,12 @@ val createInputElemet(std::string subtype)
     return input;
 }
 
-EM_JS(EM_VAL, createCalendar, (), {
-    var calendar = document.createElement("calendar-date");
-    calendar.innerHTML = "<calendar-month></calendar-month>";
-    return Emval.toHandle(calendar);
-});
+val createCalendar()
+{
+    val calendar = val::global("document").call<val>("createElement", std::string("calendar-date"));
+    calendar.set("innerHTML", std::string("<calendar-month></calendar-month>"));
+    return calendar;
+}
 
 val createCallyElemet()
 {
@@ -38,7 +38,7 @@ val createCallyElemet()
     }();
     Q_ASSERT(initializedCalendarComponent);
 
-    return val::take_ownership(createCalendar());
+    return createCalendar();
 }
 
 class ForeginWindowContainer : public QWidget
