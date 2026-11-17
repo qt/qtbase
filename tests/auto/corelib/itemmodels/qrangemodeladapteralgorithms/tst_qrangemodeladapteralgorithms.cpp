@@ -46,6 +46,11 @@ private slots:
     void modifyingRangesAlgorithms();
 
     void reorderingNotSupported();
+
+    void insertingListAlgorithms();
+    void insertingStringListAlgorithms();
+    void insertingTableAlgorithms();
+    void insertingTreeAlgorithms();
 };
 
 // Calls a helper function that verifies with the QtTest macros, and returns
@@ -124,11 +129,35 @@ public:
         return result;
     }
 
+    // the (first, last) arguments of each emission of rowsInserted
+    QList<std::pair<int, int>> insertedRows(const QModelIndex &parent = {}) const
+    {
+        QList<std::pair<int, int>> result;
+        for (const QList<QVariant> &arguments : spy("rowsInserted")) {
+            if (arguments.at(0).value<QModelIndex>() == parent)
+                result.emplace_back(arguments.at(1).toInt(), arguments.at(2).toInt());
+        }
+        return result;
+    }
+
     void clear()
     {
         for (const auto &spy : m_spies)
             spy->clear();
     }
+
+private:
+    const QSignalSpy &spy(QByteArrayView name) const
+    {
+        for (const auto &spy : m_spies) {
+            const QByteArray signal = spy->signal();
+            if (signal.startsWith(name) && signal.at(name.size()) == '(')
+                return *spy;
+        }
+        Q_UNREACHABLE();
+    }
+
+public:
 
 private:
     QAbstractItemModelTester m_tester;
@@ -989,6 +1018,207 @@ void tst_QRangeModelAdapterAlgorithms::reorderingNotSupported()
     // the const iterators can't be written to
     static_assert(!std::permutable<ListAdapter::const_iterator>);
 #endif
+}
+
+namespace {
+
+const QStringList insertionSignals = {u"rowsAboutToBeInserted"_s, u"rowsInserted"_s};
+
+// one row inserted at each of the given rows
+QList<std::pair<int, int>> singleRows(std::initializer_list<int> rows)
+{
+    QList<std::pair<int, int>> result;
+    for (int row : rows)
+        result.emplace_back(row, row);
+    return result;
+}
+
+} // namespace
+
+void tst_QRangeModelAdapterAlgorithms::insertingListAlgorithms()
+{
+    std::vector<int> data = {0, 1};
+    QRangeModelAdapter adapter(std::ref(data));
+    ModelObserver observer(adapter.model());
+    const std::vector<int> source = {10, 11, 12};
+
+    // std::back_inserter appends each element with push_back
+    std::copy(source.begin(), source.end(), std::back_inserter(adapter));
+    QCOMPARE(data, (std::vector<int>{0, 1, 10, 11, 12}));
+    QCOMPARE(observer.insertedRows(), singleRows({2, 3, 4}));
+    QCOMPARE(observer.emittedSignalNames(), insertionSignals);
+    VERIFY_HELPER(verifyListModel(adapter, data));
+    observer.clear();
+
+    // std::front_inserter prepends each element with push_front, so the
+    // elements end up in reverse order
+    std::copy(source.begin(), source.end(), std::front_inserter(adapter));
+    QCOMPARE(data, (std::vector<int>{12, 11, 10, 0, 1, 10, 11, 12}));
+    QCOMPARE(observer.insertedRows(), singleRows({0, 0, 0}));
+    QCOMPARE(observer.emittedSignalNames(), insertionSignals);
+    VERIFY_HELPER(verifyListModel(adapter, data));
+    observer.clear();
+
+    // std::inserter inserts each element with insert(), and continues after
+    // the inserted element, so the elements stay in order
+    data = {0, 1};
+    adapter.assign(data); // reset to a known state
+    observer.clear();
+    std::copy(source.begin(), source.end(), std::inserter(adapter, adapter.begin() + 1));
+    QCOMPARE(data, (std::vector<int>{0, 10, 11, 12, 1}));
+    QCOMPARE(observer.insertedRows(), singleRows({1, 2, 3}));
+    QCOMPARE(observer.emittedSignalNames(), insertionSignals);
+    VERIFY_HELPER(verifyListModel(adapter, data));
+    observer.clear();
+
+    // generating, transforming, and filtering algorithms
+    data = {};
+    adapter.assign(data);
+    observer.clear();
+    std::fill_n(std::back_inserter(adapter), 2, 7);
+    int next = 0;
+    std::generate_n(std::back_inserter(adapter), 3, [&next] { return next++; });
+    std::transform(source.begin(), source.end(), std::back_inserter(adapter),
+                   [](int value) { return value * 2; });
+    std::copy_if(source.begin(), source.end(), std::back_inserter(adapter),
+                 [](int value) { return value % 2 == 0; });
+    QCOMPARE(data, (std::vector<int>{7, 7, 0, 1, 2, 20, 22, 24, 10, 12}));
+    QCOMPARE(observer.insertedRows(), singleRows({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
+    QCOMPARE(observer.emittedSignalNames(), insertionSignals);
+    VERIFY_HELPER(verifyListModel(adapter, data));
+    observer.clear();
+
+    // copying from another adapter
+    std::vector<int> otherData = {100, 101};
+    const QRangeModelAdapter other(std::ref(otherData));
+    std::copy(other.cbegin(), other.cend(), std::inserter(adapter, adapter.begin()));
+    QCOMPARE(data.at(0), 100);
+    QCOMPARE(data.at(1), 101);
+    QCOMPARE(observer.insertedRows(), singleRows({0, 1}));
+    VERIFY_HELPER(verifyListModel(adapter, data));
+
+#if defined(__cpp_lib_ranges)
+    observer.clear();
+    std::ranges::copy(source | std::views::reverse, std::back_inserter(adapter));
+    QCOMPARE(data.back(), 10);
+    QCOMPARE(observer.insertedRows(), singleRows({12, 13, 14}));
+    VERIFY_HELPER(verifyListModel(adapter, data));
+#endif
+}
+
+void tst_QRangeModelAdapterAlgorithms::insertingStringListAlgorithms()
+{
+    QStringList data = {u"a"_s, u"d"_s};
+    QRangeModelAdapter adapter(&data);
+    ModelObserver observer(adapter.model());
+
+    const QStringList source = {u"b"_s, u"c"_s};
+    std::copy(source.begin(), source.end(), std::inserter(adapter, adapter.begin() + 1));
+    QCOMPARE(data, (QStringList{u"a"_s, u"b"_s, u"c"_s, u"d"_s}));
+    QCOMPARE(observer.insertedRows(), singleRows({1, 2}));
+
+    // moving the elements
+    QStringList moved = {u"e"_s, u"f"_s};
+    std::move(moved.begin(), moved.end(), std::back_inserter(adapter));
+    QCOMPARE(data, (QStringList{u"a"_s, u"b"_s, u"c"_s, u"d"_s, u"e"_s, u"f"_s}));
+    QVERIFY(moved.at(0).isEmpty());
+    QCOMPARE(observer.insertedRows(), singleRows({1, 2, 4, 5}));
+    QCOMPARE(observer.emittedSignalNames(), insertionSignals);
+    VERIFY_HELPER(verifyListModel(adapter, data));
+}
+
+void tst_QRangeModelAdapterAlgorithms::insertingTableAlgorithms()
+{
+    using Row = std::vector<int>;
+    std::vector<Row> data = {{0, 0, 0}};
+    QRangeModelAdapter adapter(std::ref(data));
+    ModelObserver observer(adapter.model());
+
+    const std::vector<Row> source = {{1, 10, 100}, {2, 20, 200}};
+    std::copy(source.begin(), source.end(), std::back_inserter(adapter));
+    std::transform(source.begin(), source.end(), std::front_inserter(adapter),
+                   [](const Row &row) { return Row{-row.at(0), -row.at(1), -row.at(2)}; });
+    std::copy(source.begin(), source.end(), std::inserter(adapter, adapter.begin() + 2));
+
+    const std::vector<Row> expected = {
+        {-2, -20, -200},
+        {-1, -10, -100},
+        {1, 10, 100},
+        {2, 20, 200},
+        {0, 0, 0},
+        {1, 10, 100},
+        {2, 20, 200},
+    };
+    QCOMPARE(data, expected);
+    QCOMPARE(observer.insertedRows(), singleRows({1, 2, 0, 0, 2, 3}));
+    QCOMPARE(observer.emittedSignalNames(), insertionSignals);
+
+    const QAbstractItemModel *model = adapter.model();
+    QCOMPARE(model->rowCount(), int(expected.size()));
+    QCOMPARE(model->columnCount(), 3);
+    for (int row = 0; row < model->rowCount(); ++row) {
+        for (int column = 0; column < model->columnCount(); ++column)
+            QCOMPARE(model->index(row, column).data(), expected.at(row).at(column));
+    }
+}
+
+void tst_QRangeModelAdapterAlgorithms::insertingTreeAlgorithms()
+{
+    auto tree = createValueTree();
+    QRangeModelAdapter adapter(std::ref(tree));
+    ModelObserver observer(adapter.model());
+
+    const auto verifyParents = [&tree] {
+        for (const tree_row &row : tree) {
+            QCOMPARE(row.parentRow(), nullptr);
+            if (row.childRows()) {
+                for (const tree_row &child : *row.childRows())
+                    QCOMPARE(child.parentRow(), &row);
+            }
+        }
+    };
+
+    // rows are move-only, so move them into the model
+    std::vector<tree_row> children;
+    children.emplace_back(u"2.4"_s, u"two.four"_s);
+    children.emplace_back(u"2.5"_s, u"two.five"_s);
+    auto branch = adapter.at(1).children();
+    std::move(children.begin(), children.end(), std::back_inserter(branch));
+    QCOMPARE(branch.size(), 5);
+    QCOMPARE(branch.back()->value(), u"2.5"_s);
+    const QModelIndex branchIndex = adapter.index(1, 0);
+    QCOMPARE(observer.insertedRows(branchIndex), singleRows({3, 4}));
+    QCOMPARE(observer.insertedRows(), {});
+    VERIFY_HELPER(verifyParents());
+    observer.clear();
+
+    // inserting top-level rows moves the existing rows in the vector; the
+    // children of the moved rows must still have the correct parent
+    int next = 0;
+    std::generate_n(std::front_inserter(adapter), 3, [&next] {
+        const QString value = QString::number(--next);
+        return tree_row{value, value};
+    });
+    std::generate_n(std::inserter(adapter, adapter.begin() + 4), 2, [&next] {
+        const QString value = QString::number(--next);
+        return tree_row{value, value};
+    });
+    QCOMPARE(adapter.size(), 10);
+    QStringList values;
+    std::transform(adapter.cbegin(), adapter.cend(), std::back_inserter(values),
+                   [](const auto &row) { return row->value(); });
+    QCOMPARE(values, (QStringList{u"-3"_s, u"-2"_s, u"-1"_s, u"1"_s, u"-4"_s, u"-5"_s,
+                                  u"2"_s, u"3"_s, u"4"_s, u"5"_s}));
+    QCOMPARE(observer.insertedRows(), singleRows({0, 0, 0, 4, 5}));
+    QCOMPARE(observer.emittedSignalNames(), insertionSignals);
+    VERIFY_HELPER(verifyParents());
+
+    // the model still finds the children of the moved row
+    const QModelIndex movedBranch = adapter.index(6, 0);
+    QCOMPARE(movedBranch.data().toString(), u"2"_s);
+    QCOMPARE(adapter.model()->rowCount(movedBranch), 5);
+    QCOMPARE(adapter.model()->index(4, 0, movedBranch).data().toString(), u"2.5"_s);
+    QCOMPARE(adapter.model()->parent(adapter.model()->index(4, 0, movedBranch)), movedBranch);
 }
 
 QTEST_MAIN(tst_QRangeModelAdapterAlgorithms)
