@@ -2879,28 +2879,6 @@ void QMenu::paintEvent(QPaintEvent *e)
     p.drawControl(QStyle::CE_MenuEmptyArea, menuOpt);
 }
 
-/*!
-  \reimp
-*/
-void QMenu::resizeEvent(QResizeEvent *e)
-{
-    Q_D(QMenu);
-    QWidget::resizeEvent(e);
-
-    if (d->scroll && e->oldSize().height() > 0
-        && e->size().height() != e->oldSize().height()) {
-        const bool scrolledToBottom =
-            (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
-            && !(d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollDown);
-        if (scrolledToBottom) {
-            const int dh = e->size().height() - e->oldSize().height();
-            d->scroll->scrollOffset = qMin(0, d->scroll->scrollOffset + dh);
-        }
-    }
-    d->itemsDirty = true;
-    d->updateActionRects();
-}
-
 #if QT_CONFIG(wheelevent)
 /*!
   \reimp
@@ -3077,6 +3055,17 @@ bool QMenu::event(QEvent *e)
         option.initFrom(this);
         if (style()->styleHint(QStyle::SH_Menu_Mask, &option, this, &menuMask)) {
             setMask(menuMask.region);
+        }
+        const QResizeEvent *re = static_cast<QResizeEvent *>(e);
+        if (d->scroll && re->oldSize().height() > 0
+            && re->size().height() != re->oldSize().height()) {
+            const bool scrolledToBottom =
+                (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
+                && !(d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollDown);
+            if (scrolledToBottom) {
+                const int dh = re->size().height() - re->oldSize().height();
+                d->scroll->scrollOffset = qMin(0, d->scroll->scrollOffset + dh);
+            }
         }
         d->itemsDirty = 1;
         d->updateActionRects();
