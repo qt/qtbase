@@ -104,6 +104,7 @@ private slots:
     void windowsTransientChildren();
     void requestUpdate();
     void initTestCase();
+    void cleanupTestCase();
     void stateChange_data();
     void stateChange();
     void flags();
@@ -130,10 +131,8 @@ private slots:
 private:
     QPoint m_availableTopLeft;
     QSize m_testWindowSize;
-    QPointingDevice *touchDevice = QTest::createTouchDevice();
-    QPointingDevice *touchDeviceWithMouseEmulation =
-            QTest::createTouchDevice(QInputDevice::DeviceType::TouchScreen,
-                                     QInputDevice::Capability::Position | QInputDevice::Capability::MouseEmulation);
+    QPointingDevice *touchDevice = nullptr;
+    QPointingDevice *touchDeviceWithMouseEmulation = nullptr;
 };
 
 static bool isPlatformWayland()
@@ -153,6 +152,11 @@ void tst_QWindow::initTestCase()
     if (QNativeInterface::QAndroidApplication::sdkVersion() == 33)
         QSKIP("Is flaky on Android 13 / RHEL 8.6 and 8.8 (QTQAINFRA-5606)");
 #endif
+    touchDevice = QTest::createTouchDevice();
+    touchDeviceWithMouseEmulation =
+                QTest::createTouchDevice(QInputDevice::DeviceType::TouchScreen,
+                                         QInputDevice::Capability::Position | QInputDevice::Capability::MouseEmulation);
+
     // Size of reference window, 200 for < 2000, scale up for larger screens
     // to avoid Windows warnings about minimum size for decorated windows.
     int width = 200;
@@ -166,6 +170,12 @@ void tst_QWindow::initTestCase()
     // Make sure test runs consistently on all compositors by force-disabling window decorations
     if (isPlatformWayland())
         qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
+}
+
+void tst_QWindow::cleanupTestCase()
+{
+    delete std::exchange(touchDevice, nullptr);
+    delete std::exchange(touchDeviceWithMouseEmulation, nullptr);
 }
 
 void tst_QWindow::cleanup()
