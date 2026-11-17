@@ -1296,10 +1296,13 @@ GLuint QOpenGLFramebufferObject::takeTexture(int colorAttachmentIndex)
         if (current && current->shareGroup() == d->fbo_guard->group() && isBound())
             release();
         auto &guard = d->colorAttachments[colorAttachmentIndex].guard;
-        id = guard ? guard->id() : 0;
-        // Do not call free() on texture_guard, just null it out.
-        // This way the texture will not be deleted when the guard is destroyed.
-        guard = nullptr;
+        if (guard) {
+            // Give up ownership of the texture, so it will not be deleted
+            // when the guard is freed, then free (i.e. destroy) the guard.
+            id = guard->take();
+            guard->free();
+            guard = nullptr;
+        }
     }
     return id;
 }
