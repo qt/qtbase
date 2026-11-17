@@ -580,7 +580,7 @@ void tst_QPrinter::printDialogCompleter()
     dialog.setOption(QAbstractPrintDialog::PrintToFile);
     dialog.show();
 
-    QVERIFY(QTest::qWaitForWindowActive(&dialog));
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
     QTest::keyClick(&dialog, Qt::Key_Tab);
     QTest::keyClick(&dialog, 'P');
