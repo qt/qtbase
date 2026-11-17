@@ -79,6 +79,9 @@ public:
 
     GLuint id() const { return m_id; }
 
+    // gives up ownership of the GL resource, so that free() won't delete it
+    GLuint take() { return std::exchange(m_id, 0); }
+
 protected:
     void invalidateResource() override
     {
