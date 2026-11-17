@@ -1778,6 +1778,8 @@ static QShaderDescription::BuiltinVariable deserializeBuiltinVar(QDataStream *st
         var.arrayDims.resize(count);
         for (int i = 0; i < count; ++i)
             (*stream) >> var.arrayDims[i];
+    } else {
+        var.varType = QShaderDescription::VariableType::Unknown;
     }
     return var;
 }
