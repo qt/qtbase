@@ -1,6 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtCore/qdir.h>
+#include <QtCore/qdirlisting.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtTest/qtest.h>
@@ -37,6 +39,11 @@ private slots:
     void fileInfo_data();
     void fileInfo();
     void fileInfo_names();
+    void listDirectory_data();
+    void listDirectory();
+    void listFile_isEmpty();
+    void listRoot();
+    void listRecursively();
 };
 
 void tst_HarmonyRawFile::read_data()
@@ -226,6 +233,60 @@ void tst_HarmonyRawFile::fileInfo_names()
     QCOMPARE(info.canonicalFilePath(), dataJsonPath);
     QVERIFY(info.isAbsolute());
     QCOMPARE(QFile(fileName).fileName(), fileName);
+}
+
+void tst_HarmonyRawFile::listDirectory_data()
+{
+    QTest::addColumn<QString>("path");
+
+    QTest::newRow("canonical") << u"rawfile:/harmonyrawfile"_s;
+    QTest::newRow("no-leading-slash") << u"rawfile:harmonyrawfile"_s;
+    QTest::newRow("url-like") << u"rawfile:///harmonyrawfile"_s;
+}
+
+void tst_HarmonyRawFile::listDirectory()
+{
+    QFETCH(QString, path);
+
+    const QDir dir(path);
+    QVERIFY(dir.exists());
+    QCOMPARE(
+        dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot, QDir::Name),
+        QStringList({ u"sub"_s, u"test.txt"_s }));
+    QCOMPARE(dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot), QStringList({ u"sub"_s }));
+    QCOMPARE(dir.entryList(QDir::Files, QDir::Name), QStringList({ u"test.txt"_s }));
+}
+
+void tst_HarmonyRawFile::listFile_isEmpty()
+{
+    QStringList entryPaths;
+    for (const auto &entry : QDirListing(testTextPath))
+        entryPaths.append(entry.filePath());
+    QCOMPARE(entryPaths, QStringList());
+}
+
+void tst_HarmonyRawFile::listRoot()
+{
+    const QDir root(u"rawfile:/"_s);
+    QVERIFY(root.exists());
+    QVERIFY(root.entryList(QDir::Dirs | QDir::NoDotAndDotDot).contains(u"harmonyrawfile"_s));
+}
+
+void tst_HarmonyRawFile::listRecursively()
+{
+    QStringList filePaths;
+    const QDirListing listing(
+        u"rawfile:/harmonyrawfile"_s,
+        QDirListing::IteratorFlag::FilesOnly | QDirListing::IteratorFlag::Recursive);
+    for (const auto &entry : listing)
+        filePaths.append(entry.filePath());
+    filePaths.sort();
+
+    const QStringList expectedFilePaths = {
+        dataJsonPath,
+        testTextPath,
+    };
+    QCOMPARE(filePaths, expectedFilePaths);
 }
 
 QTEST_GUILESS_MAIN(tst_HarmonyRawFile)

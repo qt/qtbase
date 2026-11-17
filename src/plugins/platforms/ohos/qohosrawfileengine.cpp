@@ -12,11 +12,14 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
 
+#include <rawfile/raw_dir.h>
 #include <rawfile/raw_file.h>
 #include <rawfile/raw_file_manager.h>
 
 #include <memory>
 #include <optional>
+#include <string>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,6 +69,8 @@ using UniqueNativeResourceManager =
     QUniqueHandle<NdkHandleTraits<
         ::NativeResourceManager, ::OH_ResourceManager_ReleaseNativeResourceManager>>;
 
+using UniqueRawDir = QUniqueHandle<NdkHandleTraits<::RawDir, ::OH_ResourceManager_CloseRawDir>>;
+
 class QOhosRawFileAccess
 {
 public:
@@ -77,11 +82,27 @@ public:
         QOhosJsState &jsState, const QByteArray &rawFilePath) const;
     std::shared_ptr<const ::RawFileDescriptor64> tryOpenRawFileDescriptor(
         QOhosJsState &jsState, const QByteArray &rawFilePath) const;
+    std::vector<std::string> listRawDir(QOhosJsState &jsState, const QByteArray &rawDirPath) const;
 
 private:
     UniqueRawFile tryOpenRawFile(QOhosJsState &jsState, const QByteArray &rawFilePath) const;
 
     UniqueNativeResourceManager m_resourceManager;
+};
+
+class QOhosRawFileEngineIterator final : public QAbstractFileEngineIterator
+{
+public:
+    QOhosRawFileEngineIterator(
+        const QString &path, QDirListing::IteratorFlags filters, const QStringList &nameFilters,
+        QStringList entryNames);
+
+    bool advance() override;
+    QString currentFileName() const override;
+
+private:
+    QStringList m_entryNames;
+    qsizetype m_currentIndex = -1;
 };
 
 class QOhosRawFileEngine final : public QAbstractFileEngine
@@ -103,6 +124,9 @@ public:
     FileFlags fileFlags(FileFlags type) const override;
     QString fileName(FileName file) const override;
     void setFileName(const QString &file) override;
+    IteratorUniquePtr beginEntryList(
+        const QString &path, QDirListing::IteratorFlags filters,
+        const QStringList &nameFilters) override;
 
 private:
     enum class EntryType {
@@ -193,6 +217,53 @@ std::shared_ptr<const ::RawFileDescriptor64> QOhosRawFileAccess::tryOpenRawFileD
             rawFile.close();
             delete rawFileDescriptor;
         }));
+}
+
+std::vector<std::string> QOhosRawFileAccess::listRawDir(
+    QOhosJsState &, const QByteArray &rawDirPath) const
+{
+    const UniqueRawDir rawDir(
+        ::OH_ResourceManager_OpenRawDir(m_resourceManager.get(), rawDirPath.constData()));
+    if (!rawDir) {
+        qOhosPrintfWarning(
+            "%s: cannot open raw directory '%s'", Q_FUNC_INFO, rawDirPath.constData());
+        return {};
+    }
+    const int entryCount = ::OH_ResourceManager_GetRawFileCount(rawDir.get());
+    std::vector<std::string> entryNames;
+    entryNames.reserve(entryCount);
+    for (int entryIndex = 0; entryIndex < entryCount; ++entryIndex) {
+        const char *entryName = ::OH_ResourceManager_GetRawFileName(rawDir.get(), entryIndex);
+        if (!entryName) {
+            qOhosReportFatalErrorAndAbort(
+                "%s: got inconsistent result from OH_ResourceManager_GetRawFileName() call: "
+                "name %d of %d is null",
+                Q_FUNC_INFO, entryIndex, entryCount);
+        }
+        entryNames.emplace_back(entryName);
+    }
+    return entryNames;
+}
+
+QOhosRawFileEngineIterator::QOhosRawFileEngineIterator(
+    const QString &path, QDirListing::IteratorFlags filters, const QStringList &nameFilters,
+    QStringList entryNames)
+    : QAbstractFileEngineIterator(path, filters, nameFilters)
+    , m_entryNames(std::move(entryNames))
+{
+}
+
+bool QOhosRawFileEngineIterator::advance()
+{
+    if (m_currentIndex + 1 >= m_entryNames.size())
+        return false;
+    ++m_currentIndex;
+    return true;
+}
+
+QString QOhosRawFileEngineIterator::currentFileName() const
+{
+    return m_entryNames.at(m_currentIndex);
 }
 
 QOhosRawFileEngine::QOhosRawFileEngine(
@@ -368,6 +439,27 @@ bool QOhosRawFileEngine::mayBeRawFile() const
     if (m_entryInfo)
         return m_entryInfo->type == EntryType::File;
     return !m_rawFilePath.isEmpty() && !isRefusedRawFilePath(m_rawFilePath);
+}
+
+QAbstractFileEngine::IteratorUniquePtr QOhosRawFileEngine::beginEntryList(
+    const QString &path, QDirListing::IteratorFlags filters, const QStringList &nameFilters)
+{
+    if (entryInfo().type != EntryType::Directory)
+        return {};
+    const QByteArray rawDirPath = m_rawFilePath.toUtf8();
+    const std::vector<std::string> rawEntryNames = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
+            return m_rawFileAccess->listRawDir(jsState, rawDirPath);
+        },
+        Q_FUNC_INFO);
+    QStringList entryNames;
+    entryNames.reserve(rawEntryNames.size());
+    for (const std::string &rawEntryName : rawEntryNames) {
+        const QString entryPath = QString::fromStdString(rawEntryName);
+        entryNames.append(entryPath.sliced(entryPath.lastIndexOf(u'/') + 1));
+    }
+    return std::make_unique<QOhosRawFileEngineIterator>(
+        path, filters, nameFilters, std::move(entryNames));
 }
 
 QString QOhosRawFileEngine::parentRawFilePath() const
