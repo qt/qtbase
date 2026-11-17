@@ -69,6 +69,8 @@ public:
     void setOutputIntent(const QPdfOutputIntent &intent);
 
 protected:
+    explicit QPdfWriter(QPdfWriterPrivate &dd);
+
     QPaintEngine *paintEngine() const override;
     int metric(PaintDeviceMetric id) const override;
 

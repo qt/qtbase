@@ -98,8 +98,25 @@ public:
     \internal
 */
 QPdfWriter::QPdfWriter()
-    : QObject(*new QPdfWriterPrivate),
-      QPagedPaintDevice(new QPdfPagedPaintDevicePrivate(d_func()))
+    : QPdfWriter(*new QPdfWriterPrivate)
+{
+
+}
+
+/*!
+    \internal
+
+    This constructor isn't optional; it must always be the target constructor
+    of this class, and all other ctors must delegate to it.
+
+    This is because we need to pass \a dd to both QObject(QObjectPrivate&) as
+    well as the QPdfPagedPaintDevicePrivate(QPdfWriterPrivate*) ctor, in the
+    mem-initializer-list, where we cannot create variables to hold \a dd. In
+    this constructor, the function argument \a dd acts as that variable.
+*/
+QPdfWriter::QPdfWriter(QPdfWriterPrivate &dd)
+    : QObject(dd),
+      QPagedPaintDevice(new QPdfPagedPaintDevicePrivate(&dd))
 {
 
 }
