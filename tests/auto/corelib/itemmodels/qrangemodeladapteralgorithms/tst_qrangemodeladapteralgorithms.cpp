@@ -43,6 +43,7 @@ private slots:
     void modifyingStringListAlgorithms();
     void modifyingTableAlgorithms();
     void modifyingTreeAlgorithms();
+    void modifyingRangesAlgorithms();
 };
 
 // Calls a helper function that verifies with the QtTest macros, and returns
@@ -806,6 +807,133 @@ void tst_QRangeModelAdapterAlgorithms::modifyingTreeAlgorithms()
     QCOMPARE(adapter.model()->index(2, 0, branchIndex).data().toString(), u"2.3!"_s);
 
     QCOMPARE(observer.emittedSignalNames(), dataChangedSignal);
+}
+
+#if defined(__cpp_lib_ranges)
+namespace {
+// the value of a tree row, from both the stored row and the row reference
+struct TreeRowValue
+{
+    QString operator()(const tree_row &row) const { return row.value(); }
+    template <typename Row>
+    QString operator()(const Row &row) const { return row->value(); }
+};
+} // namespace
+#endif
+
+void tst_QRangeModelAdapterAlgorithms::modifyingRangesAlgorithms()
+{
+#if !defined(__cpp_lib_ranges)
+    QSKIP("This test requires C++20 ranges");
+#else
+    // The range algorithms that write through the iterator, like ranges::fill,
+    // or ranges::copy and ranges::transform into the adapter, require the
+    // iterator to be std::indirectly_writable. That needs the proxy reference
+    // to be assignable also when const, which it is not, so those algorithms
+    // are not tested here. Writing through the reference that the algorithms
+    // and views pass to us works.
+    std::vector<int> data = {5, 3, 9, 1, 7, 2, 8, 6, 4, 0};
+    QRangeModelAdapter adapter(&data);
+    ModelObserver observer(adapter.model());
+    QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+    const auto verify = [&](const std::vector<int> &expected,
+                            const QList<std::pair<int, int>> &expectedCells) {
+        QCOMPARE(data, expected);
+        QCOMPARE(changedCells(dataChangedSpy), expectedCells);
+        VERIFY_HELPER(verifyListModel(adapter, expected));
+        dataChangedSpy.clear();
+    };
+
+    // The callables need an explicit return type: with libstdc++ before GCC 15,
+    // the concept check also calls them with a const reference, and deducing
+    // the return type would instantiate the body.
+    std::ranges::for_each(adapter, [](auto &&value) -> void { value = value * 10; });
+    VERIFY_HELPER(verify({50, 30, 90, 10, 70, 20, 80, 60, 40, 0}, cellsInRows(0, 9)));
+
+    // writing through views over the adapter
+    for (auto &&value : adapter | std::views::filter([](int value) { return value > 50; }))
+        value = value + 1;
+    VERIFY_HELPER(verify({50, 30, 91, 10, 71, 20, 81, 61, 40, 0}, cellsInRows({2, 4, 6, 7})));
+    for (auto &&value : adapter | std::views::reverse | std::views::take(3))
+        value = -value;
+    VERIFY_HELPER(verify({50, 30, 91, 10, 71, 20, 81, -61, -40, 0}, cellsInRows({9, 8, 7})));
+    std::ranges::for_each(std::ranges::subrange(adapter.begin() + 1, adapter.begin() + 3),
+                          [](auto &&value) -> void { value = 0; });
+    VERIFY_HELPER(verify({50, 0, 0, 10, 71, 20, 81, -61, -40, 0}, cellsInRows({1, 2})));
+    std::ranges::for_each(adapter | std::views::drop(8), [](auto &&value) -> void { value = 1; });
+    VERIFY_HELPER(verify({50, 0, 0, 10, 71, 20, 81, -61, 1, 1}, cellsInRows({8, 9})));
+
+    // writing through the iterator that an algorithm returns
+    *std::ranges::max_element(adapter) = 100;
+    *std::ranges::find(adapter, 10) = 11;
+    VERIFY_HELPER(verify({50, 0, 0, 11, 71, 20, 100, -61, 1, 1}, cellsInRows({6, 3})));
+    QCOMPARE(observer.emittedSignalNames(), dataChangedSignal);
+    observer.clear();
+
+    { // tables
+        using Row = std::vector<int>;
+        std::vector<Row> table = {{1, 10, 100}, {2, 20, 200}, {3, 30, 300}};
+        QRangeModelAdapter tableAdapter(&table);
+        ModelObserver tableObserver(tableAdapter.model());
+        QSignalSpy tableSpy(tableAdapter.model(), &QAbstractItemModel::dataChanged);
+
+        // a view of one column
+        auto secondColumn = tableAdapter
+                          | std::views::transform([](auto &&row) { return row[1]; });
+        QVERIFY(std::ranges::equal(secondColumn, std::vector<int>{10, 20, 30}));
+        for (auto &&cell : secondColumn)
+            cell = cell + 1;
+        QCOMPARE(table, (std::vector<Row>{{1, 11, 100}, {2, 21, 200}, {3, 31, 300}}));
+        QCOMPARE(changedCells(tableSpy),
+                 (QList<std::pair<int, int>>{{0, 1}, {1, 1}, {2, 1}}));
+        tableSpy.clear();
+
+        // the projection, like the predicates, gets called with both the
+        // row reference and the row type
+        const auto lastColumn = [](const auto &row) { return row.at(2); };
+        auto maxRow = std::ranges::max_element(tableAdapter, {}, lastColumn);
+        QCOMPARE(maxRow - tableAdapter.begin(), 2);
+        (*maxRow)[0] = 0;
+        *std::ranges::find(tableAdapter, 200, lastColumn) = Row{-2, -21, -200};
+        QCOMPARE(table, (std::vector<Row>{{1, 11, 100}, {-2, -21, -200}, {0, 31, 300}}));
+        QCOMPARE(changedCells(tableSpy), (QList<std::pair<int, int>>{{2, 0}, {-1, -1}}));
+        QCOMPARE(changedRows(tableSpy), (QList<int>{-1, 1}));
+
+        // reading rows into a container
+        std::vector<Row> copy;
+        std::ranges::copy(tableAdapter | std::views::reverse, std::back_inserter(copy));
+        QCOMPARE(copy, (std::vector<Row>(table.rbegin(), table.rend())));
+        QCOMPARE(tableObserver.emittedSignalNames(), dataChangedSignal);
+    }
+
+    { // trees
+        auto tree = createValueTree();
+        QRangeModelAdapter treeAdapter(std::ref(tree));
+        ModelObserver treeObserver(treeAdapter.model());
+        QSignalSpy treeSpy(treeAdapter.model(), &QAbstractItemModel::dataChanged);
+
+        // The concepts of the range algorithms require that callables also
+        // work with the stored row type, which for a tree does not have the
+        // same interface as the row reference.
+        using Value = TreeRowValue;
+        auto values = treeAdapter | std::views::transform(Value{});
+        QVERIFY(std::ranges::equal(values, QStringList{u"1"_s, u"2"_s, u"3"_s, u"4"_s, u"5"_s}));
+        const auto branch = std::ranges::find(treeAdapter, u"2"_s, Value{});
+        QVERIFY(branch != treeAdapter.end());
+        QVERIFY((*branch).hasChildren());
+
+        auto children = (*branch).children();
+        QVERIFY(std::ranges::equal(children | std::views::transform(Value{}),
+                                   QStringList{u"2.1"_s, u"2.2"_s, u"2.3"_s}));
+        for (auto &&child : children | std::views::reverse | std::views::take(2))
+            child[0] = child->value() + u'!';
+        QVERIFY(std::ranges::equal(children | std::views::transform(Value{}),
+                                   QStringList{u"2.1"_s, u"2.2!"_s, u"2.3!"_s}));
+        const QModelIndex branchIndex = treeAdapter.index(1, 0);
+        QCOMPARE(changedCells(treeSpy, branchIndex), (QList<std::pair<int, int>>{{2, 0}, {1, 0}}));
+        QCOMPARE(treeObserver.emittedSignalNames(), dataChangedSignal);
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QRangeModelAdapterAlgorithms)
