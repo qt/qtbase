@@ -9,6 +9,8 @@
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 
+#include <memory>
+
 class tst_QFontCache : public QObject
 {
 Q_OBJECT
@@ -240,7 +242,7 @@ void tst_QFontCache::threadedAccess()
             fontMetrics.height();
         }
     };
-    auto *qThread = QThread::create(lambda);
+    auto qThread = std::unique_ptr<QThread>{QThread::create(lambda)};
     qThread->start();
     qThread->wait();
 
