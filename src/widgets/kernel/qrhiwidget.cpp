@@ -382,9 +382,14 @@ QImage QRhiWidgetPrivate::grabFramebuffer()
         // ridiculous of course because the rendering infrastructure is
         // tied to the top-level widget that initializes upon expose, but
         // it has to be supported.
-        offscreenRenderer.setConfig(config);
-        // no window passed in, so no swapchain, but we get a functional QRhi which we own
-        offscreenRenderer.create();
+        // ensureRhi() does not keep our own QRhi, so use the one created by
+        // an earlier grab again. The color buffer and the resources the
+        // subclass created in initialize() belong to it.
+        if (!offscreenRenderer.rhi()) {
+            offscreenRenderer.setConfig(config);
+            // no window passed in, so no swapchain, but we get a functional QRhi which we own
+            offscreenRenderer.create();
+        }
         rhi = offscreenRenderer.rhi();
         if (!rhi) {
             qWarning("QRhiWidget: Failed to create dedicated QRhi for grabbing");

@@ -41,6 +41,8 @@ private slots:
     void reparentWithoutPaint();
     void grabFramebufferWhileStillInvisible_data();
     void grabFramebufferWhileStillInvisible();
+    void grabFramebufferTwiceWhileStillInvisible_data();
+    void grabFramebufferTwiceWhileStillInvisible();
     void grabViaQWidgetGrab_data();
     void grabViaQWidgetGrab();
     void mirror_data();
@@ -819,6 +821,47 @@ void tst_QRhiWidget::grabFramebufferWhileStillInvisible()
         QCOMPARE_GE(qRed(c), 255 - maxFuzz);
         QCOMPARE_LE(qGreen(c), maxFuzz);
         QCOMPARE_LE(qBlue(c), maxFuzz);
+    }
+}
+
+void tst_QRhiWidget::grabFramebufferTwiceWhileStillInvisible_data()
+{
+    testData();
+}
+
+void tst_QRhiWidget::grabFramebufferTwiceWhileStillInvisible()
+{
+    QFETCH(QRhiWidget::Api, api);
+
+    const int maxFuzz = 1;
+
+    SimpleRhiWidget w;
+    w.setApi(api);
+    w.resize(1280, 720);
+    QSignalSpy errorSpy(&w, &QRhiWidget::renderFailed);
+
+    QImage image = w.grabFramebuffer(); // creates its own QRhi just to render offscreen
+    QVERIFY(!image.isNull());
+    QRhi *rhi = w.rhi();
+    QRhiTexture *colorTexture = w.colorTexture();
+    QVERIFY(rhi);
+    QVERIFY(colorTexture);
+
+    // The later grabs render with the same QRhi, which the color buffer and
+    // the resources created in initialize() belong to
+    for (int i = 0; i < 2; ++i) {
+        image = w.grabFramebuffer();
+        QVERIFY(!image.isNull());
+        QCOMPARE(w.rhi(), rhi);
+        QCOMPARE(w.m_rhi, rhi);
+        QCOMPARE(w.colorTexture(), colorTexture);
+        QCOMPARE(errorSpy.count(), 0);
+        if (api != QRhiWidget::Api::Null) {
+            QRgb c = image.pixel(image.width() / 2, image.height() / 2);
+            QCOMPARE_GE(qRed(c), 255 - maxFuzz);
+            QCOMPARE_LE(qGreen(c), maxFuzz);
+            QCOMPARE_LE(qBlue(c), maxFuzz);
+        }
     }
 }
 
