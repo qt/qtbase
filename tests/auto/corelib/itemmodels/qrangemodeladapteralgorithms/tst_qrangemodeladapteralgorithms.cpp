@@ -38,6 +38,11 @@ private slots:
     void readOnlyTableAlgorithms();
     void readOnlyTreeAlgorithms();
     void readOnlyRangesAlgorithms();
+
+    void modifyingListAlgorithms();
+    void modifyingStringListAlgorithms();
+    void modifyingTableAlgorithms();
+    void modifyingTreeAlgorithms();
 };
 
 // Calls a helper function that verifies with the QtTest macros, and returns
@@ -87,8 +92,12 @@ public:
         const QMetaObject &mo = QAbstractItemModel::staticMetaObject;
         for (int i = QObject::staticMetaObject.methodCount(); i < mo.methodCount(); ++i) {
             const QMetaMethod method = mo.method(i);
-            if (method.methodType() == QMetaMethod::Signal)
+            // skip the overloads for default arguments, the spy on the full
+            // signal records those emissions as well
+            if (method.methodType() == QMetaMethod::Signal
+                && !(method.attributes() & QMetaMethod::Cloned)) {
                 m_spies.emplace_back(std::make_unique<QSignalSpy>(model, method));
+            }
         }
     }
 
@@ -100,6 +109,22 @@ public:
                 result << QString::fromLatin1(spy->signal());
         }
         return result;
+    }
+
+    // the names of the emitted signals, without parameters
+    QStringList emittedSignalNames() const
+    {
+        QStringList result = emittedSignals();
+        for (QString &signal : result)
+            signal.truncate(signal.indexOf(u'('));
+        result.sort();
+        return result;
+    }
+
+    void clear()
+    {
+        for (const auto &spy : m_spies)
+            spy->clear();
     }
 
 private:
@@ -459,6 +484,328 @@ void tst_QRangeModelAdapterAlgorithms::readOnlyRangesAlgorithms()
     QCOMPARE(data, expected);
     QCOMPARE(observer.emittedSignals(), QStringList());
 #endif
+}
+
+namespace {
+
+// The (row, column) of each cell that dataChanged reported, in the order of the
+// emissions. A dataChanged emission for more than one cell is reported as
+// (-1, -1), so that comparisons with single-cell lists fail.
+QList<std::pair<int, int>> changedCells(const QSignalSpy &spy, const QModelIndex &parent = {})
+{
+    QList<std::pair<int, int>> result;
+    for (const QList<QVariant> &arguments : spy) {
+        const QModelIndex topLeft = arguments.at(0).value<QModelIndex>();
+        const QModelIndex bottomRight = arguments.at(1).value<QModelIndex>();
+        if (topLeft.parent() != parent)
+            continue;
+        if (topLeft == bottomRight)
+            result.emplace_back(topLeft.row(), topLeft.column());
+        else
+            result.emplace_back(-1, -1);
+    }
+    return result;
+}
+
+// The rows that dataChanged reported as changed in all columns, in the order of
+// the emissions. Any other dataChanged emission is reported as -1.
+QList<int> changedRows(const QSignalSpy &spy)
+{
+    QList<int> result;
+    for (const QList<QVariant> &arguments : spy) {
+        const QModelIndex topLeft = arguments.at(0).value<QModelIndex>();
+        const QModelIndex bottomRight = arguments.at(1).value<QModelIndex>();
+        const int lastColumn = topLeft.model()->columnCount(topLeft.parent()) - 1;
+        if (topLeft.row() == bottomRight.row() && topLeft.column() == 0
+            && bottomRight.column() == lastColumn) {
+            result << topLeft.row();
+        } else {
+            result << -1;
+        }
+    }
+    return result;
+}
+
+// single cells in the first column
+QList<std::pair<int, int>> cellsInRows(std::initializer_list<int> rows)
+{
+    QList<std::pair<int, int>> result;
+    for (int row : rows)
+        result.emplace_back(row, 0);
+    return result;
+}
+
+QList<std::pair<int, int>> cellsInRows(int first, int last)
+{
+    QList<std::pair<int, int>> result;
+    for (int row = first; row <= last; ++row)
+        result.emplace_back(row, 0);
+    return result;
+}
+
+template <typename Adapter, typename Range>
+void verifyListModel(const Adapter &adapter, const Range &expected)
+{
+    const QAbstractItemModel *model = adapter.model();
+    QCOMPARE(model->rowCount(), int(std::size(expected)));
+    int row = 0;
+    for (const auto &value : expected) {
+        QCOMPARE(model->index(row, 0).data(Qt::RangeModelAdapterRole),
+                 QVariant::fromValue(value));
+        ++row;
+    }
+}
+
+const QStringList dataChangedSignal = {u"dataChanged"_s};
+
+template <typename Container>
+void testModifyingListAlgorithms()
+{
+    using value_type = typename Container::value_type;
+    Container data = {5, 3, 9, 1, 7, 7, 2, 8, 6, 4, 0};
+    const int size = int(data.size());
+    QRangeModelAdapter adapter(std::ref(data));
+    ModelObserver observer(adapter.model());
+    QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+
+    const auto verify = [&](const Container &expected,
+                            const QList<std::pair<int, int>> &expectedCells) {
+        QCOMPARE(data, expected);
+        QCOMPARE(changedCells(dataChangedSpy), expectedCells);
+        if (expectedCells.isEmpty())
+            QCOMPARE(observer.emittedSignalNames(), QStringList());
+        else
+            QCOMPARE(observer.emittedSignalNames(), dataChangedSignal);
+        VERIFY_HELPER(verifyListModel(adapter, expected));
+        observer.clear();
+        dataChangedSpy.clear();
+    };
+
+    std::fill(adapter.begin(), adapter.end(), value_type(7));
+    VERIFY_HELPER(verify(Container(size, value_type(7)), cellsInRows(0, size - 1)));
+
+    std::iota(adapter.begin(), adapter.end(), value_type(0));
+    VERIFY_HELPER(verify({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, cellsInRows(0, size - 1)));
+
+    // in-place transform
+    std::transform(adapter.begin(), adapter.end(), adapter.begin(),
+                   [](const value_type &value) { return value * 2; });
+    VERIFY_HELPER(verify({0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20}, cellsInRows(0, size - 1)));
+
+    // only the matching elements are written to
+    std::replace(adapter.begin(), adapter.end(), value_type(4), value_type(5));
+    VERIFY_HELPER(verify({0, 2, 5, 6, 8, 10, 12, 14, 16, 18, 20}, cellsInRows({2})));
+    std::replace_if(adapter.begin(), adapter.end(),
+                    [](const value_type &value) { return int(value) % 4 == 0; }, value_type(-1));
+    VERIFY_HELPER(verify({-1, 2, 5, 6, -1, 10, -1, 14, -1, 18, -1}, cellsInRows({0, 4, 6, 8, 10})));
+    std::replace(adapter.begin(), adapter.end(), value_type(100), value_type(0));
+    VERIFY_HELPER(verify({-1, 2, 5, 6, -1, 10, -1, 14, -1, 18, -1}, {}));
+
+    value_type next = 0;
+    std::generate(adapter.begin(), adapter.end(), [&next] { return next += 3; });
+    VERIFY_HELPER(verify({3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33}, cellsInRows(0, size - 1)));
+
+    // for_each with a function that modifies the element through the reference
+    std::for_each(adapter.begin(), adapter.end(), [](auto &&value) { value = value - 1; });
+    VERIFY_HELPER(verify({2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32}, cellsInRows(0, size - 1)));
+    // the same with a range-based for loop
+    for (auto &&value : adapter)
+        value = value + 1;
+    VERIFY_HELPER(verify({3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33}, cellsInRows(0, size - 1)));
+
+    // sub-ranges, and the _n variants
+    std::fill(adapter.begin() + 2, adapter.begin() + 4, value_type(0));
+    VERIFY_HELPER(verify({3, 6, 0, 0, 15, 18, 21, 24, 27, 30, 33}, cellsInRows({2, 3})));
+    std::fill_n(adapter.begin() + 8, 3, value_type(1));
+    VERIFY_HELPER(verify({3, 6, 0, 0, 15, 18, 21, 24, 1, 1, 1}, cellsInRows({8, 9, 10})));
+    next = 0;
+    std::generate_n(adapter.begin(), 2, [&next] { return --next; });
+    VERIFY_HELPER(verify({-1, -2, 0, 0, 15, 18, 21, 24, 1, 1, 1}, cellsInRows({0, 1})));
+
+    // through reverse iterators, starting at the end
+    std::iota(adapter.rbegin(), adapter.rbegin() + 3, value_type(10));
+    VERIFY_HELPER(verify({-1, -2, 0, 0, 15, 18, 21, 24, 12, 11, 10}, cellsInRows({10, 9, 8})));
+
+    // copying into the model overwrites the existing elements
+    const std::vector<value_type> source = {100, 101, 102};
+    std::copy(source.begin(), source.end(), adapter.begin() + 1);
+    VERIFY_HELPER(verify({-1, 100, 101, 102, 15, 18, 21, 24, 12, 11, 10}, cellsInRows({1, 2, 3})));
+    std::copy_backward(source.begin(), source.end(), adapter.end());
+    VERIFY_HELPER(verify({-1, 100, 101, 102, 15, 18, 21, 24, 100, 101, 102},
+                         cellsInRows({10, 9, 8})));
+
+    // transforming from one model into another
+    Container otherData(size, value_type(0));
+    QRangeModelAdapter other(std::ref(otherData));
+    QSignalSpy otherDataChangedSpy(other.model(), &QAbstractItemModel::dataChanged);
+    std::transform(adapter.cbegin(), adapter.cend(), other.begin(),
+                   [](const value_type &value) { return -value; });
+    QCOMPARE(otherData, (Container{1, -100, -101, -102, -15, -18, -21, -24, -100, -101, -102}));
+    QCOMPARE(changedCells(otherDataChangedSpy), cellsInRows(0, size - 1));
+    VERIFY_HELPER(verify({-1, 100, 101, 102, 15, 18, 21, 24, 100, 101, 102}, {}));
+}
+
+} // namespace
+
+void tst_QRangeModelAdapterAlgorithms::modifyingListAlgorithms()
+{
+    VERIFY_HELPER(testModifyingListAlgorithms<std::vector<int>>());
+    VERIFY_HELPER(testModifyingListAlgorithms<QList<int>>());
+    VERIFY_HELPER(testModifyingListAlgorithms<std::list<int>>());
+    VERIFY_HELPER(testModifyingListAlgorithms<std::vector<double>>());
+}
+
+void tst_QRangeModelAdapterAlgorithms::modifyingStringListAlgorithms()
+{
+    QStringList data = {u"one"_s, u"two"_s, u"three"_s, u"four"_s, u"two"_s};
+    QRangeModelAdapter adapter(&data);
+    ModelObserver observer(adapter.model());
+    QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+
+    std::transform(adapter.begin(), adapter.end(), adapter.begin(),
+                   [](const QString &value) { return value.toUpper(); });
+    QCOMPARE(data, (QStringList{u"ONE"_s, u"TWO"_s, u"THREE"_s, u"FOUR"_s, u"TWO"_s}));
+    QCOMPARE(changedCells(dataChangedSpy), cellsInRows(0, 4));
+    dataChangedSpy.clear();
+
+    std::replace(adapter.begin(), adapter.end(), u"TWO"_s, u"2"_s);
+    QCOMPARE(data, (QStringList{u"ONE"_s, u"2"_s, u"THREE"_s, u"FOUR"_s, u"2"_s}));
+    QCOMPARE(changedCells(dataChangedSpy), cellsInRows({1, 4}));
+    dataChangedSpy.clear();
+
+    std::for_each(adapter.begin(), adapter.end(), [](auto &&value) {
+        value = QString(value).append(u'!');
+    });
+    QCOMPARE(data, (QStringList{u"ONE!"_s, u"2!"_s, u"THREE!"_s, u"FOUR!"_s, u"2!"_s}));
+    QCOMPARE(changedCells(dataChangedSpy), cellsInRows(0, 4));
+
+    QCOMPARE(observer.emittedSignalNames(), dataChangedSignal);
+    VERIFY_HELPER(verifyListModel(adapter, data));
+}
+
+void tst_QRangeModelAdapterAlgorithms::modifyingTableAlgorithms()
+{
+    using Row = std::vector<int>;
+    std::vector<Row> data = {
+        {3, 30, 300},
+        {1, 10, 100},
+        {4, 40, 400},
+        {1, 11, 111},
+        {5, 50, 500},
+    };
+    QRangeModelAdapter adapter(std::ref(data));
+    ModelObserver observer(adapter.model());
+    QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+    const auto verifyModel = [&adapter, &data] {
+        const QAbstractItemModel *model = adapter.model();
+        QCOMPARE(model->rowCount(), int(data.size()));
+        for (int row = 0; row < model->rowCount(); ++row) {
+            for (int column = 0; column < model->columnCount(); ++column)
+                QCOMPARE(model->index(row, column).data(), data.at(row).at(column));
+        }
+    };
+
+    // replacing entire rows emits dataChanged for all columns of the row
+    std::fill(adapter.begin() + 1, adapter.begin() + 3, Row{0, 0, 0});
+    QCOMPARE(data.at(1), (Row{0, 0, 0}));
+    QCOMPARE(data.at(2), (Row{0, 0, 0}));
+    QCOMPARE(changedRows(dataChangedSpy), (QList<int>{1, 2}));
+    VERIFY_HELPER(verifyModel());
+    dataChangedSpy.clear();
+
+    std::transform(adapter.begin(), adapter.end(), adapter.begin(), [](const auto &row) {
+        Row result(row.cbegin(), row.cend());
+        std::reverse(result.begin(), result.end());
+        return result;
+    });
+    QCOMPARE(data, (std::vector<Row>{{300, 30, 3}, {0, 0, 0}, {0, 0, 0},
+                                     {111, 11, 1}, {500, 50, 5}}));
+    QCOMPARE(changedRows(dataChangedSpy), (QList<int>{0, 1, 2, 3, 4}));
+    VERIFY_HELPER(verifyModel());
+    dataChangedSpy.clear();
+
+    std::replace_if(adapter.begin(), adapter.end(),
+                    [](const auto &row) { return row.at(0) == 0; }, Row{-1, -2, -3});
+    QCOMPARE(data.at(1), (Row{-1, -2, -3}));
+    QCOMPARE(data.at(2), (Row{-1, -2, -3}));
+    QCOMPARE(changedRows(dataChangedSpy), (QList<int>{1, 2}));
+    VERIFY_HELPER(verifyModel());
+    dataChangedSpy.clear();
+
+    // modifying the columns of a row emits dataChanged for each modified cell
+    auto row = *(adapter.begin() + 3);
+    std::fill(row.begin(), row.end(), 7);
+    QCOMPARE(data.at(3), (Row{7, 7, 7}));
+    QCOMPARE(changedCells(dataChangedSpy), (QList<std::pair<int, int>>{{3, 0}, {3, 1}, {3, 2}}));
+    VERIFY_HELPER(verifyModel());
+    dataChangedSpy.clear();
+
+    std::iota(row.begin(), row.end(), 1);
+    QCOMPARE(data.at(3), (Row{1, 2, 3}));
+    dataChangedSpy.clear();
+    std::transform(row.begin(), row.end(), row.begin(), [](int value) { return value * value; });
+    QCOMPARE(data.at(3), (Row{1, 4, 9}));
+    QCOMPARE(changedCells(dataChangedSpy), (QList<std::pair<int, int>>{{3, 0}, {3, 1}, {3, 2}}));
+    VERIFY_HELPER(verifyModel());
+    dataChangedSpy.clear();
+
+    // copying within the row writes each target cell
+    std::copy_backward(row.begin(), row.end() - 1, row.end());
+    QCOMPARE(data.at(3), (Row{1, 1, 4}));
+    QCOMPARE(changedCells(dataChangedSpy), (QList<std::pair<int, int>>{{3, 2}, {3, 1}}));
+    VERIFY_HELPER(verifyModel());
+    dataChangedSpy.clear();
+
+    // the same column in every row
+    std::for_each(adapter.begin(), adapter.end(), [](auto &&row) { row[1] = row.at(1) + 1; });
+    QCOMPARE(data, (std::vector<Row>{{300, 31, 3}, {-1, -1, -3}, {-1, -1, -3},
+                                     {1, 2, 4}, {500, 51, 5}}));
+    QCOMPARE(changedCells(dataChangedSpy),
+             (QList<std::pair<int, int>>{{0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}}));
+    VERIFY_HELPER(verifyModel());
+
+    QCOMPARE(observer.emittedSignalNames(), dataChangedSignal);
+}
+
+void tst_QRangeModelAdapterAlgorithms::modifyingTreeAlgorithms()
+{
+    auto tree = createValueTree();
+    QRangeModelAdapter adapter(std::ref(tree));
+    ModelObserver observer(adapter.model());
+    QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
+
+    // modify one column of each top-level row
+    std::for_each(adapter.begin(), adapter.end(), [](auto &&row) {
+        row[1] = row->description().toUpper();
+    });
+    QStringList descriptions;
+    for (const tree_row &row : tree)
+        descriptions << row.description();
+    QCOMPARE(descriptions, (QStringList{u"ONE"_s, u"TWO"_s, u"THREE"_s, u"FOUR"_s, u"FIVE"_s}));
+    QCOMPARE(changedCells(dataChangedSpy),
+             (QList<std::pair<int, int>>{{0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}}));
+    dataChangedSpy.clear();
+
+    // modify the children of a branch
+    auto branch = adapter.at(1).children();
+    std::for_each(branch.begin(), branch.end(), [](auto &&row) {
+        row[0] = row->value() + u'!';
+    });
+    const tree_row &branchRow = tree.at(1);
+    QStringList values;
+    for (const tree_row &child : *branchRow.childRows())
+        values << child.value();
+    QCOMPARE(values, (QStringList{u"2.1!"_s, u"2.2!"_s, u"2.3!"_s}));
+    const QModelIndex branchIndex = adapter.index(1, 0);
+    QCOMPARE(changedCells(dataChangedSpy, branchIndex), cellsInRows(0, 2));
+    QCOMPARE(changedCells(dataChangedSpy), {});
+
+    // the children still have the correct parent
+    for (const tree_row &child : *branchRow.childRows())
+        QCOMPARE(child.parentRow(), &branchRow);
+    QCOMPARE(adapter.model()->index(2, 0, branchIndex).data().toString(), u"2.3!"_s);
+
+    QCOMPARE(observer.emittedSignalNames(), dataChangedSignal);
 }
 
 QTEST_MAIN(tst_QRangeModelAdapterAlgorithms)
