@@ -132,8 +132,24 @@ private slots:
     void demarshallInvalidByteArray_data();
     void demarshallInvalidByteArray();
 
+    void demarshallInvalidListContainer_int()
+    { demarshallInvalidListContainer_impl<int>(); }
+    void demarshallInvalidListContainer_QByteArray()
+    { demarshallInvalidListContainer_impl<QByteArray>(); }
+    void demarshallInvalidListContainer_QString()
+    { demarshallInvalidListContainer_impl<QString>(); }
+    void demarshallInvalidListContainer_QStringList()
+    { demarshallInvalidListContainer_impl<QStringList>(); }
+    void demarshallInvalidListContainer_QDBusSignature()
+    { demarshallInvalidListContainer_impl<QDBusSignature>(); }
+    void demarshallInvalidListContainer_QDBusObjectPath()
+    { demarshallInvalidListContainer_impl<QDBusObjectPath>(); }
+
 private:
     int fileDescriptorForTest();
+
+    template <typename T>
+    void demarshallInvalidListContainer_impl();
 
     QProcess proc;
     QTemporaryFile tempFile;
@@ -192,6 +208,51 @@ int tst_QDBusMarshall::fileDescriptorForTest()
         }
     }
     return tempFile.handle();
+}
+
+template<typename T>
+void tst_QDBusMarshall::demarshallInvalidListContainer_impl()
+{
+    // Send QList<int> over the bus, receive it back and try to interpret as
+    // QList<T> for different Ts. This should not normally happen in practice,
+    // and most likely means a bug in the user code.
+    // Still, none of it should crash or hang.
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    const QList<int> values = { 1, 2, 3 };
+    const QVariant value = QVariant::fromValue(values);
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath,
+                                                      interfaceName, "ping");
+    QDBusArgument sendArg;
+    sendArg.beginStructure();
+    sendArg.appendVariant(value);
+    sendArg.endStructure();
+    msg.setArguments(QVariantList() << QVariant::fromValue(sendArg));
+    QDBusMessage reply = con.call(msg);
+
+    const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
+    receiveArg.beginStructure();
+    const QList<T> vals = qdbus_cast<QList<T>>(receiveArg);
+    receiveArg.endStructure();
+    QVERIFY(receiveArg.atEnd());
+
+    if constexpr (std::is_same_v<T, int>) {
+        // Special case for T == int: it should roundtrip
+        QCOMPARE(vals, values);
+    } else if (std::is_same_v<T, QString>) {
+        // QList<QString> has a special deserializer - it'll
+        // simply provide a default-constructed QStringList()
+        QVERIFY(vals.isEmpty());
+    } else {
+        // Otherwise it should provide default-constructed Ts
+        QCOMPARE(vals.size(), values.size());
+        for (const T &t : vals)
+            QCOMPARE(t, T());
+    }
 }
 
 void addBasicTypesColumns()
