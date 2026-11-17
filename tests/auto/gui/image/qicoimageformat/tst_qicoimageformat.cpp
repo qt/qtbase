@@ -124,16 +124,15 @@ void tst_QIcoImageFormat::SequentialFile()
     QFETCH(QString, fileName);
     QFETCH(int, isValid);
 
-    QSequentialFile *file = new QSequentialFile(m_IconPath + QLatin1Char('/') + fileName);
-    QVERIFY(file);
-    QVERIFY(file->open(QFile::ReadOnly));
-    QImageReader reader(file);
+    QSequentialFile file{m_IconPath + u'/' + fileName};
+
+    QVERIFY2(file.open(QFile::ReadOnly), qPrintable(file.errorString()));
+    QImageReader reader(&file);
 
     // Perform the check twice. If canRead() does not restore the sequential device back to its original state,
     // it will fail on the second try.
     QCOMPARE(reader.canRead(), (isValid == 0 ? false : true));
     QCOMPARE(reader.canRead(), (isValid == 0 ? false : true));
-    file->close();
 }
 
 
