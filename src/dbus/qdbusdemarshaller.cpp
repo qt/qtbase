@@ -105,8 +105,9 @@ inline QString QDBusDemarshaller::toString()
 {
     if (isCurrentTypeStringLike())
         return toStringUnchecked();
-    else
-        return QString();
+
+    q_dbus_message_iter_next(&iterator);
+    return QString();
 }
 
 inline QDBusObjectPath QDBusDemarshaller::toObjectPathUnchecked()
@@ -118,8 +119,9 @@ inline QDBusObjectPath QDBusDemarshaller::toObjectPath()
 {
     if (isCurrentTypeStringLike())
         return toObjectPathUnchecked();
-    else
-        return QDBusObjectPath();
+
+    q_dbus_message_iter_next(&iterator);
+    return QDBusObjectPath();
 }
 
 inline QDBusSignature QDBusDemarshaller::toSignatureUnchecked()
@@ -131,8 +133,9 @@ inline QDBusSignature QDBusDemarshaller::toSignature()
 {
     if (isCurrentTypeStringLike())
         return toSignatureUnchecked();
-    else
-        return QDBusSignature();
+
+    q_dbus_message_iter_next(&iterator);
+    return QDBusSignature();
 }
 
 inline QDBusUnixFileDescriptor QDBusDemarshaller::toUnixFileDescriptor()
@@ -305,10 +308,11 @@ QStringList QDBusDemarshaller::toStringListUnchecked()
 QStringList QDBusDemarshaller::toStringList()
 {
     if (q_dbus_message_iter_get_arg_type(&iterator) == DBUS_TYPE_ARRAY
-            && q_dbus_message_iter_get_element_type(&iterator) == DBUS_TYPE_STRING)
+            && q_dbus_message_iter_get_element_type(&iterator) == DBUS_TYPE_STRING) {
         return toStringListUnchecked();
-    else
-        return QStringList();
+    }
+    q_dbus_message_iter_next(&iterator);
+    return QStringList();
 }
 
 QByteArray QDBusDemarshaller::toByteArrayUnchecked()
@@ -328,6 +332,7 @@ QByteArray QDBusDemarshaller::toByteArray()
             && q_dbus_message_iter_get_element_type(&iterator) == DBUS_TYPE_BYTE) {
         return toByteArrayUnchecked();
     }
+    q_dbus_message_iter_next(&iterator);
     return QByteArray();
 }
 
