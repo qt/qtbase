@@ -255,9 +255,11 @@ class tst_QTouchEvent : public QObject
 {
     Q_OBJECT
 public:
-    tst_QTouchEvent();
+    using QObject::QObject;
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
     void cleanup();
     void qPointerUniqueId();
     void state();
@@ -285,18 +287,25 @@ private slots:
     void normalizedPosition();
 
 private:
-    QPointingDevice *touchScreenDevice;
-    QPointingDevice *secondaryTouchScreenDevice;
-    QPointingDevice *touchPadDevice;
+    QPointingDevice *touchScreenDevice = nullptr;
+    QPointingDevice *secondaryTouchScreenDevice = nullptr;
+    QPointingDevice *touchPadDevice = nullptr;
 };
 
-tst_QTouchEvent::tst_QTouchEvent()
-  : touchScreenDevice(QTest::createTouchDevice())
-  , secondaryTouchScreenDevice(QTest::createTouchDevice())
-  , touchPadDevice(QTest::createTouchDevice(QInputDevice::DeviceType::TouchPad))
+void tst_QTouchEvent::initTestCase()
 {
+    touchScreenDevice = QTest::createTouchDevice();
+    secondaryTouchScreenDevice = QTest::createTouchDevice();
+    touchPadDevice = QTest::createTouchDevice(QInputDevice::DeviceType::TouchPad);
     QInputDevicePrivate::get(touchPadDevice)->setAvailableVirtualGeometry(QRect(50, 50, 500, 500));
     QInputDevicePrivate::get(secondaryTouchScreenDevice)->name = QLatin1String("secondary touchscreen");
+}
+
+void tst_QTouchEvent::cleanupTestCase()
+{
+    delete std::exchange(touchPadDevice, nullptr);
+    delete std::exchange(secondaryTouchScreenDevice, nullptr);
+    delete std::exchange(touchScreenDevice, nullptr);
 }
 
 void tst_QTouchEvent::cleanup()
