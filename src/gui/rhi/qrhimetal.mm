@@ -2487,6 +2487,10 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
         computeEncoder = nil;
     }
 
+    // No drawable, see beginPass()
+    if (!cbD->d->currentPassRpDesc)
+        return;
+
     QMetalRenderTargetData *rtD = currentRenderTargetData(cbD);
     Q_ASSERT(rtD);
 
@@ -4106,15 +4110,18 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
                 }
                 if (!swapChainD->d->curDrawable) {
                     qWarning("No drawable");
-                    return;
-                }
-                id<MTLTexture> scTex = swapChainD->d->curDrawable.texture;
-                if (color0.needsDrawableForTex) {
-                    color0.tex = scTex;
-                    color0.needsDrawableForTex = false;
+                    // The pass is still begun, the commands recorded in it go
+                    // to a nil encoder and are dropped.
+                    cbD->d->currentPassRpDesc = nil;
                 } else {
-                    color0.resolveTex = scTex;
-                    color0.needsDrawableForResolveTex = false;
+                    id<MTLTexture> scTex = swapChainD->d->curDrawable.texture;
+                    if (color0.needsDrawableForTex) {
+                        color0.tex = scTex;
+                        color0.needsDrawableForTex = false;
+                    } else {
+                        color0.resolveTex = scTex;
+                        color0.needsDrawableForResolveTex = false;
+                    }
                 }
             }
         }
@@ -4249,7 +4256,9 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         }
     }
 
-    cbD->d->currentRenderPassEncoder = [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc];
+    cbD->d->currentRenderPassEncoder = cbD->d->currentPassRpDesc
+            ? [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc]
+            : nil;
 
     cbD->resetPerPassState();
 
