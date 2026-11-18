@@ -16,6 +16,7 @@
 // We mean it.
 //
 
+#include <QPointer>
 #include <QLabel>
 #include <QString>
 #include <QRect>
@@ -64,7 +65,7 @@ private:
 
     static QTipLabel *instance;
     QBasicTimer hideTimer, expireTimer;
-    QWidget *widget;
+    QPointer<QWidget> widget;
     QRect rect;
     bool fadingOut;
 };
