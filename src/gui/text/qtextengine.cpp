@@ -2047,7 +2047,9 @@ void QTextEngine::itemize() const
         // Parse emoji sequences
         for (int i = 0; i < length; ++i) {
             const QChar &c = string[i];
-            const bool isSurrogate = c.isHighSurrogate() && i < length - 1;
+            const bool isSurrogate = c.isHighSurrogate()
+                                    && i < length - 1
+                                    && QChar::isLowSurrogate(string[i + 1]);
             const char32_t ucs4 = isSurrogate
                                     ? QChar::surrogateToUcs4(c, string[++i])
                                     : c.unicode();
@@ -2196,6 +2198,9 @@ void QTextEngine::itemize() const
         ++uc;
         ++analysis;
     }
+#if !defined(QT_NO_EMOJISEGMENTER)
+    Q_ASSERT(disableEmojiSegmenter || categoryIt == categoriesEnd);
+#endif
     if (option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
         (analysis-1)->flags = QScriptAnalysis::LineOrParagraphSeparator; // to exclude it from width
     }
