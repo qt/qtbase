@@ -1462,6 +1462,7 @@ void QD3D12ShaderResourceBindings::cacheStorageImage(QD3D12Stage s,
     const bool isCube = texD->m_flags.testFlag(QRhiTexture::CubeMap);
     const bool isArray = texD->m_flags.testFlag(QRhiTexture::TextureArray);
     const bool is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+    const bool is1D = texD->m_flags.testFlag(QRhiTexture::OneDimensional);
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.Format = texD->rtFormat;
     if (isCube) {
@@ -1469,6 +1470,14 @@ void QD3D12ShaderResourceBindings::cacheStorageImage(QD3D12Stage s,
         uavDesc.Texture2DArray.MipSlice = UINT(d.level);
         uavDesc.Texture2DArray.FirstArraySlice = 0;
         uavDesc.Texture2DArray.ArraySize = 6;
+    } else if (isArray && is1D) {
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE1DARRAY;
+        uavDesc.Texture1DArray.MipSlice = UINT(d.level);
+        uavDesc.Texture1DArray.FirstArraySlice = 0;
+        uavDesc.Texture1DArray.ArraySize = UINT(qMax(0, texD->m_arraySize));
+    } else if (is1D) {
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE1D;
+        uavDesc.Texture1D.MipSlice = UINT(d.level);
     } else if (isArray) {
         uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
         uavDesc.Texture2DArray.MipSlice = UINT(d.level);
