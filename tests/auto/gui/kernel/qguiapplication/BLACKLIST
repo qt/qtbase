@@ -9,6 +9,3 @@ macos # QTBUG-152415
 
 [sendEventsOnProcessEvents]
 linux # QTBUG-152416
-
-[globalPostedEventsCount]
-linux # QTBUG-152417

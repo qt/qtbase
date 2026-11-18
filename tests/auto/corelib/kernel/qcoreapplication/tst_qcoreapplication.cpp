@@ -878,7 +878,12 @@ void tst_QCoreApplication::globalPostedEventsCount()
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     TestApplication app(argc, argv);
 
-    QCoreApplication::sendPostedEvents();
+    // platform plugins may have posted events (including deleteLater()) during
+    // startup, and processing those may post more
+    for (int i = 0; i < 10 && qGlobalPostedEventsCount() != 0; ++i) {
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        QCoreApplication::sendPostedEvents();
+    }
     QCOMPARE(qGlobalPostedEventsCount(), qsizetype(0));
 
     GlobalPostedEventsCountObject x;
