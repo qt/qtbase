@@ -1475,6 +1475,11 @@ void tst_QCoreApplication::testTrWithPercantegeAtTheEnd()
 #if QT_CONFIG(library)
 void tst_QCoreApplication::addRemoveLibPaths()
 {
+#ifdef QT_QGUIAPPLICATIONTEST
+    QSKIP("Removing the plugin directory prevents QGuiApplication from loading "
+          "its platform plugin");
+#endif
+
     QStringList paths = QCoreApplication::libraryPaths();
     if (paths.isEmpty())
         QSKIP("Cannot add/remove library paths if there are none.");
