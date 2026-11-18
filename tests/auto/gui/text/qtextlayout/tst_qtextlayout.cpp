@@ -11,6 +11,8 @@
 
 
 #include <private/qtextengine_p.h>
+#include <private/qfontdatabase_p.h>
+#include <private/qfontengine_p.h>
 #include <qtextlayout.h>
 
 #include <qdebug.h>
@@ -130,6 +132,8 @@ private slots:
     void negativeLineWidth();
     void embeddedImageLineHeight();
     void unmatchedShapedSubstring();
+    void loneHighSurrogateInEmojiSegmenter_data();
+    void loneHighSurrogateInEmojiSegmenter();
     void maximumLayoutWidthInWrappedLayout();
     void standaloneInlineObject_lineHeight();
     void standaloneInlineObject_verticalAlignment();
@@ -2898,6 +2902,59 @@ void tst_QTextLayout::unmatchedShapedSubstring()
 
     QList<QGlyphRun> glyphRuns = lout.glyphRuns();
     QVERIFY(glyphRuns.size() > 0);
+}
+
+void tst_QTextLayout::loneHighSurrogateInEmojiSegmenter_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QList<int>>("emojiPositions");
+
+    const QChar lone(0xDBFF);
+    const QString emoji = QString::fromUtf16(u"\U0001F600");
+
+    // Pairing U+DBFF with U+E968 would give the invalid code point 0x110968
+    QTest::newRow("beforeBmpCharacter")
+            << (u'a' + QString(lone) + QChar(0xE968) + u'b')
+            << QList<int>{};
+    QTest::newRow("atEnd")
+            << (u'a' + QString(lone))
+            << QList<int>{};
+    QTest::newRow("beforeEmoji")
+            << (QString(lone) + emoji + u'b')
+            << QList<int>{ 1, 2 };
+    QTest::newRow("beforeBmpCharacterAndEmoji")
+            << (u'a' + QString(lone) + QChar(0xE968) + emoji + u'b')
+            << QList<int>{ 3, 4 };
+    QTest::newRow("afterEmoji")
+            << (emoji + QString(lone) + u"ab")
+            << QList<int>{ 0, 1 };
+}
+
+void tst_QTextLayout::loneHighSurrogateInEmojiSegmenter()
+{
+    QFETCH(QString, text);
+    QFETCH(QList<int>, emojiPositions);
+
+    if (QFontEngine::disableEmojiSegmenter())
+        QSKIP("Emoji segmenter is disabled");
+
+    QTextLayout layout(text, testFont);
+    // Used to read outside the Unicode property tables
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QTextEngine *engine = layout.engine();
+    engine->itemize();
+
+    const auto &items = engine->layoutData->items;
+    for (int pos = 0; pos < text.size(); ++pos) {
+        const int itemIndex = engine->findItem(pos);
+        QVERIFY(itemIndex >= 0 && itemIndex < items.size());
+        const bool isEmoji = items.at(itemIndex).analysis.script == QFontDatabasePrivate::Script_Emoji;
+        QVERIFY2(isEmoji == emojiPositions.contains(pos),
+                 qPrintable(QStringLiteral("Unexpected script at position %1").arg(pos)));
+    }
 }
 
 void tst_QTextLayout::maximumLayoutWidthInWrappedLayout()
