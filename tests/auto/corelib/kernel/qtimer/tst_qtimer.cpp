@@ -1325,11 +1325,11 @@ void tst_QTimer::crossThreadSingleShotDestruction()
         if (!threadQuit) {
             t.quit();
 
-            // now that the thread is definitely dead, start a new timer that is
+            // now that the thread is (about to be) dead, start a new timer that is
             // never even going to get started. It should still be destroyed, as
             // it will be (temporarily) owned by the event that we post to start
             // the timer in the target thread.
-            // Note: we can't use QPointer here, as the thread is already
+            // Note: we can't use QPointer here, as the thread may still be
             // running.
             (void)new SingleShotTimer(timeout, Qt::CoarseTimer, receiver.get(), SLOT(timerFired()));
             QVERIFY(t.wait());
