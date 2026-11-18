@@ -144,7 +144,9 @@ QPixmap::QPixmap(QPlatformPixmap *d)
 
     The loader attempts to read the pixmap using the specified \a
     format. If the \a format is not specified (which is the default),
-    the loader probes the file for a header to guess the file format.
+    it is auto-detected based on the file's suffix and header. For
+    details, see QImageReader::setAutoDetectImageFormat() and
+    \l{QImageReader#Security Considerations}{Security Considerations}.
 
     The file name can either refer to an actual file on disk or to
     one of the application's embedded resources. See the
@@ -208,7 +210,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QPlatformPixmap)
     Constructs a pixmap from the given \a xpm data, which must be a
     valid XPM image.
 
-    Errors are silently ignored.
+    Errors are silently ignored and can cause undefined behavior.
 
     Note that it's possible to squeeze the XPM variable a little bit
     by using an unusual declaration:
@@ -681,7 +683,9 @@ QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode)
 
     The loader attempts to read the pixmap using the specified \a
     format. If the \a format is not specified (which is the default),
-    the loader probes the file for a header to guess the file format.
+    it is auto-detected based on the file's suffix and header. For
+    details, see QImageReader::setAutoDetectImageFormat() and
+    \l{QImageReader#Security Considerations}{Security Considerations}.
 
     The file name can either refer to an actual file on disk or to one
     of the application's embedded resources. See the
@@ -748,7 +752,9 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
     The loader attempts to read the pixmap using the specified \a
     format. If the \a format is not specified (which is the default),
-    the loader probes the file for a header to guess the file format.
+    it is auto-detected based on the file's suffix and header. For
+    details, see QImageReader::setAutoDetectImageFormat() and
+    \l{QImageReader#Security Considerations}{Security Considerations}.
 
     If the data needs to be modified to fit in a lower-resolution
     result (e.g. converting from 32-bit to 8-bit), use the \a flags to

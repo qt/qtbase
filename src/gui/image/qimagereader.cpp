@@ -47,10 +47,27 @@
     reading. Call supportedMimeTypes() to obtain a list of supported MIME
     types, which for example can be passed to QFileDialog::setMimeTypeFilters().
 
-    QImageReader autodetects the image format by default, by looking at the
-    provided (optional) format string, the file name suffix, and the data
-    stream contents. You can enable or disable this feature, by calling
-    setAutoDetectImageFormat().
+    QImageReader autodetects the image format by default, by looking at the file name suffix (if
+    any) and the data stream contents. Using setFormat(), you can bypass the detection. You can
+    enable or disable autodetection altogether by calling setAutoDetectImageFormat().
+
+    \section1 Security Considerations
+
+    To restrict decoding of untrusted data to one format handler, specify it explicitly with the \a
+    format argument of QImage's loading methods, or with QImageReader and setFormat(). Reading then
+    fails if the data is not in the specified format, or if no handler for it is available.
+
+    Note that, in contrast to the \a format argument, the file name extension does \e not restrict
+    the choice of handler. The extension is only used as an optimization: the handler for that
+    format is queried first. If it rejects the file, the other available handlers are queried in
+    turn.
+
+    By default, then, any image format plugin found at runtime may be employed to decode image
+    data. In particular, image format plugins that claim support for a format take precedence over
+    any Qt built-in handler for it. Hence, choosing the set of image plugins that are deployed
+    influences an application's attack surface.
+
+    See also setAllocationLimit().
 
     \section1 High Resolution Versions of Images
 
@@ -544,7 +561,10 @@ QImageReader::QImageReader()
 
 /*!
     Constructs a QImageReader object with the device \a device and the
-    image format \a format.
+    image format \a format. If \a format is empty, it will by
+    default be auto-detected.
+
+    \sa setAutoDetectImageFormat()
 */
 QImageReader::QImageReader(QIODevice *device, const QByteArray &format)
     : d(new QImageReaderPrivate(this))
@@ -555,9 +575,10 @@ QImageReader::QImageReader(QIODevice *device, const QByteArray &format)
 
 /*!
     Constructs a QImageReader object with the file name \a fileName
-    and the image format \a format.
+    and the image format \a format. If \a format is empty, it will by
+    default be auto-detected.
 
-    \sa setFileName()
+    \sa setFileName(), setAutoDetectImageFormat()
 */
 QImageReader::QImageReader(const QString &fileName, const QByteArray &format)
     : QImageReader(new QFile(fileName), format)
@@ -582,7 +603,7 @@ QImageReader::~QImageReader()
     You can call supportedImageFormats() for the full list of formats
     QImageReader supports.
 
-    \sa format()
+    \sa format(), {QImageReader#Security Considerations}{Security Considerations}
 */
 void QImageReader::setFormat(const QByteArray &format)
 {
@@ -679,9 +700,11 @@ bool QImageReader::autoDetectImageFormat() const
     plugin will read the first bytes in the image data and decide if
     the plugin is compatible or not.
 
-    This also disables auto detecting the image format.
+    Setting this disables the normal auto-detection of the image format,
+    skipping directly to format detection by content inspection. That is
+    then performed independently of the value of autoDetectImageFormat().
 
-    \sa decideFormatFromContent()
+    \sa decideFormatFromContent(), setAutoDetectImageFormat()
 */
 
 void QImageReader::setDecideFormatFromContent(bool ignored)
@@ -1574,6 +1597,10 @@ int QImageReader::allocationLimit()
     This limit helps applications avoid unexpectedly large memory usage from
     loading corrupt image files. It is normally not needed to change it. The
     default limit is large enough for all commonly used image sizes.
+
+    It should be noted that this is not an upper limit on other memory allocations during image
+    reading, such as temporary decoding buffers. Such allocations are limited to a small multiple
+    of this limit, depending on the handler.
 
     At runtime, this value may be overridden by the environment variable \c QT_IMAGEIO_MAXALLOC.
 

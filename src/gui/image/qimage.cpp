@@ -993,7 +993,8 @@ QImage::QImage(const uchar *data, int width, int height, qsizetype bytesPerLine,
     The loader attempts to read the image using the specified \a
     format. If the \a format is not specified (which is the default),
     it is auto-detected based on the file's suffix and header. For
-    details, see {QImageReader::setAutoDetectImageFormat()}{QImageReader}.
+    details, see QImageReader::setAutoDetectImageFormat() and
+    \l{QImageReader#Security Considerations}{Security Considerations}.
 
     If the loading of the image failed, this object is a null image.
 
@@ -1020,7 +1021,7 @@ extern bool qt_read_xpm_image_or_array(QIODevice *device, const char * const *so
     Constructs an image from the given \a xpm image.
 
     Make sure that the image is a valid XPM image. Errors are silently
-    ignored.
+    ignored and can cause undefined behavior.
 
     Note that it's possible to squeeze the XPM variable a little bit
     by using an unusual declaration:
@@ -3845,7 +3846,8 @@ void QImage::rgbSwapped_inplace()
     The loader attempts to read the image using the specified \a format, e.g.,
     PNG or JPG. If \a format is not specified (which is the default), it is
     auto-detected based on the file's suffix and header. For details, see
-    QImageReader::setAutoDetectImageFormat().
+    QImageReader::setAutoDetectImageFormat() and
+    \l{QImageReader#Security Considerations}{Security Considerations}.
 
     The file name can either refer to an actual file on disk or to one
     of the application's embedded resources. See the
@@ -3882,8 +3884,10 @@ bool QImage::load(QIODevice* device, const char* format)
     successfully loaded; otherwise invalidates the image and returns \c false.
 
     The loader attempts to read the image using the specified \a format, e.g.,
-    PNG or JPG. If \a format is not specified (which is the default), the
-    loader probes the file for a header to guess the file format.
+    PNG or JPG. If \a format is not specified (which is the default), it
+    is auto-detected based on the data header. For details, see
+    QImageReader::setAutoDetectImageFormat() and
+    \l{QImageReader#Security Considerations}{Security Considerations}.
 
     \sa {QImage#Reading and Writing Image Files}{Reading and Writing Image Files}
 */
