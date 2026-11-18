@@ -1311,18 +1311,18 @@ void tst_QTimer::crossThreadSingleShotDestruction()
         // destroyed itself, leaving QPointer dangling.
         QPointer<QSingleShotTimer> timer = new QSingleShotTimer(timeout, Qt::CoarseTimer,
                                                                 receiver.get(), SLOT(timerFired()));
+        deadTimerDestroyed = false; // before the thread can destroy the timer
         t.start();
 
         const bool threadQuit = t.wait(threadWaitTime);
 
         // If we waited long enough, then the timer should have fired, quit
         // the thread, and self-destructed; otherwise the wait will have timed
-        // out and the timer is still alive.
-        QCOMPARE(threadQuit, receiver->timeout);
-        QCOMPARE(threadQuit, !timer);
-        deadTimerDestroyed = threadQuit;
-
-        if (!threadQuit) {
+        // out, and the timer may now fire at any time, so don't look at it.
+        if (threadQuit) {
+            QVERIFY(receiver->timeout);
+            deadTimerDestroyed = true;
+        } else {
             t.quit();
 
             // now that the thread is (about to be) dead, start a new timer that is
