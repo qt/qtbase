@@ -20,7 +20,12 @@
 
 Q_LOGGING_CATEGORY(lcTests, "qt.tests." QT_STRINGIFY(tst_QCoreApplication))
 
+#ifdef QT_QGUIAPPLICATIONTEST
+#include <QtGui/QGuiApplication>
+typedef QGuiApplication TestApplication;
+#else
 typedef QCoreApplication TestApplication;
+#endif
 
 class EventSpy : public QObject
 {
