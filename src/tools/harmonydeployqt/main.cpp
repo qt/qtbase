@@ -259,7 +259,7 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
 }
 
 // Returns the version of the SDK that hvigor builds with, in build-profile.json5
-// format, for example "6.1.1(24)", or an empty string if it cannot be determined.
+// format, for example "26.0.0", or an empty string if it cannot be determined.
 // hvigor uses DEVECO_SDK_HOME; without it, assume the SDK Qt was built with.
 static QString sdkVersion(const QString &sdkRoot)
 {
@@ -278,7 +278,7 @@ static QString sdkVersion(const QString &sdkRoot)
         const QString apiVersion = data["apiVersion"_L1].toVariant().toString();
         if (platformVersion.isEmpty() || apiVersion.isEmpty())
             return {};
-        return platformVersion + u'(' + apiVersion + u')';
+        return platformVersion;
     }
     return {};
 }

@@ -1003,13 +1003,13 @@ set_target_properties(myapp PROPERTIES
 Specifies the compatible SDK version field written to
 \c {entry/build-profile.json5} when the HAP package is built. The value is
 substituted verbatim, so it must use the format expected by the HarmonyOS
-toolchain, for example \c {5.0.0(12)}.
+toolchain, for example \c {26.0.0}.
 
 If this property is not set, the value defined by the package template is kept.
 
 \badcode
 set_target_properties(myapp PROPERTIES
-    QT_HARMONYOS_COMPATIBLE_SDK_VERSION "5.0.0(12)"
+    QT_HARMONYOS_COMPATIBLE_SDK_VERSION "26.0.0"
 )
 \endcode
 
@@ -1038,18 +1038,18 @@ set_target_properties(myapp PROPERTIES
 Specifies the target SDK version field written to
 \c {entry/build-profile.json5} when the HAP package is built. The value is
 substituted verbatim, so it must use the format expected by the HarmonyOS
-toolchain, for example \c {14}.
+toolchain, for example \c {26}.
 
 If neither this property nor
 \l{cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
 is set, the version of the HarmonyOS SDK that builds the HAP is written, for
-example \c {6.1.1(23)}. It is read from the \c {sdk-pkg.json} file of the SDK
+example \c {26.0.0}. It is read from the \c {sdk-pkg.json} file of the SDK
 in \c DEVECO_SDK_HOME, or of the SDK Qt was built with. If that file cannot be
 read, no target SDK version is written.
 
 \badcode
 set_target_properties(myapp PROPERTIES
-    QT_HARMONYOS_TARGET_SDK_VERSION "14"
+    QT_HARMONYOS_TARGET_SDK_VERSION "26"
 )
 \endcode
 
@@ -1084,7 +1084,7 @@ If this property is not set, the value defined by the package template is kept.
 
 \badcode
 set_target_properties(myapp PROPERTIES
-    QT_HARMONYOS_COMPILE_SDK_VERSION "5.0.0(12)"
+    QT_HARMONYOS_COMPILE_SDK_VERSION "26.0.0"
 )
 \endcode
 
