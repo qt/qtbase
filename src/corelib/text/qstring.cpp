@@ -4748,6 +4748,19 @@ qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
     return QtPrivate::count(*this, str, cs);
 }
 
+/*!
+    \fn qsizetype QString::count(QLatin1StringView str, Qt::CaseSensitivity cs) const
+    \since 6.13
+    \overload count()
+
+    Returns the number of occurrences of the (potentially overlapping) Latin-1
+    string view \a str in this string.
+
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
+
+    \sa contains(), indexOf()
+*/
+
 /*! \fn bool QString::contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
     Returns \c true if this string contains an occurrence of the string
