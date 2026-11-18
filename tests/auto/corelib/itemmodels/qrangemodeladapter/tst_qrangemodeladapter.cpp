@@ -914,6 +914,27 @@ void tst_QRangeModelAdapter::referenceComparison()
         otherData.back() = Row{4, 40};
         QVERIFY(adapter.at(4) != other.at(4));
         QVERIFY(!std::equal(adapter.cbegin(), adapter.cend(), other.cbegin(), other.cend()));
+
+        // RowReference and ConstRowReference
+        QVERIFY(adapter.at(0) == constRow(0));
+        QVERIFY(constRow(0) == adapter.at(0));
+        QVERIFY(adapter.at(0) == constRow(2));
+        QVERIFY(adapter.at(0) != constRow(1));
+        QVERIFY(constRow(1) != adapter.at(0));
+
+        // rows of adapters of different types, for the same row type
+        const std::vector<Row> constData = data;
+        QRangeModelAdapter constAdapter2(std::ref(constData));
+        static_assert(!std::is_same_v<decltype(constAdapter2), decltype(adapter)>);
+        QVERIFY(*adapter.cbegin() == *constAdapter2.cbegin());
+        QVERIFY(*constAdapter2.cbegin() == *adapter.cbegin());
+        QVERIFY(adapter.at(0) == *constAdapter2.cbegin());
+        QVERIFY(*adapter.cbegin() != *(constAdapter2.cbegin() + 1));
+        QVERIFY(*(constAdapter2.cbegin() + 1) != *adapter.cbegin());
+        QVERIFY(std::equal(adapter.cbegin(), adapter.cend(),
+                           constAdapter2.cbegin(), constAdapter2.cend()));
+        QVERIFY(!std::equal(other.cbegin(), other.cend(),
+                            constAdapter2.cbegin(), constAdapter2.cend()));
     }
 
     { // tree: tree_row doesn't provide operator==, so references are only
@@ -925,6 +946,8 @@ void tst_QRangeModelAdapter::referenceComparison()
         QVERIFY(adapter.at(0) != adapter.at(1));
         QVERIFY(*(adapter.cbegin() + 1) == *(adapter.cbegin() + 1));
         QVERIFY(*(adapter.cbegin() + 1) != *(adapter.cbegin() + 2));
+        QVERIFY(adapter.at(1) == *(adapter.cbegin() + 1));
+        QVERIFY(adapter.at(1) != *(adapter.cbegin() + 2));
     }
 }
 

@@ -1563,6 +1563,10 @@
     same row. A row reference is equal to a \c row_type if the row it refers
     to is equal to it.
 
+    RowReference and ConstRowReference can also be compared with each other,
+    and with the row references of other adapters if the rows of both
+    adapters have the same type, with the same semantics.
+
     Row references are not ordered. To compare the positions of rows, compare
     their iterators.
 //! [row-reference-comparison]

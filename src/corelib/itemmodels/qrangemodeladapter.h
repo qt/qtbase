@@ -594,7 +594,8 @@ public:
     private:
         // A member, as MSVC doesn't give the hidden friends access to the
         // private row_type of the enclosing adapter.
-        static bool rowsEqual(const Reference &lhs, const Reference &rhs)
+        template <typename Other>
+        static bool rowsEqual(const Reference &lhs, const Other &rhs)
         {
             if constexpr (QTypeTraits::has_operator_equal_v<std::remove_cv_t<row_type>>)
                 return lhs.get() == rhs.get();
@@ -609,6 +610,39 @@ public:
             return lhs.m_index == rhs.m_index || rowsEqual(lhs, rhs);
         }
         Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(Reference)
+
+#ifndef Q_QDOC
+        // for comparing with row references of other types
+        friend const QModelIndex &rowReferenceIndex(const Reference &ref) noexcept
+        {
+            return ref.m_index;
+        }
+
+        // Row references of other types: RowReference and ConstRowReference, and
+        // row references of other adapters for the same row type. As an exact
+        // match, this is preferred over the comparison with the row type, which
+        // would otherwise be ambiguous as both row references convert to that.
+        template <typename Other>
+        using if_comparable_row_reference = std::enable_if_t<
+            !std::is_same_v<Other, Reference>
+            && std::is_same_v<q20::remove_cvref_t<decltype(rowReferenceIndex(std::declval<const Other &>()))>,
+                              QModelIndex>
+            && std::is_same_v<q20::remove_cvref_t<decltype(std::declval<const Other &>().get())>,
+                              q20::remove_cvref_t<const_row_type>>, bool>;
+
+        template <typename Other, if_comparable_row_reference<Other> = true>
+        friend bool operator==(const Reference &lhs, const Other &rhs)
+        {
+            return lhs.m_index == rowReferenceIndex(rhs) || rowsEqual(lhs, rhs);
+        }
+#if !defined(__cpp_impl_three_way_comparison)
+        template <typename Other, if_comparable_row_reference<Other> = true>
+        friend bool operator!=(const Reference &lhs, const Other &rhs)
+        {
+            return !(lhs == rhs);
+        }
+#endif
+#endif // Q_QDOC
 
         friend bool comparesEqual(const Reference &lhs, const row_type &rhs)
         {
