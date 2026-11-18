@@ -1284,6 +1284,7 @@ qt_internal_extend_target(Core CONDITION OHOS
         platform/ohos/qohosjstools_p.h
         platform/ohos/qohosjsonconversions.cpp platform/ohos/qohosjsonconversions_p.h
         platform/ohos/qohosmemoizingjsthreadfetcher.cpp platform/ohos/qohosmemoizingjsthreadfetcher_p.h
+        platform/ohos/qohosabilitylaunchparamstore.cpp platform/ohos/qohosabilitylaunchparamstore_p.h
         platform/ohos/qharmonyjsonconversions.cpp platform/ohos/qharmonyjsonconversions.h
         platform/ohos/qharmonyjscontext.cpp platform/ohos/qharmonyjscontext.h
         platform/ohos/qharmonyappjscontext.cpp platform/ohos/qharmonyappjscontext.h

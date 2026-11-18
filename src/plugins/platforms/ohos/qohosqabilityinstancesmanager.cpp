@@ -3,6 +3,7 @@
 
 #include "qohosqabilityinstancesmanager.h"
 #include <QtCore/private/qnapi_p.h>
+#include <QtCore/private/qohosabilitylaunchparamstore_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtGui/qwindow.h>
@@ -46,15 +47,6 @@ std::string getUtf8QtInternalRequestIdForThisProcess()
     hash.addData(QByteArray::number(thisProcessPid));
 
     return hash.result().toHex().toStdString();
-}
-
-QNapi::Symbol getAbilityLaunchParamPropSymbol(JsState &jsState)
-{
-    struct SymbolTag
-    {
-    };
-
-    return jsState.getJsSymbolForType<SymbolTag>();
 }
 
 void sendWantToSelfQAbility(
@@ -370,8 +362,7 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
     , m_windowStage(Napi::Persistent(windowStage))
     , m_window(Napi::Persistent(windowStage.eval<QNapi::Object>("getMainWindowSync()")))
 {
-    auto optLaunchParam = QNapi::getOptionalPropOrEmpty<QNapi::Object>(
-        uiAbility, getAbilityLaunchParamPropSymbol(jsState));
+    auto optLaunchParam = QOhosAbilityLaunchParamStore::instance(jsState).getOrEmpty(uiAbility);
     if (optLaunchParam.IsEmpty()) {
         qOhosReportFatalErrorAndAbort(
             "Ability with instanceId='%s' doesn't have 'launchParam' set. It shouldn't happen!",
@@ -1026,12 +1017,6 @@ bool QAbilityInstancesManager::isQtInternalWantFromThisProcess(QNapi::Object wan
         !optCallerPid.IsEmpty() && optCallerPid.Int32Value() == thisProcessPid
         && !optQtInternalRequestId.IsEmpty()
         && optQtInternalRequestId.Utf8Value() == getUtf8QtInternalRequestIdForThisProcess();
-}
-
-void QAbilityInstancesManager::setLaunchParamOnAbilityObject(
-    JsState &jsState, QNapi::Object ability, QNapi::Object launchParam)
-{
-    ability.set(getAbilityLaunchParamPropSymbol(jsState), launchParam);
 }
 
 QAbilityInfo QAbilityInstancesManager::readAbilityInfo(const QNapi::Object &ability)

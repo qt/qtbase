@@ -22,6 +22,7 @@
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/private/qnapi_p.h>
+#include <QtCore/private/qohosabilitylaunchparamstore_p.h>
 #include <QtCore/private/qohosappcontext_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohospermissionshelper_p.h>
@@ -1455,7 +1456,7 @@ void handleAbilityOnCreate(const CallbackInfo &cbInfo)
 
     forceLoadAllJsModulesIfRequested(cbInfo.jsState());
 
-    QAbilityInstancesManager::setLaunchParamOnAbilityObject(cbInfo.jsState(), ability, launchParam);
+    QOhosAbilityLaunchParamStore::instance(cbInfo.jsState()).set(ability, launchParam);
 }
 
 QNapi::Value handleAbilityOnDestroy(const CallbackInfo &cbInfo)

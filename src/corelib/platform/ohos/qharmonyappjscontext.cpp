@@ -3,6 +3,7 @@
 
 #include "qharmonyappjscontext.h"
 #include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qohosabilitylaunchparamstore_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <thread>
 
@@ -98,6 +99,37 @@ QHarmonyAppJsContext &QHarmonyAppJsContext::fromJsContext(QHarmonyJsContext &jsC
 napi_value QHarmonyAppJsContext::defaultAbility()
 {
     return jsState().defaultQAbility().value_or(QNapi::Object());
+}
+
+/*!
+    Returns the \c launchParam that \a abilityValue received in its
+    \c onCreate() call. Returns \nullptr if \a abilityValue is not a
+    \c UIAbility instance whose \c onCreate() Qt handled.
+
+    The \c launchParam is an
+    \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-app-ability-abilityconstant#launchparam}{AbilityConstant.LaunchParam}
+    object. It describes why the ability was created, for example in its
+    \c launchReason property. Like the \c launchWant property of the
+    ability, it does not change when the ability receives a new Want.
+
+    To keep the Want and the reason that the application was launched
+    with, read \c launchWant and launchParam() of defaultAbility() at
+    startup. For example, in \c main(), pass a task that reads them to
+    QNativeInterface::QHarmonyApplication::runOnJsThread() right after
+    creating the application object.
+*/
+napi_value QHarmonyAppJsContext::launchParam(napi_value abilityValue)
+{
+    if (!abilityValue || !Napi::Value(env(), abilityValue).IsObject())
+        return nullptr;
+
+    auto &launchParamStore = QOhosAbilityLaunchParamStore::instance(jsState());
+    try {
+        return launchParamStore.getOrEmpty(QNapi::Object(env(), abilityValue));
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError("%s: reading the launchParam failed: %s", Q_FUNC_INFO, error.what());
+        return nullptr;
+    }
 }
 
 /*!
