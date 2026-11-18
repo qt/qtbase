@@ -20,6 +20,7 @@
 #include "qabstracteventdispatcher_p.h"
 
 typedef struct _GMainContext GMainContext;
+typedef struct _GSource GSource;
 
 QT_BEGIN_NAMESPACE
 
@@ -74,6 +75,14 @@ public:
     GTimerSource *timerSource;
     GIdleTimerSource *idleTimerSource;
     bool wakeUpCalled = true;
+
+    // Sets the source's name and makes it recursive, then attaches it to
+    // mainContext and registers it with this dispatcher. Subclasses must use
+    // this (and destroySource()) for the sources they add, so that
+    // processEvents() can include them in its guarantees. Sources must be
+    // left at G_PRIORITY_DEFAULT.
+    void attachSource(GSource *source, const char *name);
+    void destroySource(GSource *source);
 
     void runTimersOnceWithNormalPriority();
 };

@@ -292,44 +292,51 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
 
     // setup post event source
     GSource *source = g_source_new(&postEventSourceFuncs, sizeof(GPostEventSource));
-    g_source_set_name(source, "[Qt] GPostEventSource");
     postEventSource = reinterpret_cast<GPostEventSource *>(source);
 
     // atomic ints (Q or std) can't be initialized from raw memory w/o C++20's atomic_ref
     q20::construct_at(&postEventSource->serialNumber, 1);
     postEventSource->d = this;
-    g_source_set_can_recurse(&postEventSource->source, true);
-    g_source_attach(&postEventSource->source, mainContext);
+    attachSource(source, "[Qt] GPostEventSource");
 
     // setup socketNotifierSource
     source = g_source_new(&socketNotifierSourceFuncs, sizeof(GSocketNotifierSource));
-    g_source_set_name(source, "[Qt] GSocketNotifierSource");
     socketNotifierSource = reinterpret_cast<GSocketNotifierSource *>(source);
     (void) new (&socketNotifierSource->pollfds) QList<GPollFDWithQSocketNotifier *>();
-    g_source_set_can_recurse(&socketNotifierSource->source, true);
-    g_source_attach(&socketNotifierSource->source, mainContext);
+    attachSource(source, "[Qt] GSocketNotifierSource");
 
     // setup normal and idle timer sources
     source = g_source_new(&timerSourceFuncs, sizeof(GTimerSource));
-    g_source_set_name(source, "[Qt] GTimerSource");
     timerSource = reinterpret_cast<GTimerSource *>(source);
     (void) new (&timerSource->timerList) QTimerInfoList();
     timerSource->processEventsFlags = QEventLoop::AllEvents;
     timerSource->runWithIdlePriority = false;
-    g_source_set_can_recurse(&timerSource->source, true);
-    g_source_attach(&timerSource->source, mainContext);
+    attachSource(source, "[Qt] GTimerSource");
 
     source = g_source_new(&idleTimerSourceFuncs, sizeof(GIdleTimerSource));
-    g_source_set_name(source, "[Qt] GIdleTimerSource");
     idleTimerSource = reinterpret_cast<GIdleTimerSource *>(source);
     idleTimerSource->timerSource = timerSource;
-    g_source_set_can_recurse(&idleTimerSource->source, true);
-    g_source_attach(&idleTimerSource->source, mainContext);
+    attachSource(source, "[Qt] GIdleTimerSource");
 }
 
 QEventDispatcherGlibPrivate::~QEventDispatcherGlibPrivate()
     = default;
 
+void QEventDispatcherGlibPrivate::attachSource(GSource *source, const char *name)
+{
+    Q_ASSERT(source);
+    Q_ASSERT(g_source_get_priority(source) == G_PRIORITY_DEFAULT);
+    g_source_set_name(source, name);
+    g_source_set_can_recurse(source, true);
+    g_source_attach(source, mainContext);
+}
+
+void QEventDispatcherGlibPrivate::destroySource(GSource *source)
+{
+    Q_ASSERT(source);
+    g_source_destroy(source);
+    g_source_unref(source);
+}
 void QEventDispatcherGlibPrivate::runTimersOnceWithNormalPriority()
 {
     timerSource->runWithIdlePriority = false;
@@ -351,11 +358,9 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
     // destroy all timer sources
     d->timerSource->timerList.clearTimers();
     d->timerSource->timerList.~QTimerInfoList();
-    g_source_destroy(&d->timerSource->source);
-    g_source_unref(&d->timerSource->source);
+    d->destroySource(&d->timerSource->source);
     d->timerSource = nullptr;
-    g_source_destroy(&d->idleTimerSource->source);
-    g_source_unref(&d->idleTimerSource->source);
+    d->destroySource(&d->idleTimerSource->source);
     d->idleTimerSource = nullptr;
 
     // destroy socket notifier source
@@ -365,13 +370,11 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
         delete p;
     }
     d->socketNotifierSource->pollfds.~QList<GPollFDWithQSocketNotifier *>();
-    g_source_destroy(&d->socketNotifierSource->source);
-    g_source_unref(&d->socketNotifierSource->source);
+    d->destroySource(&d->socketNotifierSource->source);
     d->socketNotifierSource = nullptr;
 
     // destroy post event source
-    g_source_destroy(&d->postEventSource->source);
-    g_source_unref(&d->postEventSource->source);
+    d->destroySource(&d->postEventSource->source);
     d->postEventSource = nullptr;
 
     Q_ASSERT(d->mainContext != nullptr);
