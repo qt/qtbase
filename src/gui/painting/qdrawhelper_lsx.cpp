@@ -6,6 +6,7 @@
 
 #ifdef QT_COMPILER_SUPPORTS_LSX
 
+#include <private/qblendfunctions_p.h>
 #include <private/qdrawingprimitive_lsx_p.h>
 #include <private/qpaintengine_raster_p.h>
 
@@ -481,7 +482,8 @@ void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
                                          const QRect &clip,
                                          int const_alpha)
 {
-    if (const_alpha != 256) {
+    // The SIMD code below assumes x-coordinates small enough to be in 16.16 fixed point format, and opaque const_alpha.
+    if (const_alpha != 256 || !q20::in_range<int16_t>((int)sourceRect.right()) || !q20::in_range<int16_t>((int)sourceRect.left())) {
         // from qblendfunctions.cpp
         extern void qt_scale_image_argb32_on_argb32(uchar *destPixels, int dbpl,
                                                     const uchar *srcPixels, int sbpl, int srch,
@@ -493,12 +495,11 @@ void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
                                                targetRect, sourceRect, clip, const_alpha);
     }
 
-    qreal sx = sourceRect.width() / (qreal)targetRect.width();
-    qreal sy = sourceRect.height() / (qreal)targetRect.height();
-
+    const qreal sx = sourceRect.width() / (qreal)targetRect.width();
+    const qreal sy = sourceRect.height() / (qreal)targetRect.height();
 
     const int ix = 0x00010000 * sx;
-    const int iy = 0x00010000 * sy;
+    const int64_t iy = 0x00010000 * sy;
 
     QRect tr = targetRect.normalized().toRect();
     tr = tr.intersected(clip);
@@ -510,7 +511,7 @@ void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
     int w = tr.width();
 
     quint32 basex;
-    quint32 srcy;
+    quint64 srcy;
 
     if (sx < 0) {
         int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
@@ -520,11 +521,11 @@ void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
         basex = quint32(sourceRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
-        srcy = quint32(sourceRect.bottom() * 65536) + dsty;
+        int64_t dsty = qFloor64((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
+        srcy = quint64(sourceRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
-        srcy = quint32(sourceRect.top() * 65536) + dsty;
+        int64_t dsty = qCeil64((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
+        srcy = quint64(sourceRect.top() * 65536) + dsty;
     }
 
     quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
@@ -534,11 +535,11 @@ void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
     const __m128i one = __lsx_vreplgr2vr_h(0xff);
     const __m128i colorMask = __lsx_vreplgr2vr_w(0x00ff00ff);
     const __m128i alphaMask = __lsx_vreplgr2vr_w(0xff000000);
-    const __m128i ixVector = __lsx_vreplgr2vr_w(4*ix);
+    const __m128i ixVector = __lsx_vreplgr2vr_w(4*static_cast<unsigned>(ix));
 
     // this bounds check here is required as floating point rounding above might in some cases lead to
     // w/h values that are one pixel too large, falling outside of the valid image area.
-    const int ystart = srcy >> 16;
+    const int ystart = static_cast<int>(srcy >> 16);
     if (ystart >= srch && iy < 0) {
         srcy += iy;
         --h;
@@ -548,7 +549,7 @@ void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
         basex += ix;
         --w;
     }
-    int yend = (srcy + iy * (h - 1)) >> 16;
+    int yend = static_cast<int>((srcy + iy * (h - 1)) >> 16);
     if (yend < 0 || yend >= srch)
         --h;
     int xend = (basex + ix * (w - 1)) >> 16;
