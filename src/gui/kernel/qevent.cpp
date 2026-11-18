@@ -2056,7 +2056,9 @@ Q_IMPL_EVENT_COMMON(QIconDragEvent)
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos,
                                      Qt::KeyboardModifiers modifiers)
-    : QInputEvent(ContextMenu, QPointingDevice::primaryPointingDevice(), modifiers), m_pos(pos), m_globalPos(globalPos), m_reason(reason)
+    : QInputEvent(ContextMenu, reason == Keyboard ? QInputDevice::primaryKeyboard()
+                                                  : QPointingDevice::primaryPointingDevice(),
+                  modifiers), m_pos(pos), m_globalPos(globalPos), m_reason(reason)
 {}
 
 Q_IMPL_EVENT_COMMON(QContextMenuEvent)
@@ -2079,7 +2081,7 @@ Q_IMPL_EVENT_COMMON(QContextMenuEvent)
     position explicitly.
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
-    : QInputEvent(ContextMenu, QInputDevice::primaryKeyboard()), m_pos(pos), m_reason(reason)
+    : QContextMenuEvent(reason, pos, QPoint())
 {
 #ifndef QT_NO_CURSOR
     m_globalPos = QCursor::pos();
