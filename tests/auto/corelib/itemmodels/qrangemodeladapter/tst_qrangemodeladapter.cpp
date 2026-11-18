@@ -881,6 +881,31 @@ void tst_QRangeModelAdapter::referenceComparison()
         QVERIFY(adapter[0] == 1);
         QVERIFY(1 == adapter[0]);
         QVERIFY(adapter[0] != 2);
+
+        // ordered by the values
+        QVERIFY(adapter[0] < adapter[1]);
+        QVERIFY(adapter[1] > adapter[0]);
+        QVERIFY(adapter[0] <= adapter[2]);
+        QVERIFY(adapter[0] >= adapter[2]);
+        QVERIFY(!(adapter[0] < adapter[2]));
+        QVERIFY(adapter[0] < 2);
+        QVERIFY(0 < adapter[0]);
+        QVERIFY(adapter[1] >= 2);
+        QVERIFY(2 <= adapter[1]);
+    }
+
+    { // relational operators of types that are only found through ADL
+        QStringList data = {u"b"_s, u"c"_s, u"a"_s};
+        QRangeModelAdapter adapter(&data);
+        QVERIFY(adapter[0] < adapter[1]);
+        QVERIFY(adapter[0] > adapter[2]);
+        QVERIFY(adapter[0] < u"c"_s);
+        QVERIFY(u"a"_s < adapter[0]);
+
+        // no relational operators if the value type doesn't have them
+        using Reference = QRangeModelAdapter<QList<QVariant>>::DataReference;
+        static_assert(QTypeTraits::has_operator_equal_v<Reference>);
+        static_assert(!QTypeTraits::has_operator_less_than_v<Reference>);
     }
 
     { // table: row references are equal if they refer to equal rows

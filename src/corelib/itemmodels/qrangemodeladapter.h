@@ -253,6 +253,29 @@ public:
         }
         Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(DataReference, value_type)
 
+#ifndef Q_QDOC
+        // relational operators, if the value type provides operator<
+#define QRMA_DATAREFERENCE_RELATIONAL_OPERATOR(op, expression) \
+        template <typename U = value_type> \
+        friend QTypeTraits::compare_lt_result<U> \
+        operator op(const DataReference &lhs, const DataReference &rhs) \
+        { const value_type &a = lhs.get(); const value_type &b = rhs.get(); return expression; } \
+        template <typename U = value_type> \
+        friend QTypeTraits::compare_lt_result<U> \
+        operator op(const DataReference &lhs, const value_type &b) \
+        { const value_type &a = lhs.get(); return expression; } \
+        template <typename U = value_type> \
+        friend QTypeTraits::compare_lt_result<U> \
+        operator op(const value_type &a, const DataReference &rhs) \
+        { const value_type &b = rhs.get(); return expression; }
+
+        QRMA_DATAREFERENCE_RELATIONAL_OPERATOR(<, a < b)
+        QRMA_DATAREFERENCE_RELATIONAL_OPERATOR(>, b < a)
+        QRMA_DATAREFERENCE_RELATIONAL_OPERATOR(<=, !(b < a))
+        QRMA_DATAREFERENCE_RELATIONAL_OPERATOR(>=, !(a < b))
+#undef QRMA_DATAREFERENCE_RELATIONAL_OPERATOR
+#endif // Q_QDOC
+
         friend inline void swap(DataReference lhs, DataReference rhs)
         {
             const value_type lhsValue = lhs.get();

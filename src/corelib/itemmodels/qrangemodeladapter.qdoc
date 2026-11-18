@@ -1382,6 +1382,13 @@
     the values of the items they refer to are equal. A DataReference is equal
     to a \c value_type if the value of the item it refers to is equal to it.
 
+    If \c value_type provides \c{operator<()}, then DataReference also
+    provides the relational operators \c{<}, \c{<=}, \c{>}, and \c{>=} for
+    comparing with another DataReference or with a \c value_type. They
+    compare the values of the items, so that standard algorithms like
+    \c{std::max_element()} or \c{std::lower_bound()} can be used without a
+    comparator.
+
     \sa RowReference, ConstRowReference
 */
 
