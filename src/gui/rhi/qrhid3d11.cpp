@@ -4204,6 +4204,7 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
+    const bool is1D = m_flags.testFlag(OneDimensional);
     D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
     desc.Format = dxgiFormat;
     if (isCube) {
@@ -4211,6 +4212,14 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
         desc.Texture2DArray.MipSlice = UINT(level);
         desc.Texture2DArray.FirstArraySlice = 0;
         desc.Texture2DArray.ArraySize = 6;
+    } else if (is1D && isArray) {
+        desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE1DARRAY;
+        desc.Texture1DArray.MipSlice = UINT(level);
+        desc.Texture1DArray.FirstArraySlice = 0;
+        desc.Texture1DArray.ArraySize = UINT(qMax(0, m_arraySize));
+    } else if (is1D) {
+        desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE1D;
+        desc.Texture1D.MipSlice = UINT(level);
     } else if (isArray) {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
         desc.Texture2DArray.MipSlice = UINT(level);
