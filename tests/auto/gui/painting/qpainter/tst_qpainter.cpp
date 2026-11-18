@@ -202,6 +202,8 @@ private slots:
     void drawImage_1x1();
     void drawImage_task258776();
     void drawImage_QTBUG28324();
+    void drawImage_largeSourceCoordinates_data();
+    void drawImage_largeSourceCoordinates();
     void drawRect_task215378();
     void drawRect_task247505();
 
@@ -3455,6 +3457,83 @@ void tst_QPainter::drawImage_task258776()
     dest.save("dest.png");
     expected.save("expected.png");
     QCOMPARE(dest, expected);
+}
+
+void tst_QPainter::drawImage_largeSourceCoordinates_data()
+{
+    QTest::addColumn<QRectF>("targetRect");
+    QTest::addColumn<QRectF>("sourceRect");
+    QTest::addColumn<qreal>("rotation");
+
+    // Unaligned target x, to exercise the SIMD prologues
+    QTest::newRow("scaled, far source offset")
+            << QRectF(17, 17, 32, 32) << QRectF(39990, 0, 8, 8) << qreal(0);
+    QTest::newRow("rotated, far source offset")
+            << QRectF(16, 16, 32, 32) << QRectF(39990, 0, 8, 8) << qreal(30);
+    // The source coordinate at the device origin is far outside the source
+    QTest::newRow("rotated, downscaled, far from origin")
+            << QRectF(300, 300, 32, 32) << QRectF(0, 0, 4000, 16) << qreal(30);
+}
+
+void tst_QPainter::drawImage_largeSourceCoordinates()
+{
+    // The fast raster engine drawImage paths step through the source in 16.16 fixed point,
+    // which must not overflow
+    QFETCH(QRectF, targetRect);
+    QFETCH(QRectF, sourceRect);
+    QFETCH(qreal, rotation);
+
+    // Horizontal gradient in the red channel, so that wrong sampling is detected
+    QImage src(40000, 16, QImage::Format_ARGB32_Premultiplied);
+    QVERIFY(!src.isNull());
+    const auto expectedRed = [&src](qreal u) { return qBound(0, int(u) * 256 / src.width(), 255); };
+    QRgb *firstLine = reinterpret_cast<QRgb *>(src.scanLine(0));
+    for (int x = 0; x < src.width(); ++x)
+        firstLine[x] = qRgb(expectedRed(x), 255, 0);
+    for (int y = 1; y < src.height(); ++y)
+        memcpy(src.scanLine(y), firstLine, src.bytesPerLine());
+
+    QImage dest(512, 512, QImage::Format_ARGB32_Premultiplied);
+    dest.fill(Qt::transparent);
+
+    const QPointF pivot = targetRect.center();
+    QTransform xf;
+    xf.translate(pivot.x(), pivot.y()).rotate(rotation).translate(-pivot.x(), -pivot.y());
+
+    QPainter p(&dest);
+    p.setTransform(xf);
+    p.drawImage(targetRect, src, sourceRect);
+    p.end();
+
+    // Every pixel covered by the target must be opaque source color, sampled from about the
+    // right source position
+    const QPolygonF deviceTarget = xf.map(targetRect);
+    const QRectF deviceBounds = deviceTarget.boundingRect();
+    const QRect inner(QPoint(qCeil(deviceBounds.left()), qCeil(deviceBounds.top())),
+                      QPoint(qFloor(deviceBounds.right()) - 1, qFloor(deviceBounds.bottom()) - 1));
+    const QTransform inverse = xf.inverted();
+    const qreal uPerTargetUnit = sourceRect.width() / targetRect.width();
+    const int redTolerance = 2 + int(uPerTargetUnit * 256 / src.width());
+    for (int y = inner.top(); y <= inner.bottom(); ++y) {
+        for (int x = inner.left(); x <= inner.right(); ++x) {
+            const QPointF devicePoint(x + 0.5, y + 0.5);
+            if (!deviceTarget.containsPoint(devicePoint, Qt::OddEvenFill))
+                continue;
+            const QRgb pixel = dest.pixel(x, y);
+            const qreal u = sourceRect.left()
+                    + (inverse.map(devicePoint).x() - targetRect.left()) * uPerTargetUnit;
+            if (qAlpha(pixel) != 255 || qGreen(pixel) != 255 || qBlue(pixel) != 0
+                || qAbs(qRed(pixel) - expectedRed(u)) > redTolerance) {
+                QFAIL(qPrintable(QStringLiteral("Wrong pixel 0x%1 at (%2, %3), expected red %4")
+                                         .arg(pixel, 8, 16, QLatin1Char('0'))
+                                         .arg(x)
+                                         .arg(y)
+                                         .arg(expectedRed(u))));
+            }
+        }
+    }
+    // At least some source color must have been painted
+    QCOMPARE_GT(qGreen(dest.pixel(xf.map(targetRect.center()).toPoint())), 0);
 }
 
 void tst_QPainter::drawImage_QTBUG28324()

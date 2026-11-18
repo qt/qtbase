@@ -21,6 +21,17 @@ QT_BEGIN_NAMESPACE
 //
 // We mean it.
 //
+template <typename T> int64_t qFloor64(T v)
+{
+    using std::floor;
+    return QtPrivate::qCheckedFPConversionToInteger<int64_t>(floor(v));
+}
+
+template <typename T> int64_t qCeil64(T v)
+{
+    using std::ceil;
+    return QtPrivate::qCheckedFPConversionToInteger<int64_t>(ceil(v));
+}
 
 template <typename SRC, typename T>
 void qt_scale_image_16bit(uchar *destPixels, int dbpl,
@@ -30,11 +41,13 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
                           const QRect &clip,
                           T blender)
 {
-    qreal sx = srcRect.width() / (qreal) targetRect.width();
-    qreal sy = srcRect.height() / (qreal) targetRect.height();
+    const qreal sx = srcRect.width() / (qreal) targetRect.width();
+    const qreal sy = srcRect.height() / (qreal) targetRect.height();
 
-    const int ix = 0x00010000 * sx;
-    const int iy = 0x00010000 * sy;
+    // Qt gui coordinates and dimensions are int32_t, so if we add 16bit of fixed point precision
+    // to them - we need at least 48bits.
+    const int64_t ix = 0x00010000 * sx;
+    const int64_t iy = 0x00010000 * sy;
 
 //     qDebug() << "scale:" << Qt::endl
 //              << " - target" << targetRect << Qt::endl
@@ -51,48 +64,48 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int h = tr.height();
     int w = tr.width();
 
-    quint32 basex;
-    quint32 srcy;
+    quint64 basex;
+    quint64 srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
-        basex = quint32(srcRect.right() * 65536) + dstx;
+        int64_t dstx = qFloor64((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
+        basex = quint64(srcRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * sx * 65536) - 1;
-        basex = quint32(srcRect.left() * 65536) + dstx;
+        int64_t dstx = qCeil64((tx1 + qreal(0.5) - targetRect.left()) * sx * 65536) - 1;
+        basex = quint64(srcRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
-        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+        int64_t dsty = qFloor64((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
+        srcy = quint64(srcRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
-        srcy = quint32(srcRect.top() * 65536) + dsty;
+        int64_t dsty = qCeil64((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
+        srcy = quint64(srcRect.top() * 65536) + dsty;
     }
 
     quint16 *dst = ((quint16 *) (destPixels + ty1 * dbpl)) + tx1;
 
     // this bounds check here is required as floating point rounding above might in some cases lead to
     // w/h values that are one pixel too large, falling outside of the valid image area.
-    const int ystart = srcy >> 16;
+    const int ystart = static_cast<int>(srcy >> 16);
     if (ystart >= srch && iy < 0) {
         srcy += iy;
         --h;
     }
-    const int xstart = basex >> 16;
+    const int xstart = static_cast<int>(basex >> 16);
     if (xstart >=  (int)(sbpl/sizeof(SRC)) && ix < 0) {
         basex += ix;
         --w;
     }
-    int yend = (srcy + iy * (h - 1)) >> 16;
+    int yend = static_cast<int>((srcy + iy * (h - 1)) >> 16);
     if (yend < 0 || yend >= srch)
         --h;
-    int xend = (basex + ix * (w - 1)) >> 16;
+    int xend = static_cast<int>((basex + ix * (w - 1)) >> 16);
     if (xend < 0 || xend >= (int)(sbpl/sizeof(SRC)))
         --w;
 
     while (--h >= 0) {
         const SRC *src = (const SRC *) (srcPixels + (srcy >> 16) * sbpl);
-        quint32 srcx = basex;
+        quint64 srcx = basex;
         int x = 0;
         for (; x<w-7; x+=8) {
             blender.write(&dst[x], src[srcx >> 16]); srcx += ix;
@@ -121,11 +134,13 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
                                                 const QRect &clip,
                                                 T blender)
 {
-    qreal sx = srcRect.width() / (qreal) targetRect.width();
-    qreal sy = srcRect.height() / (qreal) targetRect.height();
+    const qreal sx = srcRect.width() / (qreal) targetRect.width();
+    const qreal sy = srcRect.height() / (qreal) targetRect.height();
 
-    const int ix = 0x00010000 * sx;
-    const int iy = 0x00010000 * sy;
+    // Qt gui coordinates and dimensions are int32_t, so if we add 16bit of fixed point precision
+    // to them - we need at least 48bits.
+    const int64_t ix = 0x00010000 * sx;
+    const int64_t iy = 0x00010000 * sy;
 
 //     qDebug() << "scale:" << Qt::endl
 //              << " - target" << targetRect << Qt::endl
@@ -142,49 +157,49 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     int h = tr.height();
     int w = tr.width();
 
-    quint32 basex;
-    quint32 srcy;
+    uint64_t basex;
+    uint64_t srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
-        basex = quint32(srcRect.right() * 65536) + dstx;
+        int64_t dstx = qFloor64((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
+        basex = quint64(srcRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * sx * 65536) - 1;
-        basex = quint32(srcRect.left() * 65536) + dstx;
+        int64_t dstx = qCeil64((tx1 + qreal(0.5) - targetRect.left()) * sx * 65536) - 1;
+        basex = quint64(srcRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
-        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+        int64_t dsty = qFloor64((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
+        srcy = quint64(srcRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
-        srcy = quint32(srcRect.top() * 65536) + dsty;
+        int64_t dsty = qCeil64((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
+        srcy = quint64(srcRect.top() * 65536) + dsty;
     }
 
     quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
 
     // this bounds check here is required as floating point rounding above might in some cases lead to
     // w/h values that are one pixel too large, falling outside of the valid image area.
-    const int ystart = srcy >> 16;
+    const int ystart = static_cast<int>(srcy >> 16);
     if (ystart >= srch && iy < 0) {
         srcy += iy;
         --h;
     }
-    const int xstart = basex >> 16;
+    const int xstart = static_cast<int>(basex >> 16);
     if (xstart >=  (int)(sbpl/sizeof(quint32)) && ix < 0) {
         basex += ix;
         --w;
     }
-    int yend = (srcy + iy * (h - 1)) >> 16;
+    int yend = static_cast<int>((srcy + iy * (h - 1)) >> 16);
     if (yend < 0 || yend >= srch)
         --h;
-    int xend = (basex + ix * (w - 1)) >> 16;
+    int xend = static_cast<int>((basex + ix * (w - 1)) >> 16);
     if (xend < 0 || xend >= (int)(sbpl/sizeof(quint32)))
         --w;
 
     while (--h >= 0) {
         const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
-        quint32 srcx = basex;
-        int x = 0;
+        quint64 srcx = basex;
+        int64_t x = 0;
         for (; x<w; ++x) {
             blender.write(&dst[x], src[srcx >> 16]);
             srcx += ix;
@@ -208,7 +223,7 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
                                   const QRect &sourceRect,
                                   const QRect &clip,
                                   qreal topY, qreal bottomY,
-                                  int dudx, int dvdx, int dudy, int dvdy, int u0, int v0,
+                                  int64_t dudx, int64_t dvdx, int64_t dudy, int64_t dvdy, int64_t u0, int64_t v0,
                                   Blender blender)
 {
     qint64 fromY = qMax(qRound(topY), clip.top());
@@ -419,12 +434,12 @@ void qt_transform_image(DestT *destPixels, int dbpl,
     mdx = v[0].u - m11 * v[0].x - m12 * v[0].y;
     mdy = v[0].v - m21 * v[0].x - m22 * v[0].y;
 
-    int dudx = int(m11 * 0x10000);
-    int dvdx = int(m21 * 0x10000);
-    int dudy = int(m12 * 0x10000);
-    int dvdy = int(m22 * 0x10000);
-    int u0 = qCeil((qreal(0.5) * m11 + qreal(0.5) * m12 + mdx) * 0x10000) - 1;
-    int v0 = qCeil((qreal(0.5) * m21 + qreal(0.5) * m22 + mdy) * 0x10000) - 1;
+    int64_t dudx = int64_t(m11 * 0x10000);
+    int64_t dvdx = int64_t(m21 * 0x10000);
+    int64_t dudy = int64_t(m12 * 0x10000);
+    int64_t dvdy = int64_t(m22 * 0x10000);
+    int64_t u0 = qCeil64((qreal(0.5) * m11 + qreal(0.5) * m12 + mdx) * 0x10000) - 1;
+    int64_t v0 = qCeil64((qreal(0.5) * m21 + qreal(0.5) * m22 + mdy) * 0x10000) - 1;
 
     int x1 = qFloor(sourceRect.left());
     int y1 = qFloor(sourceRect.top());
