@@ -61,8 +61,6 @@ public:
 
     static bool isQtInternalWantFromThisProcess(QNapi::Object want);
 
-    static void setLaunchParamOnAbilityObject(JsState &jsState, QNapi::Object ability, QNapi::Object launchParam);
-
     static QAbilityInfo readAbilityInfo(const QNapi::Object &ability);
 
     virtual QNapi::Object appLaunchWant() = 0;

@@ -336,6 +336,20 @@ napi_value failingJsGetterCallback(napi_env env, napi_callback_info)
     return nullptr;
 }
 
+napi_value makeJsProxyWithFailingPropertyTraps(napi_env env)
+{
+    const auto failingTrapValue = makeJsFunction(env, failingJsGetterCallback);
+    const auto handlerValue = makeJsObject(env);
+    setJsProperty(env, handlerValue, "has", failingTrapValue);
+    setJsProperty(env, handlerValue, "get", failingTrapValue);
+    napi_value proxyArgs[] = {makeJsObject(env), handlerValue};
+    napi_value proxyValue = nullptr;
+    checkNapiStatus(
+        napi_new_instance(env, getJsProperty(env, getJsGlobal(env), "Proxy"), 2, proxyArgs, &proxyValue),
+        "napi_new_instance");
+    return proxyValue;
+}
+
 napi_value jsContextRecordingCallback(napi_env env, napi_callback_info callbackInfo)
 {
     void *data = nullptr;
@@ -702,6 +716,12 @@ private slots:
     void appJsContext_fromEnv_inJsCallback();
     void appJsContext_defaultAbility_isUiAbility();
     void appJsContext_defaultAbility_stable();
+    void appJsContext_launchParam_defaultAbility();
+    void appJsContext_launchParam_unchangedByNewWant();
+    void appJsContext_launchParam_otherObject();
+    void appJsContext_launchParam_throwingProxy();
+    void appJsContext_launchParam_nonObject_data();
+    void appJsContext_launchParam_nonObject();
     void appJsContext_addUiAbilityDelegate_nonObject_data();
     void appJsContext_addUiAbilityDelegate_nonObject();
     void appJsContext_uiAbilityDelegate_onNewWant_receivesAbilityAndArguments();
@@ -1418,6 +1438,143 @@ void tst_Harmony::appJsContext_defaultAbility_stable()
     QVERIFY(!abilityInfo.abilityRef.isNull());
     QVERIFY(abilityInfo.sameWithinTask);
     QVERIFY(sameAcrossTasks);
+}
+
+void tst_Harmony::appJsContext_launchParam_defaultAbility()
+{
+    struct LaunchParamInfo
+    {
+        bool launchParamIsObject = false;
+        bool launchReasonIsNumber = false;
+        bool sameOnSecondCall = false;
+        bool exceptionPending = true;
+    };
+
+    const auto launchParamInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            const auto abilityValue = appJsContext.defaultAbility();
+            const auto launchParamValue = appJsContext.launchParam(abilityValue);
+            return LaunchParamInfo{
+                .launchParamIsObject = jsTypeOf(env, launchParamValue) == napi_object,
+                .launchReasonIsNumber = jsTypeOf(env, getJsProperty(env, launchParamValue, "launchReason")) == napi_number,
+                .sameOnSecondCall = jsStrictEquals(env, launchParamValue, appJsContext.launchParam(abilityValue)),
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QVERIFY(launchParamInfo.launchParamIsObject);
+    QVERIFY(launchParamInfo.launchReasonIsNumber);
+    QVERIFY(launchParamInfo.sameOnSecondCall);
+    QVERIFY(!launchParamInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_launchParam_unchangedByNewWant()
+{
+    struct LaunchParamInfo
+    {
+        bool sameAfterNewWant = false;
+        bool exceptionPending = true;
+    };
+
+    const auto launchParamInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            auto &appJsContext = QHarmonyAppJsContext::fromJsContext(jsContext);
+            const auto abilityValue = appJsContext.defaultAbility();
+            const auto launchParamValue = appJsContext.launchParam(abilityValue);
+            callAbilityOnNewWant(jsContext, makeTestWant(env), makeTestLaunchParam(env));
+            return LaunchParamInfo{
+                .sameAfterNewWant = jsStrictEquals(env, launchParamValue, appJsContext.launchParam(abilityValue)),
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QVERIFY(launchParamInfo.sameAfterNewWant);
+    QVERIFY(!launchParamInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_launchParam_otherObject()
+{
+    struct LaunchParamInfo
+    {
+        bool launchParamIsNull = false;
+        bool exceptionPending = true;
+    };
+
+    const auto launchParamInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            const auto launchParamValue = QHarmonyAppJsContext::fromJsContext(jsContext).launchParam(makeJsObject(env));
+            return LaunchParamInfo{
+                .launchParamIsNull = !launchParamValue,
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QVERIFY(launchParamInfo.launchParamIsNull);
+    QVERIFY(!launchParamInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_launchParam_throwingProxy()
+{
+    struct LaunchParamInfo
+    {
+        bool launchParamIsNull = false;
+        bool exceptionPending = true;
+    };
+
+    const auto launchParamInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            const auto launchParamValue = QHarmonyAppJsContext::fromJsContext(jsContext).launchParam(makeJsProxyWithFailingPropertyTraps(env));
+            return LaunchParamInfo{
+                .launchParamIsNull = !launchParamValue,
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QVERIFY(launchParamInfo.launchParamIsNull);
+    QVERIFY(!launchParamInfo.exceptionPending);
+}
+
+void tst_Harmony::appJsContext_launchParam_nonObject_data()
+{
+    QTest::addColumn<JsValueKind>("kind");
+
+    QTest::newRow("nullPointer") << JsValueKind::NullPointer;
+    QTest::newRow("null") << JsValueKind::Null;
+    QTest::newRow("undefined") << JsValueKind::Undefined;
+    QTest::newRow("number") << JsValueKind::Number;
+    QTest::newRow("string") << JsValueKind::String;
+    QTest::newRow("boolean") << JsValueKind::Boolean;
+    QTest::newRow("symbol") << JsValueKind::Symbol;
+    QTest::newRow("bigInt") << JsValueKind::BigInt;
+}
+
+void tst_Harmony::appJsContext_launchParam_nonObject()
+{
+    QFETCH(JsValueKind, kind);
+
+    struct LaunchParamInfo
+    {
+        bool launchParamIsNull = false;
+        bool exceptionPending = true;
+    };
+
+    const auto launchParamInfo = QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) {
+            const auto env = jsContext.env();
+            const auto launchParamValue = QHarmonyAppJsContext::fromJsContext(jsContext).launchParam(makeJsValueOfKind(env, kind));
+            return LaunchParamInfo{
+                .launchParamIsNull = !launchParamValue,
+                .exceptionPending = isJsExceptionPending(env),
+            };
+        });
+
+    QVERIFY(launchParamInfo.launchParamIsNull);
+    QVERIFY(!launchParamInfo.exceptionPending);
 }
 
 void tst_Harmony::appJsContext_addUiAbilityDelegate_nonObject_data()

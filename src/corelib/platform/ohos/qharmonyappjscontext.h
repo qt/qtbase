@@ -19,6 +19,7 @@ public:
     static QHarmonyAppJsContext &fromJsContext(QHarmonyJsContext &jsContext);
 
     napi_value defaultAbility();
+    napi_value launchParam(napi_value abilityValue);
 
     [[nodiscard]] std::shared_ptr<void> addUiAbilityDelegate(napi_value delegateValue);
 
