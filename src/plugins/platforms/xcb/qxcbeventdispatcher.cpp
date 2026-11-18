@@ -71,15 +71,13 @@ QXcbGlibEventDispatcher::QXcbGlibEventDispatcher(QXcbConnection *connection, QOb
     m_xcbEventSourceFuncs.finalize = nullptr;
 
     GSource *source = g_source_new(&m_xcbEventSourceFuncs, sizeof(XcbEventSource));
-    g_source_set_name(source, "[Qt] XcbEventSource");
     m_xcbEventSource = reinterpret_cast<XcbEventSource *>(source);
 
     m_xcbEventSource->dispatcher = this;
     m_xcbEventSource->dispatcher_p = d_func();
     m_xcbEventSource->connection = connection;
 
-    g_source_set_can_recurse(&m_xcbEventSource->source, true);
-    g_source_attach(&m_xcbEventSource->source, d->mainContext);
+    d->attachSource(source, "[Qt] XcbEventSource");
 }
 
 QXcbGlibEventDispatcherPrivate::QXcbGlibEventDispatcherPrivate()
@@ -88,8 +86,8 @@ QXcbGlibEventDispatcherPrivate::QXcbGlibEventDispatcherPrivate()
 
 QXcbGlibEventDispatcher::~QXcbGlibEventDispatcher()
 {
-    g_source_destroy(&m_xcbEventSource->source);
-    g_source_unref(&m_xcbEventSource->source);
+    Q_D(QXcbGlibEventDispatcher);
+    d->destroySource(&m_xcbEventSource->source);
 }
 
 bool QXcbGlibEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)

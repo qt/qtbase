@@ -55,13 +55,10 @@ QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *conte
     Q_Q(QPAEventDispatcherGlib);
 
     GSource *source = g_source_new(&userEventSourceFuncs, sizeof(GUserEventSource));
-    g_source_set_name(source, "[Qt] GUserEventSource");
     userEventSource = reinterpret_cast<GUserEventSource *>(source);
-
     userEventSource->q = q;
     userEventSource->d = this;
-    g_source_set_can_recurse(&userEventSource->source, true);
-    g_source_attach(&userEventSource->source, mainContext);
+    attachSource(source, "[Qt] GUserEventSource");
 }
 
 QPAEventDispatcherGlibPrivate::~QPAEventDispatcherGlibPrivate()
@@ -79,8 +76,7 @@ QPAEventDispatcherGlib::~QPAEventDispatcherGlib()
 {
     Q_D(QPAEventDispatcherGlib);
 
-    g_source_destroy(&d->userEventSource->source);
-    g_source_unref(&d->userEventSource->source);
+    d->destroySource(&d->userEventSource->source);
     d->userEventSource = nullptr;
 }
 
