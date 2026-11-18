@@ -53,6 +53,7 @@
 # include <qt_windows.h>
 #endif
 
+using namespace Qt::StringLiterals;
 
 Q_DECLARE_METATYPE(Qt::Key);
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers);
@@ -66,6 +67,15 @@ public:
     using QDateTimeEdit::lineEdit;
     using QDateTimeEdit::initStyleOption;
     using QDateTimeEdit::focusNextPrevChild;
+    using QDateTimeEdit::validate;
+};
+
+class EditorTimeEdit : public QTimeEdit
+{
+    Q_OBJECT
+public:
+    using QTimeEdit::QTimeEdit;
+    using QTimeEdit::validate;
 };
 
 class PressAndHoldStyle : public QProxyStyle
@@ -204,6 +214,10 @@ private slots:
     void newCase4();
     void newCase5();
     void newCase6();
+
+    void validateTimeAmPm_data();
+    void validateTimeAmPm();
+    void validateDateTimeAmPm();
 
     void task98554();
     void task149097();
@@ -2841,6 +2855,66 @@ void tst_QDateTimeEdit::newCase6()
     QTest::keyClick(testWidget, Qt::Key_1);
     QTest::keyClick(testWidget, Qt::Key_2);
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("12-2005-10-12"));
+}
+
+void tst_QDateTimeEdit::validateTimeAmPm_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QValidator::State>("state");
+    QTest::addColumn<QString>("fixed");
+
+    QTest::newRow("unfinished") // Incomplete.
+        << u"10:00 A"_s << QValidator::Intermediate << u"10:00 A"_s;
+    QTest::newRow("unfinished-lower") // Incomplete, wrong case.
+        << u"10:00 a"_s << QValidator::Intermediate << u"10:00 A"_s;
+    QTest::newRow("lower") // Wrong case.
+        << u"10:00 am"_s << QValidator::Acceptable << u"10:00 AM"_s;
+    QTest::newRow("late") // Baseline for next two.
+        << u"09:00 PM"_s << QValidator::Acceptable << u"09:00 PM"_s;
+    QTest::newRow("unfinished-late") // Incomplete.
+        << u"09:00 P"_s << QValidator::Intermediate << u"09:00 P"_s;
+    QTest::newRow("unfinished-early") // Below minimum, incomplete.
+        << u"09:00 A"_s << QValidator::Intermediate << u"09:00 A"_s;
+    // One might fairly argue that unfinished-early should be Invalid, but for
+    // now we treat it as being mid-edit so potentially fixable; cf. early.
+    QTest::newRow("early") // Below minimum.
+        << u"09:00 AM"_s << QValidator::Invalid << u"09:00 AM"_s;
+}
+
+void tst_QDateTimeEdit::validateTimeAmPm()
+{
+    QFETCH(QString, text);
+    QFETCH(const QValidator::State, state);
+    QFETCH(const QString, fixed);
+    QTest::failOnWarning();
+
+    EditorTimeEdit edit(QTime(10, 0));
+    edit.setDisplayFormat(u"hh:mm AP"_s);
+    edit.setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
+    edit.setMinimumTime(QTime(10, 0));
+    int pos = 6;
+    QCOMPARE(edit.validate(text, pos), state);
+    QCOMPARE(text, fixed);
+}
+
+void tst_QDateTimeEdit::validateDateTimeAmPm()
+{
+    QTest::failOnWarning();
+
+    EditorDateEdit edit;
+    edit.setDisplayFormat(u"yyyy-MM-dd hh:mm ap"_s);
+    edit.setLocale(QLocale(QLocale::Asturian, QLocale::Spain));
+    edit.setTimeZone(QTimeZone("America/Santiago"));
+    // That had a daylight-saving end that repeated an hour: this is in the
+    // second pass through it:
+    edit.setMinimumDateTime(QDateTime(QDate(2026, 4, 5), QTime(3, 10),
+                                      QTimeZone::UTC).toTimeZone(edit.timeZone()));
+    if (QTest::currentTestResolved()) // Triggering a warning would cause failure.
+        return;
+    QTest::failOnWarning();
+    QString text = u"2026-04-04 11:30 t"_s;
+    int pos = 18;
+    QCOMPARE(edit.validate(text, pos), QValidator::Intermediate);
 }
 
 void tst_QDateTimeEdit::task98554()
