@@ -880,6 +880,10 @@ bool QRhiGles2::create(QRhi::Flags flags)
         glTexStorage1D = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei)>(
                 ctx->getProcAddress(QByteArrayLiteral("glTexStorage1D")));
 
+        glTexImage2DMultisample = reinterpret_cast<void(QOPENGLF_APIENTRYP)(
+                GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLboolean)>(
+                ctx->getProcAddress(QByteArrayLiteral("glTexImage2DMultisample")));
+
         glTexSubImage1D = reinterpret_cast<void(QOPENGLF_APIENTRYP)(
                 GLenum, GLint, GLint, GLsizei, GLenum, GLenum, const GLvoid *)>(
                 ctx->getProcAddress(QByteArrayLiteral("glTexSubImage1D")));
@@ -1140,10 +1144,15 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.intAttributes = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.screenSpaceDerivatives = f->hasOpenGLExtension(QOpenGLExtensions::StandardDerivatives);
 
-    if (caps.gles)
+    if (caps.gles) {
         caps.multisampledTexture = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 1); // ES 3.1
-    else
-        caps.multisampledTexture = caps.ctxMajor >= 3; // 3.0
+        caps.multisampledTextureStorage = caps.multisampledTexture;
+    } else {
+        caps.multisampledTexture = glTexImage2DMultisample
+                && (caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2)); // 3.2
+        caps.multisampledTextureStorage = caps.ctxMajor > 4
+                || (caps.ctxMajor == 4 && caps.ctxMinor >= 3); // 4.3
+    }
 
     // Program binary support: only the core stuff, do not bother with the old
     // extensions like GL_OES_get_program_binary
@@ -7086,6 +7095,20 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     return true;
 }
 
+// glTexStorage2DMultisample is GLES 3.1 and OpenGL 4.3, use
+// glTexImage2DMultisample (OpenGL 3.2) where it is not available.
+static void specifyMultisampleTexture2D(QRhiGles2 *rhiD, GLenum target, int samples,
+                                        GLenum internalFormat, const QSize &size)
+{
+    if (rhiD->caps.multisampledTextureStorage) {
+        rhiD->f->glTexStorage2DMultisample(target, samples, internalFormat,
+                                           size.width(), size.height(), GL_TRUE);
+    } else if (rhiD->glTexImage2DMultisample) {
+        rhiD->glTexImage2DMultisample(target, samples, internalFormat,
+                                      size.width(), size.height(), GL_TRUE);
+    }
+}
+
 bool QGles2Texture::create()
 {
     QSize size;
@@ -7151,12 +7174,9 @@ bool QGles2Texture::create()
                     }
                 }
             } else {
-                // 2D texture. For multisample textures the GLES 3.1
-                // glStorage2DMultisample must be used for portability.
+                // 2D texture. Multisample textures need a sized internal format.
                 if (samples > 1 && rhiD->caps.multisampledTexture) {
-                    // internal format must be sized
-                    rhiD->f->glTexStorage2DMultisample(target, samples, glsizedintformat,
-                                                       size.width(), size.height(), GL_TRUE);
+                    specifyMultisampleTexture2D(rhiD, target, samples, glsizedintformat, size);
                 } else {
                     rhiD->f->glTexImage2D(target, 0, GLint(glintformat), size.width(), size.height(),
                                           0, glformat, gltype, nullptr);
@@ -7172,8 +7192,7 @@ bool QGles2Texture::create()
                 rhiD->f->glTexStorage3D(target, mipLevelCount, glsizedintformat, size.width(), size.height(),
                                         is3D ? qMax(1, m_depth) : qMax(0, m_arraySize));
             else if (samples > 1)
-                rhiD->f->glTexStorage2DMultisample(target, samples, glsizedintformat,
-                                                   size.width(), size.height(), GL_TRUE);
+                specifyMultisampleTexture2D(rhiD, target, samples, glsizedintformat, size);
             else
                 rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(),
                                         is1D ? qMax(0, m_arraySize) : size.height());

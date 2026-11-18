@@ -1091,6 +1091,8 @@ public:
     void(QOPENGLF_APIENTRYP glTexImage1D)(GLenum, GLint, GLint, GLsizei, GLint, GLenum, GLenum,
                                           const void *) = nullptr;
     void(QOPENGLF_APIENTRYP glTexStorage1D)(GLenum, GLint, GLenum, GLsizei) = nullptr;
+    void(QOPENGLF_APIENTRYP glTexImage2DMultisample)(GLenum, GLsizei, GLenum, GLsizei, GLsizei,
+                                                     GLboolean) = nullptr;
     void(QOPENGLF_APIENTRYP glTexSubImage1D)(GLenum, GLint, GLint, GLsizei, GLenum, GLenum,
                                              const GLvoid *) = nullptr;
     void(QOPENGLF_APIENTRYP glCopyTexSubImage1D)(GLenum, GLint, GLint, GLint, GLint,
@@ -1140,6 +1142,7 @@ public:
               maxFragmentStorageBuffers(0),
               msaaRenderBuffer(false),
               multisampledTexture(false),
+              multisampledTextureStorage(false),
               npotTextureFull(true),
               gles(false),
               fixedIndexPrimitiveRestart(false),
@@ -1214,6 +1217,7 @@ public:
         // the same as multisample textures!
         uint msaaRenderBuffer : 1;
         uint multisampledTexture : 1;
+        uint multisampledTextureStorage : 1;
         uint npotTextureFull : 1;
         uint gles : 1;
         uint fixedIndexPrimitiveRestart : 1;
