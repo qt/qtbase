@@ -652,14 +652,18 @@ void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
     current.cdUp();
     current.mkdir("test2");
     QFileDialog fd;
+    QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");
+    QVERIFY(model);
     fd.setViewMode(QFileDialog::List);
     fd.setDirectory(current.absolutePath());
     fd.show();
     QVERIFY(QTest::qWaitForWindowExposed(&fd));
 
-    // Ensure LayoutRequest event is processed so that the list view
-    // is sorted correctly to have the directory entires at the top.
-    QCoreApplication::processEvents();
+    const QModelIndex root = model->index(current.absolutePath());
+    QVERIFY(root.isValid());
+    QTRY_VERIFY(model->rowCount(root) >= 2
+                && model->isDir(model->index(0, 0, root))
+                && model->isDir(model->index(1, 0, root)));
 
     QListView *list = fd.findChild<QListView*>("listView");
     QVERIFY(list);
@@ -798,7 +802,10 @@ void tst_QFileDialog2::task233037_selectingDirectory()
     fd.setAcceptMode( QFileDialog::AcceptSave);
     fd.show();
     QListView *list = fd.findChild<QListView*>("listView");
-    QTest::qWait(3000); // Wait for sort to settle (I need a signal).
+    QVERIFY(list);
+    QAbstractItemModel *model = list->model();
+    QVERIFY(model);
+    QTRY_VERIFY(model->rowCount(list->rootIndex()) >= 1);
     QTest::keyClick(list, Qt::Key_Down);
     QDialogButtonBox *buttonBox = fd.findChild<QDialogButtonBox*>("buttonBox");
     QVERIFY(buttonBox);
