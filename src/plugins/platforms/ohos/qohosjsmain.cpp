@@ -113,7 +113,7 @@ std::atomic<bool> enableNativeNodeApiMouseEvents{true};
 QtRunMode currentQtRunMode = QtRunMode::Normal;
 
 const auto callerPidWantArgName = "ohos.aafwk.param.callerPid";
-const auto qtAppProcessIdWantArgName = "io.qt.private.appProcessId";
+const auto qtAppProcessIdWantArgName = "io.qt.appProcessId";
 
 const char *mapQtRunModeToString(QtRunMode qtRunMode)
 {
