@@ -44,6 +44,8 @@ private slots:
     void modifyingTableAlgorithms();
     void modifyingTreeAlgorithms();
     void modifyingRangesAlgorithms();
+
+    void reorderingNotSupported();
 };
 
 // Calls a helper function that verifies with the QtTest macros, and returns
@@ -933,6 +935,59 @@ void tst_QRangeModelAdapterAlgorithms::modifyingRangesAlgorithms()
         QCOMPARE(changedCells(treeSpy, branchIndex), (QList<std::pair<int, int>>{{2, 0}, {1, 0}}));
         QCOMPARE(treeObserver.emittedSignalNames(), dataChangedSignal);
     }
+#endif
+}
+
+namespace {
+
+// Whether the references of an iterator can be swapped the way that
+// std::iter_swap, and the standard algorithms that reorder elements, do.
+namespace swap_test {
+using std::swap;
+template <typename It, typename = void>
+struct is_iter_swappable : std::false_type {};
+template <typename It>
+struct is_iter_swappable<It, std::void_t<decltype(swap(*std::declval<It>(), *std::declval<It>()))>>
+    : std::true_type {};
+} // namespace swap_test
+using swap_test::is_iter_swappable;
+
+using ListAdapter = decltype(QRangeModelAdapter(std::declval<std::vector<int> *>()));
+using TableAdapter = decltype(QRangeModelAdapter(std::declval<std::vector<std::vector<int>> *>()));
+using TreeAdapter = decltype(QRangeModelAdapter(std::declval<value_tree *>()));
+
+// sanity check of the trait
+static_assert(is_iter_swappable<std::vector<int>::iterator>::value);
+static_assert(is_iter_swappable<std::vector<bool>::iterator>::value);
+
+// The references can't be swapped, so the standard algorithms that reorder
+// elements by swapping them - like std::sort, std::reverse, std::rotate,
+// std::partition, std::shuffle - don't compile.
+static_assert(!is_iter_swappable<ListAdapter::iterator>::value);
+static_assert(!is_iter_swappable<TableAdapter::iterator>::value);
+static_assert(!is_iter_swappable<TableAdapter::ColumnIterator>::value);
+static_assert(!is_iter_swappable<TreeAdapter::iterator>::value);
+
+} // namespace
+
+void tst_QRangeModelAdapterAlgorithms::reorderingNotSupported()
+{
+#if !defined(__cpp_lib_ranges)
+    QSKIP("This test requires C++20 ranges");
+#else
+    // The range algorithms that reorder elements require std::permutable. The
+    // iterators are not std::indirectly_writable, as the references can't be
+    // assigned to when const, and the references can't be swapped.
+    static_assert(!std::indirectly_writable<ListAdapter::iterator, int>);
+    static_assert(!std::indirectly_swappable<ListAdapter::iterator>);
+    static_assert(!std::permutable<ListAdapter::iterator>);
+    static_assert(!std::sortable<ListAdapter::iterator>);
+    static_assert(!std::permutable<TableAdapter::iterator>);
+    static_assert(!std::permutable<TableAdapter::ColumnIterator>);
+    static_assert(!std::permutable<TreeAdapter::iterator>);
+
+    // the const iterators can't be written to
+    static_assert(!std::permutable<ListAdapter::const_iterator>);
 #endif
 }
 
