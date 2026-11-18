@@ -282,6 +282,18 @@
     functions, hasChildren() and children(), that allow us to traverse the
     entire tree using iterators.
 
+    Don't use standard algorithms that reorder elements with the iterators.
+    Such algorithms would reorder the rows by writing the data of each row, so
+    the model would emit \l{QAbstractItemModel::}{dataChanged()} for each row,
+    and persistent model indexes would not follow the moved items. The
+    wrappers that the iterators dereference to can't be swapped, so
+    algorithms that reorder elements by swapping them, such as
+    \c{std::sort()}, \c{std::reverse()}, or \c{std::rotate()}, don't compile.
+    Algorithms that reorder elements only by assigning values, such as the
+    heap algorithms, \c{std::unique()}, or \c{std::remove_if()}, might
+    compile, but have the same problems.
+    Use moveRows() to move rows.
+
     \snippet qrangemodeladapter/main.cpp ranged-for-tree
 
     The object returned by children() is a QRangeModelAdapter operating on
@@ -1390,6 +1402,8 @@
     adapter[0] = adapter[1]; // items at row 0 and row 1 now have the same value
     \endcode
 
+    DataReference objects can't be swapped; see the \l{Iterator API}.
+
     Two DataReference objects are equal if they refer to the same item, or if
     the values of the items they refer to are equal. A DataReference is equal
     to a \c value_type if the value of the item it refers to is equal to it.
@@ -1447,13 +1461,9 @@
 /*!
     \fn template <typename Range, typename Protocol, typename Model> QDataReference &QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator=(const DataReference &other)
 
-    Assigns the item value referred to by \a other to the value referenced by this wrapper.
-*/
-
-/*!
-    \fn template <typename Range, typename Protocol, typename Model> DataReference &QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator=(DataReference &&other)
-
-    Moves the value reference by \a other into the value referenced by this wrapper.
+    Assigns the item value referred to by \a other to the value referenced by
+    this wrapper. This copies the value also if \a other is an rvalue, as
+    \a other doesn't own the value.
 */
 
 /*!
@@ -1587,7 +1597,8 @@
     adapters have the same type, with the same semantics.
 
     Row references are not ordered. To compare the positions of rows, compare
-    their iterators.
+    their iterators. Row references can't be swapped; see the
+    \l{Iterator API}.
 //! [row-reference-comparison]
 
     \sa ConstRowReference, DataReference

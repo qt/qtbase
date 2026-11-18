@@ -232,7 +232,11 @@ void tst_QRangeModelAdapter::listAccess()
             QCOMPARE(adapter[1], 1);
             QCOMPARE(adapter.at(4), 4);
             QCOMPARE(adapter.data(4), 4);
-            swap(adapter[0], adapter[4]);
+            // swapping data references is not possible, copy the values
+            static_assert(!std::is_swappable_v<decltype(adapter[0])>);
+            const int first = adapter[0];
+            adapter[0] = adapter[4];
+            adapter[4] = first;
             QCOMPARE(adapter.data(4), 0);
             QCOMPARE(adapter.data(0), 4);
             QVERIFY(adapter.setData(0, QVariant(0)));
@@ -325,7 +329,12 @@ void tst_QRangeModelAdapter::listWriteAccess()
     QCOMPARE(first, gadgets.at(size - 1));
     QCOMPARE(dataChangedSpy.size(), 2);
 
-    swap(adapter.at(0), adapter.at(size - 1));
+    static_assert(!std::is_swappable_v<decltype(adapter.at(0))>);
+    {
+        const auto value = adapter.at(0).get();
+        adapter.at(0) = adapter.at(size - 1);
+        adapter.at(size - 1) = value;
+    }
     QCOMPARE(dataChangedSpy.size(), 4);
     QCOMPARE(first, gadgets.at(0));
     QCOMPARE(last, gadgets.at(size - 1));
@@ -576,7 +585,13 @@ void tst_QRangeModelAdapter::tableWriteAccess()
         QCOMPARE(dataChangedSpy.at(1).at(1).value<QModelIndex>(), adapter.index(1, 1));
         dataChangedSpy.clear();
 
-        swap(adapter[0], adapter[size - 1]);
+        // swapping row references is not possible, copy the rows
+        static_assert(!std::is_swappable_v<decltype(adapter[0])>);
+        {
+            const auto row = adapter[0].get();
+            adapter[0] = adapter[size - 1];
+            adapter[size - 1] = row;
+        }
         QCOMPARE(dataChangedSpy.size(), 2);
         QCOMPARE(dataChangedSpy.at(0).at(0).value<QModelIndex>(), adapter.index(0, 0));
         QCOMPARE(dataChangedSpy.at(0).at(1).value<QModelIndex>(), adapter.index(0, 1));

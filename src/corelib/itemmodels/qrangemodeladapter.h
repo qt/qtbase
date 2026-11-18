@@ -172,12 +172,6 @@ public:
             return *this;
         }
 
-        DataReference &operator=(DataReference &&other)
-        {
-            *this = other.get();
-            return *this;
-        }
-
         ~DataReference() = default;
 
         DataReference &operator=(const value_type &value)
@@ -276,12 +270,9 @@ public:
 #undef QRMA_DATAREFERENCE_RELATIONAL_OPERATOR
 #endif // Q_QDOC
 
-        friend inline void swap(DataReference lhs, DataReference rhs)
-        {
-            const value_type lhsValue = lhs.get();
-            lhs = rhs;
-            rhs = lhsValue; // no point in moving, we have to go through QVariant anyway
-        }
+        // Swapping would make standard algorithms reorder the items by
+        // writing data, which doesn't update persistent indexes.
+        friend void swap(DataReference lhs, DataReference rhs) = delete;
 
 #ifndef QT_NO_DEBUG_STREAM
         friend inline QDebug operator<<(QDebug dbg, const DataReference &ref)
@@ -770,12 +761,9 @@ public:
             return *this;
         }
 
-        friend inline void swap(RowReference lhs, RowReference rhs)
-        {
-            auto lhsRow = lhs.get();
-            lhs = rhs.get();
-            rhs = std::move(lhsRow);
-        }
+        // Swapping would make standard algorithms reorder the rows by
+        // writing data, which doesn't update persistent indexes.
+        friend void swap(RowReference lhs, RowReference rhs) = delete;
 
         template <typename I = Impl, if_tree<I> = true>
         auto children()
