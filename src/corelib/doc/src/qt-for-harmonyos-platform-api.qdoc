@@ -203,6 +203,37 @@
     };
     \endcode
 
+    \section1 Abilities in Separate Processes
+
+    An application can run its \c UIAbility in a separate process with a
+    name that it chooses, and send later Wants to that process. To do so,
+    start the application's own ability with a Want that has the name in
+    the \c io.qt.appProcessId parameter. Take the \c bundleName,
+    \c moduleName and \c abilityName of the Want from the \c bundleName,
+    \c moduleName and \c name of \c {context.abilityInfo} of
+    QHarmonyAppJsContext::defaultAbility(), and pass the Want to
+    \c {context.startAbility()} of an ability of the application.
+
+    The name is a non-empty string, for example one name per open document,
+    or a fixed name for a single helper process.
+
+    \list
+    \li If no process with that name is running, the system starts a new
+        process of the application. Qt starts the application in it as on a
+        normal launch, and the Want is the launch Want of the default
+        ability in that process.
+    \li If a process with that name is running, the Want goes to that
+        process. If the ability that was started for that name still runs
+        there, Qt passes the Want to the UIAbility delegates as
+        \c onNewWant().
+    \endlist
+
+    A name refers to a process only while that process runs. After the
+    process exits, the same name starts a new process. Qt does not promise
+    that the \c io.qt.appProcessId parameter stays in the Want that the
+    receiving process gets. Pass the data for that process in other Want
+    parameters.
+
     \section1 Platform API Examples
 
     \list
