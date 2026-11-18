@@ -1607,23 +1607,22 @@ QDateTimeParser::parse(const QString &input, int position,
                         case AM:
                         case PM:
                             scan.state = Acceptable;
-                            done = true;
                             break;
                         case Neither:
                             scan.state = Invalid;
-                            done = true;
                             break;
                         case PossibleAM:
                         case PossiblePM:
                         case PossibleBoth: {
                             const QDateTime copy(scan.value.addSecs(12 * 60 * 60));
-                            if (copy >= minimum && copy <= maximum) {
+                            if (copy >= minimum && copy <= maximum)
                                 scan.state = Intermediate;
-                                done = true;
-                            }
+                            else
+                                scan.state = Invalid;
                             break; }
                         }
-                        Q_FALLTHROUGH();
+                        done = true;
+                        break;
                     case MonthSection:
                         if (sn.count >= 3) {
                             const QDate when = scan.value.date();
