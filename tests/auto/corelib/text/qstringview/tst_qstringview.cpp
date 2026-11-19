@@ -29,6 +29,8 @@
 #include <deque>
 #include <list>
 
+using namespace Qt::StringLiterals;
+
 template <typename T>
 using CanConvert = std::is_convertible<T, QStringView>;
 
@@ -173,6 +175,9 @@ private Q_SLOTS:
     void literals() const;
     void fromArray() const;
     void at() const;
+    void count() const;
+    void count_stringMatcher_data() const;
+    void count_stringMatcher() const;
 
     void arg() const;
 
@@ -997,6 +1002,143 @@ void tst_QStringView::userDefinedLiterals()
     constexpr auto csv = u"constexpr test"_sv;
     static_assert(csv.size() == 14);
     QCOMPARE(csv, "constexpr test");
+}
+
+void tst_QStringView::count() const
+{
+    static const QRegularExpression ignoreMessagePattern(
+        u"^QString\\(View\\)::count\\(\\): called on an invalid QRegularExpression object"_s
+    );
+
+    QStringView a = u"ABCDEFGHIEfGEFG";
+    QCOMPARE(a.size(), 15);
+
+    // QChar
+    QCOMPARE(a.count(QChar(u'A')), 1);
+    QCOMPARE(a.count(QChar(u'Z')), 0);
+    QCOMPARE(a.count(QChar(u'E')), 3);
+    QCOMPARE(a.count(QChar(u'F')), 2);
+    QCOMPARE(a.count(QChar(u'F'), Qt::CaseInsensitive), 3);
+
+    // QString
+    QCOMPARE(a.count(u"FG"_s), 2);
+    QCOMPARE(a.count(u"FG"_s, Qt::CaseInsensitive), 3);
+    QCOMPARE(a.count(QString(), Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(u""_s, Qt::CaseInsensitive), 16);
+
+    // QStringView
+    QCOMPARE(a.count(u"FG"), 2);
+    QCOMPARE(a.count(u"FG", Qt::CaseInsensitive), 3);
+    QCOMPARE(a.count(u"", Qt::CaseInsensitive), 16);
+
+    // QLatin1StringView
+    QCOMPARE(a.count("FG"_L1), 2);
+    QCOMPARE(a.count("FG"_L1, Qt::CaseInsensitive), 3);
+    QCOMPARE(a.count(""_L1, Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(QLatin1StringView(), Qt::CaseInsensitive), 16);
+
+#if QT_CONFIG(regularexpression)
+    QCOMPARE(a.count(QRegularExpression(u""_s)), 16);
+    QCOMPARE(a.count(QRegularExpression(u"[FG][HI]"_s)), 1);
+    QCOMPARE(a.count(QRegularExpression(u"[G][HE]"_s)), 2);
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
+    QCOMPARE(a.count(QRegularExpression(u"invalid regex\\"_s)), 0);
+#endif
+
+    QStringView defaultConstructed;
+    QCOMPARE(defaultConstructed.count(QChar(u'A')), 0);
+    QCOMPARE(defaultConstructed.count(u"AB"_s), 0);
+    QCOMPARE(defaultConstructed.count(u"FG"), 0);
+    QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
+    QCOMPARE(defaultConstructed.count("AB"_L1), 0);
+
+    QCOMPARE(defaultConstructed.count(QString()), 1);
+    QCOMPARE(defaultConstructed.count(u""_s), 1);
+    QCOMPARE(defaultConstructed.count(u""), 1);
+    QCOMPARE(defaultConstructed.count(""_L1), 1);
+
+#if QT_CONFIG(regularexpression)
+    QCOMPARE(defaultConstructed.count(QRegularExpression(u""_s)), 1);
+    QCOMPARE(defaultConstructed.count(QRegularExpression(u"[FG][HI]"_s)), 0);
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
+    QCOMPARE(defaultConstructed.count(QRegularExpression(u"invalid regex\\"_s)), 0);
+#endif
+
+    QStringView empty = u"";
+    QCOMPARE(empty.count(u'A'), 0);
+    QCOMPARE(empty.count(u"AB"_s), 0);
+    QCOMPARE(empty.count(u"FG"), 0);
+    QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
+    QCOMPARE(empty.count("FG"_L1), 0);
+    QCOMPARE(empty.count(QString()), 1);
+    QCOMPARE(empty.count(QStringView()), 1);
+    QCOMPARE(empty.count(QLatin1StringView()), 1);
+    QCOMPARE(empty.count(u""_s), 1);
+    QCOMPARE(empty.count(u""), 1);
+    QCOMPARE(empty.count(""_L1), 1);
+
+#if QT_CONFIG(regularexpression)
+    QCOMPARE(empty.count(QRegularExpression(u""_s)), 1);
+    QCOMPARE(empty.count(QRegularExpression(u"[FG][HI]"_s)), 0);
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
+    QCOMPARE(empty.count(QRegularExpression(u"invalid regex\\"_s)), 0);
+#endif
+
+    // Needle longer than haystack
+    QStringView view = u"abc";
+    QCOMPARE(view.count(u"abcdef"_s), 0);
+    QCOMPARE(view.count(u"abcdef"), 0);
+    QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
+    QCOMPARE(view.count("abcdef"_L1), 0);
+
+    QStringView nonBmp = u"\U00010000\U00010000abc\U00010000";
+    QCOMPARE(nonBmp.count(u"\U00010000"), 3);
+#if QT_CONFIG(regularexpression)
+    QCOMPARE(nonBmp.count(QRegularExpression(u"\U00010000"_s)), 3);
+    QCOMPARE(nonBmp.count(QRegularExpression(u"\U00010000a?"_s)), 3);
+    QCOMPARE(nonBmp.count(QRegularExpression(u"\U00010000a"_s)), 1);
+    QCOMPARE(nonBmp.count(QRegularExpression(u"."_s)), 6);
+
+    // can't search for unpaired surrogates
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
+    QCOMPARE(nonBmp.count(QRegularExpression(QChar(0xd800))), 0);
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
+    QCOMPARE(nonBmp.count(QRegularExpression(QChar(0xdc00))), 0);
+#endif // QT_CONFIG(regularexpression)
+}
+
+void tst_QStringView::count_stringMatcher_data() const
+{
+    QTest::addColumn<QString>("haystack");
+    QTest::addColumn<QString>("needle");
+    QTest::addColumn<Qt::CaseSensitivity>("cs");
+    QTest::addColumn<int>("expected");
+
+    QString str{520, u'z'};
+    str[20] = u'a';
+
+    QTest::newRow("zzzzzzzzzzzzzzza") << str << u"zzzzzzzzzzzzzzza"_s
+                                      << Qt::CaseSensitive << 1;
+    QTest::newRow("ZZZZZZZZZZZZZZZa-case-sensitive") << str << u"ZZZZZZZZZZZZZZZa"_s
+                                                     << Qt::CaseSensitive << 0;
+    QTest::newRow("ZZZZZZZZZZZZZZZa-case-insensitive") << str << u"ZZZZZZZZZZZZZZZa"_s
+                                                       << Qt::CaseInsensitive << 1;
+}
+
+void tst_QStringView::count_stringMatcher() const
+{
+    QFETCH(QString, haystack);
+    QFETCH(QString, needle);
+    QFETCH(Qt::CaseSensitivity, cs);
+    QFETCH(int, expected);
+
+    // Test the QStringMatcher code path
+    QCOMPARE_GT(haystack.size(), 500);
+    QCOMPARE_GT(needle.size(), 13);
+
+    QStringView view{haystack};
+    QCOMPARE(view.count(QStringView(needle), cs), expected);
+    QCOMPARE(view.count(QLatin1StringView(needle.toLatin1()), cs), expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QStringView)
