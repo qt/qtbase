@@ -207,11 +207,6 @@ Qt::WindowFlags QOhosPlatformWindow::windowFlags() const
     return m_windowFlags;
 }
 
-QOhosPlatformScreen *QOhosPlatformWindow::platformScreen() const
-{
-    return static_cast<QOhosPlatformScreen *>(screen());
-}
-
 QRect QOhosPlatformWindow::lastRequestedWindowFrameGeometry() const
 {
     return m_lastRequestedWindowFrameGeometry;
@@ -303,14 +298,14 @@ QMargins QOhosPlatformWindow::frameMargins() const
     // WindowProperties.drawableRect: https://developer.huawei.com/consumer/en/doc/harmonyos-references/arkts-apis-window-i#windowproperties
     // Check if its viable and adapt the frameGeometry code in window to use getWIndowDecorHeight.
 
-    const auto *screen = platformScreen();
-    if (screen == nullptr)
+    const auto *ohosPlatformScreen = static_cast<QOhosPlatformScreen *>(screen());
+    if (ohosPlatformScreen == nullptr)
         return QMargins{};
 
     if (decorationPreset() == DecorationPreset::Standard) {
         // https://gitcode.com/openharmony/window_window_manager/tree/master/utils/include/wm_common_inner.h
         constexpr auto predefinedWindowTitleBarHeight = 37;
-        const int titlebarHeightPixels = std::round(predefinedWindowTitleBarHeight * screen->pixelScalingCoefficient());
+        const int titlebarHeightPixels = std::round(predefinedWindowTitleBarHeight * ohosPlatformScreen->pixelScalingCoefficient());
         return QMargins{0, titlebarHeightPixels, 0, 0};
     }
 
