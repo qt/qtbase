@@ -613,6 +613,8 @@ public:
     void handleQAbilityOnForeground(QNapi::Object qAbility) override;
     void handleQAbilityOnBackground(QNapi::Object qAbility) override;
     bool hasForegroundQAbility() const override;
+    bool isQAbilityInForeground(QNapi::Object qAbility) const override;
+    std::optional<QNapi::Object> tryGetForegroundQAbility() override;
 
     bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const override;
 
@@ -651,6 +653,8 @@ private:
 
     std::shared_ptr<QAbilityPeer> tryFindLiveQAbilityPeer() const;
     std::shared_ptr<QAbilityPeer> selectFallbackDefaultQAbilityPeer() const;
+
+    void eraseFromForegroundQAbilities(QNapi::Object qAbility);
 
     QNapi::Reference<QNapi::Object> m_appLaunchWant;
     QNapi::Reference<QNapi::Object> m_optAppLaunchParam;
@@ -761,20 +765,46 @@ void QAbilityInstancesManagerImpl::removeMatchingQAbilityPeer(QNapi::Object qAbi
 
 void QAbilityInstancesManagerImpl::handleQAbilityOnForeground(QNapi::Object qAbility)
 {
+    eraseFromForegroundQAbilities(qAbility);
     m_foregroundQAbilities.push_back(Napi::Persistent(qAbility));
 }
 
 void QAbilityInstancesManagerImpl::handleQAbilityOnBackground(QNapi::Object qAbility)
 {
-    const auto qAbilityRef = Napi::Persistent(qAbility);
-    m_foregroundQAbilities.erase(
-        std::remove(m_foregroundQAbilities.begin(), m_foregroundQAbilities.end(), qAbilityRef),
-        m_foregroundQAbilities.end());
+    eraseFromForegroundQAbilities(qAbility);
 }
 
 bool QAbilityInstancesManagerImpl::hasForegroundQAbility() const
 {
     return !m_foregroundQAbilities.empty();
+}
+
+bool QAbilityInstancesManagerImpl::isQAbilityInForeground(QNapi::Object qAbility) const
+{
+    if (qAbility.IsEmpty())
+        return false;
+
+    return std::any_of(
+        m_foregroundQAbilities.begin(), m_foregroundQAbilities.end(),
+        [&](const auto &qAbilityRef) {
+            Napi::HandleScope lookupScope(qAbilityRef.Env());
+            return qAbilityRef.Value() == qAbility;
+        });
+}
+
+std::optional<QNapi::Object> QAbilityInstancesManagerImpl::tryGetForegroundQAbility()
+{
+    auto foundQAbilityRefIter = std::find_if(
+        m_foregroundQAbilities.rbegin(), m_foregroundQAbilities.rend(),
+        [&](const auto &qAbilityRef) {
+            Napi::HandleScope lookupScope(qAbilityRef.Env());
+            auto optQAbilityPeer = tryGetQAbilityPeerByInstance(qAbilityRef.Value());
+            return optQAbilityPeer && !isAbilityPeerClosing(optQAbilityPeer);
+        });
+
+    return foundQAbilityRefIter != m_foregroundQAbilities.rend()
+        ? std::optional(foundQAbilityRefIter->Value())
+        : std::nullopt;
 }
 
 std::optional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceIdFromWant(
@@ -972,6 +1002,18 @@ std::shared_ptr<QAbilityPeer> QAbilityInstancesManagerImpl::selectFallbackDefaul
 
     auto optLivePeer = tryFindLiveQAbilityPeer();
     return optLivePeer ? optLivePeer : m_qAbilityPeers.begin()->second;
+}
+
+void QAbilityInstancesManagerImpl::eraseFromForegroundQAbilities(QNapi::Object qAbility)
+{
+    m_foregroundQAbilities.erase(
+        std::remove_if(
+            m_foregroundQAbilities.begin(), m_foregroundQAbilities.end(),
+            [&](const auto &qAbilityRef) {
+                Napi::HandleScope lookupScope(qAbilityRef.Env());
+                return qAbilityRef.Value() == qAbility;
+            }),
+        m_foregroundQAbilities.end());
 }
 
 std::shared_ptr<QUiAbilityPeerBackend> QAbilityInstancesManagerImpl::getAbilityPeerBackend(
