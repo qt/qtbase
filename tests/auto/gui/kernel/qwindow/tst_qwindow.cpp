@@ -63,6 +63,9 @@ private slots:
     void isExposed();
     void childWindowExposedAfterHideShow();
     void isActive();
+#if defined(Q_OS_HARMONY)
+    void activateWindowWhileEmbeddedWindowHasFocus();
+#endif
 #if defined(Q_OS_WIN)
     void activateTopLevelOnClickWhenFocusInDescendant();
     void framelessMaximizeWindowStateSync();
@@ -1107,6 +1110,41 @@ void tst_QWindow::isActive()
     // parent has focus
     QVERIFY(child.isActive());
 }
+
+#if defined(Q_OS_HARMONY)
+void tst_QWindow::activateWindowWhileEmbeddedWindowHasFocus()
+{
+    Window window;
+    window.setTitle(QLatin1String(QTest::currentTestFunction()));
+    window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
+    window.show();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
+
+    Window child;
+    child.setParent(&window);
+    child.setGeometry(10, 10, 20, 20);
+    child.show();
+    QTRY_VERIFY(child.isExposed());
+
+    Window dialog;
+    dialog.setTransientParent(&window);
+    dialog.setGeometry(QRect(m_availableTopLeft + QPoint(110, 100), m_testWindowSize));
+    dialog.show();
+    QTRY_VERIFY(dialog.isExposed());
+    dialog.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &dialog);
+
+    window.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
+    child.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &child);
+
+    dialog.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &dialog);
+    window.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
+}
+#endif
 
 #if defined(Q_OS_WIN)
 // QTBUG-130754: with a native child window focused, clicking the parent
