@@ -321,7 +321,7 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
     if (sent >= 0) {
-        emit bytesWritten(sent);
+        d->emitBytesWritten(sent);
     } else {
         if (sent == -2) {
             // Socket engine reports EAGAIN. Treat as a temporary error.
@@ -390,7 +390,7 @@ qint64 QUdpSocket::writeDatagram(const QNetworkDatagram &datagram)
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
     if (sent >= 0) {
-        emit bytesWritten(sent);
+        d->emitBytesWritten(sent);
     } else {
         d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
     }
