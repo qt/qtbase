@@ -40,7 +40,7 @@
 #include <vector>
 #include <memory>
 
-#include <QtCore/qmutex.h>
+#include <QtCore/qreadwritelock.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -256,21 +256,20 @@ static uint numerusHelper(int n, const uchar *rules, uint rulesSize)
     return 0;
 }
 
-class QTranslatorPrivate : public QObjectPrivate
+class QTranslatorData
 {
-    Q_DECLARE_PUBLIC(QTranslator)
+    Q_DISABLE_COPY_MOVE(QTranslatorData)
 public:
     enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88, Dependencies = 0x96, Language = 0xa7 };
 
-    mutable QMutex lock;
-
-    QTranslatorPrivate() :
+    QTranslatorData() :
 #if defined(QT_USE_MMAP)
           used_mmap(0),
 #endif
           unmapPointer(nullptr), unmapLength(0), resource(nullptr),
           messageArray(nullptr), offsetArray(nullptr), contextArray(nullptr), numerusRulesArray(nullptr),
           messageLength(0), offsetLength(0), contextLength(0), numerusRulesLength(0) {}
+    ~QTranslatorData() { clear(); }
 
 #if defined(QT_USE_MMAP)
     bool used_mmap : 1;
@@ -305,6 +304,17 @@ public:
     QString do_translate(const char *context, const char *sourceText, const char *comment,
                          int n) const;
     void clear();
+};
+
+class QTranslatorPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QTranslator)
+public:
+    // Protects data against replaceData()
+    mutable QReadWriteLock lock;
+    std::unique_ptr<QTranslatorData> data = std::make_unique<QTranslatorData>();
+
+    void replaceData(std::unique_ptr<QTranslatorData> &newData);
 };
 
 /*!
@@ -414,8 +424,47 @@ QTranslator::~QTranslator()
 {
     if (QCoreApplication::instanceExists())
         QCoreApplication::removeTranslator(this);
-    Q_D(QTranslator);
-    d->clear();
+}
+
+// Returns the fully qualified name of a readable file, or an empty string
+static QString findTranslationFile(const QString &filename, const QString &directory,
+                                   const QString &search_delimiters, const QString &suffix)
+{
+    QString prefix;
+    if (QFileInfo(filename).isRelative()) {
+        prefix = directory;
+        if (prefix.size() && !prefix.endsWith(u'/'))
+            prefix += u'/';
+    }
+
+    const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
+    QStringView fname(filename);
+    QString realname;
+    const QString delims = search_delimiters.isNull() ? QStringLiteral("_.") : search_delimiters;
+
+    for (;;) {
+        QFileInfo fi;
+
+        realname = prefix + fname + suffixOrDotQM;
+        fi.setFile(realname);
+        if (fi.isReadable() && fi.isFile())
+            return realname;
+
+        realname = prefix + fname;
+        fi.setFile(realname);
+        if (fi.isReadable() && fi.isFile())
+            return realname;
+
+        qsizetype rightmost = 0;
+        for (auto ch : delims)
+            rightmost = std::max(rightmost, fname.lastIndexOf(ch));
+
+        // no truncations? fail
+        if (rightmost == 0)
+            return QString();
+
+        fname.truncate(rightmost);
+    }
 }
 
 /*!
@@ -468,52 +517,16 @@ bool QTranslator::load(const QString & filename, const QString & directory,
                        const QString & suffix)
 {
     Q_D(QTranslator);
-    QMutexLocker locker(&d->lock);
-    d->clear();
-
-    QString prefix;
-    if (QFileInfo(filename).isRelative()) {
-        prefix = directory;
-        if (prefix.size() && !prefix.endsWith(u'/'))
-            prefix += u'/';
-    }
-
-    const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
-    QStringView fname(filename);
-    QString realname;
-    const QString delims = search_delimiters.isNull() ? QStringLiteral("_.") : search_delimiters;
-
-    for (;;) {
-        QFileInfo fi;
-
-        realname = prefix + fname + suffixOrDotQM;
-        fi.setFile(realname);
-        if (fi.isReadable() && fi.isFile())
-            break;
-
-        realname = prefix + fname;
-        fi.setFile(realname);
-        if (fi.isReadable() && fi.isFile())
-            break;
-
-        qsizetype rightmost = 0;
-        for (auto ch : delims)
-            rightmost = std::max(rightmost, fname.lastIndexOf(ch));
-
-        // no truncations? fail
-        if (rightmost == 0)
-            return false;
-
-        fname.truncate(rightmost);
-    }
-
-    // realname is now the fully qualified name of a readable file.
-    return d->do_load(realname, directory);
+    auto data = std::make_unique<QTranslatorData>();
+    const QString realname = findTranslationFile(filename, directory, search_delimiters, suffix);
+    const bool ok = !realname.isEmpty() && data->do_load(realname, directory);
+    d->replaceData(data);
+    return ok;
 }
 
-bool QTranslatorPrivate::do_load(const QString &realname, const QString &directory)
+bool QTranslatorData::do_load(const QString &realname, const QString &directory)
 {
-    QTranslatorPrivate *d = this;
+    QTranslatorData *d = this;
     bool ok = false;
 
     if (realname.startsWith(u':')) {
@@ -615,11 +628,11 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
     return false;
 }
 
-bool QTranslatorPrivate::load_translation(const QStringList &languages,
-                                          const QString &filename,
-                                          const QString &prefix,
-                                          const QString &directory,
-                                          const QString &suffix)
+bool QTranslatorData::load_translation(const QStringList &languages,
+                                       const QString &filename,
+                                       const QString &prefix,
+                                       const QString &directory,
+                                       const QString &suffix)
 {
     qCDebug(lcTranslator).noquote().nospace() << "Searching translation for "
                           << filename << prefix << languages << suffix
@@ -744,9 +757,10 @@ bool QTranslator::load(const QLocale & locale,
     Q_D(QTranslator);
     const QStringList languages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
     qCDebug(lcTranslator) << "Requested UI languages" << languages;
-    QMutexLocker locker(&d->lock);
-    d->clear();
-    return d->load_translation(languages, filename, prefix, directory, suffix);
+    auto data = std::make_unique<QTranslatorData>();
+    const bool ok = data->load_translation(languages, filename, prefix, directory, suffix);
+    d->replaceData(data);
+    return ok;
 }
 
 /*!
@@ -764,13 +778,11 @@ bool QTranslator::load(const QLocale & locale,
 bool QTranslator::load(const uchar *data, int len, const QString &directory)
 {
     Q_D(QTranslator);
-    QMutexLocker locker(&d->lock);
-    d->clear();
-
-    if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
-        return false;
-
-    return d->do_load(data, len, directory);
+    auto translations = std::make_unique<QTranslatorData>();
+    const bool ok = data && len >= MagicLength && !memcmp(data, magic, MagicLength)
+            && translations->do_load(data, len, directory);
+    d->replaceData(translations);
+    return ok;
 }
 
 static quint8 read8(const uchar *data)
@@ -788,7 +800,7 @@ static quint32 read32(const uchar *data)
     return qFromBigEndian<quint32>(data);
 }
 
-bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString &directory)
+bool QTranslatorData::do_load(const uchar *data, qsizetype len, const QString &directory)
 {
     bool ok = true;
     const uchar *end = data + len;
@@ -807,21 +819,21 @@ bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString
             break;
         }
 
-        if (tag == QTranslatorPrivate::Language) {
+        if (tag == QTranslatorData::Language) {
             language = QString::fromUtf8((const char *)data, blockLen);
-        } else if (tag == QTranslatorPrivate::Contexts) {
+        } else if (tag == QTranslatorData::Contexts) {
             contextArray = data;
             contextLength = blockLen;
-        } else if (tag == QTranslatorPrivate::Hashes) {
+        } else if (tag == QTranslatorData::Hashes) {
             offsetArray = data;
             offsetLength = blockLen;
-        } else if (tag == QTranslatorPrivate::Messages) {
+        } else if (tag == QTranslatorData::Messages) {
             messageArray = data;
             messageLength = blockLen;
-        } else if (tag == QTranslatorPrivate::NumerusRules) {
+        } else if (tag == QTranslatorData::NumerusRules) {
             numerusRulesArray = data;
             numerusRulesLength = blockLen;
-        } else if (tag == QTranslatorPrivate::Dependencies) {
+        } else if (tag == QTranslatorData::Dependencies) {
             QDataStream stream(QByteArray::fromRawData((const char*)data, blockLen));
             QString dep;
             while (!stream.atEnd()) {
@@ -931,8 +943,8 @@ end:
     return str;
 }
 
-QString QTranslatorPrivate::do_translate(const char *context, const char *sourceText,
-                                         const char *comment, int n) const
+QString QTranslatorData::do_translate(const char *context, const char *sourceText,
+                                      const char *comment, int n) const
 {
     if (context == nullptr)
         context = "";
@@ -1033,12 +1045,11 @@ searchDependencies:
 }
 
 /*
-    Empties this translator of all contents.
+    Frees the loaded translations, and resets the data to empty.
 */
 
-void QTranslatorPrivate::clear()
+void QTranslatorData::clear()
 {
-    Q_Q(QTranslator);
     if (unmapPointer && unmapLength) {
 #if defined(QT_USE_MMAP)
         if (used_mmap) {
@@ -1066,7 +1077,17 @@ void QTranslatorPrivate::clear()
 
     language.clear();
     filePath.clear();
+}
 
+// Replaces the translations with \a newData, and passes the old ones back in
+// \a newData. The caller destroys them after the lock is released.
+void QTranslatorPrivate::replaceData(std::unique_ptr<QTranslatorData> &newData)
+{
+    Q_Q(QTranslator);
+    {
+        QWriteLocker locker(&lock);
+        data.swap(newData);
+    }
     if (QCoreApplicationPrivate::isTranslatorInstalled(q))
         QCoreApplication::postEvent(QCoreApplication::instance(),
                                     new QEvent(QEvent::LanguageChange));
@@ -1096,14 +1117,8 @@ QString QTranslator::translate(const char *context, const char *sourceText, cons
                                int n) const
 {
     Q_D(const QTranslator);
-
-    // Return early to avoid a deadlock in case translate() is called
-    // from a code path triggered by QTranslator::load()
-    if (!d->lock.tryLock())
-        return QString();
-    QString result = d->do_translate(context, sourceText, disambiguation, n);
-    d->lock.unlock();
-    return result;
+    QReadLocker locker(&d->lock);
+    return d->data->do_translate(context, sourceText, disambiguation, n);
 }
 
 /*!
@@ -1112,8 +1127,10 @@ QString QTranslator::translate(const char *context, const char *sourceText, cons
 bool QTranslator::isEmpty() const
 {
     Q_D(const QTranslator);
-    return !d->messageArray && !d->offsetArray && !d->contextArray
-            && d->subTranslators.empty();
+    QReadLocker locker(&d->lock);
+    const QTranslatorData *data = d->data.get();
+    return !data->messageArray && !data->offsetArray && !data->contextArray
+            && data->subTranslators.empty();
 }
 
 /*!
@@ -1124,7 +1141,8 @@ bool QTranslator::isEmpty() const
 QString QTranslator::language() const
 {
     Q_D(const QTranslator);
-    return d->language;
+    QReadLocker locker(&d->lock);
+    return d->data->language;
 }
 
 /*!
@@ -1139,7 +1157,8 @@ QString QTranslator::language() const
 QString QTranslator::filePath() const
 {
     Q_D(const QTranslator);
-    return d->filePath;
+    QReadLocker locker(&d->lock);
+    return d->data->filePath;
 }
 
 QT_END_NAMESPACE

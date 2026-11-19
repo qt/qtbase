@@ -5,15 +5,23 @@
 #include <QWaitCondition>
 #include <QMutex>
 #include <QStandardPaths>
+#include <QScopeGuard>
+#include <QThread>
 #include <qtranslator.h>
 #include <qfile.h>
 #include <qtemporarydir.h>
+
+#include <atomic>
+#include <memory>
+#include <vector>
 
 #include <QtCore/private/qlocale_p.h>
 
 #ifdef Q_OS_ANDROID
 #include <QDirIterator>
 #endif
+
+using namespace Qt::StringLiterals;
 
 #if !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
 // from tst_qlocale.cpp; override the system locale with one that supports multiple
@@ -82,6 +90,9 @@ private slots:
     void loadDirectory();
     void dependencies();
     void translationInThreadWhileInstallingTranslator();
+    void concurrentTranslate();
+    void translateWhileLoading_data();
+    void translateWhileLoading();
 
 private:
     int languageChangeEventCounter;
@@ -504,6 +515,111 @@ void tst_QTranslator::translationInThreadWhileInstallingTranslator()
 
     QVERIFY(thread.wait());
     QVERIFY(thread.ok);
+}
+
+void tst_QTranslator::concurrentTranslate()
+{
+    // QTBUG-152442: translate() must not miss translations just because
+    // another thread is translating at the same time.
+    QTranslator tor;
+    QVERIFY(tor.load("hellotr_la"));
+    QVERIFY(QCoreApplication::installTranslator(&tor));
+    const auto cleanup = qScopeGuard([&tor] { QCoreApplication::removeTranslator(&tor); });
+
+    constexpr int ThreadCount = 4;
+    constexpr int Iterations = 20000;
+    std::atomic<int> untranslated = 0;
+    std::atomic<bool> go = false;
+
+    std::vector<std::unique_ptr<QThread>> threads;
+    for (int i = 0; i < ThreadCount; ++i) {
+        threads.emplace_back(QThread::create([&] {
+            while (!go.load())
+                QThread::yieldCurrentThread();
+            for (int j = 0; j < Iterations; ++j) {
+                if (tor.translate("QPushButton", "Hello world!") != "Hallo Welt!"_L1)
+                    ++untranslated;
+                if (QCoreApplication::translate("QPushButton", "Hello world!") != "Hallo Welt!"_L1)
+                    ++untranslated;
+            }
+        }));
+        threads.back()->start();
+    }
+    go = true;
+    for (auto &thread : threads)
+        QVERIFY(thread->wait());
+
+    QCOMPARE(untranslated.load(), 0);
+}
+
+void tst_QTranslator::translateWhileLoading_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<bool>("expectTranslation");
+
+    QTest::newRow("existing") << u"hellotr_la"_s << true;
+    QTest::newRow("missing") << u":/does/not/exist.qm"_s << false;
+    QTest::newRow("dependencies") << u"dependencies_la"_s << true;
+}
+
+void tst_QTranslator::translateWhileLoading()
+{
+    // Loading a missing file translates an error string from inside load()
+    // (QTBUG-138226), and reloading a file with dependencies destroys and
+    // creates sub-translators. Together with concurrent translate() and
+    // installTranslator() calls, this must not deadlock. If the file loads,
+    // translate() must always return a translation: the previous one while
+    // load() runs, and the new one afterwards.
+    QFETCH(QString, fileName);
+    QFETCH(bool, expectTranslation);
+
+    QTranslator tor;
+    QVERIFY(tor.load("hellotr_la"));
+    QVERIFY(QCoreApplication::installTranslator(&tor));
+    const auto cleanup = qScopeGuard([&tor] { QCoreApplication::removeTranslator(&tor); });
+
+    constexpr int ThreadCount = 4;
+    constexpr int Loads = 2000;
+    std::atomic<int> untranslated = 0;
+    std::atomic<int> unexpectedLoadResults = 0;
+    std::atomic<bool> stop = false;
+
+    std::vector<std::unique_ptr<QThread>> threads;
+    for (int i = 0; i < ThreadCount; ++i) {
+        threads.emplace_back(QThread::create([&] {
+            while (!stop.load()) {
+                if (tor.translate("QPushButton", "Hello world!") != "Hallo Welt!"_L1)
+                    ++untranslated;
+                if (QCoreApplication::translate("QPushButton", "Hello world!") != "Hallo Welt!"_L1)
+                    ++untranslated;
+            }
+        }));
+        threads.back()->start();
+    }
+    std::unique_ptr<QThread> loader(QThread::create([&] {
+        for (int i = 0; i < Loads; ++i) {
+            if (tor.load(fileName) != expectTranslation)
+                ++unexpectedLoadResults;
+        }
+    }));
+    loader->start();
+
+    // installTranslator() and removeTranslator() send events to qApp,
+    // so call them from the main thread.
+    QTranslator other;
+    while (!loader->isFinished()) {
+        QCoreApplication::installTranslator(&other);
+        QCoreApplication::removeTranslator(&other);
+    }
+
+    stop = true;
+    QVERIFY(loader->wait());
+    for (auto &thread : threads)
+        QVERIFY(thread->wait());
+
+    QCOMPARE(unexpectedLoadResults.load(), 0);
+    if (expectTranslation)
+        QCOMPARE(untranslated.load(), 0);
 }
 
 QTEST_MAIN(tst_QTranslator)
