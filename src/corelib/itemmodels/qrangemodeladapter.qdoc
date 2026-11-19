@@ -292,7 +292,7 @@
     Algorithms that reorder elements only by assigning values, such as the
     heap algorithms, \c{std::unique()}, or \c{std::remove_if()}, might
     compile, but have the same problems.
-    Use moveRows() to move rows.
+    Use sort() to sort the rows, and moveRows() to move rows.
 
     \snippet qrangemodeladapter/main.cpp ranged-for-tree
 
@@ -428,6 +428,31 @@
 
     \return whether \a lhs is not equal to \a rhs. Two adapters are equal if
     they both hold the same \l{model()}{model} instance.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canSort<I>> void QRangeModelAdapter<Range, Protocol, Model>::sort(int column, Qt::SortOrder order)
+    \since 6.13
+
+    Sorts the rows of the model by the values in \a column, in the given
+    \a order. This is the same as calling \l{QRangeModel::sort()}{sort()} on
+    the model(), which compares the data for the
+    \l{QRangeModel::}{sortRole} of the items, using the
+    \l{QRangeModel::}{sortCollator} if set, and keeps the relative order of
+    rows that compare equal. If the model is a tree, then the children of all
+    rows are sorted as well; this is also the case if this adapter operates on
+    the children of a tree row.
+
+    The model() emits the \l{QAbstractItemModel::}{layoutAboutToBeChanged()}
+    and \l{QAbstractItemModel::}{layoutChanged()} signals, and updates the
+    persistent model indexes so that they keep referring to the same items.
+
+    Don't use standard algorithms such as \c{std::sort()} to sort the rows
+    through the \l{Iterator API}{iterators} of the adapter.
+
+    \constraints \c Range is mutable, and its rows can be swapped.
+
+    \sa QRangeModel::sort()
 */
 
 /*!

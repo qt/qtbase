@@ -48,6 +48,9 @@ class QT_TECH_PREVIEW_API QRangeModelAdapter
                                                                  && row_features::has_erase;
 
     template <typename I> using if_writable = std::enable_if_t<I::isMutable(), bool>;
+    template <typename I> static constexpr bool canSort = I::isMutable()
+                                                       && std::is_swappable_v<row_type>;
+    template <typename I> using if_canSort = std::enable_if_t<canSort<I>, bool>;
     template <typename I> using if_list = std::enable_if_t<is_list<I>, bool>;
     template <typename I> using unless_list = std::enable_if_t<!is_list<I>, bool>;
     template <typename I> using if_table = std::enable_if_t<is_table<I>, bool>;
@@ -1173,6 +1176,12 @@ public:
         assignImpl(size_t(std::distance(first, last)), [first, last](auto &oldRange) {
             oldRange.assign(first, last);
         });
+    }
+
+    template <typename I = Impl, if_canSort<I> = true>
+    void sort(int column = 0, Qt::SortOrder order = Qt::AscendingOrder)
+    {
+        storage->sort(column, order);
     }
 
     // iterator API

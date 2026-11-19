@@ -47,6 +47,7 @@ public:
     void removeColumns_API();
     void moveColumn_API();
     void moveColumns_API();
+    void sort_API();
 
 private slots:
     void init();
@@ -89,6 +90,7 @@ private slots:
     void removeColumns();
     void moveColumn();
     void moveColumns();
+    void sortRows();
 
     void buildValueTree();
     void buildPointerTree();

@@ -70,6 +70,7 @@ API_TEST(insertTableRowWithData, insertRow(0, {}))
 API_TEST(insertTableRows, insertRows(0, std::declval<Range&>()))
 API_TEST(removeRow, removeRow(0))
 API_TEST(removeRows, removeRows(0, 0))
+API_TEST(sort, sort())
 API_TEST(moveRow, moveRow(0, 0))
 API_TEST(moveTreeRow, moveRow({0}, {0}))
 API_TEST(moveRows, moveRows(0, 0, 0))
@@ -887,4 +888,14 @@ void tst_QRangeModelAdapter::moveColumns_API()
     static_assert(!has_moveColumns(d.m_tree));
 
     static_assert(!has_moveTreeColumns(d.m_tree));
+}
+
+void tst_QRangeModelAdapter::sort_API()
+{
+    Data d;
+    static_assert(has_sort(d.fixedArrayOfNumbers));
+    static_assert(!has_sort(d.constListOfNumbers));
+    static_assert(has_sort(d.vectorOfGadgets));
+    static_assert(has_sort(d.tableOfNumbers));
+    static_assert(has_sort(d.m_tree));
 }

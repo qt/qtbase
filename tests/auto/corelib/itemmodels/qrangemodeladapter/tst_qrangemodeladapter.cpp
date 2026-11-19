@@ -1361,4 +1361,85 @@ void tst_QRangeModelAdapter::moveColumns()
 }
 
 QTEST_MAIN(tst_QRangeModelAdapter)
+void tst_QRangeModelAdapter::sortRows()
+{
+    const QStringList layoutSignals = {u"layoutAboutToBeChanged"_s, u"layoutChanged"_s};
+    const auto emittedSignals = [](const auto &spies) {
+        QStringList result;
+        for (const auto &spy : spies) {
+            if (!spy->isEmpty())
+                result << QString::fromLatin1(spy->signal()).section(u'(', 0, 0);
+        }
+        return result;
+    };
+    const auto spyOnModel = [](QAbstractItemModel *model) {
+        std::vector<std::unique_ptr<QSignalSpy>> spies;
+        spies.emplace_back(std::make_unique<QSignalSpy>(model, &QAbstractItemModel::dataChanged));
+        spies.emplace_back(std::make_unique<QSignalSpy>(model,
+                                                        &QAbstractItemModel::layoutAboutToBeChanged));
+        spies.emplace_back(std::make_unique<QSignalSpy>(model, &QAbstractItemModel::layoutChanged));
+        return spies;
+    };
+
+    { // list
+        std::vector<int> data = {5, 3, 9, 1, 7, 2, 8, 6, 4, 0};
+        QRangeModelAdapter adapter(std::ref(data));
+        const auto spies = spyOnModel(adapter.model());
+        const QPersistentModelIndex nine = adapter.index(2);
+        const QPersistentModelIndex zero = adapter.index(9);
+
+        adapter.sort();
+        QCOMPARE(data, (std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
+        QCOMPARE(emittedSignals(spies), layoutSignals);
+        // persistent indexes follow the items
+        QCOMPARE(nine.row(), 9);
+        QCOMPARE(nine.data(Qt::RangeModelAdapterRole), 9);
+        QCOMPARE(zero.row(), 0);
+
+        adapter.sort(0, Qt::DescendingOrder);
+        QCOMPARE(data, (std::vector<int>{9, 8, 7, 6, 5, 4, 3, 2, 1, 0}));
+        QCOMPARE(nine.row(), 0);
+        QCOMPARE(zero.row(), 9);
+    }
+
+    { // table, by column
+        using Row = std::vector<int>;
+        std::vector<Row> data = {{1, 30}, {2, 10}, {3, 20}};
+        QRangeModelAdapter adapter(std::ref(data));
+        const QPersistentModelIndex cell = adapter.index(0, 1);
+        adapter.sort(1);
+        QCOMPARE(data, (std::vector<Row>{{2, 10}, {3, 20}, {1, 30}}));
+        QCOMPARE(cell.row(), 2);
+        QCOMPARE(cell.column(), 1);
+        QCOMPARE(cell.data(), 30);
+    }
+
+    { // tree, with move-only rows; the children are sorted as well
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+        const auto spies = spyOnModel(adapter.model());
+        const QModelIndex branch = adapter.index(1, 0);
+        const QPersistentModelIndex persistentBranch = branch;
+        const QPersistentModelIndex child = adapter.model()->index(0, 0, branch);
+        QCOMPARE(child.data().toString(), u"2.1"_s);
+
+        adapter.sort(0, Qt::DescendingOrder);
+        QStringList values;
+        for (const tree_row &row : tree)
+            values << row.value();
+        QCOMPARE(values, (QStringList{u"5"_s, u"4"_s, u"3"_s, u"2"_s, u"1"_s}));
+        QCOMPARE(emittedSignals(spies), layoutSignals);
+        QCOMPARE(persistentBranch.row(), 3);
+        QCOMPARE(child.parent(), QModelIndex(persistentBranch));
+        QCOMPARE(child.row(), 2);
+        QCOMPARE(child.data().toString(), u"2.1"_s);
+        for (const tree_row &row : tree) {
+            if (row.childRows()) {
+                for (const tree_row &grandChild : *row.childRows())
+                    QCOMPARE(grandChild.parentRow(), &row);
+            }
+        }
+    }
+}
+
 #include "moc_tst_qrangemodeladapter.cpp"
