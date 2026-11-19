@@ -1078,6 +1078,7 @@ public:
         bool tessellation = false;
         bool geometryShader = false;
         bool nonFillPolygonMode = false;
+        bool dualSrcBlend = false;
         bool multiView = false;
         bool renderPass2KHR = false;
         bool depthStencilResolveKHR = false;

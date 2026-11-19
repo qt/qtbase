@@ -1072,6 +1072,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     caps.drawIndirectMulti = physDevFeatures.multiDrawIndirect;
 
+    caps.dualSrcBlend = physDevFeatures.dualSrcBlend;
+
 #ifdef VK_VERSION_1_2
     if (caps.apiVersion >= QVersionNumber(1, 2)) {
         caps.multiView = physDevFeatures11IfApi12OrNewer.multiview;
@@ -6107,6 +6109,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::VariableRateShadingMap:
     case QRhi::VariableRateShadingMapWithTexture:
         return caps.renderPass2KHR && caps.imageBasedShadingRate;
+    case QRhi::DualSourceBlend:
+        return caps.dualSrcBlend;
     case QRhi::PerRenderTargetBlending:
     case QRhi::SampleVariables:
         return true;

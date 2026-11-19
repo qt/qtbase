@@ -718,6 +718,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::VariableRateShadingMap:
     case QRhi::VariableRateShadingMapWithTexture:
         return false;
+    case QRhi::DualSourceBlend:
+        return featureLevel >= D3D_FEATURE_LEVEL_10_0;
     case QRhi::PerRenderTargetBlending:
     case QRhi::SampleVariables:
         return true;

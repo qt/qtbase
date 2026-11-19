@@ -1192,6 +1192,7 @@ public:
               glesMultiviewMultisampleRenderToTexture(false),
               unpackRowLength(false),
               perRenderTargetBlending(false),
+              dualSourceBlending(false),
               dispatchIndirect(false),
               drawIndirectCount(false),
               copyBuffer(false),
@@ -1267,6 +1268,7 @@ public:
         uint glesMultiviewMultisampleRenderToTexture : 1;
         uint unpackRowLength : 1;
         uint perRenderTargetBlending : 1;
+        uint dualSourceBlending : 1;
         uint sampleVariables : 1;
         uint drawIndirect : 1;
         uint drawIndirectMulti : 1;

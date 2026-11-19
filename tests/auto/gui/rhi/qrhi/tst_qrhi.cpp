@@ -187,6 +187,8 @@ private slots:
 
     void renderToMRTPerRenderTargetBlending();
     void renderToMRTPerRenderTargetBlending_data();
+    void dualSourceBlending_data();
+    void dualSourceBlending();
     void indexedIndirectMultiDrawBaseline_data();
     void indexedIndirectMultiDrawBaseline();
     void indirectMultiDrawWithTexture_data();
@@ -674,7 +676,23 @@ void tst_QRhi::create()
             QRhi::ThreeDimensionalTextureMipmaps,
             QRhi::MultiView,
             QRhi::TextureViewFormat,
-            QRhi::ResolveDepthStencil
+            QRhi::ResolveDepthStencil,
+            QRhi::VariableRateShading,
+            QRhi::VariableRateShadingMap,
+            QRhi::VariableRateShadingMapWithTexture,
+            QRhi::PerRenderTargetBlending,
+            QRhi::SampleVariables,
+            QRhi::InstanceIndexIncludesBaseInstance,
+            QRhi::DepthClamp,
+            QRhi::DrawIndirect,
+            QRhi::DrawIndirectMulti,
+            QRhi::ShaderDrawParameters,
+            QRhi::DispatchIndirect,
+            QRhi::DrawIndirectCount,
+            QRhi::BufferToBufferCopy,
+            QRhi::PushConstants,
+            QRhi::StaticBuffersOnGpuTimeline,
+            QRhi::DualSourceBlend
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -7027,6 +7045,97 @@ void tst_QRhi::renderToMRTPerRenderTargetBlending()
             QFAIL("Colors in resulting images are not complementary");
         }
     }
+}
+
+void tst_QRhi::dualSourceBlending_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::dualSourceBlending()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+    if (!rhi->isFeatureSupported(QRhi::DualSourceBlend))
+        QSKIP("QRhi::DualSourceBlend is not supported");
+    if (impl == QRhi::Null)
+        QSKIP("The Null backend does not render");
+
+#ifdef TST_GL
+    if (impl == QRhi::OpenGLES2) {
+        const auto *glHandles = static_cast<const QRhiGles2NativeHandles *>(rhi->nativeHandles());
+        // Qt Shader Tools does not emit the required extension directive for GLSL ES yet.
+        if (glHandles->context->isOpenGLES())
+            QSKIP("Dual source blending shaders require GL_EXT_blend_func_extended on OpenGL ES");
+        if (glHandles->context->format().version() < qMakePair(3, 3))
+            QSKIP("The dual source fragment shader requires GLSL 330 on desktop OpenGL");
+    }
+#endif
+
+    const QSize outputSize(16, 16);
+    std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+            QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ { texture.get() } }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->create());
+
+    const QShader vs = loadShader(":/data/fullscreenquad.vert.qsb");
+    const QShader fs = loadShader(":/data/dualsourceblend.frag.qsb");
+    QVERIFY(vs.isValid());
+    QVERIFY(fs.isValid());
+
+    QRhiGraphicsPipeline::TargetBlend blend;
+    blend.enable = true;
+    blend.srcColor = QRhiGraphicsPipeline::Src1Color;
+    blend.dstColor = QRhiGraphicsPipeline::OneMinusSrc1Color;
+    blend.srcAlpha = QRhiGraphicsPipeline::Src1Alpha;
+    blend.dstAlpha = QRhiGraphicsPipeline::OneMinusSrc1Alpha;
+
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setShaderResourceBindings(srb.get());
+    pipeline->setRenderPassDescriptor(rpDesc.get());
+    pipeline->setTargetBlends({ blend });
+    QVERIFY(pipeline->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+    OffscreenFrameGuard frameGuard(rhi);
+    QVERIFY(cb);
+
+    cb->beginPass(rt.get(), Qt::cyan, { 1.0f, 0 });
+    cb->setGraphicsPipeline(pipeline.get());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    cb->setShaderResources();
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture(texture.get(), &readResult);
+    cb->endPass(readbackBatch);
+    frameGuard.endFrame();
+
+    QCOMPARE(readResult.pixelSize, outputSize);
+    QCOMPARE(readResult.data.size(), outputSize.width() * outputSize.height() * 4);
+    const QImage result(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        outputSize.width(), outputSize.height(), QImage::Format_RGBA8888);
+    const QRgb pixel = result.pixel(outputSize.width() / 2, outputSize.height() / 2);
+
+    // src0 * src1 + clearColor * (1 - src1) = (0.25, 0.5, 0.4375, 0.9375).
+    QCOMPARE_LE(qAbs(qRed(pixel) - 64), 1);
+    QCOMPARE_LE(qAbs(qGreen(pixel) - 128), 1);
+    QCOMPARE_LE(qAbs(qBlue(pixel) - 112), 1);
+    QCOMPARE_LE(qAbs(qAlpha(pixel) - 239), 1);
 }
 
 struct IndirectTestVertex {

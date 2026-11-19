@@ -159,6 +159,22 @@ QT_BEGIN_NAMESPACE
     \variable QRhiGles2NativeHandles::context
 */
 
+#ifndef GL_SRC1_COLOR
+#define GL_SRC1_COLOR                     0x88F9
+#endif
+
+#ifndef GL_ONE_MINUS_SRC1_COLOR
+#define GL_ONE_MINUS_SRC1_COLOR           0x88FA
+#endif
+
+#ifndef GL_SRC1_ALPHA
+#define GL_SRC1_ALPHA                     0x8589
+#endif
+
+#ifndef GL_ONE_MINUS_SRC1_ALPHA
+#define GL_ONE_MINUS_SRC1_ALPHA           0x88FB
+#endif
+
 #ifndef GL_BGRA
 #define GL_BGRA                           0x80E1
 #endif
@@ -924,6 +940,17 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     caps.ctxMajor = actualFormat.majorVersion();
     caps.ctxMinor = actualFormat.minorVersion();
+    if (caps.gles) {
+        // This should check for GL_EXT_blend_func_extended, but support for
+        // that GLES extension is not that common. Also, there is no way to
+        // create GLSL ES shaders via qsb that have the necessary #extension
+        // enable directive. (for non-ES GLSL that is not necessary) So for now
+        // always report false on GLES.
+        caps.dualSourceBlending = false;
+    } else {
+        caps.dualSourceBlending = actualFormat.version() >= qMakePair(3, 3)
+                || ctx->hasExtension("GL_ARB_blend_func_extended");
+    }
 
     if (caps.gles) {
         caps.srgbTextureFormat = caps.ctxMajor >= 3 || ctx->hasExtension("GL_EXT_sRGB");
@@ -1944,6 +1971,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::VariableRateShadingMap:
     case QRhi::VariableRateShadingMapWithTexture:
         return false;
+    case QRhi::DualSourceBlend:
+        return caps.dualSourceBlending;
     case QRhi::PerRenderTargetBlending:
         return caps.perRenderTargetBlending;
     case QRhi::SampleVariables:
@@ -3518,11 +3547,13 @@ static inline GLenum toGlBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
     case QRhiGraphicsPipeline::SrcAlphaSaturate:
         return GL_SRC_ALPHA_SATURATE;
     case QRhiGraphicsPipeline::Src1Color:
+        return GL_SRC1_COLOR;
     case QRhiGraphicsPipeline::OneMinusSrc1Color:
+        return GL_ONE_MINUS_SRC1_COLOR;
     case QRhiGraphicsPipeline::Src1Alpha:
+        return GL_SRC1_ALPHA;
     case QRhiGraphicsPipeline::OneMinusSrc1Alpha:
-        qWarning("Unsupported blend factor %d", f);
-        return GL_ZERO;
+        return GL_ONE_MINUS_SRC1_ALPHA;
     default:
         Q_UNREACHABLE_RETURN(GL_ZERO);
     }

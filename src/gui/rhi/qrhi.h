@@ -2128,7 +2128,8 @@ public:
         BufferToBufferCopy,
         PushConstants,
         StaticBuffersOnGpuTimeline,
-        FragmentStoresAndAtomics
+        FragmentStoresAndAtomics,
+        DualSourceBlend
     };
 
     enum BeginFrameFlag {

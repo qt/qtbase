@@ -1030,6 +1030,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return caps.shadingRateMap;
     case QRhi::VariableRateShadingMapWithTexture:
         return false;
+    case QRhi::DualSourceBlend:
     case QRhi::PerRenderTargetBlending:
     case QRhi::SampleVariables:
         return true;

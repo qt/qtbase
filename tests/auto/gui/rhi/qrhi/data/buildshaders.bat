@@ -17,6 +17,7 @@ qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o textured_multiubuf.vert.qsb
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o textured_multiubuf.frag.qsb textured_multiubuf.frag
 qsb --glsl 320es,400 --hlsl 50 -c --msl 12 -o mrtbl.vert.qsb mrtbl.vert
 qsb --glsl 320es,400 --hlsl 50 -c --msl 12 -o mrtbl.frag.qsb mrtbl.frag
+qsb --glsl 330 --hlsl 50 -c --msl 12 -o dualsourceblend.frag.qsb dualsourceblend.frag
 qsb --glsl 320es,410 --msl 12 --msltess simpletess.vert -o simpletess.vert.qsb
 qsb --glsl 320es,410 --msl 12 --tess-mode triangles simpletess.tesc -o simpletess.tesc.qsb
 qsb --glsl 320es,410 --msl 12  --tess-vertex-count 3 simpletess.tese -o simpletess.tese.qsb

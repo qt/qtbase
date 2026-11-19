@@ -1231,6 +1231,17 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     advertise an Apple GPU family. Note that this says nothing about when the
     contents become visible to the CPU or to subsequent draw calls, which is
     always taken care of by QRhi.
+
+    \value [since 6.13] DualSourceBlend Indicates that a graphics pipeline can
+    use the Src1Color, OneMinusSrc1Color, Src1Alpha, and OneMinusSrc1Alpha blend
+    factors from QRhiGraphicsPipeline::BlendFactor. For portable use, configure
+    the render target with a single color attachment in slot 0. The fragment
+    shader must provide two blend sources for that attachment, e.g. \c{location
+    = 0}, with \c{index = 0} for the primary source and \c{index = 1} for the
+    secondary source. In practice, this feature can be expected to be supported
+    with desktop OpenGL 3.3 or newer, Direct3D 11/12, Vulkan, and Metal. Vulkan
+    support is also optional and depends on the device's \c{dualSrcBlend}
+    feature. OpenGL ES will always report this as unsupported.
  */
 
 /*!
@@ -9862,6 +9873,26 @@ bool QRhiImplementation::sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps)
     if (!ps->shaderResourceBindings()) {
         qWarning("Cannot build a graphics pipeline without QRhiShaderResourceBindings");
         return false;
+    }
+
+    if (!isFeatureSupported(QRhi::DualSourceBlend)) {
+        const auto usesDualSourceBlendFactor = [](QRhiGraphicsPipeline::BlendFactor factor) {
+            return factor == QRhiGraphicsPipeline::Src1Color
+                    || factor == QRhiGraphicsPipeline::OneMinusSrc1Color
+                    || factor == QRhiGraphicsPipeline::Src1Alpha
+                    || factor == QRhiGraphicsPipeline::OneMinusSrc1Alpha;
+        };
+        for (auto it = ps->cbeginTargetBlends(), end = ps->cendTargetBlends(); it != end; ++it) {
+            const auto &blend = *it;
+            if (blend.enable
+                    && (usesDualSourceBlendFactor(blend.srcColor)
+                        || usesDualSourceBlendFactor(blend.dstColor)
+                        || usesDualSourceBlendFactor(blend.srcAlpha)
+                        || usesDualSourceBlendFactor(blend.dstAlpha))) {
+                qWarning("Dual-source blending is not supported by this backend");
+                return false;
+            }
+        }
     }
 
     return true;
