@@ -140,6 +140,19 @@ static void waitForProcessDeath(const Hdc &hdc, const QString &bundleName,
             "force-stop wait — proceeding anyway\n", static_cast<long long>(timeout.count()));
 }
 
+static void removeFilesByName(const Hdc &hdc, const QString &directory,
+                              const QStringList &namePatterns)
+{
+    QStringList command = { u"rm"_s, u"-f"_s };
+    for (const QString &pattern : namePatterns)
+        command += directory + u"/"_s + pattern;
+
+    if (!hdc.shell(command).trimmed().isEmpty()) {
+        fprintf(stderr, "harmonyostestrunner: warning: cannot remove files from %s\n",
+                qPrintable(directory));
+    }
+}
+
 // aa start prints errors (screen locked, ability not found, ...) to stdout.
 static bool runAaStart(const Hdc &hdc, const QStringList &aaStartCommand)
 {
@@ -332,17 +345,20 @@ int main(int argc, char *argv[])
     const std::chrono::seconds timeout{ parser.value(timeoutOpt).toInt() };
     const std::chrono::seconds noProgressTimeout{ parser.value(noProgressTimeoutOpt).toInt() };
 
-    // Unique per-run ID: shell can't delete files from the app sandbox (SELinux),
-    // so uniqueness is the only way to avoid matching stale files.
+    // Unique per-run ID, so a stale file that the cleanup below failed to
+    // remove is never matched.
     const QString runId = QString::number(QDateTime::currentMSecsSinceEpoch());
 
+    const QString stdoutFilePrefix   = u"qt_stdout_"_s;
+    const QString exitCodeFilePrefix = u"qt_exitcode_"_s;
+
     const QString appBase = u"/data/storage/el2/base/files"_s;
-    const QString appStdoutPath   = appBase + u"/qt_stdout_"_s   + runId + u".txt"_s;
-    const QString appExitCodePath = appBase + u"/qt_exitcode_"_s + runId + u".txt"_s;
+    const QString appStdoutPath   = appBase + u"/"_s + stdoutFilePrefix   + runId + u".txt"_s;
+    const QString appExitCodePath = appBase + u"/"_s + exitCodeFilePrefix + runId + u".txt"_s;
 
     const QString shellBase = u"/data/app/el2/100/base/"_s + bundleName + u"/files"_s;
-    const QString shellStdoutPath   = shellBase + u"/qt_stdout_"_s   + runId + u".txt"_s;
-    const QString shellExitCodePath = shellBase + u"/qt_exitcode_"_s + runId + u".txt"_s;
+    const QString shellStdoutPath   = shellBase + u"/"_s + stdoutFilePrefix   + runId + u".txt"_s;
+    const QString shellExitCodePath = shellBase + u"/"_s + exitCodeFilePrefix + runId + u".txt"_s;
 
     const QTemporaryDir localCopyDir;
     if (!localCopyDir.isValid()) {
@@ -375,6 +391,9 @@ int main(int argc, char *argv[])
 
     forceStopBundle(hdc, bundleName);
     waitForProcessDeath(hdc, bundleName);
+    // Not after the run: a crashed or aborted runner would skip that cleanup.
+    removeFilesByName(hdc, shellBase,
+                      { stdoutFilePrefix + u"*.txt"_s, exitCodeFilePrefix + u"*.txt"_s });
 
     // --ps for string want.parameters, --pb for boolean.
     QStringList aaStartCommand = {
