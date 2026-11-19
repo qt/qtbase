@@ -2876,13 +2876,15 @@ bool QStyleSheetStyle::initWidget(const QWidget *w) const
         return false;
     if (w->testAttribute(Qt::WA_StyleSheet))
         return true;
+
+    // make sure to also remove an unstylable widget from the caches
+    connect(w, &QObject::destroyed, styleSheetCaches, &QStyleSheetStyleCaches::objectDestroyed,
+            Qt::UniqueConnection);
+
     if (unstylable(w))
         return false;
-    const_cast<QWidget *>(w)->setAttribute(Qt::WA_StyleSheet, true);
 
-    connect(w, &QObject::destroyed,
-            styleSheetCaches, &QStyleSheetStyleCaches::objectDestroyed,
-            Qt::UniqueConnection);
+    const_cast<QWidget *>(w)->setAttribute(Qt::WA_StyleSheet, true);
     return true;
 }
 
