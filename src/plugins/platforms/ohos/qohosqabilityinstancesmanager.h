@@ -79,6 +79,8 @@ public:
     virtual void handleQAbilityOnForeground(QNapi::Object qAbility) = 0;
     virtual void handleQAbilityOnBackground(QNapi::Object qAbility) = 0;
     virtual bool hasForegroundQAbility() const = 0;
+    virtual bool isQAbilityInForeground(QNapi::Object qAbility) const = 0;
+    virtual std::optional<QNapi::Object> tryGetForegroundQAbility() = 0;
 
     virtual bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const = 0;
 

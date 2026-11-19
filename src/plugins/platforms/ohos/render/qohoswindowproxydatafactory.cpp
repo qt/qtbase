@@ -270,9 +270,15 @@ void makeWindowProxyDataForMainWindowInJsThread(
     const QOhosWindowProxyMainWindowCreateInfo &createInfo,
     QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> resultConsumer)
 {
-    auto optBaseQAbility = jsState.defaultQAbility();
+    auto &qAbilityInstancesManager = QtOhos::QAbilityInstancesManager::instance(jsState);
+    auto optDefaultQAbility = jsState.defaultQAbility();
+    auto optForegroundQAbility = qAbilityInstancesManager.tryGetForegroundQAbility();
+    auto optBaseQAbility =
+        ((optDefaultQAbility && qAbilityInstancesManager.isQAbilityInForeground(*optDefaultQAbility)) || !optForegroundQAbility)
+            ? optDefaultQAbility
+            : optForegroundQAbility;
     if (!optBaseQAbility)
-        qOhosReportFatalErrorAndAbort("%s: can't create window without the default Ability instance", Q_FUNC_INFO);
+        qOhosReportFatalErrorAndAbort("%s: can't create window without an Ability instance to start it from", Q_FUNC_INFO);
 
     auto abilityStartupOptions =
         QNapi::makeObject(
@@ -290,7 +296,7 @@ void makeWindowProxyDataForMainWindowInJsThread(
         abilityStartupOptions.set("windowMode", fullscreenWindowMode);
     }
 
-    QtOhos::QAbilityInstancesManager::instance(jsState).startNewInstance(
+    qAbilityInstancesManager.startNewInstance(
         optBaseQAbility.value(), createInfo.qWindowRef,
         abilityStartupOptions,
         [qWindowRef = createInfo.qWindowRef,
