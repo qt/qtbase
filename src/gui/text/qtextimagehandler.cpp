@@ -122,22 +122,33 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format,
 
 static QSize getSize(QTextDocument *doc, const QTextImageFormat &format)
 {
-    const bool hasWidth = format.hasProperty(QTextFormat::ImageWidth);
-    int width = qRound(format.width());
-    const bool hasHeight = format.hasProperty(QTextFormat::ImageHeight);
-    const int height = qRound(format.height());
+    // Rounds to int, bounded to a range that cannot overflow in the size calculations below
+    const auto boundedRound = [](qreal value) {
+        constexpr qreal limit = 1 << 24;
+        return qRound(qBound(-limit, value, limit));
+    };
+
+    const bool hasWidth = format.hasProperty(QTextFormat::ImageWidth) && qIsFinite(format.width());
+    int width = hasWidth ? boundedRound(format.width()) : 0;
+    const bool hasHeight = format.hasProperty(QTextFormat::ImageHeight) && qIsFinite(format.height());
+    const int height = hasHeight ? boundedRound(format.height()) : 0;
 
     const bool hasMaxWidth = format.hasProperty(QTextFormat::ImageMaxWidth);
     const auto maxWidth = format.maximumWidth();
 
     int effectiveMaxWidth = std::numeric_limits<int>::max();
     if (hasMaxWidth) {
+        qreal maxWidthValue;
         if (maxWidth.type() == QTextLength::PercentageLength)
-            effectiveMaxWidth = (doc->pageSize().width() - 2 * doc->documentMargin()) * maxWidth.value(100) / 100;
+            maxWidthValue = (doc->pageSize().width() - 2 * doc->documentMargin()) * maxWidth.value(100) / 100;
         else
-            effectiveMaxWidth = maxWidth.rawValue();
+            maxWidthValue = maxWidth.rawValue();
 
-        width = qMin(effectiveMaxWidth, width);
+        // Negative (and NaN) values are ignored, as in CSS
+        if (maxWidthValue >= 0) {
+            effectiveMaxWidth = boundedRound(maxWidthValue);
+            width = qMin(effectiveMaxWidth, width);
+        }
     }
 
     QImage source;
@@ -153,16 +164,18 @@ static QSize getSize(QTextDocument *doc, const QTextImageFormat &format)
         }
 
         if (!hasWidth) {
-            if (!hasHeight)
+            if (!hasHeight) {
                 size.setWidth(sourceSize.width());
-            else
-                size.setWidth(qMin(effectiveMaxWidth, qRound(height * (sourceSize.width() / qreal(sourceSize.height())))));
+            } else {
+                int nw = boundedRound(height * (sourceSize.width() / qreal(sourceSize.height())));
+                size.setWidth(qMin(effectiveMaxWidth, nw));
+            }
         }
         if (!hasHeight) {
             if (!hasWidth)
                 size.setHeight(sourceSize.height());
             else
-                size.setHeight(qRound(width * (sourceSize.height() / qreal(sourceSize.width()))));
+                size.setHeight(boundedRound(width * (sourceSize.height() / qreal(sourceSize.width()))));
         }
     }
 
