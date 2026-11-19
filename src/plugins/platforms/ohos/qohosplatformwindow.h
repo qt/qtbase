@@ -125,7 +125,6 @@ public:
     QRect lastRequestedWindowFrameGeometry() const;
 
 protected:
-    QOhosPlatformScreen *platformScreen() const;
     bool canBeShownOnScreen() const;
 
     void setWindowStateFromOhos(Qt::WindowStates state);
