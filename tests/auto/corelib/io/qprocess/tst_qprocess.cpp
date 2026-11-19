@@ -96,6 +96,7 @@ private slots:
     void waitForStartedWithoutStartChrono();
     void waitForReadyReadInAReadyReadSlot();
     void waitForBytesWrittenInABytesWrittenSlot();
+    void channelBytesWritten();
     void setEnvironment_data();
     void setEnvironment();
     void setProcessEnvironment_data();
@@ -2272,6 +2273,28 @@ void tst_QProcess::removeFileWhileProcessIsRunning()
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
+}
+
+void tst_QProcess::channelBytesWritten()
+{
+    QProcess process;
+    process.start("testProcessEcho2/testProcessEcho2");
+    QVERIFY(process.waitForStarted(5000));
+
+    qint64 total = 0;
+    bool onlyChannelZero = true;
+    QObject::connect(&process, &QIODevice::channelBytesWritten, &process,
+                     [&](int channel, qint64 bytes) {
+                         onlyChannelZero = onlyChannelZero && channel == 0;
+                         total += bytes;
+                     });
+
+    QCOMPARE(process.write("Hello"), qint64(5));
+    QTRY_COMPARE(total, qint64(5));
+    QVERIFY(onlyChannelZero);
+
+    process.write("", 1); // makes the helper exit
+    QVERIFY(process.waitForFinished(5000));
 }
 
 void tst_QProcess::setEnvironment_data()

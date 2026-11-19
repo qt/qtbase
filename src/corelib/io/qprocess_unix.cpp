@@ -1138,6 +1138,7 @@ bool QProcessPrivate::writeToStdin()
     if (!emittedBytesWritten && written != 0) {
         emittedBytesWritten = true;
         emit q_func()->bytesWritten(written);
+        emit q_func()->channelBytesWritten(0, written);
         emittedBytesWritten = false;
     }
     return true;
