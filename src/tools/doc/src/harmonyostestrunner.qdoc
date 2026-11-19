@@ -34,10 +34,11 @@
     \list 1
         \li It verifies that the target device has the test bundle HAP
             installed.
-        \li It force-stops any running instance of the bundle, then launches the
-            ability with \c {aa start}, telling the platform which test shared
-            library to load and where to redirect the test's standard output and
-            exit code inside the application sandbox.
+        \li It force-stops any running instance of the bundle and deletes the
+            output files that earlier runs left in the application sandbox. It
+            then launches the ability with \c {aa start}, telling the platform
+            which test shared library to load and where to redirect the test's
+            standard output and exit code inside the application sandbox.
         \li It streams the test's standard output to the host as the test runs.
         \li It waits for the test to finish, which it detects when the exit-code
             file becomes readable. A liveness check catches a crashed process, and an
