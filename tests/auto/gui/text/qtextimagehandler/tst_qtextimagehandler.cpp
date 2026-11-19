@@ -28,6 +28,8 @@ private slots:
     void customResourceSchema();
     void maxWidth_data();
     void maxWidth();
+    void invalidSize_data();
+    void invalidSize();
 #endif
 };
 
@@ -179,6 +181,52 @@ void tst_QTextImageHandler::maxWidth()
 #endif
     const auto formats = doc.allFormats();
     const auto it = std::find_if(formats.begin(), formats.end(), [](const auto &format){
+        return format.objectType() == QTextFormat::ImageObject;
+    });
+    QCOMPARE_NE(it, formats.end());
+    const QTextImageFormat format = (*it).toImageFormat();
+    QTextImageHandler handler;
+
+    QCOMPARE(handler.intrinsicSize(&doc, 0, format), expectedSize);
+}
+void tst_QTextImageHandler::invalidSize_data()
+{
+    QTest::addColumn<QString>("sizeAttributes");
+    QTest::addColumn<QSizeF>("expectedSize");
+
+    // data/image.png is 16x16. Non-finite values are ignored, huge values are bounded.
+    constexpr qreal limit = 1 << 24;
+    QTest::addRow("nan-width") << u"width=nan"_s << QSizeF(16, 16);
+    QTest::addRow("nan-width-with-height") << u"width=nan height=8"_s << QSizeF(8, 8);
+    QTest::addRow("inf-width-with-height") << u"width=inf height=8"_s << QSizeF(8, 8);
+    QTest::addRow("width-with-nan-height") << u"width=8 height=nan"_s << QSizeF(8, 8);
+    QTest::addRow("width-with-inf-height") << u"width=8 height=-inf"_s << QSizeF(8, 8);
+    QTest::addRow("huge-width-with-height") << u"width=1e10 height=8"_s << QSizeF(limit, 8);
+    QTest::addRow("huge-width") << u"width=3e9"_s << QSizeF(limit, limit);
+    QTest::addRow("huge-negative-height") << u"height=-3e9"_s << QSizeF(-limit, -limit);
+    QTest::addRow("huge-max-width") << u"style=\"max-width:10000000000px\""_s << QSizeF(16, 16);
+    QTest::addRow("huge-max-width-percentage")
+            << u"style=\"max-width:10000000000%\""_s << QSizeF(16, 16);
+    QTest::addRow("huge-negative-max-width")
+            << u"style=\"max-width:-3000000000px\""_s << QSizeF(16, 16);
+    QTest::addRow("huge-negative-max-width-percentage")
+            << u"style=\"max-width:-10000000000%\""_s << QSizeF(16, 16);
+    QTest::addRow("negative-max-width") << u"style=\"max-width:-8px\""_s << QSizeF(16, 16);
+}
+
+void tst_QTextImageHandler::invalidSize()
+{
+    QFETCH(QString, sizeAttributes);
+    QFETCH(QSizeF, expectedSize);
+
+    QTextDocument doc;
+    doc.setPageSize(QSizeF(200, 200));
+    QTextCursor c(&doc);
+    c.insertHtml("<img src=\""_L1 + QFINDTESTDATA("data/image.png") + "\" "_L1 + sizeAttributes
+                 + u'>');
+
+    const auto formats = doc.allFormats();
+    const auto it = std::find_if(formats.begin(), formats.end(), [](const auto &format) {
         return format.objectType() == QTextFormat::ImageObject;
     });
     QCOMPARE_NE(it, formats.end());
