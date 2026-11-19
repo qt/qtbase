@@ -1049,7 +1049,6 @@ void tst_QStringView::count() const
     QCOMPARE(defaultConstructed.count(QChar(u'A')), 0);
     QCOMPARE(defaultConstructed.count(u"AB"_s), 0);
     QCOMPARE(defaultConstructed.count(u"FG"), 0);
-    QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
     QCOMPARE(defaultConstructed.count("AB"_L1), 0);
 
     QCOMPARE(defaultConstructed.count(QString()), 1);
@@ -1068,7 +1067,6 @@ void tst_QStringView::count() const
     QCOMPARE(empty.count(u'A'), 0);
     QCOMPARE(empty.count(u"AB"_s), 0);
     QCOMPARE(empty.count(u"FG"), 0);
-    QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
     QCOMPARE(empty.count("FG"_L1), 0);
     QCOMPARE(empty.count(QString()), 1);
     QCOMPARE(empty.count(QStringView()), 1);
@@ -1088,7 +1086,6 @@ void tst_QStringView::count() const
     QStringView view = u"abc";
     QCOMPARE(view.count(u"abcdef"_s), 0);
     QCOMPARE(view.count(u"abcdef"), 0);
-    QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
     QCOMPARE(view.count("abcdef"_L1), 0);
 
     QStringView nonBmp = u"\U00010000\U00010000abc\U00010000";

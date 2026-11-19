@@ -3383,13 +3383,6 @@ void tst_QStringApiSymmetry::count_impl()
             QSKIP("This test requires the needle's length to be longer than 13");
     }
 
-    constexpr bool isQsvAndL1 = std::conjunction_v<
-            std::is_same<Haystack, QStringView>,
-            std::is_same<Needle, QLatin1StringView>
-        >;
-    if (isQsvAndL1 && QTest::currentDataTag() == "needle-longer-than-haystack"_L1)
-        QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
-
     QCOMPARE_EQ(s.count(ns), result);
 }
 

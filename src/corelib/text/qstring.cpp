@@ -9666,7 +9666,7 @@ qsizetype QtPrivate::count(QLatin1StringView haystack, QStringView needle, Qt::C
 qsizetype QtPrivate::count(QStringView haystack, QLatin1StringView needle, Qt::CaseSensitivity cs)
 {
     if (haystack.size() < needle.size())
-        return -1;
+        return 0;
 
     QVarLengthArray<char16_t> s = qt_from_latin1_to_qvla(needle);
     return QtPrivate::count(haystack, QStringView(s.data(), s.size()), cs);
