@@ -84,7 +84,6 @@ static bool s_autoStartedAbilityInstanceWaitingForQtWindow = true;
 static std::string s_appSharedLibsDirPath;
 static std::string s_appSharedLibName;
 static std::unique_ptr<std::vector<std::string>> s_appArgs;
-static std::vector<QNapi::Reference<QNapi::Object>> foregroundAbilities;
 static int s_appExitCode = 0;
 static std::string s_exitCodeFilePath;
 
@@ -957,8 +956,12 @@ void AppFunctionsImpl::startNoUiChildProcess(
 void handleAbilityOnForeground(const CallbackInfo &cbInfo)
 {
     const auto qAbility = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+    auto &qAbilityInstancesManager = QAbilityInstancesManager::instance(cbInfo.jsState());
 
-    if (foregroundAbilities.empty()) {
+    const bool hadForegroundQAbility = qAbilityInstancesManager.hasForegroundQAbility();
+    qAbilityInstancesManager.handleQAbilityOnForeground(qAbility);
+
+    if (!hadForegroundQAbility && qAbilityInstancesManager.hasForegroundQAbility()) {
         QtOhos::invokeInQtThread([]() {
             const auto setQosRes = OH_QoS_SetThreadQoS(QoS_Level::QOS_USER_INTERACTIVE);
             if (setQosRes != 0) {
@@ -969,20 +972,16 @@ void handleAbilityOnForeground(const CallbackInfo &cbInfo)
             updateApplicationState(Qt::ApplicationActive);
         });
     }
-
-    foregroundAbilities.push_back(Napi::Persistent(qAbility));
 }
 
 void handleAbilityOnBackground(const CallbackInfo &cbInfo)
 {
     const auto qAbility = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+    auto &qAbilityInstancesManager = QAbilityInstancesManager::instance(cbInfo.jsState());
 
-    const auto qAbilityRef = Napi::Persistent(qAbility);
-    foregroundAbilities.erase(
-        std::remove(foregroundAbilities.begin(), foregroundAbilities.end(), qAbilityRef),
-        foregroundAbilities.end());
+    qAbilityInstancesManager.handleQAbilityOnBackground(qAbility);
 
-    if (foregroundAbilities.empty()) {
+    if (!qAbilityInstancesManager.hasForegroundQAbility()) {
         QtOhos::invokeInQtThread([]() {
             const auto resetQosRes = OH_QoS_ResetThreadQoS();
             if (resetQosRes != 0) {
