@@ -17,6 +17,7 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qset.h"
+#include "QtCore/private/qflatmap_p.h"
 #include "QtGui/qbrush.h"
 #include "QtGui/qevent.h"
 #include "private/qcssparser_p.h"
@@ -109,7 +110,7 @@ private:
     int refcount;
 
     friend class QRenderRule;
-    int nativeFrameWidth(const QWidget *);
+    int nativeFrameWidth(const QWidget *) const;
     QRenderRule renderRule(const QWidget *, int, quint64 = 0) const;
     QRenderRule renderRule(const QWidget *, const QStyleOption *, int = 0) const;
     QSize defaultSize(const QWidget *, QSize, const QRect&, int) const;
@@ -154,8 +155,8 @@ public Q_SLOTS:
     void styleDestroyed(QObject *);
 public:
     QHash<const QObject *, QList<QCss::StyleRule>> styleRulesCache;
-    QHash<const QObject *, QHash<int, bool> > hasStyleRuleCache;
-    typedef QHash<int, QHash<quint64, QRenderRule> > QRenderRules;
+    QHash<const QObject *, QVarLengthFlatMap<int, bool, 4>> hasStyleRuleCache;
+    typedef QVarLengthFlatMap<int, QHash<quint64, QRenderRule>, 4> QRenderRules;
     QHash<const QObject *, QRenderRules> renderRulesCache;
     QHash<const void *, QCss::StyleSheet> styleSheetCache; // parsed style sheets
     QSet<const QWidget *> autoFillDisabledWidgets;

@@ -1644,13 +1644,15 @@ private:
 
 QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
 {
-    QHash<const QObject *, QList<StyleRule>>::const_iterator cacheIt =
-            styleSheetCaches->styleRulesCache.constFind(w);
+    const auto cacheIt = styleSheetCaches->styleRulesCache.constFind(w);
     if (cacheIt != styleSheetCaches->styleRulesCache.constEnd())
         return cacheIt.value();
 
-    if (!initWidget(w))
+    if (!initWidget(w)) {
+        // create an entry to avoid the call to initWidget() next time
+        styleSheetCaches->styleRulesCache.insert(w, {});
         return {};
+    }
 
     QStyleSheetStyleSelector styleSelector;
 
@@ -1741,9 +1743,9 @@ static QList<Declaration> declarations(const QList<StyleRule> &styleRules, QLati
     return decls;
 }
 
-int QStyleSheetStyle::nativeFrameWidth(const QWidget *w)
+int QStyleSheetStyle::nativeFrameWidth(const QWidget *w) const
 {
-    QStyle *base = baseStyle();
+    const QStyle *base = baseStyle();
 
 #if QT_CONFIG(spinbox)
     if (qobject_cast<const QAbstractSpinBox *>(w))
@@ -1841,13 +1843,25 @@ static void qt_check_if_internal_widget(const QWidget **w, int *element)
 QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, int element, quint64 state) const
 {
     qt_check_if_internal_widget(&w, &element);
-    QHash<quint64, QRenderRule> &cache = styleSheetCaches->renderRulesCache[w][element];
-    QHash<quint64, QRenderRule>::const_iterator cacheIt = cache.constFind(state);
-    if (cacheIt != cache.constEnd())
-        return cacheIt.value();
 
-    if (!initWidget(w))
+    const auto it = styleSheetCaches->renderRulesCache.constFind(w);
+    if (it != styleSheetCaches->renderRulesCache.constEnd()) {
+        const auto &renderRulesForWidget = it.value();
+        const auto itElem = renderRulesForWidget.find(element);
+        if (itElem != renderRulesForWidget.end()) {
+            const auto &renderRuleForElement = itElem.value();
+            const auto itRule = renderRuleForElement.find(state);
+            if (itRule != renderRuleForElement.constEnd())
+                return itRule.value();
+        }
+    }
+
+    // create an entry to avoid the call to initWidget() next time
+    QHash<quint64, QRenderRule> &cache = styleSheetCaches->renderRulesCache[w][element];
+    if (!initWidget(w)) {
+        cache[state] = QRenderRule();
         return QRenderRule();
+    }
 
     quint64 stateMask = 0;
     const QList<StyleRule> rules = styleRules(w);
@@ -1858,7 +1872,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, int element, quint64 
         stateMask |= negated;
     }
 
-    cacheIt = cache.constFind(state & stateMask);
+    const auto cacheIt = cache.constFind(state & stateMask);
     if (cacheIt != cache.constEnd()) {
         QRenderRule newRule = cacheIt.value();
         cache[state] = newRule;
@@ -2155,13 +2169,20 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
 
 bool QStyleSheetStyle::hasStyleRule(const QWidget *w, int part) const
 {
-    QHash<int, bool> &cache = styleSheetCaches->hasStyleRuleCache[w];
-    QHash<int, bool>::const_iterator cacheIt = cache.constFind(part);
-    if (cacheIt != cache.constEnd())
-        return cacheIt.value();
+    const auto hasRuleIt = styleSheetCaches->hasStyleRuleCache.constFind(w);
+    if (hasRuleIt != styleSheetCaches->hasStyleRuleCache.cend()) {
+        const auto &cont = hasRuleIt.value();
+        const auto it = cont.find(part);
+        if (it != cont.end())
+            return it.value();
+    }
 
-    if (!initWidget(w))
+    // create an entry to avoid the call to initWidget() next time
+    auto &cache = styleSheetCaches->hasStyleRuleCache[w];
+    if (!initWidget(w)) {
+        cache[part] = false;
         return false;
+    }
 
     const QList<StyleRule> &rules = styleRules(w);
     if (part == PseudoElement_None) {
