@@ -861,6 +861,7 @@ void QProcessPrivate::_q_bytesWritten(qint64 bytes)
     if (!emittedBytesWritten) {
         QScopedValueRollback<bool> guard(emittedBytesWritten, true);
         emit q->bytesWritten(bytes);
+        emit q->channelBytesWritten(0, bytes);
     }
     if (stdinChannel.closed && pipeWriterBytesToWrite() == 0)
         closeWriteChannel();
