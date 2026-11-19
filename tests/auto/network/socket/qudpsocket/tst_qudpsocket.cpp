@@ -1117,6 +1117,7 @@ void tst_QUdpSocket::writeDatagram()
     for(int i=0;;i++) {
         QSignalSpy errorspy(&client, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
         QSignalSpy bytesspy(&client, SIGNAL(bytesWritten(qint64)));
+        QSignalSpy channelBytesSpy(&client, &QIODevice::channelBytesWritten);
 
         qint64 written = client.writeDatagram(QByteArray(i * 1024, 'w'), serverAddress,
                                                   server.localPort());
@@ -1126,6 +1127,7 @@ void tst_QUdpSocket::writeDatagram()
             QSKIP("HP-UX 11.11 on hai (PA-RISC 64) truncates too long datagrams.");
 #endif
             QCOMPARE(bytesspy.size(), 0);
+            QCOMPARE(channelBytesSpy.size(), 0);
             QCOMPARE(errorspy.size(), 1);
             QCOMPARE(*static_cast<const int *>(errorspy.at(0).at(0).constData()),
                     int(QUdpSocket::DatagramTooLargeError));
@@ -1135,6 +1137,9 @@ void tst_QUdpSocket::writeDatagram()
         QCOMPARE(bytesspy.size(), 1);
         QCOMPARE(*static_cast<const qint64 *>(bytesspy.at(0).at(0).constData()),
                 qint64(i * 1024));
+        QCOMPARE(channelBytesSpy.size(), 1);
+        QCOMPARE(channelBytesSpy.at(0).at(0).toInt(), 0);
+        QCOMPARE(channelBytesSpy.at(0).at(1).toLongLong(), qint64(i * 1024));
         QCOMPARE(errorspy.size(), 0);
         if (!server.waitForReadyRead(5000))
             QSKIP(QString("UDP packet lost at size %1, unable to complete the test.").arg(i * 1024).toLatin1().data());
