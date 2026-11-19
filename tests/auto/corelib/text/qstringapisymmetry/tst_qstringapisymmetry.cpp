@@ -3341,6 +3341,13 @@ void tst_QStringApiSymmetry::count_data()
 
     QTest::addRow("xxx") << QString::fromUtf8("xxx") << QString::fromUtf8("x") << qsizetype(3);
     QTest::addRow("xyzaaaxyz") << QString::fromUtf8("xyzaaaxyz") << QString::fromUtf8("xyz") << qsizetype(2);
+    QTest::addRow("needle-longer-than-haystack") << u"abc"_s << u"abcdef"_s << qsizetype(0);
+
+    QString str{520, u'z'};
+    str[20] = u'a';
+    const QString longNeedle = u"zzzzzzzzzzzzzzza"_s;
+    QCOMPARE_GT(longNeedle.size(), 13);
+    QTest::addRow("string-matcher") << str << longNeedle << qsizetype(1);
 }
 
 template<typename Haystack, typename Needle>
@@ -3363,6 +3370,25 @@ void tst_QStringApiSymmetry::count_impl()
 
     const auto nref = needle.isNull() ? QStringView() : QStringView(needle);
     const auto ns = make<Needle>(nref, nl1, nutf8);
+
+    constexpr bool isOneCharNeedle = std::disjunction_v<
+            std::is_same<Needle, QChar>,
+            std::is_same<Needle, char16_t>,
+            std::is_same<Needle, QLatin1Char>
+        >;
+    if constexpr (isOneCharNeedle) {
+        if (QTest::currentDataTag() == "needle-longer-than-haystack"_L1)
+            QSKIP("This test needs a needle that is longer than the haystack");
+        else if (QTest::currentDataTag() == "string-matcher"_L1)
+            QSKIP("This test requires the needle's length to be longer than 13");
+    }
+
+    constexpr bool isQsvAndL1 = std::conjunction_v<
+            std::is_same<Haystack, QStringView>,
+            std::is_same<Needle, QLatin1StringView>
+        >;
+    if (isQsvAndL1 && QTest::currentDataTag() == "needle-longer-than-haystack"_L1)
+        QEXPECT_FAIL("", "QStringView::count(QLatin1StringView) returns -1 instead of 0", Continue);
 
     QCOMPARE_EQ(s.count(ns), result);
 }
