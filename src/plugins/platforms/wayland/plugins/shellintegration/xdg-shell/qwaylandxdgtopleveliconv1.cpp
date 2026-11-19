@@ -32,7 +32,7 @@ public:
     {
         Q_ASSERT(!pixmap.isNull());
         const QSize squareSize = pixmap.size().expandedTo(pixmap.size().transposed());
-        auto buffer = std::make_unique<QWaylandShmBuffer>(mDisplay, squareSize, QImage::Format_ARGB32, pixmap.devicePixelRatio());
+        auto buffer = std::make_unique<QWaylandShmBuffer>(mDisplay, squareSize, QImage::Format_ARGB32_Premultiplied, pixmap.devicePixelRatio());
         QRect targetRect = pixmap.rect();
         targetRect.moveCenter(buffer->image()->rect().center());
         QPainter painter(buffer->image());
