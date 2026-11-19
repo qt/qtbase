@@ -7,6 +7,7 @@
 #include "private/qiodevice_p.h"
 
 #include <limits>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -408,9 +409,11 @@ qint64 QBuffer::writeData(const char *data, qint64 len)
         d->signalsEmitted = true;
         QMetaObject::invokeMethod(this, [](QBuffer *q) {
             auto d = q->d_func();
-            emit q->bytesWritten(d->writtenSinceLastEmit);
-            d->writtenSinceLastEmit = 0;
+            const qint64 written = std::exchange(d->writtenSinceLastEmit, 0);
+            emit q->bytesWritten(written);
+            emit q->channelBytesWritten(0, written);
             emit q->readyRead();
+            emit q->channelReadyRead(0);
             d->signalsEmitted = false;
         }, Qt::QueuedConnection, this);
     }
@@ -425,8 +428,12 @@ static bool is_tracked_signal(const QMetaMethod &signal)
     static const struct {
         QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
         QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
+        QMetaMethod channelReadyReadSignal = QMetaMethod::fromSignal(&QBuffer::channelReadyRead);
+        QMetaMethod channelBytesWrittenSignal =
+                QMetaMethod::fromSignal(&QBuffer::channelBytesWritten);
     } sigs;
-    return signal == sigs.readyReadSignal || signal == sigs.bytesWrittenSignal;
+    return signal == sigs.readyReadSignal || signal == sigs.bytesWrittenSignal
+            || signal == sigs.channelReadyReadSignal || signal == sigs.channelBytesWrittenSignal;
 }
 /*!
     \reimp
