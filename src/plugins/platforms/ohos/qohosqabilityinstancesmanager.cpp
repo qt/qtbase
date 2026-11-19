@@ -18,6 +18,7 @@
 #include <render/qohosview.h>
 #include <typeindex>
 #include <unistd.h>
+#include <vector>
 
 #include "qohoscloseeventcontext_p.h"
 
@@ -609,6 +610,10 @@ public:
 
     void removeMatchingQAbilityPeer(QNapi::Object qAbility) override;
 
+    void handleQAbilityOnForeground(QNapi::Object qAbility) override;
+    void handleQAbilityOnBackground(QNapi::Object qAbility) override;
+    bool hasForegroundQAbility() const override;
+
     bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const override;
 
     std::optional<std::string> tryGetQAbilityInstanceIdFromWant(QNapi::Object appQAbility, QNapi::Object want) const override;
@@ -652,6 +657,7 @@ private:
     std::shared_ptr<QAbilityPeer> m_defaultQAbilityPeer;
     std::shared_ptr<QAbilityPeer> m_unusedAutoStartedQAbilityPeer;
     std::map<std::string, std::shared_ptr<QAbilityPeer>> m_qAbilityPeers;
+    std::vector<QNapi::Reference<QNapi::Object>> m_foregroundQAbilities;
     std::shared_ptr<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>> m_ownedUiAbilityPeers;
     QOhosSupplier<std::string> m_abilityInstanceIdsGenerator;
     std::map<std::string, InstanceStartParams> m_pendingInstancesStartParams;
@@ -751,6 +757,24 @@ void QAbilityInstancesManagerImpl::removeMatchingQAbilityPeer(QNapi::Object qAbi
             "%s: removed QAbilityPeer, instanceId: %s, qwindow: %s",
             Q_FUNC_INFO, removedPeer->instanceId().c_str(), removedPeer->qWindowRef().refName().c_str());
     }
+}
+
+void QAbilityInstancesManagerImpl::handleQAbilityOnForeground(QNapi::Object qAbility)
+{
+    m_foregroundQAbilities.push_back(Napi::Persistent(qAbility));
+}
+
+void QAbilityInstancesManagerImpl::handleQAbilityOnBackground(QNapi::Object qAbility)
+{
+    const auto qAbilityRef = Napi::Persistent(qAbility);
+    m_foregroundQAbilities.erase(
+        std::remove(m_foregroundQAbilities.begin(), m_foregroundQAbilities.end(), qAbilityRef),
+        m_foregroundQAbilities.end());
+}
+
+bool QAbilityInstancesManagerImpl::hasForegroundQAbility() const
+{
+    return !m_foregroundQAbilities.empty();
 }
 
 std::optional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceIdFromWant(
