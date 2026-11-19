@@ -42,6 +42,7 @@ private slots:
     void sendPostedEventsInNativeLoop();
 #endif
     void quit();
+    void reentrantQuit();
     void reexec();
     void execAfterExit();
     void eventLoopExecAfterExit();

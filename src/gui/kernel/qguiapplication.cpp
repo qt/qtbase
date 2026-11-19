@@ -2116,19 +2116,6 @@ bool QGuiApplication::event(QEvent *e)
         for (auto *w : QGuiApplication::allWindows())
             forwardEvent(w, e);
         break;
-    case QEvent::Quit:
-        // Close open windows. This is done in order to deliver de-expose
-        // events while the event loop is still running.
-        for (QWindow *topLevelWindow : QGuiApplication::topLevelWindows()) {
-            // Already closed windows will not have a platform window, skip those
-            if (!topLevelWindow->handle())
-                continue;
-            if (!topLevelWindow->close()) {
-                e->ignore();
-                return true;
-            }
-        }
-        break;
     default:
         break;
     }
@@ -3993,6 +3980,21 @@ void QGuiApplicationPrivate::quit()
         platformIntegration->quit();
     else
         QCoreApplicationPrivate::quit();
+}
+
+bool QGuiApplicationPrivate::handleQuitEvent()
+{
+    // Close open windows. This is done in order to deliver de-expose
+    // events while the event loop is still running.
+    for (QWindow *topLevelWindow : QGuiApplication::topLevelWindows()) {
+        // Already closed windows will not have a platform window, skip those
+        if (!topLevelWindow->handle())
+            continue;
+        if (!topLevelWindow->close())
+            return false;
+    }
+
+    return QCoreApplicationPrivate::handleQuitEvent();
 }
 
 void QGuiApplicationPrivate::processApplicationTermination(QWindowSystemInterfacePrivate::WindowSystemEvent *windowSystemEvent)
