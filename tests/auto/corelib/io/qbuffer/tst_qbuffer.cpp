@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QSignalSpy>
 #include <QTestEventLoop>
 
 #include <QBuffer>
@@ -29,6 +30,7 @@ private slots:
     void isSequential();
     void signalTest_data();
     void signalTest();
+    void channelSignals();
     void isClosedAfterClose();
     void readLine_data();
     void readLine();
@@ -449,6 +451,23 @@ void tst_QBuffer::signalTest()
             QVERIFY(!gotReadyRead);
         }
     }
+}
+
+void tst_QBuffer::channelSignals()
+{
+    QBuffer buf;
+    QVERIFY(buf.open(QIODevice::WriteOnly));
+
+    // No connection to readyRead() or bytesWritten(): the channel signals alone must work.
+    QSignalSpy channelReadyReadSpy(&buf, &QIODevice::channelReadyRead);
+    QSignalSpy channelBytesWrittenSpy(&buf, &QIODevice::channelBytesWritten);
+
+    QCOMPARE(buf.write("abc"), qint64(3));
+    QTRY_COMPARE(channelBytesWrittenSpy.size(), 1);
+    QCOMPARE(channelBytesWrittenSpy.at(0).at(0).toInt(), 0);
+    QCOMPARE(channelBytesWrittenSpy.at(0).at(1).toLongLong(), 3);
+    QCOMPARE(channelReadyReadSpy.size(), 1);
+    QCOMPARE(channelReadyReadSpy.at(0).at(0).toInt(), 0);
 }
 
 void tst_QBuffer::readyReadSlot()
