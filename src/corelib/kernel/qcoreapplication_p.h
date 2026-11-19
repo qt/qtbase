@@ -104,6 +104,7 @@ public:
     virtual bool canQuitAutomatically();
     void quitAutomatically();
     virtual void quit();
+    virtual bool handleQuitEvent();
 
     static QBasicAtomicPointer<QThread> theMainThread;
     static QBasicAtomicPointer<void> theMainThreadId;
@@ -158,6 +159,7 @@ public:
     bool in_exec = false;
     bool aboutToQuitEmitted = false;
     bool threadData_clean = false;
+    bool handlingQuitEvent = false;
 
     static void destroyEventDispatcher();
     static QAbstractEventDispatcher *eventDispatcher;

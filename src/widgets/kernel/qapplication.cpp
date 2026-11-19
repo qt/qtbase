@@ -1679,6 +1679,26 @@ void QApplication::aboutQt()
     \sa QWidget::setFocus(), QWidget::clearFocus(), Qt::FocusReason
 */
 
+bool QApplicationPrivate::handleQuitEvent()
+{
+    // FIXME: This logic first tries to close all windows, and then
+    // checks whether it was successful, but the conditions used in
+    // closeAllWindows() differ from the verification logic below.
+    // We should build on the logic in tryCloseAllWidgetWindows().
+    QApplication::closeAllWindows();
+    for (auto *w : QApplication::topLevelWidgets()) {
+        if (w->data->is_closing)
+            continue;
+        if (w->isVisible() && !(w->windowType() == Qt::Popup) &&
+             (!(w->windowType() == Qt::Dialog) || !w->parentWidget()) && !w->testAttribute(Qt::WA_DontShowOnScreen))
+            return false;
+    }
+    // Explicitly call QCoreApplicationPrivate instead of QGuiApplicationPrivate so that
+    // we don't let QGuiApplication close any windows we skipped earlier in
+    // closeAllWindows(). FIXME: Unify all this close magic through closeAllWindows.
+    return QCoreApplicationPrivate::handleQuitEvent();
+}
+
 /*!\reimp
 
 */
@@ -1686,25 +1706,6 @@ bool QApplication::event(QEvent *e)
 {
     Q_D(QApplication);
     switch (e->type()) {
-    case QEvent::Quit:
-        // FIXME: This logic first tries to close all windows, and then
-        // checks whether it was successful, but the conditions used in
-        // closeAllWindows() differ from the verification logic below.
-        // We should build on the logic in tryCloseAllWidgetWindows().
-        closeAllWindows();
-        for (auto *w : topLevelWidgets()) {
-            if (w->data->is_closing)
-                continue;
-            if (w->isVisible() && !(w->windowType() == Qt::Popup) &&
-                 (!(w->windowType() == Qt::Dialog) || !w->parentWidget()) && !w->testAttribute(Qt::WA_DontShowOnScreen)) {
-                e->ignore();
-                return true;
-            }
-        }
-        // Explicitly call QCoreApplication instead of QGuiApplication so that
-        // we don't let QGuiApplication close any windows we skipped earlier in
-        // closeAllWindows(). FIXME: Unify all this close magic through closeAllWindows.
-        return QCoreApplication::event(e);
 #ifndef Q_OS_WIN
     case QEvent::LocaleChange: {
         // on Windows the event propagation is taken care by the

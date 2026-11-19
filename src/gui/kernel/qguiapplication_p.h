@@ -82,6 +82,7 @@ public:
 #endif
     bool canQuitAutomatically() override;
     void quit() override;
+    bool handleQuitEvent() override;
 
     void maybeLastWindowClosed();
     bool lastWindowClosed() const;

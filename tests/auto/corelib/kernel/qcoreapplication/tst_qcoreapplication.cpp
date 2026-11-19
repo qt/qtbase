@@ -1080,6 +1080,38 @@ void tst_QCoreApplication::quit()
     TestApplication::quit(); // Should not do anything
 }
 
+void tst_QCoreApplication::reentrantQuit()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    int aboutToQuitCount = 0;
+    bool nestedQuitEventAccepted = true;
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, [&]{
+        ++aboutToQuitCount;
+
+        // Should not re-enter quit handling
+        TestApplication::quit();
+
+        // Nor should an explicitly sent event
+        QEvent quitEvent(QEvent::Quit);
+        QCoreApplication::sendEvent(&app, &quitEvent);
+        nestedQuitEventAccepted = quitEvent.isAccepted();
+    });
+
+    QTimer::singleShot(0, &app, &QCoreApplication::quit);
+    QCOMPARE(app.exec(), 0);
+
+    QCOMPARE(aboutToQuitCount, 1);
+    QVERIFY(!nestedQuitEventAccepted);
+    // The initial quit, plus the explicitly sent nested quit event
+    QCOMPARE(spy.recordedEvents.count(QEvent::Quit), 2);
+}
+
 void tst_QCoreApplication::reexec()
 {
     int argc = 1;

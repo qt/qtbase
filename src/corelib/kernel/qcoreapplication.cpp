@@ -23,6 +23,7 @@
 #include <qmutex.h>
 #include <private/qloggingregistry_p.h>
 #include <qscopeguard.h>
+#include <qscopedvaluerollback.h>
 #include <qspan.h>
 #include <qstandardpaths.h>
 #ifndef QT_NO_QOBJECT
@@ -2046,8 +2047,15 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
 */
 bool QCoreApplication::event(QEvent *e)
 {
+    Q_D(QCoreApplication);
     if (e->type() == QEvent::Quit) {
-        exit(0);
+        if (d->handlingQuitEvent) {
+            e->ignore();
+            return true;
+        }
+
+        QScopedValueRollback rollback(d->handlingQuitEvent, true);
+        e->setAccepted(d->handleQuitEvent());
         return true;
     }
     return QObject::event(e);
@@ -2138,6 +2146,9 @@ void QCoreApplication::quit()
     if (!self->d_func()->in_exec)
         return;
 
+    if (QThread::isMainThread() && self->d_func()->handlingQuitEvent)
+        return;
+
     self->d_func()->quit();
 }
 
@@ -2151,6 +2162,24 @@ void QCoreApplicationPrivate::quit()
     } else {
         QCoreApplication::postEvent(q, new QEvent(QEvent::Quit));
     }
+}
+
+/*!
+    \internal
+
+    Handles a QEvent::Quit sent to the application.
+
+    Subclasses can override this to perform additional work, such
+    as closing windows, before calling the base implementation,
+    which exits the event loop.
+
+    Returns \c true if the quit was accepted, or \c false to
+    reject it, in which case the event will be ignored.
+*/
+bool QCoreApplicationPrivate::handleQuitEvent()
+{
+    QCoreApplication::exit(0);
+    return true;
 }
 
 /*!
