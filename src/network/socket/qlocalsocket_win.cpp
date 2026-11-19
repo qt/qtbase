@@ -305,6 +305,7 @@ void QLocalSocketPrivate::_q_canRead()
     if (!emittedReadyRead) {
         QScopedValueRollback<bool> guard(emittedReadyRead, true);
         emit q->readyRead();
+        emit q->channelReadyRead(0);
     }
 }
 
@@ -420,6 +421,7 @@ void QLocalSocketPrivate::_q_bytesWritten(qint64 bytes)
     if (!emittedBytesWritten) {
         QScopedValueRollback<bool> guard(emittedBytesWritten, true);
         emit q->bytesWritten(bytes);
+        emit q->channelBytesWritten(0, bytes);
     }
     if (state == QLocalSocket::ClosingState)
         q->disconnectFromServer();

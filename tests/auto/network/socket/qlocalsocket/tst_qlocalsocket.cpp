@@ -115,6 +115,7 @@ private slots:
 
     void debug();
     void bytesWrittenSignal();
+    void channelSignals();
     void syncDisconnectNotify();
     void asyncDisconnectNotify();
 
@@ -1592,6 +1593,35 @@ public slots:
         exit();
     }
 };
+
+void tst_QLocalSocket::channelSignals()
+{
+    LocalServer server;
+    QVERIFY(server.listen("tst_qlocalsocket_channelsignals"));
+
+    QLocalSocket client;
+    client.connectToServer(server.serverName());
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    QVERIFY(client.waitForConnected(3000));
+
+    QSignalSpy channelReadyReadSpy(&client, &QIODevice::channelReadyRead);
+    QSignalSpy channelBytesWrittenSpy(serverSocket, &QIODevice::channelBytesWritten);
+
+    QCOMPARE(serverSocket->write("data", 4), 4);
+    QVERIFY(serverSocket->waitForBytesWritten(3000));
+
+    QTRY_VERIFY(!channelBytesWrittenSpy.isEmpty());
+    if (!channelBytesWrittenSpy.isEmpty()) {
+        QCOMPARE(channelBytesWrittenSpy.first().at(0).toInt(), 0);
+        QCOMPARE(channelBytesWrittenSpy.first().at(1).toLongLong(), 4);
+    }
+
+    QTRY_VERIFY(!channelReadyReadSpy.isEmpty());
+    if (!channelReadyReadSpy.isEmpty())
+        QCOMPARE(channelReadyReadSpy.first().at(0).toInt(), 0);
+}
 
 /*
     Tests the emission of the bytesWritten(qint64)
