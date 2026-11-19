@@ -5128,6 +5128,11 @@ static inline qint64 qrhi_uniform_read_size(QShaderDescription::VariableType typ
     return arrayDim < 1 ? elemSize : (arrayDim - 1) * elemStride + elemSize;
 }
 
+static inline bool isMultisampleTextureTarget(GLenum target)
+{
+    return target == GL_TEXTURE_2D_MULTISAMPLE || target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
+}
+
 void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Sampler *samplerD,
                                     void *ps, uint psGeneration, int glslLocation,
                                     int *texUnit, bool *activeTexUnitAltered)
@@ -5163,18 +5168,22 @@ void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *tex
     }
     ++(*texUnit);
     if (!samplerStateValid) {
-        f->glTexParameteri(texD->target, GL_TEXTURE_MIN_FILTER, GLint(samplerD->d.glminfilter));
-        f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
-        f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
-        f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
-        if (caps.texture3D && texD->target == GL_TEXTURE_3D)
-            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, GLint(samplerD->d.glwrapr));
-        if (caps.textureCompareMode) {
-            if (samplerD->d.gltexcomparefunc != GL_NEVER) {
-                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, GLint(samplerD->d.gltexcomparefunc));
-            } else {
-                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+        // Multisample textures have no sampler state (they can only be read with
+        // texelFetch), setting any of it is an INVALID_ENUM error.
+        if (!isMultisampleTextureTarget(texD->target)) {
+            f->glTexParameteri(texD->target, GL_TEXTURE_MIN_FILTER, GLint(samplerD->d.glminfilter));
+            f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
+            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
+            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
+            if (caps.texture3D && texD->target == GL_TEXTURE_3D)
+                f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, GLint(samplerD->d.glwrapr));
+            if (caps.textureCompareMode) {
+                if (samplerD->d.gltexcomparefunc != GL_NEVER) {
+                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, GLint(samplerD->d.gltexcomparefunc));
+                } else {
+                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+                }
             }
         }
         texD->samplerState = samplerD->d;
@@ -7201,7 +7210,8 @@ bool QGles2Texture::create()
         // here, given the ridiculous default of GL. It is changed based on
         // the sampler later, but there could be cases when one pulls the native
         // object out via nativeTexture() right away.
-        rhiD->f->glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        if (!isMultisampleTextureTarget(target))
+            rhiD->f->glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         specified = true;
     } else if (rhiD->caps.textureStorage && !m_flags.testFlag(ExternalOES)
                && (!is1D || isArray || rhiD->glTexStorage1D))
