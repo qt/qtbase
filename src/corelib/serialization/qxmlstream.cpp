@@ -349,14 +349,14 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   \since 4.3
 
   \brief The QXmlStreamReader class provides a fast parser for reading
-  well-formed XML 1.0 documents via a simple streaming API.
+  XML 1.0 documents via a simple streaming API.
 
 
   \ingroup xml-tools
 
   \ingroup qtserialization
 
-  QXmlStreamReader provides a simple streaming API to parse well-formed
+  QXmlStreamReader provides a simple streaming API to parse
   XML 1.0 documents. It is an alternative to first loading the complete
   XML into a DOM tree (see \l QDomDocument). QXmlStreamReader reads data
   either from a QIODevice (see setDevice()), or from a raw QByteArray
@@ -390,8 +390,8 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   \snippet code/src_corelib_xml_qxmlstream.cpp 0
 
 
-  QXmlStreamReader is a non-validating, forward-only XML 1.0 parser
-  for well-formed documents. It does \e not process external parsed
+  QXmlStreamReader is a \l{https://www.w3.org/TR/xml/#proc-types}{non-validating},
+  forward-only XML 1.0 parser. It does \e not process external parsed
   entities or perform DTD validation.
   As long as no error occurs, the application can rely on the
   following guarantees:
