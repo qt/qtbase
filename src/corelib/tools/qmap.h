@@ -463,10 +463,10 @@ public:
         if (!d.isShared())
             return size_type(d->m.erase(key));
 
-        MapData *newData = new MapData;
+        QtPrivate::QExplicitlySharedDataPointerV2<MapData> newData(new MapData);
         size_type result = newData->copyIfNotEquivalentTo(d->m, key).count;
 
-        d.reset(newData);
+        d.swap(newData);
 
         return result;
     }
@@ -1214,10 +1214,10 @@ public:
         if (!d.isShared())
             return size_type(d->m.erase(key));
 
-        MapData *newData = new MapData;
+        QtPrivate::QExplicitlySharedDataPointerV2<MapData> newData(new MapData);
         size_type result = newData->copyIfNotEquivalentTo(d->m, key).count;
 
-        d.reset(newData);
+        d.swap(newData);
 
         return result;
     }
