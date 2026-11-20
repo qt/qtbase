@@ -591,6 +591,13 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 QRectF rect = proxy()->subControlRect(CC_ComboBox, &opt, SC_ComboBoxArrow, widget);
                 if (isPressed) // move the arrow a little bit down
                     rect = rect.marginsRemoved(QMargins(0, 2, 0, 0));
+
+                const bool isEnabled = state.testFlag(QStyle::State_Enabled);
+                const bool isActive = combobox->activeSubControls.testFlag(SC_ComboBoxArrow);
+                if (combobox->editable && isEnabled && isActive)
+                    drawRoundedRect(painter, rect.adjusted(1, 1, -1, -2), Qt::NoPen,
+                                    winUI3Color(subtleHighlightColor));
+
                 painter->setFont(d->m_assetFont);
                 painter->setPen(controlTextColor(&opt, true));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
@@ -2715,6 +2722,8 @@ void QWindows11Style::polish(QWidget* widget)
     } else if (auto table = qobject_cast<QTableView *>(widget)) {
         // QTreeView & QListView are already set in the base windowsvista style
         table->viewport()->setAttribute(Qt::WA_Hover, true);
+    } else if (qobject_cast<QComboBox *>(widget)) {
+        widget->setAttribute(Qt::WA_Hover, true);
     }
 }
 
