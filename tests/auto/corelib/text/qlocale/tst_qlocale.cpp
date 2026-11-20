@@ -2627,6 +2627,12 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("RFC-1123")
         << "C" << QDateTime(QDate(2007, 11, 1), QTime(18, 8, 30))
         << "ddd, dd MMM yyyy hh:mm:ss 'GMT'" << "Thu, 01 Nov 2007 18:08:30 GMT" << false;
+    QTest::newRow("just-GMT") // QTBUG-124425
+        << "C" << QDateTime(QDate(1900, 1, 1), QTime(0, 0), QTimeZone::UTC)
+        << u"t"_s << u"GMT"_s << false;
+    QTest::newRow("just-UTC")
+        << "C" << QDateTime(QDate(1900, 1, 1), QTime(0, 0), QTimeZone::UTC)
+        << u"t"_s << u"UTC"_s << false;
 
     QTest::newRow("longFormat")
         << "en_US" << QDateTime(QDate(2009, 1, 5), QTime(11, 48, 32))
