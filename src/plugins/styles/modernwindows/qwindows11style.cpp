@@ -1394,10 +1394,13 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             }
 
             const auto textRole = widget ? widget->foregroundRole() : QPalette::WindowText;
-            if (tab->palette.isBrushSet(QPalette::Current, textRole))
+
+            if (tab->palette.isBrushSet(QPalette::Current, textRole)) {
                 painter->setPen(tab->palette.color(QPalette::Current, textRole));
-            else
-                painter->setPen(winUI3Color(isSelected ? textPrimary : textSecondary));
+            } else {
+                painter->setPen(winUI3Color(isEnabled ? (isSelected ? textPrimary : textSecondary)
+                                                      : textDisabled));
+            }
             proxy()->drawItemText(painter, tr, alignment, tab->palette, isEnabled, tab->text);
         }
         break;
