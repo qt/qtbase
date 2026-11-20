@@ -783,7 +783,7 @@ qt_feature("clock-gettime" PRIVATE
 )
 qt_feature("copy_file_range" PRIVATE
     LABEL "copy_file_range()"
-    CONDITION QT_FEATURE_process AND TEST_copy_file_range
+    CONDITION QT_FEATURE_process AND TEST_copy_file_range AND NOT OHOS
     AUTODETECT UNIX AND NOT DARWIN
 )
 qt_feature("doubleconversion" PRIVATE
