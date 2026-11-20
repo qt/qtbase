@@ -611,7 +611,6 @@ void tst_QMap::exceptionSafety_impl(std::initializer_list<std::pair<int, int>> i
 
     map.clear();
     // and nothing must have leaked:
-    QEXPECT_FAIL("", "QTBUG-152482", Abort);
     for (const auto &tracker : trackers)
         QVERIFY(tracker.expired());
 }
