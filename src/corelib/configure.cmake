@@ -793,7 +793,7 @@ qt_feature("clock-monotonic" PUBLIC
 qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
 qt_feature("copy_file_range" PRIVATE
     LABEL "copy_file_range()"
-    CONDITION QT_FEATURE_process AND TEST_copy_file_range
+    CONDITION QT_FEATURE_process AND TEST_copy_file_range AND NOT OHOS
     AUTODETECT UNIX AND NOT DARWIN
 )
 qt_feature("doubleconversion" PRIVATE
