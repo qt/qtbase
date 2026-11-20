@@ -85,6 +85,8 @@ private slots:
     void grayEmbeddedBitmapNoAntialias_data();
     void grayEmbeddedBitmapNoAntialias();
     void grayEmbeddedBitmapSubpixel();
+    void colorBitmapGlyphFormat_data();
+    void colorBitmapGlyphFormat();
 #endif
 
 private:
@@ -674,6 +676,50 @@ void tst_QFontEngine::grayEmbeddedBitmapSubpixel()
     QCOMPARE(fontEngine->type(), engineType);
 
     verifySolidBox(drawGlyph(font, QImage::Format_RGB32));
+}
+
+void tst_QFontEngine::colorBitmapGlyphFormat_data()
+{
+    QTest::addColumn<int>("pixelSize");
+
+    QTest::addRow("scaled") << 48;
+    QTest::addRow("unscaled") << 64;
+}
+
+void tst_QFontEngine::colorBitmapGlyphFormat()
+{
+    QFETCH_GLOBAL(const QFontEngine::Type, engineType);
+    QFETCH(const int, pixelSize);
+    if (engineType == QFontEngine::Win)
+        QSKIP("The GDI engine cannot load CBDT fonts");
+
+    // testfont_cbdt.ttf has two CBDT color glyphs in a 64 ppem strike, both a solid
+    // yellow square: 'A' is stored as an RGBA PNG and 'B' as a palette PNG.
+    const int fontId = QFontDatabase::addApplicationFont(QFINDTESTDATA("testfont_cbdt.ttf"));
+    QVERIFY(fontId >= 0);
+    const auto cleanup = qScopeGuard([&] { QFontDatabase::removeApplicationFont(fontId); });
+    const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    QVERIFY(!families.isEmpty());
+
+    QFont font(families.constFirst());
+    font.setStyleStrategy(QFont::NoFontMerging);
+    font.setPixelSize(pixelSize);
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
+    QVERIFY(fontEngine != nullptr);
+    QCOMPARE(fontEngine->type(), engineType);
+    if (!fontEngine->isColorFont())
+        QSKIP("This engine does not support color bitmap glyphs");
+
+    // Glyph caches expect color glyphs in premultiplied ARGB32, whatever the pixel
+    // format of the embedded image is.
+    for (const char ch : {'A', 'B'}) {
+        const glyph_t glyph = fontEngine->glyphIndex(ch);
+        QVERIFY(glyph != 0);
+        const QImage image = fontEngine->bitmapForGlyph(glyph, QFixedPoint(), QTransform(),
+                                                        Qt::black);
+        QVERIFY(!image.isNull());
+        QCOMPARE(image.format(), QImage::Format_ARGB32_Premultiplied);
+    }
 }
 
 #endif // !define(QFONTENGINE_BENCHMARK)
