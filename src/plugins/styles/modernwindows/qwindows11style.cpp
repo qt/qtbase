@@ -890,6 +890,23 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                            option->palette.color(QPalette::ButtonText));
         break;
     }
+    case PE_IndicatorTabClose: {
+        QBrush brush;
+        if (state & QStyle::State_MouseOver) {
+            QStyleOption tool = *option;
+            tool.state.setFlag(QStyle::State_AutoRaise, false);
+            brush = controlFillBrush(&tool, ControlType::ControlAlt);
+        }
+        drawRoundedRect(painter, option->rect, Qt::NoPen, brush);
+
+        const QIcon ico = proxy()->standardIcon(QStyle::SP_TabCloseButton, option, widget);
+        QIcon::Mode mode = QIcon::Disabled;
+        if (state.testFlags(State_Selected | State_Enabled))
+            mode = (state & State_Raised ? QIcon::Active : QIcon::Normal);
+        const QIcon::State iconState = state & State_Sunken ? QIcon::On : QIcon::Off;
+        ico.paint(painter, option->rect, Qt::AlignCenter, mode, iconState);
+        break;
+    }
     case PE_FrameFocusRect: {
         if (const QStyleOptionFocusRect *fropt = qstyleoption_cast<const QStyleOptionFocusRect *>(option)) {
             if (!(fropt->state & State_KeyboardFocusChange))
@@ -1328,7 +1345,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             if (QCommonStylePrivate::rtl(option))
                 std::swap(leftMargin, rightMargin);
 
-            QRectF tabRect = tab->rect.marginsRemoved(QMargins(leftMargin, 1, rightMargin, -3));
+            QRectF tabRect = tab->rect.marginsRemoved(QMargins(leftMargin, 0, rightMargin, -3));
             painter->setPen(highContrastTheme ? tab->palette.buttonText().color() : winUI3Color(frameColorLight));
             painter->setBrush(tab->palette.base());
             if (isSelected) {
