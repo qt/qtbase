@@ -500,6 +500,9 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         return qt_scale_image_argb32_on_argb32(destPixels, dbpl, srcPixels, sbpl, srch, targetRect, sourceRect, clip, const_alpha);
     }
 
+    if (targetRect.width() == 0 || targetRect.height() == 0)
+        return;
+
     const qreal sx = sourceRect.width() / (qreal)targetRect.width();
     const qreal sy = sourceRect.height() / (qreal)targetRect.height();
 
