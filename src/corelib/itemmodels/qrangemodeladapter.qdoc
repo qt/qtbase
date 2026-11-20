@@ -301,6 +301,16 @@
 
     Synonym for \l{QRangeModelAdapter::}{RowIterator}, provided for
     STL compatibility.
+
+//! [random-access-iterator]
+    The iterators of the adapter provide random-access semantics, even if the
+    iterators of \c Range don't, as is the case for \c{std::list}. They refer
+    to rows by row number, so moving an iterator with operators such as
+    \c{+}, \c{+=}, or \c{-}, and computing the distance between two
+    iterators, take constant time. If \c Range doesn't provide random access,
+    then accessing the row, by dereferencing the iterator or with
+    \c{operator[]()}, takes linear time.
+//! [random-access-iterator]
 */
 
 /*!
@@ -309,6 +319,8 @@
 
     Synonym for \l{QRangeModelAdapter::}{ConstRowIterator}, provided for
     STL compatibility.
+
+    \include qrangemodeladapter.qdoc random-access-iterator
 */
 
 /*!

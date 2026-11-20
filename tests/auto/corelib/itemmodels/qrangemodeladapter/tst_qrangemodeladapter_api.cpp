@@ -123,6 +123,15 @@ void tst_QRangeModelAdapter::typedefs_API()
         using Adapter = QRangeModelAdapter<const std::vector<int>>;
         static_assert(std::is_same_v<Adapter::value_type, int>);
     }
+    { // the iterators are random access, independent of the range's iterators
+        using Adapter = QRangeModelAdapter<std::list<int>>;
+        static_assert(std::is_same_v<Adapter::value_type, int>);
+        static_assert(std::is_same_v<std::iterator_traits<Adapter::iterator>::iterator_category,
+                                     std::random_access_iterator_tag>);
+        static_assert(std::is_same_v<
+                        std::iterator_traits<Adapter::const_iterator>::iterator_category,
+                        std::random_access_iterator_tag>);
+    }
     { // table
         using Row = std::vector<QString>;
         using Adapter = QRangeModelAdapter<QList<Row>>;
