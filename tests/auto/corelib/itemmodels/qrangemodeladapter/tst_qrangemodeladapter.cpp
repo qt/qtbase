@@ -870,6 +870,64 @@ void tst_QRangeModelAdapter::reverseIterate()
     }
 }
 
+void tst_QRangeModelAdapter::referenceComparison()
+{
+    { // list: data references are equal if they refer to equal items
+        std::vector<int> data = {1, 2, 1};
+        QRangeModelAdapter adapter(std::ref(data));
+        QVERIFY(adapter[0] == adapter[0]);
+        QVERIFY(adapter[0] == adapter[2]);
+        QVERIFY(adapter[0] != adapter[1]);
+        QVERIFY(adapter[0] == 1);
+        QVERIFY(1 == adapter[0]);
+        QVERIFY(adapter[0] != 2);
+    }
+
+    { // table: row references are equal if they refer to equal rows
+        using Row = std::vector<int>;
+        std::vector<Row> data = {{1, 10}, {2, 20}, {1, 10}, {1, 10}, {3, 30}};
+        QRangeModelAdapter adapter(std::ref(data));
+        const auto &constAdapter = std::as_const(adapter);
+
+        QVERIFY(adapter.at(0) == adapter.at(0));
+        QVERIFY(adapter.at(0) == adapter.at(2));
+        QVERIFY(adapter.at(0) != adapter.at(1));
+        const auto constRow = [&constAdapter](int row) { return *(constAdapter.cbegin() + row); };
+        QVERIFY(constRow(0) == constRow(2));
+        QVERIFY(constRow(0) != constRow(1));
+        QVERIFY(adapter.at(0) == (Row{1, 10}));
+        QVERIFY((Row{1, 10}) == adapter.at(0));
+        QVERIFY(adapter.at(0) != (Row{2, 20}));
+        QVERIFY(constRow(0) == (Row{1, 10}));
+        QVERIFY(constRow(0) != (Row{2, 20}));
+
+        // algorithms that compare rows with each other compare the data
+        QCOMPARE(std::count(adapter.cbegin(), adapter.cend(), *adapter.cbegin()), 3);
+        QCOMPARE(std::adjacent_find(adapter.cbegin(), adapter.cend()) - adapter.cbegin(), 2);
+
+        // rows of two adapters of the same type
+        std::vector<Row> otherData = data;
+        QRangeModelAdapter other(std::ref(otherData));
+        static_assert(std::is_same_v<decltype(other), decltype(adapter)>);
+        QVERIFY(std::equal(adapter.cbegin(), adapter.cend(), other.cbegin(), other.cend()));
+        QVERIFY(adapter.at(1) == other.at(1));
+        otherData.back() = Row{4, 40};
+        QVERIFY(adapter.at(4) != other.at(4));
+        QVERIFY(!std::equal(adapter.cbegin(), adapter.cend(), other.cbegin(), other.cend()));
+    }
+
+    { // tree: tree_row doesn't provide operator==, so references are only
+      // equal if they refer to the same row
+        static_assert(!QTypeTraits::has_operator_equal_v<tree_row>);
+        auto tree = createValueTree();
+        QRangeModelAdapter adapter(std::ref(tree));
+        QVERIFY(adapter.at(0) == adapter.at(0));
+        QVERIFY(adapter.at(0) != adapter.at(1));
+        QVERIFY(*(adapter.cbegin() + 1) == *(adapter.cbegin() + 1));
+        QVERIFY(*(adapter.cbegin() + 1) != *(adapter.cbegin() + 2));
+    }
+}
+
 void tst_QRangeModelAdapter::insertRow()
 {
     {

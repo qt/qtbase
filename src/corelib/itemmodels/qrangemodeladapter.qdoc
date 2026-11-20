@@ -1345,6 +1345,9 @@
     \preliminary
     \ingroup model-view
     \brief DataReference is a reference wrapper around an item in a QRangeModel.
+    \compares equality
+    \compareswith equality value_type
+    \endcompareswith
 
     Accessing an item in the model using the non-const overloads of at(),
     subscript \l{QRangeModelAdapter::operator[]()}{operator[]}, or
@@ -1374,6 +1377,10 @@
     \code
     adapter[0] = adapter[1]; // items at row 0 and row 1 now have the same value
     \endcode
+
+    Two DataReference objects are equal if they refer to the same item, or if
+    the values of the items they refer to are equal. A DataReference is equal
+    to a \c value_type if the value of the item it refers to is equal to it.
 
     \sa RowReference, ConstRowReference
 */
@@ -1540,11 +1547,25 @@
     \preliminary
     \ingroup model-view
     \brief RowReference is a reference wrapper around a row in a QRangeModel.
+    \compares equality
+    \compareswith equality row_type
+    \endcompareswith
 
     For ranges that are tables or trees, accessing a row of a QRangeModelAdapter
     using the non-const overloads of \l{QRangeModelAdapter::}{at()} or subscript
     \l{QRangeModelAdapter::operator[]()}{operator[]}, or by dereferencing a
     RowIterator, returns a RowReference for the specified row.
+
+//! [row-reference-comparison]
+    Two row references are equal if they refer to the same row, or if the rows
+    they refer to are equal. If \c row_type doesn't provide an equality
+    operator, then two row references are only equal if they refer to the
+    same row. A row reference is equal to a \c row_type if the row it refers
+    to is equal to it.
+
+    Row references are not ordered. To compare the positions of rows, compare
+    their iterators.
+//! [row-reference-comparison]
 
     \sa ConstRowReference, DataReference
 */
@@ -1621,11 +1642,16 @@
     \preliminary
     \ingroup model-view
     \brief ConstRowReference is a reference wrapper around a const row in a QRangeModel.
+    \compares equality
+    \compareswith equality row_type
+    \endcompareswith
 
     For ranges that are tables or trees, accessing a row of a QRangeModelAdapter
     using the const overloads of \l{QRangeModelAdapter::}{at()} or subscript
     \l{QRangeModelAdapter::operator[]()}{operator[]}, or by dereferencing a
     ConstRowIterator, returns a ConstRowReference for the specified row.
+
+    \include qrangemodeladapter.qdoc row-reference-comparison
 
     \sa RowReference, DataReference
 */

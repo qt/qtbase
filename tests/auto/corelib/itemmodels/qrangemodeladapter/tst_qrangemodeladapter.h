@@ -57,6 +57,7 @@ private slots:
     void tableIterate();
     void tableAccess();
     void tableWriteAccess();
+    void referenceComparison();
 
     void frontBack();
     void reverseIterate();

@@ -8,6 +8,7 @@
 #include <QtCore/qrangemodeladapter_impl.h>
 
 #include <QtCore/q26numeric.h>
+#include <QtCore/qttypetraits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -591,18 +592,23 @@ public:
         Adapter *m_adapter;
 
     private:
-        friend bool comparesEqual(const Reference &lhs, const Reference &rhs)
+        // A member, as MSVC doesn't give the hidden friends access to the
+        // private row_type of the enclosing adapter.
+        static bool rowsEqual(const Reference &lhs, const Reference &rhs)
         {
-            Q_ASSERT(lhs.m_adapter == rhs.m_adapter);
-            return lhs.m_index == rhs.m_index;
-        }
-        friend Qt::strong_ordering compareThreeWay(const Reference &lhs, const Reference &rhs)
-        {
-            Q_ASSERT(lhs.m_adapter == rhs.m_adapter);
-            return qCompareThreeWay(lhs.m_index, rhs.m_index);
+            if constexpr (QTypeTraits::has_operator_equal_v<std::remove_cv_t<row_type>>)
+                return lhs.get() == rhs.get();
+            else
+                return false;
         }
 
-        Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(Reference)
+        // reference semantics: two references are equal if they refer to the
+        // same row, or if the rows they refer to are equal
+        friend bool comparesEqual(const Reference &lhs, const Reference &rhs)
+        {
+            return lhs.m_index == rhs.m_index || rowsEqual(lhs, rhs);
+        }
+        Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(Reference)
 
         friend bool comparesEqual(const Reference &lhs, const row_type &rhs)
         {
