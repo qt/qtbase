@@ -153,7 +153,7 @@ inline void drawPixelARGB32(QCosmeticStroker *stroker, int x, int y, int coverag
     if (x < cl.x() || x > cl.right() || y < cl.y() || y > cl.bottom())
         return;
 
-    int offset = x + stroker->ppl*y;
+    const qsizetype offset = x + qsizetype(stroker->ppl) * y;
     uint c = BYTE_MUL(stroker->color, coverage * stroker->opacity >> 8);
     stroker->pixels[offset] = sourceOver(stroker->pixels[offset], c);
 }
@@ -164,7 +164,7 @@ inline void drawPixelARGB32Opaque(QCosmeticStroker *stroker, int x, int y, int)
     if (x < cl.x() || x > cl.right() || y < cl.y() || y > cl.bottom())
         return;
 
-    int offset = x + stroker->ppl*y;
+    const qsizetype offset = x + qsizetype(stroker->ppl) * y;
     stroker->pixels[offset] = sourceOver(stroker->pixels[offset], stroker->color);
 }
 
