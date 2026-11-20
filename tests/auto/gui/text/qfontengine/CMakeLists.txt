@@ -40,6 +40,9 @@ set_source_files_properties("../../../shared/resources/testfont_ebdt8bit.ttf"
 set_source_files_properties("../../../shared/resources/testfont_ebdt8bit_bitmaponly.ttf"
     PROPERTIES QT_RESOURCE_ALIAS "testfont_ebdt8bit_bitmaponly.ttf"
 )
+set_source_files_properties("../../../shared/resources/testfont_cbdt.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_cbdt.ttf"
+)
 set(testfonts_resource_files
     "../../../shared/resources/test.ttf"
     "../../../shared/resources/testfont.ttf"
@@ -50,6 +53,7 @@ set(testfonts_resource_files
     "../../../shared/resources/testfont_colrv1_deep.ttf"
     "../../../shared/resources/testfont_ebdt8bit.ttf"
     "../../../shared/resources/testfont_ebdt8bit_bitmaponly.ttf"
+    "../../../shared/resources/testfont_cbdt.ttf"
 )
 
 qt_internal_add_test(tst_qfontengine

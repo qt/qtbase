@@ -1552,6 +1552,7 @@ QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRu
                             ret = QImage::fromData(reinterpret_cast<const uchar *>(data.imageData),
                                                    data.imageDataSize,
                                                    format);
+                            ret.convertTo(QImage::Format_ARGB32_Premultiplied);
 
                             QTransform matrix(transform.m11, transform.m12,
                                               transform.m21, transform.m22,
