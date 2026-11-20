@@ -1884,8 +1884,10 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     int vfactor = 1;
     int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
 
-    if (transform || obliquen || (format != Format_Mono && !isScalableBitmap()))
+    if (FT_IS_SCALABLE(freetype->face)
+        && (transform || obliquen || (format != Format_Mono && !isScalableBitmap()))) {
         load_flags |= FT_LOAD_NO_BITMAP;
+    }
 
 #if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20701
     // Only the advance/metrics are needed here, not the rendered bitmap
