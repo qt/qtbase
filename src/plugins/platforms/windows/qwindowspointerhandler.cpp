@@ -22,6 +22,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qqueue.h>
+#include <QtCore/qset.h>
 
 #include <algorithm>
 
