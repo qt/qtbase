@@ -9,6 +9,12 @@
 
 #include <private/qcomparisontesthelper_p.h>
 
+#include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/qvarlengtharray.h>
+
+#include <memory>
+#include <QtCore/q23utility.h>
+
 using namespace Qt::StringLiterals;
 
 QT_WARNING_DISABLE_DEPRECATED
@@ -22,6 +28,44 @@ private:
     { return lhs.val == rhs.val; }
     friend bool operator<(LessOnly lhs, LessOnly rhs) noexcept
     { return lhs.val < rhs.val; }
+};
+
+enum class Sharing : bool { Unshared, Shared };
+
+struct ThrowingValue
+{
+    static inline uint throwOnCopyAssignmentCountDown = 0;      // 0 means, essentially, "never"
+    static inline uint throwOnCopyConstructionCountDown = 0;
+    static inline uint throwOnDefaultConstructionCountDown = 0;
+
+    ThrowingValue() : v{}
+    {
+        if (!--throwOnDefaultConstructionCountDown)
+            throw 1;
+    }
+
+    Q_IMPLICIT ThrowingValue(int n)
+        : v{std::make_shared<int>(n)}
+    {
+    }
+
+    ThrowingValue(const ThrowingValue &other) : v{other.v}
+    {
+        if (!--throwOnCopyConstructionCountDown)
+            throw 42;
+    }
+    ThrowingValue &operator=(const ThrowingValue &other)
+    {
+        v = other.v;
+        if (!--throwOnCopyAssignmentCountDown)
+            throw -42;
+        return *this;
+    }
+    // moves are noexept:
+    ThrowingValue(ThrowingValue&&) = default;
+    ThrowingValue &operator=(ThrowingValue&&) = default;
+
+    std::shared_ptr<int> v; // can be tracked using weak_ptr
 };
 
 class tst_QMap : public QObject
@@ -103,6 +147,15 @@ private slots:
     void deprecatedIteratorApis();
     void deprecatedInsert();
 #endif // QT_DEPRECATED_SINCE(6, 0)
+
+    void exceptionSafetyRemoveKey();
+
+private:
+    template <template <typename K, typename V> class Map> // QMap or QMultiMap
+    void exceptionSafety_impl(std::initializer_list<std::pair<int, int>> init,
+                              Sharing sharing,
+                              qxp::function_ref<void(Map<int, ThrowingValue>&)> op,
+                              uint copyCtor = 0, uint copyAssign = 0, uint defaultCtor = 0);
 };
 
 struct IdentityTracker {
@@ -499,6 +552,89 @@ void tst_QMap::firstLast()
 
     map.take(map.lastKey());
     QCOMPARE(map.lastKey(), map.lastKey());
+}
+
+struct by1st {
+    template <typename LHS, typename RHS>
+    bool operator()(const LHS &lhs, const RHS &rhs) const
+    { return lhs.first < rhs.first; }
+};
+
+template<template<typename K, typename V> class Map>
+void tst_QMap::exceptionSafety_impl(std::initializer_list<std::pair<int, int>> init,
+                                    Sharing sharing,
+                                    qxp::function_ref<void (Map<int, ThrowingValue> &)> op,
+                                    uint copyCtor, uint copyAssign, uint defaultCtor)
+{
+    QVERIFY(std::is_sorted(init.begin(), init.end(), by1st{}));
+
+    // NB: init holds plain ints, not ThrowingValues, so that it doesn't
+    // keep the tracked shared_ptrs alive and mask a leak
+    Map<int, ThrowingValue> map;
+    for (const auto &e : init)
+        map.insert(e.first, e.second);
+    std::optional<Map<int, ThrowingValue>> copy = std::nullopt;
+
+    QVarLengthArray<std::weak_ptr<int>, 8> trackers;
+    trackers.reserve(map.size());
+    for (const auto &e : std::as_const(map)) {
+        QCOMPARE_NE(e.v, nullptr);
+        trackers.emplace_back(e.v);
+    }
+
+    switch (sharing) {
+    case Sharing::Shared:
+        copy.emplace(map);
+        break;
+    case Sharing::Unshared:
+        // nothing to do
+        break;
+    }
+
+    const QScopedValueRollback guard1(ThrowingValue::throwOnCopyConstructionCountDown,    copyCtor);
+    const QScopedValueRollback guard2(ThrowingValue::throwOnCopyAssignmentCountDown,      copyAssign);
+    const QScopedValueRollback guard3(ThrowingValue::throwOnDefaultConstructionCountDown, defaultCtor);
+
+    QVERIFY_THROWS_EXCEPTION(int, op(map));
+    copy.reset();
+
+    // nothing must have changed:
+    QCOMPARE_EQ(size_t(map.size()), init.size());
+    {
+        auto jt = init.begin();
+        for (auto it = map.cbegin(), end = map.cend(); it != end; ++it, ++jt) {
+            QCOMPARE_NE(it.value().v, nullptr);
+            QCOMPARE(it.key(), jt->first);
+            QCOMPARE(*it.value().v, jt->second);
+        }
+    }
+
+    map.clear();
+    // and nothing must have leaked:
+    QEXPECT_FAIL("", "QTBUG-152482", Abort);
+    for (const auto &tracker : trackers)
+        QVERIFY(tracker.expired());
+}
+
+void tst_QMap::exceptionSafetyRemoveKey()
+{
+    auto removeOne = [](auto &map) { map.remove(1); };
+    exceptionSafety_impl<QMap>({
+                                   {-1, -1},
+                                   {0, 0},
+                                   {1, 1},
+                               },
+                               Sharing::Shared,
+                               removeOne,
+                               2U);
+    exceptionSafety_impl<QMultiMap>({
+                                        {-1, -1},
+                                        {0, 0},
+                                        {1, 1},
+                                    },
+                                    Sharing::Shared,
+                                    removeOne,
+                                    2U);
 }
 
 void tst_QMap::key()
