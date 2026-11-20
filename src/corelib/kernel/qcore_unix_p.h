@@ -205,10 +205,16 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
 #ifdef QT_THREADSAFE_CLOEXEC
-    // use pipe2
-    flags |= O_CLOEXEC;
-    return ::pipe2(pipefd, flags); // pipe2 is documented not to return EINTR
-#else
+# if defined(Q_OS_DARWIN)
+    if (__builtin_available(macOS 27, iOS 27, tvOS 27, watchOS 27, visionOS 27, *))
+# endif
+    {
+        // use pipe2
+        flags |= O_CLOEXEC;
+        return ::pipe2(pipefd, flags); // pipe2 is documented not to return EINTR
+    }
+#endif
+
     int ret = ::pipe(pipefd);
     if (ret == -1)
         return -1;
@@ -223,7 +229,6 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
     }
 
     return 0;
-#endif
 }
 
 // don't call dup or fcntl(F_DUPFD)
@@ -255,9 +260,15 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     int ret;
 #if QT_CONFIG(dup3)
     // use dup3
-    QT_EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
-    return ret;
-#else
+# if defined(Q_OS_DARWIN)
+    if (__builtin_available(macOS 27, iOS 27, tvOS 27, watchOS 27, visionOS 27, *))
+# endif
+    {
+        QT_EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
+        return ret;
+    }
+#endif
+
     QT_EINTR_LOOP(ret, ::dup2(oldfd, newfd));
     if (ret == -1)
         return -1;
@@ -265,7 +276,6 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     if (flags)
         ::fcntl(newfd, F_SETFD, flags);
     return 0;
-#endif
 }
 
 static inline qint64 qt_safe_read(int fd, void *data, qint64 maxlen)
