@@ -55,6 +55,7 @@
 #undef FontChange
 #undef Expose
 #undef Unsorted
+#undef Always
 #endif
 
 #include <stdint.h>
