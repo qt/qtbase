@@ -401,7 +401,6 @@ public:
         using pointer = QRangeModelDetails::data_pointer_t<value_type>;
 
         using Base::Base;
-        using Base::operator=;
         ~ConstColumnIterator() = default;
 
         pointer operator->() const
@@ -431,7 +430,6 @@ public:
         using pointer = reference;
 
         using Base::Base;
-        using Base::operator=;
         ~ColumnIterator() = default;
 
         operator ConstColumnIterator() const
