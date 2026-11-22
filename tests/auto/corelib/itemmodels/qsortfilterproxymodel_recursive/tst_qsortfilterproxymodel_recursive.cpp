@@ -722,9 +722,53 @@ private Q_SLOTS:
         QCOMPARE(treeAsString(proxy), noParentProxyStr);
     }
 
+    void testMapFromSourceOnHiddenRow()
+    {
+        // Given a source model and a filter proxy model which hides a subtree
+        QStandardItemModel sourceModel;
+        const QString sourceStr = QStringLiteral("[KDAB[INBOX* shared[hidden]]]");
+        fillModel(sourceModel, sourceStr);
+        QCOMPARE(treeAsString(sourceModel), sourceStr);
+
+        TestModel proxyModel(&sourceModel);
+        QCOMPARE(treeAsString(proxyModel), QStringLiteral("[KDAB[INBOX*]]"));
+
+        // STEP 1: call mapFromSource on a hidden row with a hidden parent
+        // This used to create the mapping for the parent, which would then
+        // become out of date after insertion below.
+        QStandardItem *shared = sourceModel.item(0)->child(1);
+        QCOMPARE(shared->text(), "shared");
+        QStandardItem *hiddenChild = shared->child(0);
+        QCOMPARE(hiddenChild->text(), "hidden");
+        const QModelIndex idx = proxyModel.mapFromSource(hiddenChild->index());
+        QVERIFY(!idx.isValid()); // invalid, but the call used to create the mapping, erroneously
+
+        // STEP 2: inserting a visible child, which makes the parent appear too
+        const auto insertVisibleChild = [&]() {
+            QStandardItem *visibleChild = new QStandardItem(QStringLiteral("visible"));
+            visibleChild->setData(true, s_filterRole);
+            shared->insertRow(0, visibleChild);
+        };
+        insertVisibleChild();
+        QCOMPARE(treeAsString(sourceModel), QStringLiteral("[KDAB[INBOX* shared[visible* hidden]]]"));
+
+        // THEN
+        QCOMPARE(treeAsString(proxyModel), QStringLiteral("[KDAB[INBOX* shared[visible*]]]"));
+
+        // For good measure, test removing and re-inserting the visible child again
+        shared->removeRow(0);
+        QCOMPARE(treeAsString(sourceModel), QStringLiteral("[KDAB[INBOX* shared[hidden]]]"));
+        QCOMPARE(treeAsString(proxyModel), QStringLiteral("[KDAB[INBOX*]]"));
+
+        insertVisibleChild();
+        QCOMPARE(treeAsString(sourceModel), QStringLiteral("[KDAB[INBOX* shared[visible* hidden]]]"));
+        QCOMPARE(treeAsString(proxyModel), QStringLiteral("[KDAB[INBOX* shared[visible*]]]"));
+    }
+
 private:
     QStandardItem *itemByText(const QStandardItemModel& model, const QString &text) const {
-        QModelIndexList list = model.match(model.index(0, 0), Qt::DisplayRole, text, 1, Qt::MatchRecursive);
+        QModelIndexList list = model.match(model.index(0, 0), Qt::DisplayRole, text, 1,
+                                           Qt::MatchRecursive);
         return list.isEmpty() ? 0 : model.itemFromIndex(list.first());
     }
 };

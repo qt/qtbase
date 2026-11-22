@@ -427,8 +427,9 @@ QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const
 void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
 {
     // Fall back to a size that looks good on the highest resolution screen available
-    auto fallbackSize = NSApp.dockTile.size.width * qGuiApp->devicePixelRatio();
-    NSApp.applicationIconImage = [NSImage imageFromQIcon:icon withSize:fallbackSize];
+    // for icon engines that don't have an intrinsic size (like SVG).
+    auto fallbackSize = QSizeF::fromCGSize(NSApp.dockTile.size) * qGuiApp->devicePixelRatio();
+    NSApp.applicationIconImage = [NSImage imageFromQIcon:icon withSize:fallbackSize.toSize()];
 }
 
 void QCocoaIntegration::setApplicationBadge(qint64 number)

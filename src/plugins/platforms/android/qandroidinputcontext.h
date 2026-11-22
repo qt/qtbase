@@ -77,6 +77,7 @@ public:
     bool isComposing() const;
     void clear();
     void setFocusObject(QObject *object) override;
+    QObject *focusObject();
     void sendShortcut(const QKeySequence &);
 
     //---------------//

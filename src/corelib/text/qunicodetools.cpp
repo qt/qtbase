@@ -3,6 +3,7 @@
 
 #include "qunicodetools_p.h"
 
+#include <QtCore/private/qstringiterator_p.h>
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
 #if QT_CONFIG(library)
@@ -121,16 +122,10 @@ static void getGraphemeBreaks(const char16_t *string, qsizetype len, QCharAttrib
 {
     QUnicodeTables::GraphemeBreakClass lcls = QUnicodeTables::GraphemeBreak_LF; // to meet GB1
     GB::State state = GB::State::Normal;
-    for (qsizetype i = 0; i != len; ++i) {
-        qsizetype pos = i;
-        char32_t ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const qsizetype pos = it.index();
+        const char32_t ucs4 = it.nextOrRawCodeUnit();
 
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::GraphemeBreakClass cls = (QUnicodeTables::GraphemeBreakClass) prop->graphemeBreakClass;
@@ -246,18 +241,12 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
     QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
     auto real_cls = cls; // Unaffected by WB4
 
-    for (qsizetype i = 0; i != len; ++i) {
-        qsizetype pos = i;
-        char32_t ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const qsizetype pos = it.index();
+        const char32_t ucs4 = it.nextOrRawCodeUnit();
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
+        const auto prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::WordBreakClass ncls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
         if (qt_initcharattributes_default_algorithm_only) {
             // as of Unicode 5.1, some punctuation marks were mapped to MidLetter and MidNumLet
@@ -298,17 +287,10 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
             break;
         case WB::Lookup:
         case WB::LookupW:
-            for (qsizetype lookahead = i + 1; lookahead < len; ++lookahead) {
-                ucs4 = string[lookahead];
-                if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
-                    ushort low = string[lookahead + 1];
-                    if (QChar::isLowSurrogate(low)) {
-                        ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                        ++lookahead;
-                    }
-                }
+            for (auto lookahead = it; lookahead.hasNext(); /**/) {
+                const char32_t ucs4 = lookahead.nextOrRawCodeUnit();
 
-                prop = QUnicodeTables::properties(ucs4);
+                const auto prop = QUnicodeTables::properties(ucs4);
                 QUnicodeTables::WordBreakClass tcls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
 
                 if (Q_UNLIKELY(tcls == QUnicodeTables::WordBreak_Extend || tcls == QUnicodeTables::WordBreak_ZWJ || tcls == QUnicodeTables::WordBreak_Format)) {
@@ -318,7 +300,7 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
                 if (Q_LIKELY(tcls == cls || (action == WB::LookupW && (tcls == QUnicodeTables::WordBreak_HebrewLetter
                                                                        || tcls == QUnicodeTables::WordBreak_ALetter)))) {
-                    i = lookahead;
+                    it = lookahead;
                     ncls = tcls;
                     action = WB::NoBreak;
                 }
@@ -405,35 +387,23 @@ static const uchar breakTable[BAfter + 1][QUnicodeTables::NumSentenceBreakClasse
 static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
     uchar state = SB::BAfter; // to meet SB1
-    for (qsizetype i = 0; i != len; ++i) {
-        qsizetype pos = i;
-        char32_t ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const qsizetype pos = it.index();
+        const char32_t ucs4 = it.nextOrRawCodeUnit();
+
+        const auto prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::SentenceBreakClass ncls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
 
         Q_ASSERT(state <= SB::BAfter);
         state = SB::breakTable[state][ncls];
         if (Q_UNLIKELY(state == SB::Lookup)) { // SB8
             state = SB::Break;
-            for (qsizetype lookahead = i + 1; lookahead < len; ++lookahead) {
-                ucs4 = string[lookahead];
-                if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
-                    ushort low = string[lookahead + 1];
-                    if (QChar::isLowSurrogate(low)) {
-                        ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                        ++lookahead;
-                    }
-                }
+            for (auto lookahead = it; lookahead.hasNext(); /**/) {
+                const char32_t ucs4 = lookahead.nextOrRawCodeUnit();
 
-                prop = QUnicodeTables::properties(ucs4);
+                const auto prop = QUnicodeTables::properties(ucs4);
                 QUnicodeTables::SentenceBreakClass tcls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
                 switch (tcls) {
                 case QUnicodeTables::SentenceBreak_Any:
@@ -444,7 +414,7 @@ static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttrib
                 case QUnicodeTables::SentenceBreak_Close:
                     continue;
                 case QUnicodeTables::SentenceBreak_Lower:
-                    i = lookahead;
+                    it = lookahead;
                     state = SB::Initial;
                     break;
                 default:
@@ -780,8 +750,7 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                         if (QChar::isLowSurrogate(low))
                             c = QChar::surrogateToUcs4(c, low);
                     }
-                    nncls = QUnicodeTables::LineBreakClass(
-                            QUnicodeTables::properties(c)->lineBreakClass);
+                    nncls = QUnicodeTables::lineBreakClass(c);
                 }
 
                 constexpr QUnicodeTables::LineBreakClass lb15b[] = {
@@ -877,8 +846,7 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                         if (QChar::isLowSurrogate(low))
                             ch = QChar::surrogateToUcs4(ch, low);
                     }
-                    if (QUnicodeTables::properties(ch)->lineBreakClass
-                        == QUnicodeTables::LineBreak_NU) {
+                    if (QUnicodeTables::lineBreakClass(ch) == QUnicodeTables::LineBreak_NU) {
                         attributes[pos].lineBreak = true;
                         goto next;
                     }
@@ -1120,18 +1088,11 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
 static void getWhiteSpaces(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
-    for (qsizetype i = 0; i != len; ++i) {
-        uint ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
-
-        if (Q_UNLIKELY(QChar::isSpace(ucs4)))
-            attributes[i].whiteSpace = true;
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const auto pos = it.index();
+        if (Q_UNLIKELY(QChar::isSpace(it.nextOrRawCodeUnit())))
+            attributes[pos].whiteSpace = true;
     }
 }
 
@@ -2816,10 +2777,10 @@ Q_CORE_EXPORT void initCharAttributes(QStringView string,
 Q_CORE_EXPORT void initScripts(QStringView string, ScriptItemArray *scripts)
 {
     qsizetype sor = 0;
-    qsizetype eor = 0;
     QChar::Script script = QChar::Script_Common;
 
-    for (qsizetype i = 0; i < string.size(); ++i, eor = i) {
+    for (qsizetype i = 0; i < string.size(); ++i) {
+        const auto eor = i;
         char32_t ucs4 = string[i].unicode();
         if (QChar::isHighSurrogate(ucs4) && i + 1 < string.size()) {
             ushort low = string[i + 1].unicode();
@@ -2860,7 +2821,6 @@ Q_CORE_EXPORT void initScripts(QStringView string, ScriptItemArray *scripts)
     }
 
     Q_ASSERT(script >= QChar::Script_Common);
-    Q_ASSERT(eor == string.size());
     scripts->append(ScriptItem{sor, script});
 }
 

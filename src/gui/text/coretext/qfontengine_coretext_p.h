@@ -37,6 +37,7 @@ public:
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
     ~QCoreTextFontEngine();
 
+    int glyphCount() const override;
     glyph_t glyphIndex(uint ucs4) const override;
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
     void recalcAdvances(QGlyphLayout *, ShaperFlags) const override;

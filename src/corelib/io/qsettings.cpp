@@ -2134,9 +2134,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \codeline
     \snippet settings/settings.cpp 21
 
-    See the \l{mainwindows/application}{Application} example for a
-    self-contained example that uses QSettings.
-
     \section1 Accessing Settings from Multiple Threads or Processes Simultaneously
 
     QSettings is \l{reentrant}. This means that you can use

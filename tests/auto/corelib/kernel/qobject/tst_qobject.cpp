@@ -3092,7 +3092,7 @@ class EventSpy : public QObject
     Q_OBJECT
 
 public:
-    typedef QList<QPair<QObject *, QEvent::Type> > EventList;
+    using EventList = QList<std::pair<QObject *, QEvent::Type>>;
 
     EventSpy(QObject *parent = nullptr)
         : QObject(parent)
@@ -3111,7 +3111,7 @@ public:
 
     bool eventFilter(QObject *object, QEvent *event) override
     {
-        events.append(qMakePair(object, event->type()));
+        events.append({object, event->type()});
         thisCounter = ++s_eventSpyCounter;
         return false;
     }
@@ -3135,9 +3135,7 @@ void tst_QObject::childEvents()
 
         QCoreApplication::processEvents();
 
-        expected =
-            EventSpy::EventList()
-            << qMakePair(&object, QEvent::Type(QEvent::User + 1));
+        expected = {{&object, QEvent::Type(QEvent::User + 1)}};
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -3155,19 +3153,15 @@ void tst_QObject::childEvents()
 
         QCoreApplication::postEvent(&object, new QEvent(QEvent::Type(QEvent::User + 2)));
 
-        expected =
-            EventSpy::EventList()
-            << qMakePair(&object, QEvent::ChildAdded)
-            << qMakePair(&object, QEvent::ChildAdded);
+        expected = { {&object, QEvent::ChildAdded},
+                     {&object, QEvent::ChildAdded} };
         QCOMPARE(spy.eventList(), expected);
         spy.clear();
 
         QCoreApplication::processEvents();
 
-        expected =
-            EventSpy::EventList()
-            << qMakePair(&object, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&object, QEvent::Type(QEvent::User + 2));
+        expected = { {&object, QEvent::Type(QEvent::User + 1)},
+                     {&object, QEvent::Type(QEvent::User + 2)} };
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -3187,20 +3181,16 @@ void tst_QObject::childEvents()
 
         QCoreApplication::postEvent(&object, new QEvent(QEvent::Type(QEvent::User + 2)));
 
-        expected =
-            EventSpy::EventList()
-            << qMakePair(&object, QEvent::ChildAdded)
-            << qMakePair(&object, QEvent::ChildAdded)
-            << qMakePair(&object, QEvent::ChildRemoved);
+        expected = { {&object, QEvent::ChildAdded},
+                     {&object, QEvent::ChildAdded},
+                     {&object, QEvent::ChildRemoved} };
         QCOMPARE(spy.eventList(), expected);
         spy.clear();
 
         QCoreApplication::processEvents();
 
-        expected =
-            EventSpy::EventList()
-            << qMakePair(&object, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&object, QEvent::Type(QEvent::User + 2));
+        expected ={ {&object, QEvent::Type(QEvent::User + 1)},
+                    {&object, QEvent::Type(QEvent::User + 2)} };
         QCOMPARE(spy.eventList(), expected);
     }
 }
@@ -3216,9 +3206,7 @@ void tst_QObject::installEventFilter()
 
     // nothing special, should just work
     QCoreApplication::sendEvent(&object, &event);
-    expected =
-        EventSpy::EventList()
-        << qMakePair(&object, QEvent::User);
+    expected = { {&object, QEvent::User} };
     QCOMPARE(spy.eventList(), expected);
     spy.clear();
 
@@ -3231,9 +3219,7 @@ void tst_QObject::installEventFilter()
     // move it back, and the filter works again
     spy.moveToThread(object.thread());
     QCoreApplication::sendEvent(&object, &event);
-    expected =
-        EventSpy::EventList()
-        << qMakePair(&object, QEvent::User);
+    expected = { {&object, QEvent::User} };
     QCOMPARE(spy.eventList(), expected);
     spy.clear();
 

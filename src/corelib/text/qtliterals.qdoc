@@ -21,16 +21,18 @@
     \inmodule QtCore
     \inheaderfile QString
 
-    \brief The StringLiterals namespace declares string literal operators
-    for Qt types.
+    \brief The StringLiterals namespace declares literal operators for Qt
+    string types.
 
-    The inline Qt::Literals::StringLiterals namespace declares string literal
-    operators for Qt types. Because both \c Literals and \c StringLiterals
+    The inline Qt::Literals::StringLiterals namespace declares literal operators
+    for Qt string types. Because both \c Literals and \c StringLiterals
     namespaces are declared as inline, the symbols from this namespace can be
     accessed by adding one of the following to your code:
 
     \code
     // Makes visible only the literal operators declared in StringLiterals
+    using namespace Qt::StringLiterals;
+    // same, but needlessly verbose:
     using namespace Qt::Literals::StringLiterals;
 
     // Makes visible literal operators declared in all inline namespaces
@@ -41,4 +43,8 @@
     // in the Qt namespace
     using namespace Qt;
     \endcode
+
+    The latter is discouraged, because it doesn't allow you to pick which literal
+    operators you want in case Qt adds conflicting operators in different
+    namespaces within Qt::Literals.
 */

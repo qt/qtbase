@@ -2860,20 +2860,7 @@ static QString rawMonthName(const QCalendarLocale &localeData,
                             const char16_t *monthsData, int month,
                             QLocale::FormatType type)
 {
-    QLocaleData::DataRange range;
-    switch (type) {
-    case QLocale::LongFormat:
-        range = localeData.longMonth();
-        break;
-    case QLocale::ShortFormat:
-        range = localeData.shortMonth();
-        break;
-    case QLocale::NarrowFormat:
-        range = localeData.narrowMonth();
-        break;
-    default:
-        return QString();
-    }
+    const QLocaleData::DataRange range = localeData.monthName(type);
     return range.getListEntry(monthsData, month - 1);
 }
 
@@ -2885,22 +2872,10 @@ static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
                                       const char16_t *monthsData, int month,
                                       QLocale::FormatType type)
 {
-    QLocaleData::DataRange range;
-    switch (type) {
-    case QLocale::LongFormat:
-        range = localeData.longMonthStandalone();
-        break;
-    case QLocale::ShortFormat:
-        range = localeData.shortMonthStandalone();
-        break;
-    case QLocale::NarrowFormat:
-        range = localeData.narrowMonthStandalone();
-        break;
-    default:
-        return QString();
-    }
-    QString name = range.getListEntry(monthsData, month - 1);
-    return name.isEmpty() ? rawMonthName(localeData, monthsData, month, type) : name;
+    const QLocaleData::DataRange range = localeData.standaloneMonthName(type);
+    if (QString name = range.getListEntry(monthsData, month - 1); !name.isEmpty())
+        return name;
+    return rawMonthName(localeData, monthsData, month, type);
 }
 
 /*!
@@ -3220,9 +3195,9 @@ Qt::LayoutDirection QLocale::textDirection() const
 */
 QString QLocale::toUpper(const QString &str) const
 {
-#if QT_CONFIG(icu)
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(icu)
     bool ok = true;
-    QString result = QIcu::toUpper(d->bcp47Name('_'), str, &ok);
+    QString result = d->toUpper(str, &ok);
     if (ok)
         return result;
     // else fall through and use Qt's toUpper
@@ -3244,12 +3219,12 @@ QString QLocale::toUpper(const QString &str) const
 */
 QString QLocale::toLower(const QString &str) const
 {
-#if QT_CONFIG(icu)
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(icu)
     bool ok = true;
-    const QString result = QIcu::toLower(d->bcp47Name('_'), str, &ok);
+    const QString result = d->toLower(str, &ok);
     if (ok)
         return result;
-    // else fall through and use Qt's toUpper
+    // else fall through and use Qt's toLower
 #endif
     return str.toLower();
 }
@@ -3822,9 +3797,7 @@ QString QLocaleData::longLongToString(qlonglong n, int precision,
 QString QLocaleData::unsLongLongToString(qulonglong l, int precision,
                                          int base, int width, unsigned flags) const
 {
-    const QString zero = zeroDigit();
-    QString resultZero = base == 10 ? zero : QStringLiteral("0");
-    return applyIntegerFormatting(l ? qulltoa(l, base, zero) : resultZero,
+    return applyIntegerFormatting(qulltoa(l, base, zeroDigit()),
                                   false, precision, base, width, flags);
 }
 

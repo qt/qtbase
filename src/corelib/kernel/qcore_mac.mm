@@ -392,7 +392,7 @@ std::optional<uint32_t> qt_mac_sipConfiguration()
 }
 
 #define CHECK_SPAWN(expr) \
-    if (int err = (expr)) { \
+    if ((expr) != 0) { \
         posix_spawnattr_destroy(&attr); \
         return; \
     }

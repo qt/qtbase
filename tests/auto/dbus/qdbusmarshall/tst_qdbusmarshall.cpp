@@ -1318,7 +1318,7 @@ void tst_QDBusMarshall::demarshallStrings_data()
     QTest::addColumn<QVariant>("expectedValue");
 
     // All primitive types demarshall to null string types
-    typedef QPair<QVariant, char> ValSigPair;
+    using ValSigPair = std::pair<QVariant, char>;
     const QList<ValSigPair> nullStringTypes
         = QList<ValSigPair>()
             << ValSigPair(QVariant::fromValue(QString()), 's')

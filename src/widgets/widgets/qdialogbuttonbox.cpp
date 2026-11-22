@@ -292,7 +292,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
         for (QWidget *here : layoutWidgets) {
             QWidget::setTabOrder(prev, here);
             prev = here;
-            if (auto *pushButton = qobject_cast<QPushButton *>(prev); pushButton->isDefault())
+            if (auto *pushButton = qobject_cast<QPushButton *>(prev); pushButton && pushButton->isDefault())
                 q->setFocusProxy(pushButton);
         }
     }

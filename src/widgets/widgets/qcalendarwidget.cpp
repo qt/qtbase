@@ -2200,7 +2200,7 @@ QSize QCalendarWidget::minimumSizeHint() const
 
     QStyleOption option;
     option.initFrom(this);
-    const int marginH = (style()->pixelMetric(QStyle::PM_FocusFrameHMargin, &option) + 1) * 2;
+    const int marginH = (style()->pixelMetric(QStyle::PM_FocusFrameHMargin, &option, this) + 1) * 2;
 
     if (horizontalHeaderFormat() == QCalendarWidget::NoHorizontalHeader) {
         rows = 6;

@@ -2531,10 +2531,10 @@ void tst_QAccessibility::groupBoxTest()
     QCOMPARE(iface->role(), QAccessible::Grouping);
     QCOMPARE(iface->text(QAccessible::Name), QLatin1String("Test QGroupBox"));
     QCOMPARE(iface->text(QAccessible::Description), QLatin1String("This group box will be used to test accessibility"));
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> relations =
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>> relations =
             rButtonIface->relations();
     QCOMPARE(relations.size(), 1);
-    QPair<QAccessibleInterface*, QAccessible::Relation> relation = relations.first();
+    auto relation = relations.first();
     QCOMPARE(relation.first->object(), groupBox);
     QCOMPARE(relation.second, QAccessible::Label);
     }
@@ -3780,7 +3780,7 @@ void tst_QAccessibility::labelTest()
     QCOMPARE(acc_label->state().focusable, false);
     QCOMPARE(acc_label->state().readOnly, true);
 
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels = acc_label->relations();
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>> rels = acc_label->relations();
     QCOMPARE(rels.size(), 1);
     QAccessibleInterface *iface = rels.first().first;
     QAccessible::Relation rel = rels.first().second;

@@ -15,7 +15,9 @@
 #include "qiosglobal.h"
 #include "qiostextinputoverlay.h"
 
-typedef QPair<int, int> SelectionPair;
+#include <utility> // for std::pair
+
+typedef std::pair<int, int> SelectionPair;
 typedef void (^Block)(void);
 
 static const CGFloat kKnobWidth = 10;
@@ -31,7 +33,7 @@ static SelectionPair querySelection()
     QGuiApplication::sendEvent(QGuiApplication::focusObject(), &query);
     int anchorPos = query.value(Qt::ImAnchorPosition).toInt();
     int cursorPos = query.value(Qt::ImCursorPosition).toInt();
-    return qMakePair(anchorPos, cursorPos);
+    return {anchorPos, cursorPos};
 }
 
 static bool hasSelection()

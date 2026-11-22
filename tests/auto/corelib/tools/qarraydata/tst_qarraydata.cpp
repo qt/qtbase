@@ -74,22 +74,22 @@ void tst_QArrayData::referenceCounting()
         // Reference counting initialized to 1 (owned)
         QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(1), {}, 0 };
 
-        QCOMPARE(array.m_ref.loadRelaxed(), 1);
+        QCOMPARE(array.ref_.loadRelaxed(), 1);
 
         QVERIFY(array.ref());
-        QCOMPARE(array.m_ref.loadRelaxed(), 2);
+        QCOMPARE(array.ref_.loadRelaxed(), 2);
 
         QVERIFY(array.deref());
-        QCOMPARE(array.m_ref.loadRelaxed(), 1);
+        QCOMPARE(array.ref_.loadRelaxed(), 1);
 
         QVERIFY(array.ref());
-        QCOMPARE(array.m_ref.loadRelaxed(), 2);
+        QCOMPARE(array.ref_.loadRelaxed(), 2);
 
         QVERIFY(array.deref());
-        QCOMPARE(array.m_ref.loadRelaxed(), 1);
+        QCOMPARE(array.ref_.loadRelaxed(), 1);
 
         QVERIFY(!array.deref());
-        QCOMPARE(array.m_ref.loadRelaxed(), 0);
+        QCOMPARE(array.ref_.loadRelaxed(), 0);
 
         // Now would be a good time to free/release allocated data
     }
@@ -585,7 +585,7 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(char),
                 alignof(QTypedArrayData<char>::AlignmentDummy));
-        QPair<QTypedArrayData<char> *, char *> pair = QTypedArrayData<char>::allocate(10);
+        std::pair<QTypedArrayData<char> *, char *> pair = QTypedArrayData<char>::allocate(10);
         QArrayData *array = pair.first;
         keeper.headers.append(array);
 
@@ -605,7 +605,7 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(short),
                 alignof(QTypedArrayData<short>::AlignmentDummy));
-        QPair<QTypedArrayData<short> *, short *> pair = QTypedArrayData<short>::allocate(10);
+        std::pair<QTypedArrayData<short> *, short *> pair = QTypedArrayData<short>::allocate(10);
         QArrayData *array = pair.first;
         keeper.headers.append(array);
 
@@ -625,7 +625,7 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(double),
                 alignof(QTypedArrayData<double>::AlignmentDummy));
-        QPair<QTypedArrayData<double> *, double *> pair = QTypedArrayData<double>::allocate(10);
+        std::pair<QTypedArrayData<double> *, double *> pair = QTypedArrayData<double>::allocate(10);
         QArrayData *array = pair.first;
         keeper.headers.append(array);
 

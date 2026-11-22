@@ -440,13 +440,13 @@ static QVariant qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool un
                 // if SQL_SUCCESS_WITH_INFO is returned, indicating that
                 // more data can be fetched, the length indicator does NOT
                 // contain the number of bytes returned - it contains the
-                // total number of bytes that CAN be fetched
+                // total number of bytes that were transferred to our buffer
                 int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : int(lengthIndicator / sizeof(SQLTCHAR));
-                    fieldVal += fromSQLTCHAR(buf, rSize);
-                if (lengthIndicator < SQLLEN(colSize*sizeof(SQLTCHAR))) {
-                    // workaround for Drivermanagers that don't return SQL_NO_DATA
+                fieldVal += fromSQLTCHAR(buf, rSize);
+                // when we got SQL_SUCCESS_WITH_INFO then there is more data to fetch,
+                // otherwise we are done
+                if (r == SQL_SUCCESS)
                     break;
-                }
             } else if (r == SQL_NO_DATA) {
                 break;
             } else {
@@ -478,17 +478,17 @@ static QVariant qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool un
                 // if SQL_SUCCESS_WITH_INFO is returned, indicating that
                 // more data can be fetched, the length indicator does NOT
                 // contain the number of bytes returned - it contains the
-                // total number of bytes that CAN be fetched
+                // total number of bytes that were transferred to our buffer
                 qsizetype rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
                 // Remove any trailing \0 as some drivers misguidedly append one
                 int realsize = qMin(rSize, buf.size());
                 if (realsize > 0 && buf[realsize - 1] == 0)
                     realsize--;
                 fieldVal += QString::fromUtf8(reinterpret_cast<const char *>(buf.constData()), realsize);
-                if (lengthIndicator < SQLLEN(colSize)) {
-                    // workaround for Drivermanagers that don't return SQL_NO_DATA
+                // when we got SQL_SUCCESS_WITH_INFO then there is more data to fetch,
+                // otherwise we are done
+                if (r == SQL_SUCCESS)
                     break;
-                }
             } else if (r == SQL_NO_DATA) {
                 break;
             } else {

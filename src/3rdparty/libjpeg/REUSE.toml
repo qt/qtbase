@@ -1,0 +1,19 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (C) 2009-2025 D. R. Commander",
+                          "Copyright (C) 2015, 2020 Google, Inc.",
+                          "Copyright (C) 2019-2020 Arm Limited",
+                          "Copyright (C) 2015-2016, 2018 Matthieu Darbois",
+                          "Copyright (C) 2011-2016 Siarhei Siamashka",
+                          "Copyright (C) 2015 Intel Corporation",
+                          "Copyright (C) 2013-2014 Linaro Limited",
+                          "Copyright (C) 2013-2014 MIPS Technologies, Inc.",
+                          "Copyright (C) 2009, 2012 Pierre Ossman for Cendio AB",
+                          "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)",
+                          "Copyright (C) 1999-2006 MIYASAKA Masaru",
+                          "Copyright (C) 1999 Ken Murchison",
+                          "Copyright (C) 1991-2020 Thomas G. Lane, Guido Vollbeding"]
+SPDX-License-Identifier = "IJG AND BSD-3-Clause"

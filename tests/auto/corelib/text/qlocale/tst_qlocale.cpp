@@ -31,6 +31,14 @@ using namespace Qt::StringLiterals;
 
 Q_DECLARE_METATYPE(QLocale::FormatType)
 
+// These platforms implement a locale-dependent case conversion
+// (the others fall back to QString::toUpper/toLower()):
+#if QT_CONFIG(icu)
+#  define QT_HAS_LOCALE_CASE_CONVERSION 1
+#else
+#  define QT_HAS_LOCALE_CASE_CONVERSION 0
+#endif
+
 class tst_QLocale : public QObject
 {
     Q_OBJECT
@@ -139,6 +147,15 @@ private slots:
     void codeToLcs();
     void codeToLang_data();
     void codeToLang();
+
+#if QT_HAS_LOCALE_CASE_CONVERSION
+    void toLowerUpper_data();
+    void toLowerUpper();
+
+    void toLowerUpperEszett();
+#endif
+    void toLowerUpperFinalSigma_data();
+    void toLowerUpperFinalSigma();
 
     // *** ORDER-DEPENDENCY *** (This Is Bad.)
     // Test order is determined by order of declaration here: *all* tests that
@@ -1420,6 +1437,8 @@ void tst_QLocale::long_long_conversion_data()
 
     QTest::newRow("C null")                   << QString("C")     << QString()       << false << (qlonglong) 0;
     QTest::newRow("C empty")                  << QString("C")     << QString("")     << false << (qlonglong) 0;
+    QTest::newRow("C 0")                      << QString("C")     << "0"             << true  << (qlonglong) 0;
+    QTest::newRow("C 0,")                     << QString("C")     << "0,"            << false << (qlonglong) 0;
     QTest::newRow("C 1")                      << QString("C")     << "1"             << true  << (qlonglong) 1;
     QTest::newRow("C 1,")                     << QString("C")     << "1,"            << false << (qlonglong) 0;
     QTest::newRow("C 1,2")                    << QString("C")     << "1,2"           << false << (qlonglong) 0;
@@ -1490,6 +1509,20 @@ void tst_QLocale::long_long_conversion()
 
     if (ok)
         QCOMPARE(l, num);
+
+    if (num >= 0) {
+        qulonglong ull = locale.toULongLong(num_str, &ok);
+        QCOMPARE(ok, good);
+
+        if (ok)
+            QCOMPARE(ull, num);
+
+        ull = locale.toULongLong(num_strRef, &ok);
+        QCOMPARE(ok, good);
+
+        if (ok)
+            QCOMPARE(ull, num);
+    }
 }
 
 void tst_QLocale::long_long_conversion_extra()
@@ -4446,6 +4479,155 @@ void tst_QLocale::codeToLcs()
     // ensure we can find the last script, too:
     QCOMPARE(QLocale::codeToScript(QLocale::scriptToCode(QLocale::LastScript)),
              QLocale::LastScript);
+}
+
+#if QT_HAS_LOCALE_CASE_CONVERSION
+void tst_QLocale::toLowerUpper_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<QString>("lower");
+    QTest::addColumn<QString>("upper");
+
+    const QLocale germanLocale = QLocale(u"de_DE"_s);
+    const QLocale turkishLocale = QLocale(u"tr_TR"_s);
+
+    QTest::newRow("null string default locale") << QLocale() << QString() << QString();
+    QTest::newRow("null string Turkish") << turkishLocale << QString() << QString();
+    QTest::newRow("null string German") << germanLocale << QString() << QString();
+
+    QTest::newRow("empty string default locale") << QLocale() << u""_s << u""_s;
+    QTest::newRow("empty string Turkish") << turkishLocale << u""_s << u""_s;
+    QTest::newRow("empty string German") << germanLocale << u""_s << u""_s;
+
+    QTest::newRow("ASCII i Turkish") << turkishLocale << u"i"_s << u"İ"_s;
+    QTest::newRow("ASCII i German") << germanLocale << u"i"_s << u"I"_s;
+    QTest::newRow("ASCII ı Turkish") << turkishLocale << u"ı"_s << u"I"_s;
+
+    QTest::newRow("Latin1 default locale") << QLocale() << u"é"_s << u"É"_s;
+    QTest::newRow("Latin1 Turkish") << turkishLocale << u"é"_s << u"É"_s;
+    QTest::newRow("Latin1 German") << germanLocale << u"é"_s << u"É"_s;
+
+    QTest::newRow("Replacement default locale") << QLocale() << u"\uFFFD"_s << u"\uFFFD"_s;
+    QTest::newRow("Replacement Turkish") << turkishLocale << u"\uFFFD"_s << u"\uFFFD"_s;
+    QTest::newRow("Replacement German") << germanLocale << u"\uFFFD"_s << u"\uFFFD"_s;
+
+    QTest::newRow("non-Latin1 default locale") << QLocale() << u"δ"_s << u"Δ"_s;
+    QTest::newRow("non-Latin1 Turkish") << turkishLocale << u"δ"_s << u"Δ"_s;
+    QTest::newRow("non-Latin1 German") << germanLocale << u"δ"_s << u"Δ"_s;
+    // Vithkuqi a/A:
+    QTest::newRow("non-BMP default locale") << QLocale() << u"\u10597"_s << u"\u10570"_s;
+    QTest::newRow("non-BMP Turkish") << turkishLocale << u"\u10597"_s << u"\u10570"_s;
+    QTest::newRow("non-BMP German") << germanLocale << u"\u10597"_s << u"\u10570"_s;
+
+    const QString pLowerString = QString(16, QChar('p'));
+    const QString pUpperString = QString(16, QChar('P'));
+    QTest::newRow("16 letters default locale") << QLocale() << pLowerString << pUpperString;
+    QTest::newRow("16 letters Turkish") << turkishLocale << pLowerString << pUpperString;
+    QTest::newRow("16 letters German") << germanLocale << pLowerString << pUpperString;
+
+    const QString zLowerString = QString(4096, QChar('z'));
+    const QString zUpperString = QString(4096, QChar('Z'));
+    QTest::newRow("4096 letters default locale") << QLocale() << zLowerString << zUpperString;
+    QTest::newRow("4096 letters Turkish") << turkishLocale << zLowerString << zUpperString;
+    QTest::newRow("4096 letters German") << germanLocale << zLowerString << zUpperString;
+
+    const QString iLowerString = QString(4096, u'i');
+    const QString iUpperString = QString(4096, u'İ');
+    QTest::newRow("4096 Turkiye dotted i") << turkishLocale << iLowerString << iUpperString;
+
+    const QString ILowerString = QString(4096, u'ı');
+    const QString IUpperString = QString(4096, u'I');
+    QTest::newRow("4096 Turkiye undotted I") << turkishLocale << ILowerString << IUpperString;
+}
+
+void tst_QLocale::toLowerUpper()
+{
+    QFETCH(QLocale, locale);
+    QFETCH(QString, lower);
+    QFETCH(QString, upper);
+
+    QEXPECT_FAIL("non-BMP default locale",
+                 "QTBUG-131489: Handling of code points outside BMP is broken",
+                 Abort);
+    QEXPECT_FAIL("non-BMP Turkish",
+                 "QTBUG-131489: Handling of code points outside BMP is broken",
+                 Abort);
+    QEXPECT_FAIL("non-BMP German",
+                 "QTBUG-131489: Handling of code points outside BMP is broken",
+                 Abort);
+
+    QCOMPARE(locale.toLower(upper), lower);
+    QCOMPARE(locale.toUpper(lower), upper);
+}
+
+void tst_QLocale::toLowerUpperEszett()
+{
+    const QString eszettLowerString = u"\u00DF"_s;
+    const QString eszettUpperString = u"SS"_s;
+
+    QCOMPARE(QLocale().toUpper(eszettLowerString), eszettUpperString);
+    QCOMPARE(QLocale(u"de_DE"_s).toUpper(eszettLowerString), eszettUpperString);
+    QCOMPARE(QLocale(u"tr_TR"_s).toUpper(eszettLowerString), eszettUpperString);
+}
+#endif // QT_HAS_LOCALE_CASE_CONVERSION
+
+void tst_QLocale::toLowerUpperFinalSigma_data()
+{
+    QTest::addColumn<QString>("lower");
+    QTest::addColumn<QString>("upper");
+
+    QTest::addRow("logos") << u"λογος"_s
+    //                  final sigma ↕
+                           << u"ΛΟΓΟΣ"_s;
+    QTest::addRow("music") << u"μουσικη"_s
+    //              "medial" sigma ↕
+                           << u"ΜΟΥΣΙΚΗ"_s;
+
+    //
+    // Now the same with "tonos" (stess marker):
+    //
+    //  Modern Greek uses them on lower-case, but not on upper-case words, but
+    //  Unicode/CLDR doesn't/can't have rules for adding or removing them when
+    //  case-converting.
+
+    QTest::addRow("logos+tonos") << u"λόγος"_s
+    //                        final sigma ↕
+                                 << u"ΛΌΓΟΣ"_s;
+    QTest::addRow("music+tonos") << u"μουσική"_s
+    //                    "medial" sigma ↕
+                                 << u"ΜΟΥΣΙΚΉ"_s;
+}
+
+void tst_QLocale::toLowerUpperFinalSigma()
+{
+    QFETCH(const QString, lower);
+    QFETCH(const QString, upper);
+
+    static const QLocale gr("gr_GR"_L1);
+    if constexpr (!QT_HAS_LOCALE_CASE_CONVERSION) {
+        // these fall back to QString::toLower/Upper(), so inherit QTBUG-2163
+        QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+        QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    }
+    QCOMPARE(gr.toLower(upper), lower);
+    QCOMPARE(gr.toUpper(lower), upper);
+
+    // This ought to be a property of the script, so locale-independent:
+    static const QLocale c("C"_L1);
+    if constexpr (!QT_HAS_LOCALE_CASE_CONVERSION) {
+        // these fall back to QString::toLower/Upper(), so inherit QTBUG-2163
+        QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+        QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    }
+    QCOMPARE(c.toLower(upper), lower);
+    QCOMPARE(c.toUpper(lower), upper);
+
+    // For comparison: locale-independent QString::toUpper/Lower():
+    // Qt's own implementation does it wrong:
+    QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+    QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    QCOMPARE(upper.toLower(), lower);
+    QCOMPARE(lower.toUpper(), upper);
 }
 
 QTEST_MAIN(tst_QLocale)

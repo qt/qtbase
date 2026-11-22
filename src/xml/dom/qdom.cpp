@@ -4680,6 +4680,10 @@ QDomTextPrivate* QDomTextPrivate::splitText(int offset)
     value.truncate(offset);
 
     parent()->insertAfter(t, this);
+    Q_ASSERT(t->ref.loadRelaxed() == 2);
+
+    // We are not interested in this node
+    t->ref.deref();
 
     return t;
 }

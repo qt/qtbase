@@ -702,7 +702,7 @@ void tst_QTableView::headerSections()
     QCOMPARE(view.columnWidth(column), columnWidth);
 }
 
-typedef QPair<int,int> IntPair;
+using IntPair = std::pair<int,int>;
 
 void tst_QTableView::moveCursor_data()
 {

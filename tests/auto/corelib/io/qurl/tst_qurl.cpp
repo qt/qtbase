@@ -429,6 +429,33 @@ void tst_QUrl::comparison2_data()
     QTest::newRow("fragment-scheme") << QUrl("#foo") << QUrl("x:") << -1;
 
     QTest::newRow("noport-zeroport") << QUrl("http://example.com") << QUrl("http://example.com:0") << -1;
+
+    // check that nothing is remembered
+    auto addEmptiedUrl = [](const char *label, const QUrl &url) {
+        QUrl copy = url;
+        copy.setUrl(QString());
+        QTest::addRow("null-latent-%s", label) << QUrl() << copy << 0;
+
+        QString nonempty = u"https://www.qt-project.org"_s;
+        copy = url;
+        copy.setUrl(nonempty);
+        QTest::addRow("nonnull-latent-%s", label) << QUrl(nonempty) << copy << 0;
+    };
+    addEmptiedUrl("scheme", QUrl("x:"));
+    addEmptiedUrl("username", QUrl("//user@"));
+    addEmptiedUrl("password", QUrl("//:pass@"));
+    addEmptiedUrl("userinfo", QUrl("//user:pass@"));
+    addEmptiedUrl("host", QUrl("//foo"));
+    addEmptiedUrl("username-host", QUrl("//user@bar"));
+    addEmptiedUrl("password-host", QUrl("//:pass@bar"));
+    addEmptiedUrl("userinfo-host", QUrl("//user:pass@bar"));
+    addEmptiedUrl("host-port", QUrl("//bar:1"));
+    addEmptiedUrl("abpath", QUrl("/"));
+    addEmptiedUrl("relpath", QUrl("hello"));
+    addEmptiedUrl("abpath-local", QUrl("file:/"));
+    addEmptiedUrl("relpath-local", QUrl("file:hello"));
+    addEmptiedUrl("query", QUrl("?boop"));
+    addEmptiedUrl("fragment", QUrl("#meep"));
 }
 
 void tst_QUrl::comparison2()
@@ -437,11 +464,20 @@ void tst_QUrl::comparison2()
     QFETCH(QUrl, url2);
     QFETCH(int, ordering);
 
-    QCOMPARE(url1.toString() == url2.toString(), ordering == 0);
-    QCOMPARE(url1 == url2, ordering == 0);
-    QCOMPARE(url1 != url2, ordering != 0);
-    if (ordering == 0)
+
+    if (ordering == 0) {
+        QCOMPARE(url1.toString(), url2.toString());
+        QCOMPARE(url1, url2);
         QCOMPARE(qHash(url1), qHash(url2));
+    } else if (ordering < 0) {
+        QCOMPARE_LT(url1.toString(), url2.toString());
+        QCOMPARE_NE(url1, url2);
+        QCOMPARE_LT(url1, url2);
+    } else {
+        QCOMPARE_GT(url1.toString(), url2.toString());
+        QCOMPARE_NE(url1, url2);
+        QCOMPARE_LT(url2, url1); // 6.5 only has operator< not operator>
+    }
 
     QCOMPARE(url1 < url2, ordering < 0);
     QCOMPARE(!(url1 < url2), ordering >= 0);
@@ -1307,6 +1343,17 @@ void tst_QUrl::toString_constructed()
     QCOMPARE(url.toString(formattingOptions), asString);
     QCOMPARE(QString::fromLatin1(url.toEncoded(formattingOptions)), QString::fromLatin1(asEncoded)); // readable in case of differences
     QCOMPARE(url.toEncoded(formattingOptions), asEncoded);
+
+    if (options == QUrl::UrlFormattingOption::None) {
+        QUrl parsed(asString);
+        QCOMPARE(url, parsed);
+        QCOMPARE(qHash(url), qHash(parsed));
+    }
+
+    // clear it and ensure no memory of the previous state remains
+    url.setUrl(QString());
+    QCOMPARE(url, QUrl());
+    QCOMPARE(qHash(url), qHash(QUrl()));
 }
 
 void tst_QUrl::toDisplayString_PreferLocalFile_data()
@@ -4141,6 +4188,11 @@ void tst_QUrl::setComponents()
         QCOMPARE(copy.toString(), toString);
         // Check round-tripping
         QCOMPARE(QUrl(copy.toString()).toString(), toString);
+
+        // check comparisons
+        QUrl recreated(toString);
+        QCOMPARE(copy, recreated);
+        QCOMPARE(qHash(copy), qHash(recreated));
     } else {
         QVERIFY(copy.toString().isEmpty());
     }

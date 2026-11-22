@@ -1191,15 +1191,13 @@ Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype
     if (a == b)
         return (alen - blen);
 
-    char32_t alast = 0;
-    char32_t blast = 0;
     qsizetype l = qMin(alen, blen);
     qsizetype i;
     for (i = 0; i < l; ++i) {
 //         qDebug() << Qt::hex << alast << blast;
 //         qDebug() << Qt::hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
 //         qDebug() << Qt::hex << "*b=" << *b << "blast=" << blast << "folded=" << foldCase (*b, blast);
-        int diff = foldCase(a[i], alast) - foldCase(b[i], blast);
+        int diff = foldCase(a + i, a) - foldCase(b + i, b);
         if ((diff))
             return diff;
     }
@@ -5261,7 +5259,7 @@ bool QString::isUpper() const
 
     while (it.hasNext()) {
         const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[QUnicodeTables::UpperCase].diff)
+        if (caseConversion(uc)[QUnicodeTables::UpperCase].diff)
             return false;
     }
 
@@ -5287,7 +5285,7 @@ bool QString::isLower() const
 
     while (it.hasNext()) {
         const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[QUnicodeTables::LowerCase].diff)
+        if (caseConversion(uc)[QUnicodeTables::LowerCase].diff)
             return false;
     }
 
@@ -6734,7 +6732,7 @@ static QString convertCase(T &str, QUnicodeTables::Case which)
     QStringIterator it(p, e);
     while (it.hasNext()) {
         const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[which].diff) {
+        if (caseConversion(uc)[which].diff) {
             it.recede();
             return detachAndConvertCase(str, it, which);
         }
@@ -6782,6 +6780,12 @@ QString QString::toCaseFolded_helper(QString &str)
 
     \note In some cases the uppercase form of a string may be longer than the
     original.
+
+    \note Since 2024, the German language officially prefers to uppercase ß
+    (U+00DF LATIN SMALL LETTER SHARP S) as ẞ (U+1E9E LATIN CAPITAL LETTER SHARP S).
+    Qt's implementation follows Unicode, which still mandates the use of "SS".
+    If you need to implement the new German rules, you need to manually do
+    \c{replace(u'ß', u'ẞ')} \e{before} calling this function.
 
     \sa toLower(), QLocale::toLower()
 */
@@ -11116,7 +11120,7 @@ QString QString::toHtmlEscaped() const
 
     The following code creates a QString:
     \code
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
 
     auto str = u"hello"_s;
     \endcode
@@ -11135,7 +11139,7 @@ QString QString::toHtmlEscaped() const
 
     The following code creates a QLatin1StringView:
     \code
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
 
     auto str = "hello"_L1;
     \endcode
