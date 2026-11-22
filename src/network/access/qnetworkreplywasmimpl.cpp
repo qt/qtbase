@@ -587,11 +587,14 @@ void QNetworkReplyWasmImplPrivate::stateChange(emscripten_fetch_t *fetch)
     if (fetch->readyState != /*HEADERS_RECEIVED*/ 2)
         return;
 
+    const int status = fetch->status;
     size_t headerLength = emscripten_fetch_get_response_headers_length(fetch);
     QByteArray str(headerLength, Qt::Uninitialized);
     emscripten_fetch_get_response_headers(fetch, str.data(), str.size());
     // Deliver headers on the reply's own thread, callbacks run on the main thread.
-    QMetaObject::invokeMethod(reply->q_func(), [reply, str]() {
+    // The status code is set with them, the reason phrase follows when the reply finishes.
+    QMetaObject::invokeMethod(reply->q_func(), [reply, status, str]() {
+        reply->q_func()->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, status);
         reply->headersReceived(str);
     }, Qt::QueuedConnection);
 }
@@ -605,13 +608,13 @@ void QNetworkReplyWasmImplPrivate::downloadProgress(emscripten_fetch_t *fetch)
         || reply->state == QNetworkReplyPrivate::Aborted) {
         return;
     }
-    if (fetch->status >= 400)
-        return;
 
     uint64_t bytes = fetch->dataOffset + fetch->numBytes;
     uint64_t tBytes = fetch->totalBytes; // totalBytes can be 0 if server not reporting content length
     if (tBytes == 0)
         tBytes = bytes;
+    // Error responses deliver their body as well, but report no download progress.
+    const bool reportProgress = fetch->status < 400;
     // With EMSCRIPTEN_FETCH_STREAM_DATA fetch->data points at the newest chunk of
     // length numBytes, copy it out now as the pointer is only valid for this call.
     QByteArray chunk;
@@ -620,10 +623,11 @@ void QNetworkReplyWasmImplPrivate::downloadProgress(emscripten_fetch_t *fetch)
 
     // Fetch callbacks run on the main thread while the reply may live on another
     // thread, so deliver the chunk and progress on the reply's own thread.
-    QMetaObject::invokeMethod(reply->q_func(), [reply, chunk, bytes, tBytes]() {
+    QMetaObject::invokeMethod(reply->q_func(), [reply, chunk, bytes, tBytes, reportProgress]() {
         if (!chunk.isEmpty())
             reply->dataReceived(chunk);
-        reply->emitDataReadProgress(bytes, tBytes);
+        if (reportProgress)
+            reply->emitDataReadProgress(bytes, tBytes);
     }, Qt::QueuedConnection);
 }
 
