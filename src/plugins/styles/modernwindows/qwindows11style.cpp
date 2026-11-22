@@ -2980,7 +2980,87 @@ QPixmap QWindows11Style::standardPixmap(StandardPixmap standardPixmap,
         const int size = proxy()->pixelMetric(PM_ToolBarExtensionExtent, option, widget);
         return standardIcon(standardPixmap, option, widget).pixmap(size);
     }
-    default:
+    case SP_TitleBarMenuButton:
+    case SP_TitleBarMinButton:
+    case SP_TitleBarMaxButton:
+    case SP_TitleBarCloseButton:
+    case SP_TitleBarNormalButton:
+    case SP_TitleBarShadeButton:
+    case SP_TitleBarUnshadeButton:
+    case SP_TitleBarContextHelpButton:
+    case SP_DockWidgetCloseButton:
+    case SP_MessageBoxInformation:
+    case SP_MessageBoxWarning:
+    case SP_MessageBoxCritical:
+    case SP_MessageBoxQuestion:
+    case SP_TrashIcon:
+    case SP_ComputerIcon:
+    case SP_DriveFDIcon:
+    case SP_DriveHDIcon:
+    case SP_DriveCDIcon:
+    case SP_DriveDVDIcon:
+    case SP_DriveNetIcon:
+    case SP_DirOpenIcon:
+    case SP_DirClosedIcon:
+    case SP_FileIcon:
+    case SP_FileDialogToParent:
+    case SP_FileDialogNewFolder:
+    case SP_FileDialogDetailedView:
+    case SP_FileDialogInfoView:
+    case SP_FileDialogContentsView:
+    case SP_FileDialogListView:
+    case SP_FileDialogBack:
+    case SP_DirIcon:
+    case SP_DialogOkButton:
+    case SP_DialogCancelButton:
+    case SP_DialogHelpButton:
+    case SP_DialogOpenButton:
+    case SP_DialogSaveButton:
+    case SP_DialogCloseButton:
+    case SP_DialogApplyButton:
+    case SP_DialogResetButton:
+    case SP_ArrowUp:
+    case SP_ArrowDown:
+    case SP_ArrowLeft:
+    case SP_ArrowRight:
+    case SP_ArrowBack:
+    case SP_ArrowForward:
+    case SP_DirHomeIcon:
+    case SP_VistaShield:
+    case SP_BrowserReload:
+    case SP_BrowserStop:
+    case SP_MediaPlay:
+    case SP_MediaStop:
+    case SP_MediaPause:
+    case SP_MediaSkipForward:
+    case SP_MediaSkipBackward:
+    case SP_MediaSeekForward:
+    case SP_MediaSeekBackward:
+    case SP_MediaVolume:
+    case SP_MediaVolumeMuted:
+    case SP_LineEditClearButton:
+    case SP_TabCloseButton:
+        return standardIcon(standardPixmap, option, widget).pixmap(16, 16);
+    // not (yet) implemented
+    case SP_DesktopIcon:
+    case SP_DirLinkIcon:
+    case SP_DirLinkOpenIcon:
+    case SP_FileLinkIcon:
+    case SP_FileDialogStart:
+    case SP_FileDialogEnd:
+    case SP_DialogDiscardButton:
+    case SP_DialogYesButton:
+    case SP_DialogNoButton:
+    case SP_CommandLink:
+    case SP_DialogYesToAllButton:
+    case SP_DialogNoToAllButton:
+    case SP_DialogSaveAllButton:
+    case SP_DialogAbortButton:
+    case SP_DialogRetryButton:
+    case SP_DialogIgnoreButton:
+    case SP_RestoreDefaultsButton:
+    case NStandardPixmap:
+    case SP_CustomBase:
         break;
     }
     return QWindowsVistaStyle::standardPixmap(standardPixmap, option, widget);
@@ -2990,6 +3070,8 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
                                     const QStyleOption *option,
                                     const QWidget *widget) const
 {
+    Q_D(const QWindows11Style);
+
     const auto getIcon = [&](Icon ico, double scale) {
         auto *d = const_cast<QWindows11StylePrivate *>(d_func());
         QIcon &icon = d->m_standardIcons[ico];
@@ -3002,6 +3084,8 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
     };
 
     switch (standardIcon) {
+    case SP_TitleBarMenuButton:
+        return getIcon(Icon::ButtonMenu, 1.0);
     case SP_TitleBarMinButton:
         return getIcon(Icon::ChromeMinimize, 0.7);
     case SP_TitleBarMaxButton:
@@ -3010,11 +3094,141 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
         return getIcon(Icon::ChromeClose, 0.7);
     case SP_TitleBarNormalButton:
         return getIcon(Icon::ChromeRestore, 0.7);
-    case SP_LineEditClearButton:
-        return getIcon(Icon::Clear, 0.7);
+    case SP_TitleBarShadeButton:
+        return getIcon(Icon::CaretSolidUp, 1.0);
+    case SP_TitleBarUnshadeButton:
+        return getIcon(Icon::CaretSolidDown, 1.0);
+    case SP_TitleBarContextHelpButton:
+        return getIcon(Icon::Help, 1.0);
+    case SP_DockWidgetCloseButton:
+        return getIcon(Icon::ChromeClose, 1.0);
+    case SP_MessageBoxInformation:
+        return getIcon(Icon::Info, 1.0);
+    case SP_MessageBoxWarning:
+        return getIcon(Icon::Warning, 1.0);
+    case SP_MessageBoxCritical:
+        return getIcon(Icon::ErrorBadge, 1.0);
+    case SP_MessageBoxQuestion:
+        return getIcon(Icon::Help, 1.0);
+    case SP_DesktopIcon:
+        break;
+    case SP_TrashIcon:
+        return getIcon(Icon::Delete, 1.0);
+    case SP_ComputerIcon:
+        return getIcon(Icon::DeviceLaptopNoPic, 1.0);
+    case SP_DriveFDIcon:
+        return getIcon(Icon::Save, 1.0);
+    case SP_DriveHDIcon:
+        return getIcon(Icon::HardDrive, 1.0);
+    case SP_DriveCDIcon:
+    case SP_DriveDVDIcon:
+        return getIcon(Icon::StorageOptical, 1.0);
+    case SP_DriveNetIcon:
+        return getIcon(Icon::Network, 1.0);
+    case SP_DirOpenIcon:
+        return getIcon(Icon::OpenFolderHorizontal, 1.0);
+    case SP_DirClosedIcon:
+        return getIcon(Icon::FolderHorizontal, 1.0);
+    case SP_DirLinkIcon:
+    case SP_DirLinkOpenIcon:
+        break;
+    case SP_FileIcon:
+        return getIcon(Icon::Document, 1.0);
+    case SP_FileLinkIcon:
+        break;
     case SP_ToolBarHorizontalExtensionButton:
     case SP_ToolBarVerticalExtensionButton:
         return getIcon(Icon::More, 1.0);
+    case SP_FileDialogStart:
+    case SP_FileDialogEnd:
+        break;
+    case SP_FileDialogToParent:
+        break;
+        return getIcon(Icon::ChevronUpMed, 1.0);
+    case SP_FileDialogNewFolder:
+        return getIcon(Icon::NewFolder, 1.0);
+    case SP_FileDialogDetailedView:
+        return getIcon(Icon::BulletedList, 1.0);
+    case SP_FileDialogInfoView:
+        return getIcon(Icon::Info, 1.0);
+    case SP_FileDialogContentsView:
+        return getIcon(Icon::BulletedList2, 1.0);
+    case SP_FileDialogListView:
+        return getIcon(Icon::FolderList, 1.0);
+    case SP_FileDialogBack:
+        return getIcon(d->rtl(option) ? Icon::ChevronRightMed : Icon::ChevronLeftMed, 1.0);
+    case SP_DirIcon:
+        return getIcon(Icon::FolderHorizontal, 1.0);
+    case SP_DialogOkButton:
+        return getIcon(Icon::ReturnKey, 1.0);
+    case SP_DialogCancelButton:
+        return getIcon(Icon::ChromeClose, 1.0);
+    case SP_DialogHelpButton:
+        return getIcon(Icon::GetHelpApp, 1.0);
+    case SP_DialogOpenButton:
+        return getIcon(Icon::OpenFile, 1.0);
+    case SP_DialogSaveButton:
+        return getIcon(Icon::Save, 1.0);
+    case SP_DialogCloseButton:
+        return getIcon(Icon::ChromeClose, 1.0);
+    case SP_DialogApplyButton:
+        return getIcon(Icon::CheckMark, 1.0);
+    case SP_DialogResetButton:
+        return getIcon(Icon::UpdateRestore, 1.0);
+    case SP_DialogDiscardButton:
+    case SP_DialogYesButton:
+    case SP_DialogNoButton:
+        break;
+    case SP_ArrowUp:
+        return getIcon(Icon::ChevronUpMed, 1.0);
+    case SP_ArrowDown:
+        return getIcon(Icon::ChevronDownMed, 1.0);
+    case SP_ArrowLeft:
+        return getIcon(Icon::ChevronLeftMed, 1.0);
+    case SP_ArrowRight:
+        return getIcon(Icon::ChevronRightMed, 1.0);
+    case SP_ArrowBack:
+        return getIcon(d->rtl(option) ? Icon::ChevronRightMed : Icon::ChevronLeftMed, 1.0);
+    case SP_ArrowForward:
+        return getIcon(d->rtl(option) ? Icon::ChevronLeftMed : Icon::ChevronRightMed, 1.0);
+    case SP_DirHomeIcon:
+        return getIcon(Icon::Home, 1.0);
+    case SP_CommandLink:
+        break;
+    case SP_VistaShield:
+        return getIcon(Icon::Shield, 1.0);
+    case SP_BrowserReload:
+        return getIcon(Icon::Refresh, 1.0);
+    case SP_BrowserStop:
+        return getIcon(Icon::ErrorBadge, 1.0);
+    case SP_MediaPlay:
+        return getIcon(Icon::Play, 1.0);
+    case SP_MediaStop:
+        return getIcon(Icon::Stop, 1.0);
+    case SP_MediaPause:
+        return getIcon(Icon::Pause, 1.0);
+    case SP_MediaSkipForward:
+        return getIcon(d->rtl(option) ? Icon::Previous : Icon::Next, 1.0);
+    case SP_MediaSkipBackward:
+        return getIcon(d->rtl(option) ? Icon::Next : Icon::Previous, 1.0);
+    case SP_MediaSeekForward:
+        return getIcon(d->rtl(option) ? Icon::Rewind : Icon::FastForward, 1.0);
+    case SP_MediaSeekBackward:
+        return getIcon(d->rtl(option) ? Icon::FastForward : Icon::Rewind, 1.0);
+    case SP_MediaVolume:
+        return getIcon(Icon::Volume, 1.0);
+    case SP_MediaVolumeMuted:
+        return getIcon(Icon::Mute, 1.0);
+    case SP_LineEditClearButton:
+        return getIcon(Icon::Clear, 0.7);
+    case SP_DialogYesToAllButton:
+    case SP_DialogNoToAllButton:
+    case SP_DialogSaveAllButton:
+    case SP_DialogAbortButton:
+    case SP_DialogRetryButton:
+    case SP_DialogIgnoreButton:
+    case SP_RestoreDefaultsButton:
+        break;
     case SP_TabCloseButton:
         return getIcon(Icon::ChromeClose, 0.6);
     case SP_TabScrollLeftButton:
@@ -3025,15 +3239,8 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
         return getIcon(Icon::CaretUpSolid8, 0.5);
     case SP_TabScrollDownButton:
         return getIcon(Icon::CaretDownSolid8, 0.5);
-    case SP_ArrowUp:
-        return getIcon(Icon::ChevronUpMed, 1.0);
-    case SP_ArrowDown:
-        return getIcon(Icon::ChevronDownMed, 1.0);
-    case SP_ArrowLeft:
-        return getIcon(Icon::ChevronLeftMed, 1.0);
-    case SP_ArrowRight:
-        return getIcon(Icon::ChevronRightMed, 1.0);
-    default:
+    case NStandardPixmap:
+    case SP_CustomBase:
         break;
     }
     return QWindowsVistaStyle::standardIcon(standardIcon, option, widget);
