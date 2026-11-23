@@ -242,14 +242,14 @@
 */
 
 /*!
-    \fn template <typename Integral> double qDegreesToRadians(Integral degrees)
+    \fn template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true> double qDegreesToRadians(T degrees)
     \relates <QtMath>
     \since 6.0
 
     This function converts the \a degrees in double to radians;
     the angle is casted to a double before the conversion.
 
-    \constraints \c Integral is an integral type.
+    \constraints \c T is an integral type.
 
     \sa qRadiansToDegrees()
 */

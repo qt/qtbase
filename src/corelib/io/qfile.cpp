@@ -1277,7 +1277,7 @@ qint64 QFile::size() const
     \overload
 */
 /*!
-    \fn bool exists(const std::filesystem::path &fileName)
+    \fn bool QFile::exists(const std::filesystem::path &fileName)
     \since 6.3
     \overload
 */
@@ -1292,27 +1292,27 @@ qint64 QFile::size() const
     Returns symLinkTarget() as \c{std::filesystem::path} of \a fileName.
 */
 /*!
-    \fn bool remove(const std::filesystem::path &fileName)
+    \fn bool QFile::remove(const std::filesystem::path &fileName)
     \since 6.3
     \overload
 */
 /*!
-    \fn bool moveToTrash(const std::filesystem::path &fileName, QString *pathInTrash)
+    \fn bool QFile::moveToTrash(const std::filesystem::path &fileName, QString *pathInTrash)
     \since 6.3
     \overload
 */
 /*!
-    \fn bool rename(const std::filesystem::path &oldName, const std::filesystem::path &newName)
+    \fn bool QFile::rename(const std::filesystem::path &oldName, const std::filesystem::path &newName)
     \since 6.3
     \overload
 */
 /*!
-    \fn bool link(const std::filesystem::path &fileName, const std::filesystem::path &newName);
+    \fn bool QFile::link(const std::filesystem::path &fileName, const std::filesystem::path &newName)
     \since 6.3
     \overload
 */
 /*!
-    \fn bool copy(const std::filesystem::path &fileName, const std::filesystem::path &newName);
+    \fn bool QFile::copy(const std::filesystem::path &fileName, const std::filesystem::path &newName)
     \since 6.3
     \overload
 */

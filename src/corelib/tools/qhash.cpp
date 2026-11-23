@@ -1103,7 +1103,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
 */
 
 /*!
-    \fn template <typename T> size_t qHash(std::nullopt_t key, size_t seed = 0)
+    \fn size_t qHash(std::nullopt_t key, size_t seed = 0)
     \since 6.12
     \qhashbuiltin
 
