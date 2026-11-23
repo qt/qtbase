@@ -619,6 +619,8 @@ void tst_QRhi::create()
         const int maxVertexOutputs = rhi->resourceLimit(QRhi::MaxVertexOutputs);
         const int maxVertexStorageBuffers = rhi->resourceLimit(QRhi::MaxVertexStorageBuffers);
         const int maxFragmentStorageBuffers = rhi->resourceLimit(QRhi::MaxFragmentStorageBuffers);
+        const int maxThreadGroupsPerDim = rhi->resourceLimit(QRhi::MaxThreadGroupsPerDimension);
+        const int maxThreadsPerThreadGroup = rhi->resourceLimit(QRhi::MaxThreadsPerThreadGroup);
 
         QCOMPARE_GE(texMin, 1);
         QCOMPARE_GE(texMax, texMin);
@@ -633,6 +635,10 @@ void tst_QRhi::create()
         // support in the D3D11 backend), negative is not.
         QCOMPARE_GE(maxVertexStorageBuffers, 0);
         QCOMPARE_GE(maxFragmentStorageBuffers, 0);
+        // The Null backend reports 0 for the compute limits. Drivers may
+        // report UINT32_MAX for some, which must not come out negative.
+        QCOMPARE_GE(maxThreadGroupsPerDim, 0);
+        QCOMPARE_GE(maxThreadsPerThreadGroup, 0);
 
         QVERIFY(rhi->nativeHandles());
 

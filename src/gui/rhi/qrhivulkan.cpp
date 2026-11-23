@@ -6153,9 +6153,11 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxAsyncReadbackFrames:
         return QVK_FRAMES_IN_FLIGHT;
     case QRhi::MaxThreadGroupsPerDimension:
-        return int(qMin(physDevProperties.limits.maxComputeWorkGroupCount[0],
-                   qMin(physDevProperties.limits.maxComputeWorkGroupCount[1],
-                        physDevProperties.limits.maxComputeWorkGroupCount[2])));
+        // Some drivers (Arm Mali) report UINT32_MAX, which must not wrap to -1
+        return int(qMin<uint32_t>(INT_MAX,
+                                  qMin(physDevProperties.limits.maxComputeWorkGroupCount[0],
+                                       qMin(physDevProperties.limits.maxComputeWorkGroupCount[1],
+                                            physDevProperties.limits.maxComputeWorkGroupCount[2]))));
     case QRhi::MaxThreadsPerThreadGroup:
         return int(physDevProperties.limits.maxComputeWorkGroupInvocations);
     case QRhi::MaxThreadGroupX:
@@ -6176,7 +6178,9 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
         return int(physDevProperties.limits.maxPushConstantsSize);
     case QRhi::MaxVertexStorageBuffers:
     case QRhi::MaxFragmentStorageBuffers:
-        return int(physDevProperties.limits.maxPerStageDescriptorStorageBuffers);
+        // no upper bound in the spec either, so do not let it wrap
+        return int(qMin<uint32_t>(INT_MAX,
+                                  physDevProperties.limits.maxPerStageDescriptorStorageBuffers));
     case QRhi::ShadingRateImageTileSize:
         return caps.imageBasedShadingRateTileSize;
     default:
