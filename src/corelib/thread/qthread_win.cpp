@@ -13,6 +13,8 @@
 #include <private/quniquehandle_types_p.h>
 #include <private/qwin32ticks_p.h>
 
+#include <QtCore/qspan.h>
+
 #include <qt_windows.h>
 
 #ifndef _MT
