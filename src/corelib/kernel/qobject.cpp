@@ -2173,38 +2173,6 @@ void QObject::killTimer(Qt::TimerId id)
     option FindDirectChildrenOnly.
 */
 
-/*!
-    \fn template<typename T> T qFindChild(const QObject *obj, const QString &name)
-    \relates QObject
-    \overload qFindChildren()
-    \deprecated [4.8]
-
-    This function is equivalent to
-    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QObject::findChild()
-*/
-
-/*!
-    \fn template<typename T> QList<T> qFindChildren(const QObject *obj, const QString &name)
-    \relates QObject
-    \overload qFindChildren()
-    \deprecated [4.8]
-
-    This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QObject::findChildren()
-*/
-
 static bool matches_objectName_non_null(QObject *obj, QAnyStringView name)
 {
     if (auto ext = QObjectPrivate::get(obj)->extraData)

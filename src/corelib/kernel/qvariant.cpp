@@ -2880,38 +2880,6 @@ QVariant QVariant::fromMetaType(QMetaType type, const void *copy)
     Returns the given \a value converted to the template type \c{T}.
 */
 
-/*! \fn template<typename T> T qVariantValue(const QVariant &value)
-    \relates QVariant
-    \deprecated [4.8]
-
-    Returns the given \a value converted to the template type \c{T}.
-
-    This function is equivalent to
-    \l{QVariant::value()}{QVariant::value}<T>(\a value).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QVariant::value(), qvariant_cast()
-*/
-
-/*! \fn bool qVariantCanConvert(const QVariant &value)
-    \relates QVariant
-    \deprecated [4.8]
-
-    Returns \c true if the given \a value can be converted to the
-    template type specified; otherwise returns \c false.
-
-    This function is equivalent to QVariant::canConvert(\a value).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QVariant::canConvert()
-*/
-
 /*!
     \typedef QVariantList
     \relates QVariant
