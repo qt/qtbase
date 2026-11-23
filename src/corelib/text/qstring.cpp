@@ -2512,7 +2512,6 @@ QString::QString(qsizetype size, QChar ch)
 }
 
 /*! \fn QString::QString(qsizetype size, Qt::Initialization)
-  \internal
 
   Constructs a string of the given \a size without initializing the
   characters. This is only used in \c QStringBuilder::toString().
