@@ -135,6 +135,8 @@ private slots:
     void renderToTextureMultipleUniformBuffersAndDynamicOffset();
     void renderToTextureSrbReuse_data();
     void renderToTextureSrbReuse();
+    void renderToTextureSrbWithDynamicOffsetPipelineSwitch_data();
+    void renderToTextureSrbWithDynamicOffsetPipelineSwitch();
     void renderToTextureIndexedDraw_data();
     void renderToTextureIndexedDraw();
     void renderToTextureArrayMultiView_data();
@@ -4251,6 +4253,170 @@ void tst_QRhi::renderToTextureSrbReuse()
     cb->setShaderResources(srb.get());
     cb->setViewport({ 0, 0, float(texture->pixelSize().width()), float(texture->pixelSize().height()) });
     QRhiCommandBuffer::VertexInput vbindings(vbuf.get(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(4);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.get() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QVERIFY(!result.isNull());
+
+    if (impl == QRhi::Null)
+        return;
+
+    if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
+        result.flip();
+
+    // opacity 0.5 (premultiplied)
+    static const auto checkSemiWhite = [](const QRgb &c) {
+        QRgb semiWhite127 = qPremultiply(qRgba(255, 255, 255, 127));
+        QRgb semiWhite128 = qPremultiply(qRgba(255, 255, 255, 128));
+        return c == semiWhite127 || c == semiWhite128;
+    };
+    QVERIFY(checkSemiWhite(result.pixel(79, 77)));
+    QVERIFY(checkSemiWhite(result.pixel(124, 81)));
+    QVERIFY(checkSemiWhite(result.pixel(128, 149)));
+    QVERIFY(checkSemiWhite(result.pixel(120, 189)));
+    QVERIFY(checkSemiWhite(result.pixel(116, 185)));
+    QVERIFY(checkSemiWhite(result.pixel(191, 172)));
+
+    QRgb empty = qRgba(0, 0, 0, 0);
+    QCOMPARE(result.pixel(11, 45), empty);
+    QCOMPARE(result.pixel(246, 202), empty);
+    QCOMPARE(result.pixel(130, 18), empty);
+    QCOMPARE(result.pixel(4, 227), empty);
+}
+
+void tst_QRhi::renderToTextureSrbWithDynamicOffsetPipelineSwitch_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureSrbWithDynamicOffsetPipelineSwitch()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    // One srb with a uniform buffer with a dynamic offset and a texture, used
+    // with two pipelines. The fragment shader of the first pipeline does not
+    // sample the texture, the second one does. Setting the same srb (with the
+    // same dynamic offset) after switching to the second pipeline must lead
+    // to binding the texture, not just updating the dynamic offsets.
+
+    QImage inputImage;
+    inputImage.load(QLatin1String(":/data/qt256.png"));
+    QVERIFY(!inputImage.isNull());
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.get() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.get(), quadVerticesUvs);
+
+    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
+    QVERIFY(inputTexture->create());
+    updates->uploadTexture(inputTexture.get(), inputImage);
+
+    QScopedPointer<QRhiSampler> sampler(rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                        QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(sampler->create());
+
+    // two regions, use the second one via the dynamic offset
+    const quint32 UBUF_SIZE = 64 + 4;
+    const quint32 secondUbufOffset = rhi->ubufAligned(UBUF_SIZE);
+    QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 2 * secondUbufOffset));
+    QVERIFY(ubuf->create());
+
+    QMatrix4x4 matrix;
+    float opacity = 0.0f;
+    updates->updateDynamicBuffer(ubuf.get(), 0, 64, matrix.constData());
+    updates->updateDynamicBuffer(ubuf.get(), 64, 4, &opacity);
+    opacity = 0.5f;
+    updates->updateDynamicBuffer(ubuf.get(), secondUbufOffset, 64, matrix.constData());
+    updates->updateDynamicBuffer(ubuf.get(), secondUbufOffset + 64, 4, &opacity);
+
+    const QRhiShaderResourceBinding::StageFlags commonVisibility = QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+                         QRhiShaderResourceBinding::uniformBufferWithDynamicOffset(0, commonVisibility, ubuf.get(), UBUF_SIZE),
+                         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, inputTexture.get(), sampler.get())
+                     });
+    QVERIFY(srb->create());
+
+    QShader vs = loadShader(":/data/textured.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fsNoTex = loadShader(":/data/textured_notex.frag.qsb");
+    QVERIFY(fsNoTex.isValid());
+    QShader fsTex = loadShader(":/data/textured.frag.qsb");
+    QVERIFY(fsTex.isValid());
+
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 4 * sizeof(float) } });
+    inputLayout.setAttributes({
+                                  { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
+                                  { 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }
+                              });
+
+    QScopedPointer<QRhiGraphicsPipeline> pipelineNoTex(rhi->newGraphicsPipeline());
+    pipelineNoTex->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    pipelineNoTex->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fsNoTex } });
+    pipelineNoTex->setVertexInputLayout(inputLayout);
+    pipelineNoTex->setShaderResourceBindings(srb.get());
+    pipelineNoTex->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(pipelineNoTex->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipelineTex(rhi->newGraphicsPipeline());
+    pipelineTex->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    pipelineTex->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fsTex } });
+    pipelineTex->setVertexInputLayout(inputLayout);
+    pipelineTex->setShaderResourceBindings(srb.get());
+    pipelineTex->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(pipelineTex->create());
+
+    cb->beginPass(rt.get(), Qt::black, { 1.0f, 0 }, updates);
+    const QRhiViewport viewport(0, 0, float(texture->pixelSize().width()), float(texture->pixelSize().height()));
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.get(), 0);
+    const QRhiCommandBuffer::DynamicOffset dynamicOffset(0, secondUbufOffset);
+
+    // first draw: no texture sampled, fills the whole target with semi-transparent green
+    cb->setGraphicsPipeline(pipelineNoTex.get());
+    cb->setViewport(viewport);
+    cb->setShaderResources(srb.get(), 1, &dynamicOffset);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(4);
+
+    // second draw: same srb and dynamic offset, but now the texture is sampled;
+    // there is no blending so this overwrites everything from the first draw
+    cb->setGraphicsPipeline(pipelineTex.get());
+    cb->setViewport(viewport);
+    cb->setShaderResources(srb.get(), 1, &dynamicOffset);
     cb->setVertexInput(0, 1, &vbindings);
     cb->draw(4);
 
