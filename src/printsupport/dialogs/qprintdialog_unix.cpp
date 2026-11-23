@@ -189,6 +189,7 @@ public:
 private:
     QPrintDialogPrivate *optionsPane;
     bool filePrintersAdded;
+    int initialPrinterIndex;
 };
 
 class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
@@ -1070,7 +1071,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
 #if QT_CONFIG(cups)
       m_duplexPpdOption(nullptr),
 #endif
-      optionsPane(nullptr), filePrintersAdded(false)
+      optionsPane(nullptr), filePrintersAdded(false), initialPrinterIndex(0)
 {
     q = nullptr;
     if (parent)
@@ -1092,6 +1093,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
         if (idx >= 0)
             currentPrinterIndex = idx;
     }
+    initialPrinterIndex = currentPrinterIndex;
     widget.properties->setEnabled(true);
 
 #if QT_CONFIG(filesystemmodel) && QT_CONFIG(completer)
@@ -1099,7 +1101,8 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     fsm->setRootPath(QDir::homePath());
     widget.filename->setCompleter(new QCompleter(fsm, widget.filename));
 #endif
-    _q_printerChanged(currentPrinterIndex);
+    if (!prn || prn->outputFormat() != QPrinter::PdfFormat)
+        _q_printerChanged(currentPrinterIndex);
 
     QObject::connect(widget.printers, SIGNAL(currentIndexChanged(int)),
                      parent, SLOT(_q_printerChanged(int)));
@@ -1135,6 +1138,14 @@ void QUnixPrintWidgetPrivate::updateWidget()
             widget.printers->setCurrentIndex(widget.printers->count() - 1);
         widget.filename->setEnabled(true);
         widget.lOutput->setEnabled(true);
+    }
+    if (!printToFile && printer && printer->outputFormat() == QPrinter::PdfFormat
+        && widget.printers->count()) {
+        {
+            const QSignalBlocker blocker(widget.printers);
+            widget.printers->setCurrentIndex(initialPrinterIndex);
+        }
+        _q_printerChanged(initialPrinterIndex);
     }
 
     widget.filename->setVisible(printToFile);
