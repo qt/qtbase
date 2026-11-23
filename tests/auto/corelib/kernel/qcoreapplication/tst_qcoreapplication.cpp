@@ -786,6 +786,10 @@ public:
 
 void tst_QCoreApplication::deliverInDefinedOrder()
 {
+#if defined(QT_QGUIAPPLICATIONTEST) && defined(Q_OS_MACOS)
+    QSKIP("Intermittently hangs with QGuiApplication on macOS");
+#endif
+
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     TestApplication app(argc, argv);
