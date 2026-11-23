@@ -544,6 +544,18 @@ void QXcbConnection::xi2SetupDevices()
         m_xiSlavePointerIds.removeAll(id);
         m_touchDevices.remove(id);
     }
+    // A master is the QObject parent of its slaves, so deleting it deletes them
+    // too. Slaves that X no longer attaches stay in previousDevices (the query
+    // loops above skip XCB_INPUT_DEVICE_TYPE_FLOATING_SLAVE), so deleting the
+    // master would destroy them and qDeleteAll would then delete the same
+    // pointers again, corrupting the heap. Drop the children of removed devices
+    // first; walk backwards so that removeAt() does not invalidate the
+    // iteration.
+    for (qsizetype i = previousDevices.size() - 1; i >= 0; --i) {
+        const auto *parentDevice = qobject_cast<const QInputDevice *>(previousDevices.at(i)->parent());
+        if (parentDevice && previousDevices.contains(parentDevice))
+            previousDevices.removeAt(i);
+    }
     qDeleteAll(previousDevices);
 
     if (m_xiMasterPointerIds.size() > 1)
