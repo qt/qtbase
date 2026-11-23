@@ -13,6 +13,9 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_VECTOR2D
 
+static_assert(sizeof(QVector2D) == 8);
+static_assert(alignof(QVector2D) == 4);
+
 /*!
     \class QVector2D
     \brief The QVector2D class represents a vector or vertex in 2D space.
@@ -487,6 +490,9 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 
 
 #ifndef QT_NO_VECTOR3D
+
+static_assert(sizeof(QVector3D) == 12);
+static_assert(alignof(QVector3D) == 4);
 
 /*!
     \class QVector3D
@@ -1124,6 +1130,9 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 
 
 #ifndef QT_NO_VECTOR4D
+
+static_assert(sizeof(QVector4D) == 16);
+static_assert(alignof(QVector4D) == 4);
 
 /*!
     \class QVector4D
