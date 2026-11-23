@@ -1240,8 +1240,11 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         cmd.cmd = QD3D11CommandBuffer::Command::BindShaderResources;
         cmd.args.bindShaderResources.resourceBatchesIndex = cbD->retainResourceBatches(srbD->resourceBatches);
         // dynamic offsets have to be applied at the time of executing the bind
-        // operations, not here
-        cmd.args.bindShaderResources.offsetOnlyChange = !srbChanged && !srbRebuilt && !srbUpdate && srbD->hasDynamicOffset;
+        // operations, not here. A pipeline change means the batches may have
+        // been rebuilt above for a different native resource binding map, so
+        // that must lead to a full rebind, not just updating the offsets.
+        cmd.args.bindShaderResources.offsetOnlyChange = !pipelineChanged && !srbChanged
+                && !srbRebuilt && !srbUpdate && srbD->hasDynamicOffset;
         cmd.args.bindShaderResources.dynamicOffsetCount = 0;
         if (srbD->hasDynamicOffset) {
             if (dynamicOffsetCount < QD3D11CommandBuffer::MAX_DYNAMIC_OFFSET_COUNT) {
