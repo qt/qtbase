@@ -136,6 +136,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(PermissionStatusHash, g_permissionStatusHash, ({
 static Qt::PermissionStatus
 getCombinedStatus(const QList<QtAndroidPrivate::PermissionResult> &androidResults)
 {
+    if (androidResults.isEmpty())
+        return Qt::PermissionStatus::Undetermined;
+
     // Android returns only Denied or Granted
     for (const auto &result : androidResults) {
         const auto status = permissionStatusForAndroidResult(result);
@@ -180,6 +183,14 @@ namespace QPermissions::Private
             [callback, permission](QFuture<QtAndroidPrivate::PermissionResult> future) {
                 const auto androidResults = future.isValid() ? future.results()
                                                              : QList{QtAndroidPrivate::Denied};
+                if (androidResults.isEmpty()) {
+                    // Empty results indicate cancellation, don't cache a status
+                    // so checkPermission() stays Undetermined and app can retry.
+                    const auto status = checkPermission(permission);
+                    callback(status == Qt::PermissionStatus::Undetermined
+                                 ? Qt::PermissionStatus::Denied : status);
+                    return;
+                }
                 const auto status = getCombinedStatus(androidResults);
                 g_permissionStatusHash->insert(permission.type().id(), status);
                 callback(status);
