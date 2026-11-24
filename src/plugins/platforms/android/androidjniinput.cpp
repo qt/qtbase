@@ -9,6 +9,7 @@
 #include "androidjniinput.h"
 #include "androidjnimenu.h"
 #include "androidjnimain.h"
+#include "qandroideventdispatcher.h"
 #include "qandroidplatformintegration.h"
 
 #include <qpa/qplatformwindow.h>
@@ -884,6 +885,12 @@ namespace QtAndroidInput
                     QWindowSystemInterface::SynchronousDelivery>(
                     nullptr, type, key, modifiers, text, autoRepeat);
         };
+
+        if (QtAndroid::blockEventLoopsWhenSuspended() && QAndroidEventDispatcherStopper::stopped()) {
+            qWarning("Dropping Android key event while the Qt GUI thread is stopped");
+            return false;
+        }
+
         // A cross-thread QWSI flush can return another queued event's acceptance.
         if (QThread::isMainThread())
             sendEvent();
