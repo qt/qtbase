@@ -1863,8 +1863,8 @@ QDomNode QDomNode::parentNode() const
     \snippet code/src_xml_dom_qdom_snippet.cpp 4
 
     Then the list of child nodes for the "body"-element will contain
-    the node created by the &lt;h1&gt; tag and the node created by the
-    &lt;p&gt; tag.
+    the node created by the \c{<h1>} tag and the node created by the
+    \c{<p>} tag.
 
     The nodes in the list are not copied; so changing the nodes in the
     list will also change the children of this node.
@@ -1914,8 +1914,8 @@ QDomNode QDomNode::lastChild() const
 
     \snippet code/src_xml_dom_qdom_snippet.cpp 5
 
-    and this QDomNode represents the &lt;p&gt; tag, previousSibling()
-    will return the node representing the &lt;h1&gt; tag.
+    and this QDomNode represents the \c{<p>} tag, previousSibling()
+    will return the node representing the \c{<h1>} tag.
 
     \sa nextSibling()
 */
@@ -1934,8 +1934,8 @@ QDomNode QDomNode::previousSibling() const
 
     \snippet code/src_xml_dom_qdom_snippet.cpp 6
 
-    and this QDomNode represents the <p> tag, nextSibling() will
-    return the node representing the <h2> tag.
+    and this QDomNode represents the \c{<p>} tag, nextSibling() will
+    return the node representing the \c{<h2>} tag.
 
     \sa previousSibling()
 */
@@ -3277,7 +3277,7 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
     The QDomDocumentType class allows read-only access to some of the
     data structures in the DTD: it can return maps of entities() and
     notations(). In addition the function name() returns the name
-    of the document type as specified in the &lt;!DOCTYPE name&gt;
+    of the document type as specified in the \c{<!DOCTYPE name>}
     tag. This class also provides the publicId(), systemId() and
     internalSubset() functions.
 
@@ -3318,7 +3318,7 @@ QDomDocumentType::QDomDocumentType(QDomDocumentTypePrivate *pimpl)
 QDomDocumentType &QDomDocumentType::operator=(const QDomDocumentType &other) = default;
 /*!
     Returns the name of the document type as specified in the
-    &lt;!DOCTYPE name&gt; tag.
+    \c{<!DOCTYPE name>} tag.
 
     \sa nodeName()
 */
@@ -5148,7 +5148,7 @@ void QDomCDATASectionPrivate::save(QTextStream& s, int, int) const
 
     CDATA sections are used to escape blocks of text containing
     characters that would otherwise be regarded as markup. The only
-    delimiter that is recognized in a CDATA section is the "]]&gt;"
+    delimiter that is recognized in a CDATA section is the \c{]]>}
     string that terminates the CDATA section. CDATA sections cannot be
     nested. Their primary purpose is for including material such as
     XML fragments, without needing to escape all the delimiters.
