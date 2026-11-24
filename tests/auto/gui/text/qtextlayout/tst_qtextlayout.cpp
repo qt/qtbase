@@ -17,6 +17,7 @@
 
 #include <qdebug.h>
 
+using namespace Qt::StringLiterals;
 
 #define TESTFONT_SIZE 12
 
@@ -68,6 +69,8 @@ private slots:
 #endif
     void xToCursorForBidiEnds_data();
     void xToCursorForBidiEnds();
+    void xToCursorForRightToLeftNeutrals_data();
+    void xToCursorForRightToLeftNeutrals();
     void boundingRectTopLeft();
     void graphemeBoundaryForSurrogatePairs();
     void tabStops();
@@ -1257,6 +1260,62 @@ void tst_QTextLayout::xToCursorForBidiEnds()
     QCOMPARE(line.xToCursor(line.width()), rightPosition);
 
     layout.endLayout();
+}
+
+void tst_QTextLayout::xToCursorForRightToLeftNeutrals_data()
+{
+    QTest::addColumn<QString>("text");
+
+    QTest::addRow("space and emoji") << QStringLiteral(" \U0001F399");
+    QTest::addRow("emoji and space") << QStringLiteral("\U0001F399 ");
+    QTest::addRow("punctuation") << QStringLiteral("!?.");
+}
+
+void tst_QTextLayout::xToCursorForRightToLeftNeutrals()
+{
+    QFETCH(QString, text);
+
+    // Neutral characters in a right-to-left paragraph end up in a single
+    // right-to-left item with a script that is handled by positionInLigature()
+    QTextOption option;
+    option.setTextDirection(Qt::RightToLeft);
+
+    QTextLayout layout(text, testFont);
+    layout.setTextOption(option);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    QList<int> cursorPositions;
+    for (int pos = 0; ; pos = layout.nextCursorPosition(pos)) {
+        cursorPositions.append(pos);
+        if (pos >= text.size())
+            break;
+    }
+
+    const qreal width = line.naturalTextWidth();
+    QVERIFY(width > 0);
+    // Offset by a quarter pixel to avoid hitting glyph edges and midpoints exactly
+    for (qreal x = 0.25; x < width; x += 0.5) {
+        const int between = line.xToCursor(x, QTextLine::CursorBetweenCharacters);
+        QVERIFY2(cursorPositions.contains(between),
+                 qPrintable(u"x=%1, position=%2"_s.arg(x).arg(between)));
+        for (int pos : std::as_const(cursorPositions)) {
+            QVERIFY2(qAbs(line.cursorToX(between) - x) <= qAbs(line.cursorToX(pos) - x),
+                     qPrintable(u"x=%1, position=%2, closer position=%3"_s
+                                .arg(x).arg(between).arg(pos)));
+        }
+
+        // In right-to-left text, a character spans from the x of the next cursor
+        // position on the left to its own cursor position on the right
+        const int on = line.xToCursor(x, QTextLine::CursorOnCharacter);
+        QVERIFY2(on >= 0 && on < text.size() && cursorPositions.contains(on),
+                 qPrintable(u"x=%1, position=%2"_s.arg(x).arg(on)));
+        const int next = layout.nextCursorPosition(on);
+        QVERIFY2(line.cursorToX(next) <= x && x <= line.cursorToX(on),
+                 qPrintable(u"x=%1, position=%2 [%3, %4]"_s
+                            .arg(x).arg(on).arg(line.cursorToX(next)).arg(line.cursorToX(on))));
+    }
 }
 
 void tst_QTextLayout::boundingRectTopLeft()
