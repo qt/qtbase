@@ -3707,10 +3707,12 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
         }
     }
 
-    if (glyph_pos == -1 && end > 0)
+    const bool rightToLeft = si->analysis.bidiLevel % 2;
+    if (glyph_pos == -1 && end > 0) {
         glyph_pos = logClusters[end - 1];
-    else {
-        if (x <= edge)
+    } else {
+        // If on border, snap to left-most glyph
+        if (rightToLeft ? x > edge : x <= edge)
             glyph_pos--;
     }
 
@@ -3729,6 +3731,12 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
         int n = ((x - left) / perItemWidth).floor().toInt();
         QFixed dist = x - left - n * perItemWidth;
         int closestItem = dist > (perItemWidth / 2) ? n + 1 : n;
+        // In right-to-left items, the first character of the cluster is on the right
+        if (rightToLeft)
+            closestItem = clusterLength - closestItem;
+        // x should be within the glyph, but make sure we never go past the boundaries
+        // of the cluster (0 is before its first character, clusterLength after its last)
+        closestItem = std::clamp(closestItem, 0, clusterLength);
         if (cursorOnCharacter && closestItem > 0)
             closestItem--;
         int pos = clusterStart + closestItem;
