@@ -6,6 +6,8 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <qohosutils.h>
 
+#include <algorithm>
+
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
@@ -92,26 +94,28 @@ std::optional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &er
         : std::nullopt;
 }
 
-void rethrowUnlessJsBusinessErrorIs(
-    const Napi::Error &error, std::uint32_t suppressedErrorCode, const char *callerContextName)
+void rethrowUnlessJsBusinessErrorIsOneOf(
+    const Napi::Error &error, const std::vector<std::uint32_t> &suppressedErrorCodes,
+    const char *callerContextName)
 {
-    if (tryGetCodeFromJsBusinessError(error) != suppressedErrorCode)
+    const auto optErrorCode = tryGetCodeFromJsBusinessError(error);
+    if (std::find(suppressedErrorCodes.begin(), suppressedErrorCodes.end(), optErrorCode) == suppressedErrorCodes.end())
         throw;
 
     qOhosPrintfWarning(
         "%s: ignored expected JS business error %u",
-        callerContextName, suppressedErrorCode);
+        callerContextName, *optErrorCode);
 }
 
 bool runIgnoringJsBusinessError(
-    QOhosJsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
-    const std::function<void()> &action)
+    QOhosJsState &, const std::vector<std::uint32_t> &suppressedErrorCodes,
+    const char *callerContextName, const std::function<void()> &action)
 {
     try {
         action();
         return true;
     } catch (const Napi::Error &error) {
-        rethrowUnlessJsBusinessErrorIs(error, suppressedErrorCode, callerContextName);
+        rethrowUnlessJsBusinessErrorIsOneOf(error, suppressedErrorCodes, callerContextName);
         return false;
     }
 }

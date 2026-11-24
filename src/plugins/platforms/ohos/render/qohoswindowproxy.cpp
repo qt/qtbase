@@ -1150,7 +1150,7 @@ void QOhosWindowProxy::setWindowTitleButtonVisible(
 
             constexpr auto capabilityNotSupportedErrorCode = 801;
             QtOhos::runIgnoringJsBusinessError(
-                jsState, capabilityNotSupportedErrorCode, "setWindowTitleButtonVisible()",
+                jsState, {capabilityNotSupportedErrorCode}, "setWindowTitleButtonVisible()",
                 [&]() {
                     m_jsScopeData->jsWindowRef->eval(
                         "setWindowTitleButtonVisible(*)",
