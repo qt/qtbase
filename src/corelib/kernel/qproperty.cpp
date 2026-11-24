@@ -1070,7 +1070,7 @@ QString QPropertyBindingError::description() const
 /*!
   \class QUntypedBindable
   \inmodule QtCore
-  \brief QUntypedBindable is a uniform interface over bindable properties like \c QProperty\<T\>
+  \brief QUntypedBindable is a uniform interface over bindable properties like \c{QProperty<T>}
          and \c QObjectBindableProperty of any type \c T.
   \since 6.0
 
