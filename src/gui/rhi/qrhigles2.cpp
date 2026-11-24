@@ -1444,6 +1444,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
             ctx->getProcAddress(QByteArrayLiteral("glClearBufferSubData")));
         caps.clearBuffer = glClearBufferSubData != nullptr;
     }
+    if (qEnvironmentVariableIntValue("QT_GL_NO_CLEAR_BUFFER_SUBDATA"))
+        caps.clearBuffer = false;
 
     // glMultiDraw*IndirectCount: core in 4.6, ARB on older desktop.
     // No counterpart in OpenGL ES.
@@ -1500,8 +1502,13 @@ void QRhiGles2::destroy()
             f->glDeleteShader(shader);
         m_shaderCache.clear();
 
+        if (clearBufferProgram)
+            f->glDeleteProgram(clearBufferProgram);
+
         releaseBufferNameCache();
     }
+    clearBufferProgram = 0;
+    clearBufferProgramFailed = false;
     bufferNameCacheCount = 0; // clear even when the context is lost
 
     if (!importedContext) {
@@ -3409,6 +3416,12 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.clearBufferSubData.offset = u.offset;
                 cmd.args.clearBufferSubData.size = u.readSize;
                 cmd.args.clearBufferSubData.value = u.fillValue;
+            } else if (caps.compute && ensureClearBufferProgram()) {
+                cmd.cmd = QGles2CommandBuffer::Command::ClearBufferCompute;
+                cmd.args.clearBufferCompute.buffer = bufD->buffer;
+                cmd.args.clearBufferCompute.offsetWords = quint32(u.offset) / 4u;
+                cmd.args.clearBufferCompute.countWords = quint32(u.readSize) / 4u;
+                cmd.args.clearBufferCompute.value = u.fillValue32();
             } else {
                 QRhiBufferData fillData;
                 fillData.assign(QByteArray(u.readSize, char(u.fillValue)));
@@ -4436,6 +4449,20 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             glClearBufferSubData(cmd.args.clearBufferSubData.target, GL_R8UI,
                                  cmd.args.clearBufferSubData.offset, cmd.args.clearBufferSubData.size,
                                  GL_RED_INTEGER, GL_UNSIGNED_BYTE, &cmd.args.clearBufferSubData.value);
+            break;
+        case QGles2CommandBuffer::Command::ClearBufferCompute:
+        {
+            const auto &a(cmd.args.clearBufferCompute);
+            f->glUseProgram(clearBufferProgram);
+            f->glUniform1ui(clearBufferUniformLoc[0], a.offsetWords);
+            f->glUniform1ui(clearBufferUniformLoc[1], a.countWords);
+            f->glUniform1ui(clearBufferUniformLoc[2], a.value);
+            f->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, a.buffer);
+            const quint32 groups = qMin((a.countWords + 63u) / 64u,
+                                        quint32(qMax(1, caps.maxThreadGroupsPerDimension)));
+            f->glDispatchCompute(groups, 1, 1);
+            f->glMemoryBarrier(barriersForBuffer());
+        }
             break;
         case QGles2CommandBuffer::Command::GetBufferSubData:
         {
@@ -6452,6 +6479,66 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
     f->glAttachShader(program, shader);
 
     return true;
+}
+
+GLuint QRhiGles2::ensureClearBufferProgram()
+{
+    if (clearBufferProgram || clearBufferProgramFailed)
+        return clearBufferProgram;
+
+    if (!ensureContext())
+        return 0;
+
+    static const char body[] =
+        "layout(local_size_x = 64) in;\n"
+        "layout(std430, binding = 0) buffer Buf { uint data[]; };\n"
+        "uniform uint offsetWords;\n"
+        "uniform uint countWords;\n"
+        "uniform uint value;\n"
+        "void main() {\n"
+        "    uint stride = gl_NumWorkGroups.x * 64u;\n"
+        "    for (uint i = gl_GlobalInvocationID.x; i < countWords; i += stride)\n"
+        "        data[offsetWords + i] = value;\n"
+        "}\n";
+    const QByteArray source = QByteArray(caps.gles ? "#version 310 es\nprecision highp int;\n"
+                                                   : "#version 430\n") + body;
+    const char *srcStr = source.constData();
+
+    GLuint shader = f->glCreateShader(GL_COMPUTE_SHADER);
+    f->glShaderSource(shader, 1, &srcStr, nullptr);
+    f->glCompileShader(shader);
+    GLint compiled = 0;
+    f->glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled) {
+        GLint infoLogLength = 0;
+        f->glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
+        QByteArray log;
+        if (infoLogLength > 1) {
+            GLsizei length = 0;
+            log.resize(infoLogLength);
+            f->glGetShaderInfoLog(shader, infoLogLength, &length, log.data());
+        }
+        qWarning("Failed to compile buffer clear shader, falling back to uploads: %s", log.constData());
+        f->glDeleteShader(shader);
+        clearBufferProgramFailed = true;
+        return 0;
+    }
+
+    GLuint program = f->glCreateProgram();
+    f->glAttachShader(program, shader);
+    const bool linked = linkProgram(program);
+    f->glDeleteShader(shader);
+    if (!linked) {
+        f->glDeleteProgram(program);
+        clearBufferProgramFailed = true;
+        return 0;
+    }
+
+    clearBufferUniformLoc[0] = f->glGetUniformLocation(program, "offsetWords");
+    clearBufferUniformLoc[1] = f->glGetUniformLocation(program, "countWords");
+    clearBufferUniformLoc[2] = f->glGetUniformLocation(program, "value");
+    clearBufferProgram = program;
+    return clearBufferProgram;
 }
 
 bool QRhiGles2::linkProgram(GLuint program)

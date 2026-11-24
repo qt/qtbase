@@ -358,6 +358,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             GetBufferSubData,
             CopyBuf,
             ClearBufferSubData,
+            ClearBufferCompute,
             CopyTex,
             ReadPixels,
             SubImage,
@@ -513,6 +514,12 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int size;
                 quint8 value;
             } clearBufferSubData;
+            struct {
+                GLuint buffer;
+                quint32 offsetWords;
+                quint32 countWords;
+                quint32 value;
+            } clearBufferCompute;
             struct {
                 GLenum srcTarget;
                 GLenum srcFaceTarget;
@@ -1042,6 +1049,7 @@ public:
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion,
                        std::optional<QShaderVersion> commonVersion = std::nullopt);
     bool linkProgram(GLuint program);
+    GLuint ensureClearBufferProgram();
     using ActiveUniformLocationTracker = QDuplicateTracker<int, 32>;
     void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
                                  const QByteArray &namePrefix, int binding, int baseOffset,
@@ -1289,6 +1297,9 @@ public:
     uint frameNo = 0;
     std::array<GLuint, 8> bufferNameCache;
     int bufferNameCacheCount = 0;
+    GLuint clearBufferProgram = 0;
+    GLint clearBufferUniformLoc[3] = {};
+    bool clearBufferProgramFailed = false;
 
     struct DeferredReleaseEntry {
         enum Type {

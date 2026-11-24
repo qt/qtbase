@@ -11043,9 +11043,8 @@ void QRhiResourceUpdateBatch::copyBuffer(QRhiBuffer *dst, QRhiBuffer *src, const
    \note The clear maps to the native buffer fill or clear operation of the
    underlying 3D API, such as \c vkCmdFillBuffer or
    \c ClearUnorderedAccessViewUint, without transferring data from the CPU.
-   The exception is OpenGL ES, which has no way of clearing the contents of a
-   buffer on the GPU. There the clear is implemented by uploading \a size
-   bytes of data.
+   OpenGL ES has no such operation; there the clear is performed by a
+   dedicated compute shader dispatch.
 
    \note Mixing clears with host-side updates
    (\l{QRhiResourceUpdateBatch::uploadStaticBuffer()}{uploadStaticBuffer()}) on
