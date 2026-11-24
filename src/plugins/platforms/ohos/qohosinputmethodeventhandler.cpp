@@ -273,7 +273,7 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
             constexpr int z = 0;
             QWindowSystemInterface::handleTabletEvent(
                 targetWindow, timeStampMs.count(), {touchPoint.x, touchPoint.y},
-                clickPoint,
+                clickPoint + displayOffset,
                 static_cast<int>(QInputDevice::DeviceType::Stylus),
                 static_cast<int>(QPointingDevice::PointerType::Pen),
                 buttons, touchPoint.force, xTilt, yTilt, tangentialPressure, rotation,
