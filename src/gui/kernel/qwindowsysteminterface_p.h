@@ -33,7 +33,9 @@ QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(lcQpaInputDevices, Q_GUI_EXPORT)
 
 class QWindowSystemEventHandler;
 
-class Q_GUI_EXPORT QWindowSystemInterfacePrivate {
+class Q_GUI_EXPORT QWindowSystemInterfacePrivate
+{
+    Q_GADGET
 public:
     enum EventType {
         UserInputEvent = 0x100,
@@ -72,6 +74,7 @@ public:
         Paint = 0x24,
         WindowDevicePixelRatioChanged = 0x25,
     };
+    Q_ENUM(EventType)
 
     class WindowSystemEvent {
     public:

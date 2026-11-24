@@ -1245,3 +1245,5 @@ Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, const QPointingDevice *de
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwindowsysteminterface_p.cpp"
