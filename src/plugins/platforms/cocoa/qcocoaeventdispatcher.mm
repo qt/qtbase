@@ -760,6 +760,7 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
       processEventsCalled(0),
       currentModalSessionCached(nullptr),
       lastSerial(-1),
+      pendingSerial(-1),
       interrupt(false)
 {
 }
@@ -868,8 +869,17 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
 
     int serial = serialNumber.loadRelaxed();
     if (!threadData.loadRelaxed()->canWait || (serial != lastSerial)) {
-        lastSerial = serial;
+        // Record the wakeUps we've seen before sending posted events, so that
+        // any wakeUps that happen while sending will result in another pass.
+        pendingSerial = serial;
         QCoreApplication::sendPostedEvents();
+        // But don't treat them as handled until after sending posted events, so
+        // that a recursive processEvents() during event delivery will realize
+        // there are potentially events to process, instead of leaving those until
+        // the recursion unwinds back to this level. The recursion may have handled
+        // newer wakeUps than we saw at this level, so use pendingSerial instead
+        // of serial, to not roll back lastSerial.
+        lastSerial = pendingSerial;
         QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
     }
 }

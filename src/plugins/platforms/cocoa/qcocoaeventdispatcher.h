@@ -122,6 +122,7 @@ public:
     CFRunLoopObserverRef waitingObserver;
     QAtomicInt serialNumber;
     int lastSerial;
+    int pendingSerial;
     bool interrupt;
     bool propagateInterrupt = false;
 
