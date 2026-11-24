@@ -486,7 +486,8 @@ void QXcbConnection::xi2SetupDevices()
         switch (deviceInfo->type) {
         case XCB_INPUT_DEVICE_TYPE_MASTER_KEYBOARD: {
             if (newOrKeep(deviceInfo->deviceid)) {
-                auto dev = new QInputDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)),
+                auto dev = new QInputDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo),
+                                                              xcb_input_xi_device_info_name_length(deviceInfo)),
                                             deviceInfo->deviceid, QInputDevice::DeviceType::Keyboard,
                                             QString::number(deviceInfo->deviceid << 16 | deviceInfo->attachment, 16), this);
                 QWindowSystemInterface::registerInputDevice(dev);
@@ -495,7 +496,9 @@ void QXcbConnection::xi2SetupDevices()
         case XCB_INPUT_DEVICE_TYPE_MASTER_POINTER: {
             m_xiMasterPointerIds.append(deviceInfo->deviceid);
             if (newOrKeep(deviceInfo->deviceid)) {
-                auto dev = new QXcbScrollingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
+                auto dev = new QXcbScrollingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo),
+                                                                     xcb_input_xi_device_info_name_length(deviceInfo)),
+                                                   deviceInfo->deviceid,
                                    QInputDevice::Capability::Position | QInputDevice::Capability::Scroll | QInputDevice::Capability::Hover,
                                    32, QString::number(deviceInfo->attachment << 16 | deviceInfo->deviceid, 16), this);
                 QWindowSystemInterface::registerInputDevice(dev);
@@ -528,7 +531,8 @@ void QXcbConnection::xi2SetupDevices()
                 QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
                 Q_ASSERT(master);
                 QWindowSystemInterface::registerInputDevice(new QInputDevice(
-                    QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
+                    QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo),
+                                      xcb_input_xi_device_info_name_length(deviceInfo)), deviceInfo->deviceid,
                     QInputDevice::DeviceType::Keyboard, master->seatName(), master));
             }
         } break;

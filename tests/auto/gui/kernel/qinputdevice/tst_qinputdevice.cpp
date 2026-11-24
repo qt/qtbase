@@ -1,6 +1,7 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QGuiApplication>
 #include <QTest>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qinputdevice.h>
@@ -16,6 +17,7 @@ public:
 private slots:
     void initTestCase();
     void multiSeatDevices();
+    void deviceNamesHaveNoControlCharacters();
 
 private:
     const QInputDevice *getPrimaryKeyboard(const QString& seatName = QString());
@@ -97,6 +99,23 @@ void tst_QInputDevice::multiSeatDevices()
     QCOMPARE(QInputDevice::primaryKeyboard("seat 2")->systemId(), 2000);
     QVERIFY(QPointingDevice::primaryPointingDevice("seat 2"));
     QCOMPARE(QPointingDevice::primaryPointingDevice("seat 2")->systemId(), 2010);
+}
+
+void tst_QInputDevice::deviceNamesHaveNoControlCharacters()
+{
+    // On xcb the names come from XIQueryDevice, where they are not
+    // NUL-terminated; reading them as C strings appends bytes from the reply.
+    if (QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive) != 0)
+        QSKIP("xcb-specific: the device names come from XIQueryDevice");
+
+    for (const QInputDevice *dev : QInputDevice::devices()) {
+        for (const QChar ch : dev->name()) {
+            QVERIFY2(ch.category() != QChar::Other_Control,
+                     qPrintable(QStringLiteral("control character 0x%1 in device name \"%2\"")
+                                    .arg(int(ch.unicode()), 2, 16, QLatin1Char('0'))
+                                    .arg(dev->name())));
+        }
+    }
 }
 
 QTEST_MAIN(tst_QInputDevice)
