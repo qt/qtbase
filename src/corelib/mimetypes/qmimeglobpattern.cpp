@@ -4,9 +4,6 @@
 
 #include "qmimeglobpattern_p.h"
 
-#if QT_CONFIG(regularexpression)
-#include <QRegularExpression>
-#endif
 #include <QStringList>
 #include <QDebug>
 
@@ -144,10 +141,8 @@ bool QMimeGlobPattern::matchFileName(const QString &fileName) const
     case OtherPattern:
         // Other fallback patterns: slow but correct method
 #if QT_CONFIG(regularexpression)
-        auto rx = QRegularExpression::fromWildcard(m_pattern);
-        if (m_caseSensitivity == Qt::CaseInsensitive)
-            rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-        return rx.match(fileName).hasMatch();
+        Q_ASSERT(m_regExp);
+        return m_regExp->match(fileName).hasMatch();
 #else
         return false;
 #endif

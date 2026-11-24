@@ -22,8 +22,12 @@ QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qhash.h>
+#if QT_CONFIG(regularexpression)
+#include <QtCore/qregularexpression.h>
+#endif
 
 #include <algorithm>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +59,10 @@ public:
         m_caseSensitivity(s),
         m_patternType(detectPatternType(m_pattern))
     {
+#if QT_CONFIG(regularexpression)
+        if (m_patternType == OtherPattern && !m_pattern.isEmpty())
+            m_regExp = QRegularExpression::fromWildcard(m_pattern);
+#endif
     }
 
     void swap(QMimeGlobPattern &other) noexcept
@@ -64,6 +72,9 @@ public:
         qSwap(m_weight,          other.m_weight);
         qSwap(m_caseSensitivity, other.m_caseSensitivity);
         qSwap(m_patternType,     other.m_patternType);
+#if QT_CONFIG(regularexpression)
+        qSwap(m_regExp,          other.m_regExp);
+#endif
     }
 
     bool matchFileName(const QString &fileName) const;
@@ -89,6 +100,9 @@ private:
     int m_weight;
     Qt::CaseSensitivity m_caseSensitivity;
     PatternType m_patternType;
+#if QT_CONFIG(regularexpression)
+    std::optional<QRegularExpression> m_regExp;
+#endif
 };
 Q_DECLARE_SHARED(QMimeGlobPattern)
 

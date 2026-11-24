@@ -285,6 +285,21 @@ void tst_QMimeDatabase::mimeTypeForFileName_data()
         QTest::newRow("glob that ends with *, also matches *.pdf. *.pdf has higher weight")
                 << "README.pdf"
                 << "application/pdf";
+        QTest::newRow("glob that needs a regular expression") << "page.1"
+                                                              << "application/x-troff-man";
+        QTest::newRow("globs that need a regular expression, higher weight wins")
+                << "libfoo.so.1"
+                << "application/x-sharedlib";
+        QTest::newRow("glob that needs a regular expression, upper case")
+                << "LIBFOO.SO.1"
+                << "application/x-sharedlib";
+    } else {
+        QTest::newRow("glob that needs a regular expression")
+                << "i_foo.txt"
+                << "application/x-isatab-investigation";
+        QTest::newRow("glob that needs a regular expression, upper case")
+                << "I_FOO.TXT"
+                << "application/x-isatab-investigation";
     }
     QTest::newRow("directory") << "/" << "inode/directory";
     QTest::newRow("resource-directory") << ":/files/" << "inode/directory";
