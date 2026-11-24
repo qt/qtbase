@@ -75,6 +75,7 @@ public:
     void *nativeResource(const QByteArray &resource);
 
     std::any surfaceRole() const override;
+    static bool isGrabbingPopup(const QWaylandWindow *window);
 
 protected:
     void requestWindowStates(Qt::WindowStates states) override;

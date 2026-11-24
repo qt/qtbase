@@ -349,10 +349,10 @@ QWaylandXdgSurface::QWaylandXdgSurface(QWaylandXdgShell *shell, ::xdg_surface *s
     Qt::WindowType type =  static_cast<Qt::WindowType>(int(window->windowFlags() & Qt::WindowType_Mask));
     auto *transientParent = window->transientParent();
 
-    if (type == Qt::ToolTip)
-        setPopup(transientParent);
-    else if (type == Qt::Popup)
+    if (isGrabbingPopup(window))
         setGrabPopup(transientParent, display->lastInputDevice(), display->lastInputSerial());
+    else if (type == Qt::ToolTip || type == Qt::Popup)
+        setPopup(transientParent);
     else
         setToplevel();
 
@@ -570,6 +570,12 @@ void QWaylandXdgSurface::setGrabPopup(QWaylandWindow *parent, QWaylandInputDevic
         const auto pos = m_popup->m_xdgSurface->window()->display()->waylandCursor()->pos();
         QWindowSystemInterface::handleEnterEvent(enter, enter->handle()->mapFromGlobal(pos), pos);
     }
+}
+
+bool QWaylandXdgSurface::isGrabbingPopup(const QWaylandWindow *window)
+{
+    Qt::WindowType type = static_cast<Qt::WindowType>(int(window->windowFlags() & Qt::WindowType_Mask));
+    return type == Qt::Popup && !(window->windowFlags() & Qt::WindowDoesNotAcceptFocus);
 }
 
 void QWaylandXdgSurface::xdg_surface_configure(uint32_t serial)
