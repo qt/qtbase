@@ -402,8 +402,8 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
             .extraOffArg = {},
             .optOnCallExceptionHandler = [](const Napi::Error &error) {
                 constexpr auto capabilityNotSupportedErrorCode = 801;
-                QtOhos::rethrowUnlessJsBusinessErrorIs(
-                    error, capabilityNotSupportedErrorCode, "on('windowWillClose')");
+                QtOhos::rethrowUnlessJsBusinessErrorIsOneOf(
+                    error, {capabilityNotSupportedErrorCode}, "on('windowWillClose')");
             },
         });
 }

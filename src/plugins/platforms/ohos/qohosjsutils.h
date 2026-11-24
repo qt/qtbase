@@ -17,6 +17,7 @@
 #include <qohosutils.h>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "qohoscloseeventcontext_p.h"
 
@@ -49,16 +50,17 @@ std::optional<T> getOptionalProperty(const QNapi::Object &object, const std::str
 
 std::optional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error);
 
-// On JS business error matching suppressedErrorCode warns and returns, otherwise rethrows.
+// On JS business error matching one of suppressedErrorCodes warns and returns, otherwise rethrows.
 // Call from a catch block.
-void rethrowUnlessJsBusinessErrorIs(
-    const Napi::Error &error, std::uint32_t suppressedErrorCode, const char *callerContextName);
+void rethrowUnlessJsBusinessErrorIsOneOf(
+    const Napi::Error &error, const std::vector<std::uint32_t> &suppressedErrorCodes,
+    const char *callerContextName);
 
-// Runs action; on JS business error matching suppressedErrorCode warns and returns, otherwise rethrows.
-// Returns true if action completed, false if error was swallowed.
+// Runs action; on JS business error matching one of suppressedErrorCodes warns and returns,
+// otherwise rethrows. Returns true if action completed, false if error was swallowed.
 bool runIgnoringJsBusinessError(
-    QOhosJsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
-    const std::function<void()> &action);
+    QOhosJsState &, const std::vector<std::uint32_t> &suppressedErrorCodes,
+    const char *callerContextName, const std::function<void()> &action);
 
 template<typename T>
 QNapi::Promise adaptAsyncCallResultToJsPromise(
