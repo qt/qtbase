@@ -101,19 +101,24 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
+// Used by QEGLPlatformContext::createFrom() to adopt a native EGL context
+// (QNativeInterface::QEGLContext::fromNative()). Both constructors take the
+// Wayland display from the integration, as createFrom() cannot pass it:
+// the temporary surface and the reconnection use it.
 QWaylandGLContext::QWaylandGLContext()
     : QEGLPlatformContext(),
+      m_display(QWaylandIntegration::instance()->display()),
       m_api(EGL_OPENGL_ES_API)
 {
+    watchReconnection();
 }
 
-QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, QWaylandDisplay *display,
-                                     const QSurfaceFormat &fmt, QPlatformOpenGLContext *share)
+QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QSurfaceFormat &fmt,
+                                     QPlatformOpenGLContext *share)
     : QEGLPlatformContext(fmt, share, eglDisplay)
-    , m_display(display)
+    , m_display(QWaylandIntegration::instance()->display())
 {
-    m_reconnectionWatcher = QObject::connect(m_display, &QWaylandDisplay::connected,
-                                             m_display, [this] { invalidateContext(); });
+    watchReconnection();
 
     switch (format().renderableType()) {
     case QSurfaceFormat::OpenVG:
@@ -146,6 +151,12 @@ QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, QWaylandDisplay *dis
                                << "Subsurface rendering can be affected."
                                << "It may also cause the event loop to freeze in some situations";
     }
+}
+
+void QWaylandGLContext::watchReconnection()
+{
+    m_reconnectionWatcher = QObject::connect(m_display, &QWaylandDisplay::connected,
+                                             m_display, [this] { invalidateContext(); });
 }
 
 EGLSurface QWaylandGLContext::createTemporaryOffscreenSurface()

@@ -125,7 +125,7 @@ QWaylandWindow *QWaylandEglClientBufferIntegration::createEglWindow(QWindow *win
 
 QPlatformOpenGLContext *QWaylandEglClientBufferIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
 {
-    return new QWaylandGLContext(m_eglDisplay, m_display, adjustedFormat(glFormat), share);
+    return new QWaylandGLContext(m_eglDisplay, adjustedFormat(glFormat), share);
 }
 
 // Returns the format with 8 bits requested for each color channel when no

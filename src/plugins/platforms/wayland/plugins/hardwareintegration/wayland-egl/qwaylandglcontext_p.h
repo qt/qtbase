@@ -23,7 +23,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandGLContext : public QEGLPlatformContext
 {
 public:
     QWaylandGLContext();
-    QWaylandGLContext(EGLDisplay eglDisplay, QWaylandDisplay *display, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
+    QWaylandGLContext(EGLDisplay eglDisplay, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     ~QWaylandGLContext();
 
     void swapBuffers(QPlatformSurface *surface) override;
@@ -41,6 +41,8 @@ protected:
     void runGLChecks() override;
 
 private:
+    void watchReconnection();
+
     QWaylandDisplay *m_display = nullptr;
     bool m_supportNonBlockingSwap = true;
     EGLenum m_api;
