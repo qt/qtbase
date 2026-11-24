@@ -189,6 +189,7 @@ private slots:
     void copyAfterFail();
     void copyRemovesTemporaryFile() const;
     void copyShouldntOverwrite();
+    void copyFallback_data();
     void copyFallback();
     void link();
     void linkToDir();
@@ -250,6 +251,7 @@ private slots:
     void rename_data();
     void rename();
     void renameWithAtEndSpecialFile() const;
+    void renameFallback_data();
     void renameFallback();
     void renameMultiple();
     void appendAndRead();
@@ -1609,10 +1611,18 @@ void tst_QFile::copyShouldntOverwrite()
     QVERIFY(!file.copy("tst_qfile.cpy"));
 }
 
+void tst_QFile::copyFallback_data()
+{
+    QTest::addColumn<QString>("sourceFileName");
+
+    // Using a resource file to trigger QFile::copy's fallback handling
+    QTest::newRow("resource") << ":/copy-fallback.qrc";
+}
+
 void tst_QFile::copyFallback()
 {
-    // Using a resource file to trigger QFile::copy's fallback handling
-    QFile file(":/copy-fallback.qrc");
+    QFETCH(QString, sourceFileName);
+    QFile file(sourceFileName);
     QFile::remove("file-copy-destination.txt");
 
     QVERIFY2(file.exists(), "test precondition");
@@ -3125,11 +3135,19 @@ void tst_QFile::renameWithAtEndSpecialFile() const
     file.close();
 }
 
-void tst_QFile::renameFallback()
+void tst_QFile::renameFallback_data()
 {
+    QTest::addColumn<QString>("sourceFileName");
+
     // Using a resource file both to trigger QFile::rename's fallback handling
     // and as a *read-only* source whose move should fail.
-    QFile file(":/rename-fallback.qrc");
+    QTest::newRow("resource") << ":/rename-fallback.qrc";
+}
+
+void tst_QFile::renameFallback()
+{
+    QFETCH(QString, sourceFileName);
+    QFile file(sourceFileName);
     QVERIFY(file.exists() && "(test-precondition)");
     QFile::remove("file-rename-destination.txt");
 
