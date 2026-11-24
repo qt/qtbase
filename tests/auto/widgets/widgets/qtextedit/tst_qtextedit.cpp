@@ -3,6 +3,7 @@
 
 
 #include <QTest>
+#include <QScopeGuard>
 #include <QSignalSpy>
 #include <QTimer>
 
@@ -2354,7 +2355,8 @@ void tst_QTextEdit::twoSameInputMethodEvents()
 #ifndef QT_NO_CONTEXTMENU
 void tst_QTextEdit::taskQTBUG_7902_contextMenuCrash()
 {
-    QTextEdit *w = new QTextEdit;
+    QPointer<QTextEdit> w = new QTextEdit;
+    const auto cleanup = qScopeGuard([&w] { delete w; });
     w->show();
     QVERIFY(QTest::qWaitForWindowExposed(w));
 
@@ -2366,8 +2368,9 @@ void tst_QTextEdit::taskQTBUG_7902_contextMenuCrash()
                                                    w->viewport()->mapToGlobal(w->rect().center()));
     qApp->postEvent(w->viewport(), cme);
 
-    QTest::qWait(300);
-    // No crash, it's allright.
+    // No crash, it's allright. Make sure the widget (and its popup menu) is
+    // really gone, so that it does not leak into the following tests.
+    QTRY_VERIFY(!w);
 }
 #endif
 
@@ -2531,8 +2534,8 @@ void tst_QTextEdit::inputMethodEvent()
 
     // test that input method gets chance to commit preedit when removing focus
     ed->setText("");
-    QTRY_VERIFY(QApplication::focusWindow());
-    QCOMPARE(qApp->focusObject(), ed);
+    QVERIFY(QTest::qWaitForWindowActive(ed));
+    QTRY_COMPARE(qApp->focusObject(), ed);
 
     m_platformInputContext.setCommitString("text");
     m_platformInputContext.m_commitCallCount = 0;
