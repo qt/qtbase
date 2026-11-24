@@ -17,6 +17,7 @@ bool isDebugUseBasicStyleAndThemeEnabled();
 bool isNativeNodeApiKeyEventsEnabled();
 bool isNativeNodeApiMouseEventsEnabled();
 bool isVsyncOnSoftwareBackingStoreEnabled();
+bool isEmulatorQuirkWorkaroundsEnabled();
 
 bool acquireAndCleanPendingAutoStartedInstanceWindowFlag();
 

@@ -22,6 +22,7 @@
 #include <qarkui/window_manager.h>
 #include <qohosdeviceinfo_p.h>
 #include <qohosdisplayinfo.h>
+#include <qohosjsmain.h>
 #include <qohosjsutils.h>
 #include <qohospixelmapconversions.h>
 #include <qohosplugincore.h>
@@ -1149,8 +1150,13 @@ void QOhosWindowProxy::setWindowTitleButtonVisible(
                 return;
 
             constexpr auto capabilityNotSupportedErrorCode = 801;
+            std::vector<std::uint32_t> ignoredErrorCodes{capabilityNotSupportedErrorCode};
+            if (QtOhos::isEmulatorQuirkWorkaroundsEnabled()) {
+                constexpr auto windowStateAbnormalErrorCode = 1300002;
+                ignoredErrorCodes.push_back(windowStateAbnormalErrorCode);
+            }
             QtOhos::runIgnoringJsBusinessError(
-                jsState, {capabilityNotSupportedErrorCode}, "setWindowTitleButtonVisible()",
+                jsState, ignoredErrorCodes, "setWindowTitleButtonVisible()",
                 [&]() {
                     m_jsScopeData->jsWindowRef->eval(
                         "setWindowTitleButtonVisible(*)",

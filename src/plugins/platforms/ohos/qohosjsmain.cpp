@@ -110,6 +110,7 @@ std::atomic<bool> debugDrawQtRasterBackingStoreFlushedRegion{false};
 std::atomic<bool> vsyncOnSoftwareBackingStoreEnabled{true};
 std::atomic<bool> enableNativeNodeApiKeyEvents{true};
 std::atomic<bool> enableNativeNodeApiMouseEvents{true};
+bool emulatorQuirkWorkaroundsEnabled = false;
 QtRunMode currentQtRunMode = QtRunMode::Normal;
 
 const auto callerPidWantArgName = "ohos.aafwk.param.callerPid";
@@ -518,6 +519,7 @@ struct AppProcessLaunchOptions
     QNapi::Boolean enableNativeNodeApiKeyEvents;
     QNapi::Boolean enableNativeNodeApiMouseEvents;
     QNapi::String envVarsJson;
+    QNapi::Boolean enableEmulatorQuirkWorkarounds;
 };
 
 AppProcessLaunchOptions getProcessLaunchOptionsFromWant(QNapi::Object launchWant)
@@ -568,6 +570,9 @@ AppProcessLaunchOptions getProcessLaunchOptionsFromWant(QNapi::Object launchWant
     assignWantParamIfPresent(
         launchOpts.envVarsJson,
         "io.qt.envVarsJson");
+    assignWantParamIfPresent(
+        launchOpts.enableEmulatorQuirkWorkarounds,
+        "io.qt.debug.enableEmulatorQuirkWorkarounds");
 
     return launchOpts;
 }
@@ -596,6 +601,9 @@ void setGlobalFlagsFromAppProcessLaunchOptions(const AppProcessLaunchOptions &la
 
     if (!launchOpts.enableNativeNodeApiMouseEvents.IsEmpty())
         enableNativeNodeApiMouseEvents = launchOpts.enableNativeNodeApiMouseEvents.Value();
+
+    if (!launchOpts.enableEmulatorQuirkWorkarounds.IsEmpty())
+        emulatorQuirkWorkaroundsEnabled = launchOpts.enableEmulatorQuirkWorkarounds.Value();
 
     if (!launchOpts.envVarsJson.IsEmpty()) {
         auto optEnvVars = tryMapJsonObjectToStringPairs(launchOpts.envVarsJson.Utf8Value());
@@ -1825,6 +1833,11 @@ bool isNativeNodeApiKeyEventsEnabled()
 bool isNativeNodeApiMouseEventsEnabled()
 {
     return enableNativeNodeApiMouseEvents;
+}
+
+bool isEmulatorQuirkWorkaroundsEnabled()
+{
+    return emulatorQuirkWorkaroundsEnabled;
 }
 
 bool acquireAndCleanPendingAutoStartedInstanceWindowFlag()
