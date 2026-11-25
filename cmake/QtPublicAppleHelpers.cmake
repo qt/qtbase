@@ -287,27 +287,54 @@ function(_qt_internal_escape_rfc_1034_identifier value out_var)
     set("${out_var}" "${value}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_get_default_apple_bundle_identifier target out_var)
-    _qt_internal_get_apple_bundle_identifier_prefix(prefix)
-    if(NOT prefix)
-        set(prefix "com.yourcompany")
+# Computes a value corresponding to the PROJECT_UNIQUE_VALUE build setting that Xcode 27+ adds
+# to new projects. Xcode generates a random value and stores it in the project, but since we
+# re-generate the project we need a value that's stable between CMake runs. Including the team
+# id ensures that two users building the same project end up with different values.
+function(_qt_internal_get_apple_project_unique_value out_var)
+    _qt_internal_find_apple_development_team_id(team_id)
+    string(SHA1 hash "${team_id}/${CMAKE_PROJECT_NAME}")
+    string(SUBSTRING "${hash}" 0 7 hash)
+    string(TOUPPER "${hash}" hash)
 
-        # For a better out-of-the-box experience, try to create a unique prefix by appending
-        # the sha1 of the team id, if one is found.
-        _qt_internal_find_apple_development_team_id(team_id)
-        if(team_id)
-            string(SHA1 hash "${team_id}")
-            string(SUBSTRING "${hash}" 0 8 infix)
-            string(APPEND prefix ".${infix}")
+    # The value must start with a letter, as Xcode's :identifier operator
+    # will otherwise replace the leading digit with an underscore.
+    set("${out_var}" "Q${hash}" PARENT_SCOPE)
+endfunction()
+
+# Sets the PROJECT_UNIQUE_VALUE build setting, unless already set by the user.
+function(_qt_internal_set_xcode_project_unique_value target)
+    if(NOT CMAKE_XCODE_ATTRIBUTE_PROJECT_UNIQUE_VALUE)
+        get_target_property(existing_unique_value "${target}"
+            XCODE_ATTRIBUTE_PROJECT_UNIQUE_VALUE)
+        if(NOT existing_unique_value)
+            _qt_internal_get_apple_project_unique_value(unique_value)
+            set_target_properties("${target}"
+                                  PROPERTIES
+                                  XCODE_ATTRIBUTE_PROJECT_UNIQUE_VALUE "${unique_value}")
         endif()
     endif()
+endfunction()
 
-    # Escape the prefix according to rfc 1034, it's important for code-signing. If an invalid
-    # identifier is used, calling xcodebuild on the command line says that no provisioning profile
-    # could be found, with no additional error message. If one opens the generated project with
-    # Xcode and clicks on 'Try again' to get a new profile, it shows a semi-useful error message
-    # that the identifier is invalid.
-    _qt_internal_escape_rfc_1034_identifier("${prefix}" prefix)
+function(_qt_internal_get_default_apple_bundle_identifier target out_var)
+    _qt_internal_get_apple_bundle_identifier_prefix(prefix)
+    if(prefix)
+        # Escape the prefix according to rfc 1034, it's important for code-signing. If an invalid
+        # identifier is used, calling xcodebuild on the command line says that no provisioning
+        # profile could be found, with no additional error message. If one opens the generated
+        # project with Xcode and clicks on 'Try again' to get a new profile, it shows a semi-useful
+        # error message that the identifier is invalid.
+        _qt_internal_escape_rfc_1034_identifier("${prefix}" prefix)
+    elseif(CMAKE_GENERATOR STREQUAL "Xcode")
+        # Match the placeholder identifier of new projects in Xcode 27+. The build setting
+        # is not built in to Xcode, so by defining it ourselves this works for older Xcode
+        # versions as well.
+        _qt_internal_set_xcode_project_unique_value("${target}")
+        set(prefix "devplaceholder.$(PROJECT_UNIQUE_VALUE:identifier)")
+    else()
+        _qt_internal_get_apple_project_unique_value(unique_value)
+        set(prefix "devplaceholder.${unique_value}")
+    endif()
 
     if(CMAKE_GENERATOR STREQUAL "Xcode")
         set(identifier "${prefix}.$(PRODUCT_NAME:rfc1034identifier)")
