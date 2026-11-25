@@ -46,11 +46,7 @@ have_target:!static:if(darwin|!isEmpty(QMAKE_OBJCOPY)) {
             else: \
                 BUNDLEIDENTIFIER = $${TARGET}
 
-            !isEmpty(QMAKE_TARGET_BUNDLE_PREFIX): \
-                BUNDLEIDENTIFIER = $$replace(QMAKE_TARGET_BUNDLE_PREFIX, \\.$, ).$${BUNDLEIDENTIFIER}
-            else: \
-                BUNDLEIDENTIFIER = com.yourcompany.$${BUNDLEIDENTIFIER}
-
+            BUNDLEIDENTIFIER = $$replace(QMAKE_TARGET_BUNDLE_PREFIX, \\.$, ).$${BUNDLEIDENTIFIER}
             BUNDLEIDENTIFIER ~= s,_,-,
 
             debug_info_plist.input = $$QMAKESPEC/Info.plist.dSYM.in

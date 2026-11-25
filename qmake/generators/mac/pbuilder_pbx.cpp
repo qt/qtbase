@@ -1604,8 +1604,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                 plist_in_text.replace(QLatin1String("@LIBRARY@"), lib_bundle_name.toQString());
                             }
                             QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
-                            if (bundlePrefix.isEmpty())
-                                bundlePrefix = "com.yourcompany";
                             plist_in_text.replace(QLatin1String("@BUNDLEIDENTIFIER@"), bundlePrefix + '.' + QLatin1String("${PRODUCT_NAME:rfc1034identifier}"));
                             if (!project->values("VERSION").isEmpty()) {
                                 plist_in_text.replace(QLatin1String("@SHORT_VERSION@"), project->first("VER_MAJ") + "." + project->first("VER_MIN"));

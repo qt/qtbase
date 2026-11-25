@@ -763,8 +763,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             commonSedArgs << "-e \"s,\\$${QMAKE_PKGINFO_TYPEINFO}," << typeInfo << ",g\" ";
 
             QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
-            if (bundlePrefix.isEmpty())
-                bundlePrefix = "com.yourcompany";
             if (bundlePrefix.endsWith("."))
                 bundlePrefix.chop(1);
             QString bundleIdentifier =  bundlePrefix + "." + var("QMAKE_BUNDLE");
