@@ -238,7 +238,7 @@ function(_qt_internal_wrap_cpp outfiles_var)
                 endif()
             endforeach()
             if(found_extension)
-                if(TARGET ${moc_target})
+                if(TARGET "${moc_target}")
                     _qt_internal_make_output_file(${it} "" moc outfile)
                     list(APPEND outfiles "${outfile}")
                     target_include_directories("${moc_target}" PRIVATE
@@ -280,7 +280,7 @@ function(_qt_internal_wrap_cpp outfiles_var)
         list(APPEND "${outfiles_var}" ${outfiles})
         set("${outfiles_var}" "${${outfiles_var}}" PARENT_SCOPE)
 
-        if(TARGET ${moc_target})
+        if(TARGET "${moc_target}")
             get_target_property(moc_target_source_dir ${moc_target} SOURCE_DIR)
             if(NOT moc_target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
                 # qt_wrap_cpp is not called in ${moc_target}'s directory scope.
