@@ -594,6 +594,19 @@ private:
             if (!path->empty())
                 *path = utils::normilizedPath(*path).generic_string();
         }
+
+        // Match the resolution done by makeHeaderAbsolute(), so that isHeaderGenerated() finds
+        // headers whose path contains symlinks.
+        std::set<std::string> generatedHeaders;
+        for (const auto &header : m_generatedHeaders) {
+            if (header.empty())
+                continue;
+            const std::string absolute = std::filesystem::path(header).is_relative()
+                    ? m_sourceDir + '/' + header
+                    : header;
+            generatedHeaders.insert(utils::normilizedPath(absolute).generic_string());
+        }
+        m_generatedHeaders = std::move(generatedHeaders);
     }
 
     std::string m_moduleName;
