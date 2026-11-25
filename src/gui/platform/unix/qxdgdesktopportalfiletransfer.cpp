@@ -28,7 +28,7 @@ namespace QXdgDesktopPortalFileTransfer {
 constexpr auto portalService = "org.freedesktop.portal.Documents"_L1;
 constexpr auto portalPath = "/org/freedesktop/portal/documents"_L1;
 constexpr auto fileTransferInterface = "org.freedesktop.portal.FileTransfer"_L1;
-constexpr int portalWaitTimeMs = 10;
+constexpr int portalWaitTimeMs = 5000;
 
 QLatin1StringView fileTransferMimeType()
 {
