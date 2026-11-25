@@ -156,7 +156,7 @@ void printFilesystemError(const std::filesystem::filesystem_error &fserr, std::s
               << fserr.what() << "(" << fserr.code().value() << ")" << std::endl;
 }
 
-std::filesystem::path normilizedPath(const std::string &path)
+std::filesystem::path normalizedPath(const std::string &path)
 {
     try {
         auto result = std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
@@ -576,13 +576,13 @@ private:
         ret &= checkRequiredArguments(stringArgumentMap);
         ret &= checkRequiredArguments(listArgumentMap);
 
-        normilizePaths();
+        normalizePaths();
 
         return ret;
     }
 
     // Convert all paths from command line to a generic one.
-    void normilizePaths()
+    void normalizePaths()
     {
         const std::array paths = {
             &m_sourceDir,         &m_binaryDir,         &m_includeDir,
@@ -592,7 +592,7 @@ private:
         };
         for (auto path : paths) {
             if (!path->empty())
-                *path = utils::normilizedPath(*path).generic_string();
+                *path = utils::normalizedPath(*path).generic_string();
         }
 
         // Match the resolution done by makeHeaderAbsolute(), so that isHeaderGenerated() finds
@@ -604,7 +604,7 @@ private:
             const std::string absolute = std::filesystem::path(header).is_relative()
                     ? m_sourceDir + '/' + header
                     : header;
-            generatedHeaders.insert(utils::normilizedPath(absolute).generic_string());
+            generatedHeaders.insert(utils::normalizedPath(absolute).generic_string());
         }
         m_generatedHeaders = std::move(generatedHeaders);
     }
@@ -1934,9 +1934,9 @@ void SyncScanner::updateSymbolDescriptor(const std::string &symbol, const std::s
 SyncScanner::makeHeaderAbsolute(const std::string &filename) const
 {
     if (std::filesystem::path(filename).is_relative())
-        return utils::normilizedPath(m_commandLineArgs->sourceDir() + '/' + filename);
+        return utils::normalizedPath(m_commandLineArgs->sourceDir() + '/' + filename);
 
-    return utils::normilizedPath(filename);
+    return utils::normalizedPath(filename);
 }
 
 bool SyncScanner::updateOrCopy(const std::filesystem::path &src,
