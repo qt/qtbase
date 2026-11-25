@@ -236,7 +236,8 @@ QVariant QWaylandMimeData::retrieveData_sys(const QString &mimeType, QMetaType t
             }
         } else {
             qCInfo(lcQpaWayland) << "Failed retrieving files, falling back to uris";
-            content = readData(mime).value_or(QByteArray());
+            m_types.removeAll(QXdgDesktopPortalFileTransfer::fileTransferMimeType());
+            return retrieveData_sys(uriList(), type);
         }
     }
 #endif
