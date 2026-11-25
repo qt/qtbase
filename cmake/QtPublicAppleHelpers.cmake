@@ -590,6 +590,34 @@ function(_qt_internal_set_xcode_copy_phase_strip target)
     endif()
 endfunction()
 
+# CMake sets the product type of app bundles to application, but leaves the file type of the
+# product as a plain executable. As a result Xcode runs the executable directly, instead of
+# launching the app bundle via LaunchServices, which for iOS apps running on macOS results in
+# the app being killed due to a "code signing error". Set the file type to match the value of
+# a new project created via Xcode directly.
+function(_qt_internal_set_xcode_explicit_file_type target)
+    if(QT_NO_SET_XCODE_EXPLICIT_FILE_TYPE)
+        return()
+    endif()
+
+    get_target_property(is_bundle "${target}" MACOSX_BUNDLE)
+    if(NOT is_bundle)
+        return()
+    endif()
+
+    # Skip app extensions, XPC services, etc.
+    get_target_property(product_type "${target}" XCODE_PRODUCT_TYPE)
+    if(product_type AND NOT product_type STREQUAL "com.apple.product-type.application")
+        return()
+    endif()
+
+    get_target_property(existing_file_type "${target}" XCODE_EXPLICIT_FILE_TYPE)
+    if(NOT existing_file_type)
+        set_target_properties("${target}" PROPERTIES
+            XCODE_EXPLICIT_FILE_TYPE "wrapper.application")
+    endif()
+endfunction()
+
 # CMake generates a project where this setting is set to an absolute path build dir.
 # Provide an opt-in to work around an Xcode issue where archiving does not find the project dSYMs
 # unless the configuration build dir starts with $(BUILD_DIR) or is set to $(inherited).
@@ -1192,6 +1220,7 @@ function(_qt_internal_finalize_apple_app target)
         _qt_internal_set_xcode_debug_information_format("${target}")
         _qt_internal_set_xcode_generate_debugging_symbols("${target}")
         _qt_internal_set_xcode_copy_phase_strip("${target}")
+        _qt_internal_set_xcode_explicit_file_type("${target}")
     endif()
 
     _qt_internal_set_xcode_bundle_name("${target}")
