@@ -2960,6 +2960,12 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 100), UTC);
     QTest::newRow("ISO with comma 5") << u"2005-06-28T07:57:30,11"_s
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 110));
+    QTest::newRow("ISO fraction rounds to one")
+        << u"2005-06-28T07:57:30.9999999999999999999Z"_s << Qt::ISODate
+        << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 31), UTC);
+    QTest::newRow("ISO fraction rounds to one, end of day")
+        << u"2012-06-04T23:59:59.9999999999999999999"_s << Qt::ISODate
+        << QDate(2012, 6, 5).startOfDay();
     // 24:00:00 Should be next day according to ISO 8601 section 4.2.3.
     QTest::newRow("ISO 24:00") << u"2012-06-04T24:00:00"_s
                                << Qt::ISODate << QDate(2012, 6, 5).startOfDay();
