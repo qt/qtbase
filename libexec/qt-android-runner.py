@@ -184,11 +184,18 @@ def get_gradle_project_property(build_path, property_path):
         property_arg = f"-Pproperty={property_path}"
         result = subprocess.run(
             [gradlew, "-q", "--init-script", script_path, property_arg, "printProjectProperty"],
-            cwd=gradle_root, capture_output=True, text=True, timeout=30
+            cwd=gradle_root, capture_output=True, text=True, timeout=30, check=True
         )
         value = result.stdout.strip()
         return value if value else None
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
+        details = (e.stderr or e.stdout or "").strip()
+        error(f"Failed to query Gradle property '{property_path}', "
+              f"Gradle exited with code {e.returncode}:")
+        if details:
+            print(details, file=sys.stderr)
+        return None
+    except (OSError, subprocess.SubprocessError, UnicodeError) as e:
         error(f"Failed to query Gradle property '{property_path}', received error: {e}")
         return None
 
