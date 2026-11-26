@@ -548,6 +548,12 @@ void tst_QTime::fromStringDateFormat_data()
         << u"23:59:59.9999999999999999999"_s << Qt::ISODate << QTime(23, 59, 59, 999);
     QTest::newRow("IsoDate - minute fraction rounds to one")
         << u"22:21.9999999999999999999"_s << Qt::ISODate << QTime(22, 22);
+    QTest::newRow("IsoDate - long fraction")
+        << u"23:59:59.9999999999999999999999999"_s << Qt::ISODate << QTime(23, 59, 59, 999);
+    QTest::newRow("TextDate - long fraction")
+        << u"23:59:59.9999999999999999999999999"_s << Qt::TextDate << QTime(23, 59, 59, 999);
+    QTest::newRow("IsoDate - invalid, late non-digit in long fraction")
+        << u"23:59:59.9999999999999999999999999X"_s << Qt::ISODate << invalidTime();
     QTest::newRow("IsoDate - hour fraction rounds to one")
         << u"22.9999999999999999999"_s << Qt::ISODate << QTime(23, 0);
 
