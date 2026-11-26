@@ -509,6 +509,10 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::newRow("TextDate - invalid, milliseconds") << u"23:01:01:XXXX"_s << Qt::TextDate
         << invalidTime();
     QTest::newRow("TextDate - midnight 24") << u"24:00:00"_s << Qt::TextDate << QTime();
+    QTest::newRow("TextDate - fraction rounds to one")
+        << u"23:59:59.9999999999999999999"_s << Qt::TextDate << QTime(23, 59, 59, 999);
+    QTest::newRow("TextDate - fraction rounds to one, wrap")
+        << u"19:03:54.9999999999999999999"_s << Qt::TextDate << QTime(19, 3, 55);
 
     QTest::newRow("IsoDate - valid, start of day, omit seconds") << u"00:00"_s << Qt::ISODate << QTime(0, 0, 0);
     QTest::newRow("IsoDate - valid, omit seconds") << u"22:21"_s << Qt::ISODate << QTime(22, 21, 0);
@@ -540,6 +544,12 @@ void tst_QTime::fromStringDateFormat_data()
         << u"24:00:00"_s << Qt::ISODate << QTime(0, 0);
     QTest::newRow("IsoDate - minute fraction midnight")
         << u"24:00,0"_s << Qt::ISODate << QTime(0, 0);
+    QTest::newRow("IsoDate - fraction rounds to one")
+        << u"23:59:59.9999999999999999999"_s << Qt::ISODate << QTime(23, 59, 59, 999);
+    QTest::newRow("IsoDate - minute fraction rounds to one")
+        << u"22:21.9999999999999999999"_s << Qt::ISODate << QTime(22, 22);
+    QTest::newRow("IsoDate - hour fraction rounds to one")
+        << u"22.9999999999999999999"_s << Qt::ISODate << QTime(23, 0);
 
     // Test Qt::RFC2822Date format (RFC 2822).
     QTest::newRow("RFC 2822") << u"13 Feb 1987 13:24:51 +0100"_s

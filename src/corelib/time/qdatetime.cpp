@@ -2528,7 +2528,10 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     if (tail.isEmpty() ? dot != -1 || comma != -1 : !frac.ok())
         return QTime();
     Q_ASSERT(frac.ok() ^ tail.isEmpty());
-    double fraction = frac.ok() ? frac.result * std::pow(0.1, tail.size()) : 0.0;
+    double fraction = 0.0;
+    if (frac.ok())
+        fraction = qMin(frac.result * std::pow(0.1, tail.size()), std::nextafter(1.0, 0.0));
+    Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
 
     const qsizetype size = string.size();
     if (size < 2 || size > 8)
@@ -2547,7 +2550,6 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     } else if (format == Qt::TextDate) { // Requires minutes
         return QTime();
     } else if (frac.ok()) {
-        Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
         fraction *= MINS_PER_HOUR;
         minute.result = qulonglong(fraction);
         fraction -= minute.result;
