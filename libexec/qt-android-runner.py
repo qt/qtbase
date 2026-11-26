@@ -2,18 +2,20 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+import argparse
 import atexit
 import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
-import time
-import signal
-import argparse
 import tempfile
+import time
 import xml.etree.ElementTree as ET
+from typing import NoReturn
+
 
 def status(msg):
     print(f"\n-- {msg}")
@@ -21,7 +23,7 @@ def status(msg):
 def error(msg):
     print(f"Error: {msg}", file=sys.stderr)
 
-def die(msg):
+def die(msg) -> NoReturn:
     error(msg)
     sys.exit(1)
 
@@ -89,7 +91,7 @@ try:
 
     if args.serial and args.serial not in devices:
         die("No connected devices with the specified serial number.")
-except Exception as e:
+except (OSError, subprocess.SubprocessError, UnicodeError) as e:
     die(f"Failed to check for running devices, received error: {e}")
 
 adb_argv = [adb]
@@ -103,7 +105,7 @@ if args.apk and args.install:
     status(f"Installing the app APK {args.apk}")
     try:
         subprocess.run([*adb_argv, "install", args.apk], check=True)
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError) as e:
         error(f"Failed to install the APK, received error: {e}")
 
 
@@ -124,7 +126,7 @@ def find_launcher_activity(root):
 
 # A manifest has no document type definition, so refuse ones that have it.
 class ManifestBuilder(ET.TreeBuilder):
-    def doctype(self, name, pubid, system):
+    def doctype(self, _name, _pubid, _system):
         raise ValueError("The manifest must not declare a document type definition.")
 
 
@@ -136,7 +138,7 @@ def get_manifest_activity(manifest_file):
         tree = ET.parse(manifest_file, ET.XMLParser(target=ManifestBuilder()))
         root = tree.getroot()
         return find_launcher_activity(root)
-    except Exception as e:
+    except (OSError, ET.ParseError, ValueError) as e:
         error(f"Failed to parse AndroidManifest.xml, received error: {e}")
         return None
 
@@ -229,7 +231,7 @@ start_cmd = [*adb_argv, "shell", "am", "start", "-n", f"{package_name}/{activity
 # TODO: allow explicit filtering of which env vars to forward (e.g. a regex flag).
 if sys.platform == "win32":
     env_items = [(key, value) for key, value in os.environ.items()
-                 if key.startswith("QT_") or key.startswith("QTEST_")]
+                 if key.startswith(("QT_", "QTEST_"))]
 else:
     env_items = list(os.environ.items())
 
@@ -247,12 +249,12 @@ try:
     date_command = "date +'%Y-%m-%d %H:%M:%S.%3N'"
     start_timestamp = checked_timestamp(
         subprocess.check_output([*adb_argv, "shell", date_command]).decode().strip())
-except Exception as e:
+except (OSError, subprocess.SubprocessError, UnicodeError) as e:
     die(f"Failed to get formatted time from the device, received error: {e}")
 
 try:
     subprocess.run(start_cmd, check=True)
-except Exception as e:
+except (OSError, subprocess.SubprocessError) as e:
     die(f"Failed to start the app {package_name}, received error: {e}")
 
 # Wait for the app to start and retrieve its pid
@@ -275,7 +277,7 @@ if args.detached:
 
 # Add a signal handler to stop the app if the script is terminated
 interrupted = False
-def terminate_app(signum, frame):
+def terminate_app(_signum, _frame):
     global interrupted
     interrupted = True
 
@@ -292,7 +294,7 @@ try:
     # The pipe runs on the device, so pass the pipeline as one adb argument.
     logcat_cmd = f"logcat {time_arg} {format_arg} | grep {pid_regex} {fatal_regex}"
     logcat_process = subprocess.Popen([*adb_argv, "shell", logcat_cmd])
-except Exception as e:
+except (OSError, subprocess.SubprocessError) as e:
     die(f"Failed to get logcat for the app {package_name}, received error: {e}")
 
 # Monitor the app's pid
@@ -316,5 +318,5 @@ if interrupted:
         subprocess.Popen([*adb_argv, "shell", "am", "force-stop",
                           shlex.quote(package_name)])
         status(f"The app \"{package_name}\" with {pid} has been terminated")
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError) as e:
         error(f"Failed to terminate the app {package_name}, received error: {e}")
