@@ -2963,6 +2963,9 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::newRow("ISO fraction rounds to one")
         << u"2005-06-28T07:57:30.9999999999999999999Z"_s << Qt::ISODate
         << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 31), UTC);
+    QTest::newRow("ISO long fraction")
+        << u"2005-06-28T07:57:30.9999999999999999999999999Z"_s << Qt::ISODate
+        << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 31), UTC);
     QTest::newRow("ISO fraction rounds to one, end of day")
         << u"2012-06-04T23:59:59.9999999999999999999"_s << Qt::ISODate
         << QDate(2012, 6, 5).startOfDay();

@@ -2523,15 +2523,34 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     if (tail.indexOf(u',') != -1) // Forbid comma after first dot-or-comma:
         return QTime();
 
-    const ParsedInt frac = readInt(tail);
-    // There must be *some* digits in a fractional part; and it must be all digits:
-    if (tail.isEmpty() ? dot != -1 || comma != -1 : !frac.ok())
-        return QTime();
-    Q_ASSERT(frac.ok() ^ tail.isEmpty());
     double fraction = 0.0;
-    if (frac.ok())
-        fraction = qMin(frac.result * std::pow(0.1, tail.size()), std::nextafter(1.0, 0.0));
-    Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
+    bool hasFraction = false;
+    if (tail.isEmpty()) {
+        if (dot != -1 || comma != -1)
+            return QTime();
+    } else {
+        // There must be *some* digits in a fractional part; and it must be all
+        // digits. Further digits can't affect the millisecond we round to; 15
+        // digits are exact in a double and cannot overflow qulonglong.
+        const auto isDigit = [](QChar ch) { return ch >= u'0' && ch <= u'9'; };
+        constexpr qsizetype MaxFractionDigits = std::numeric_limits<double>::digits10;
+        const qsizetype fractionDigits = qMin(tail.size(), MaxFractionDigits);
+
+        qulonglong digits = 0;
+        double scale = 1.0;
+        for (qsizetype i = 0; i < fractionDigits; ++i) {
+            if (!isDigit(tail[i]))
+                return QTime();
+            digits = digits * 10 + (tail[i].unicode() - u'0');
+            scale *= 10.0;
+        }
+        if (!std::all_of(tail.begin() + fractionDigits, tail.end(), isDigit))
+            return QTime();
+        fraction = digits / scale;
+        hasFraction = true;
+        Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
+    }
+    Q_ASSERT(hasFraction ^ tail.isEmpty());
 
     const qsizetype size = string.size();
     if (size < 2 || size > 8)
@@ -2549,7 +2568,7 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
             return QTime();
     } else if (format == Qt::TextDate) { // Requires minutes
         return QTime();
-    } else if (frac.ok()) {
+    } else if (hasFraction) {
         fraction *= MINS_PER_HOUR;
         minute.result = qulonglong(fraction);
         fraction -= minute.result;
@@ -2561,7 +2580,7 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
             second = readInt(string.sliced(6, 2));
         if (!second.ok() || second.result >= SECS_PER_MIN)
             return QTime();
-    } else if (frac.ok()) {
+    } else if (hasFraction) {
         if (format == Qt::TextDate) // Doesn't allow fraction of minutes
             return QTime();
         Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
@@ -2572,7 +2591,7 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
 
     Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
     // Round millis to nearest (unlike minutes and seconds, rounded down):
-    int msec = frac.ok() ? qRound(MSECS_PER_SEC * fraction) : 0;
+    int msec = hasFraction ? qRound(MSECS_PER_SEC * fraction) : 0;
     // But handle overflow gracefully:
     if (msec == MSECS_PER_SEC) {
         // If we can (when data were otherwise valid) validly propagate overflow
