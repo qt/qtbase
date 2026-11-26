@@ -354,7 +354,8 @@ bool tst_Gestures::waitForWindowPainted(QWidget *wid) const
     if (!QTest::qWaitForWindowExposed(wid))
         return false;
 
-    if (!QGuiApplication::platformName().contains("xcb"))
+    const QString platform = QGuiApplication::platformName();
+    if (!platform.contains("xcb") && !platform.contains("ohos"))
         return true;
 
     return QTest::qWaitFor([wid]{ return QApplication::topLevelAt(wid->geometry().center()) == wid; });
