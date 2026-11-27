@@ -227,7 +227,7 @@ static QSet<QByteArray> activeConditions()
 
 static bool checkCondition(const QByteArray &condition)
 {
-    static const QSet<QByteArray> matchedConditions = activeConditions();
+    static const QSet<QByteArray> s_matchedConditions = activeConditions();
     QList<QByteArray> conds = condition.split(' ');
 
     for (QByteArray c : conds) {
@@ -235,15 +235,15 @@ static bool checkCondition(const QByteArray &condition)
         if (result)
             c.remove(0, 1);
 
-        result ^= matchedConditions.contains(c);
+        result ^= s_matchedConditions.contains(c);
         if (!result)
             return false;
     }
     return true;
 }
 
-static bool ignoreAll = false;
-static std::unique_ptr<std::set<QByteArray>> ignoredTests;
+static bool s_ignoreAll = false;
+static std::unique_ptr<std::set<QByteArray>> s_ignoredTests;
 
 namespace QTestPrivate {
 
@@ -278,11 +278,11 @@ void parseBlackList()
         const bool condition = checkCondition(line);
         if (condition) {
             if (!function.size()) {
-                ignoreAll = true;
+                s_ignoreAll = true;
             } else {
-                if (!ignoredTests)
-                    ignoredTests = std::make_unique<std::set<QByteArray>>();
-                ignoredTests->insert(function);
+                if (!s_ignoredTests)
+                    s_ignoredTests = std::make_unique<std::set<QByteArray>>();
+                s_ignoredTests->insert(function);
             }
         }
     }
@@ -291,22 +291,22 @@ void parseBlackList()
 // Returns \c true if this test-case is blacklisted.
 bool checkBlackLists(const char *slot, const char *data, const char *global)
 {
-    bool ignore = ignoreAll;
+    bool ignore = s_ignoreAll;
 
-    if (!ignore && ignoredTests) {
+    if (!ignore && s_ignoredTests) {
         QByteArray s = slot;
-        ignore = ignoredTests->find(s) != ignoredTests->end();
+        ignore = s_ignoredTests->find(s) != s_ignoredTests->end();
         if (!ignore && data) {
             s = (s + ':') + data;
-            ignore = ignoredTests->find(s) != ignoredTests->end();
+            ignore = s_ignoredTests->find(s) != s_ignoredTests->end();
         }
 
         if (!ignore && global) {
             s = slot + ":"_ba + global;
-            ignore = ignoredTests->find(s) != ignoredTests->end();
+            ignore = s_ignoredTests->find(s) != s_ignoredTests->end();
             if (!ignore && data) {
                 s = (s + ':') + data;
-                ignore = ignoredTests->find(s) != ignoredTests->end();
+                ignore = s_ignoredTests->find(s) != s_ignoredTests->end();
             }
         }
     }
